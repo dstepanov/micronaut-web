@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { mainSitePages } from "@/data/main-site-pages";
+import { withBasePath } from "@/lib/base-path";
 import { searchItems, type SearchItem } from "@/lib/protocol";
 
 function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
@@ -51,7 +52,7 @@ export function SearchDialog({ className }: { className?: string }) {
         onClick={() => setOpen(true)}
       >
         <Search />
-        <span className="hidden min-w-36 text-left text-muted-foreground/90 sm:inline">Search</span>
+        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">Search docs...</span>
         <kbd className="ml-auto hidden rounded border bg-muted px-1.5 py-0.5 text-[0.7rem] text-muted-foreground md:inline">
           ⌘K
         </kbd>
@@ -70,7 +71,7 @@ export function SearchDialog({ className }: { className?: string }) {
             <CommandItem
               value="Launch create project application starter"
               onSelect={() => {
-                window.location.href = "/launch/";
+                window.location.href = withBasePath("/launch/");
                 setOpen(false);
               }}
             >
@@ -88,7 +89,7 @@ export function SearchDialog({ className }: { className?: string }) {
                 key={page.slug}
                 value={`Page ${page.title} ${page.eyebrow} ${page.description}`}
                 onSelect={() => {
-                  window.location.href = `/${page.slug}/`;
+                  window.location.href = withBasePath(`/${page.slug}/`);
                   setOpen(false);
                 }}
               >
@@ -110,7 +111,7 @@ export function SearchDialog({ className }: { className?: string }) {
                 key={`${item.kind}-${item.href}-${item.title}`}
                 value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
                 onSelect={() => {
-                  window.location.href = item.href;
+                  window.location.href = withBasePath(item.href);
                   setOpen(false);
                 }}
               >
@@ -132,7 +133,7 @@ export function SearchDialog({ className }: { className?: string }) {
                 key={`${item.kind}-${item.href}-${item.title}`}
                 value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
                 onSelect={() => {
-                  window.location.href = item.href;
+                  window.location.href = withBasePath(item.href);
                   setOpen(false);
                 }}
               >
@@ -154,7 +155,7 @@ export function SearchDialog({ className }: { className?: string }) {
                 key={`${item.kind}-${item.href}-${item.title}`}
                 value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
                 onSelect={() => {
-                  window.location.href = item.href;
+                  window.location.href = withBasePath(item.href);
                   setOpen(false);
                 }}
               >

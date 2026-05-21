@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { IconGlyph } from "@/components/web/icon-glyph";
+import { withBasePath } from "@/lib/base-path";
 import { micronautProtocol } from "@/lib/protocol";
 
 export function GuidesFilterPanel() {
@@ -18,7 +19,7 @@ export function GuidesFilterPanel() {
             {micronautProtocol.guides.categories.slice(0, 18).map((category) => (
               <a
                 key={category.slug}
-                href={`/guides/?category=${category.slug}`}
+                href={withBasePath(`/guides/?category=${category.slug}`)}
                 className="flex items-center gap-2 rounded-md px-2 py-1.5 text-[0.82rem] leading-5 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <IconGlyph name={category.icon} className="size-3.5" />

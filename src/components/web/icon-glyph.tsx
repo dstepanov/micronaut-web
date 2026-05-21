@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { withBasePath } from "@/lib/base-path";
 
 const icons: Record<string, LucideIcon> = {
   archive: Boxes,
@@ -90,7 +91,7 @@ export function IconGlyph({ name, className }: { name: string; className?: strin
   if (name.startsWith("brand:")) {
     return (
       <img
-        src={`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`}
+        src={withBasePath(`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`)}
         className={cn("object-contain", className)}
         alt=""
         aria-hidden="true"
@@ -100,7 +101,7 @@ export function IconGlyph({ name, className }: { name: string; className?: strin
   if (name.startsWith("image:")) {
     return (
       <img
-        src={`/micronaut-assets/icons/${name.slice("image:".length)}`}
+        src={withBasePath(`/micronaut-assets/icons/${name.slice("image:".length)}`)}
         className={cn("object-contain dark:invert", className)}
         alt=""
         aria-hidden="true"

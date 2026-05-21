@@ -9,6 +9,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { IconGlyph } from "@/components/web/icon-glyph";
+import { withBasePath } from "@/lib/base-path";
 import type { ProtocolProject } from "@/lib/protocol";
 
 export function ProjectCard({ project }: { project: ProtocolProject }) {
@@ -20,7 +21,7 @@ export function ProjectCard({ project }: { project: ProtocolProject }) {
         </span>
         <div className="min-w-0">
           <CardTitle className="text-[0.96rem] leading-snug">
-            <a href={project.href} className="text-foreground no-underline hover:underline">
+            <a href={withBasePath(project.href)} className="text-foreground no-underline hover:underline">
               {project.displayName}
             </a>
           </CardTitle>
@@ -35,7 +36,7 @@ export function ProjectCard({ project }: { project: ProtocolProject }) {
       <CardFooter className="mt-auto justify-between gap-3 px-4 pt-0 text-xs text-muted-foreground">
         <span className="flex min-w-0 flex-wrap items-center gap-1.5">
           <a
-            href={project.href}
+            href={withBasePath(project.href)}
             className="relative z-10 inline-flex min-h-7 items-center rounded-md border bg-background px-2 text-foreground no-underline hover:bg-muted"
           >
             Docs

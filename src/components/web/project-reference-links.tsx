@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { withBasePath } from "@/lib/base-path";
 import type { ProtocolLink } from "@/lib/protocol";
 
 export function ProjectReferenceLinks({ references }: { references: ProtocolLink[] }) {
@@ -9,7 +10,7 @@ export function ProjectReferenceLinks({ references }: { references: ProtocolLink
       {references.map((reference) => (
         <Button key={`${reference.label}-${reference.href}`} asChild variant="outline" size="sm">
           <a
-            href={reference.href}
+            href={withBasePath(reference.href)}
             target={reference.href.startsWith("http") ? "_blank" : undefined}
             rel="noreferrer"
           >

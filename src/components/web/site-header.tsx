@@ -23,6 +23,7 @@ import {
 import { MicronautLogo } from "@/components/web/micronaut-logo";
 import { SearchDialog } from "@/components/web/search-dialog";
 import { ThemeToggle } from "@/components/web/theme-toggle";
+import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type SurfaceId = "main" | "docs" | "guides" | "launch";
@@ -113,20 +114,20 @@ export function SiteHeader({
 }) {
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-xl">
-      <div className="mx-auto flex h-[68px] max-w-[1240px] items-center gap-4 px-4 md:px-6">
+      <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
         {!hideBrand ? (
-          <a href="/" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
-            <MicronautLogo />
+          <a href={withBasePath("/")} className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
+            <MicronautLogo className="h-10 w-[176px]" />
           </a>
         ) : null}
         <NavigationMenu viewport={false} className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuLink
-                href="/"
-                active={surface === "main"}
-                className={cn(
-                  "rounded-md px-3 py-2 text-[0.92rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                  href={withBasePath("/")}
+                  active={surface === "main"}
+                  className={cn(
+                  "h-8 rounded-md px-3 py-1.5 text-[0.86rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                   surface === "main" && "bg-accent text-accent-foreground"
                 )}
               >
@@ -135,7 +136,7 @@ export function SiteHeader({
             </NavigationMenuItem>
             {menuGroups.map((group) => (
               <NavigationMenuItem key={group.label}>
-                <NavigationMenuTrigger className="bg-transparent px-3 text-[0.92rem]">
+                <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.86rem]">
                   {group.label}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -148,7 +149,7 @@ export function SiteHeader({
                       {group.links.map((link) => (
                         <NavigationMenuLink
                           key={link.href}
-                          href={link.href}
+                          href={withBasePath(link.href)}
                           className="min-h-20 rounded-md p-3"
                         >
                           <span className="font-medium">{link.label}</span>
@@ -165,10 +166,10 @@ export function SiteHeader({
             {primaryLinks.filter((link) => link.surface !== "main" && link.surface !== "launch").map((link) => (
               <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
-                  href={link.href}
+                  href={withBasePath(link.href)}
                   active={surface === link.surface}
                   className={cn(
-                    "rounded-md px-3 py-2 text-[0.92rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                    "h-8 rounded-md px-3 py-1.5 text-[0.86rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                     surface === link.surface && "bg-accent text-accent-foreground"
                   )}
                 >
@@ -179,9 +180,9 @@ export function SiteHeader({
           </NavigationMenuList>
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          <SearchDialog className="h-10 w-10 justify-start px-2 sm:w-64 sm:px-3 lg:w-80" />
-          <Button variant="outline" className="hidden md:inline-flex" asChild>
-            <a href="/launch/">Launch</a>
+          <SearchDialog className="h-9 w-9 justify-start px-2 sm:w-56 sm:px-3 lg:w-[260px]" />
+          <Button variant="outline" size="sm" className="hidden h-9 md:inline-flex" asChild>
+            <a href={withBasePath("/launch/")}>Launch</a>
           </Button>
           <ThemeToggle />
           <Sheet>
@@ -204,7 +205,7 @@ export function SiteHeader({
                     {group.links.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <a
-                          href={link.href}
+                          href={withBasePath(link.href)}
                           className={cn(
                             "rounded-md px-3 py-2 text-[0.92rem] font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
                             primaryLinks.some((primaryLink) => primaryLink.href === link.href && primaryLink.surface === surface) && "bg-accent"

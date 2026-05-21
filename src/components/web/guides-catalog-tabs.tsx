@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GuideCard } from "@/components/web/guide-card";
+import { withBasePath } from "@/lib/base-path";
 import { featuredGuides, latestGuides, micronautProtocol } from "@/lib/protocol";
 
 export function GuidesCatalogTabs() {
@@ -54,7 +55,7 @@ export function GuidesCatalogTabs() {
                   </td>
                   <td className="px-4 py-3">
                     <Button asChild variant="ghost" size="sm">
-                      <a href={guide.href}>Open</a>
+                      <a href={withBasePath(guide.href)}>Open</a>
                     </Button>
                   </td>
                 </tr>

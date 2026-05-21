@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { withBasePath } from "@/lib/base-path";
 import type { ProtocolGuide } from "@/lib/protocol";
 
 export function GuideCard({ guide }: { guide: ProtocolGuide }) {
@@ -24,7 +25,7 @@ export function GuideCard({ guide }: { guide: ProtocolGuide }) {
           <Badge variant="outline">{guide.estimatedMinutes} min</Badge>
         </CardAction>
         <CardTitle className="text-lg leading-tight">
-          <a href={guide.href} className="after:absolute after:inset-0">
+          <a href={withBasePath(guide.href)} className="after:absolute after:inset-0">
             {guide.title}
           </a>
         </CardTitle>

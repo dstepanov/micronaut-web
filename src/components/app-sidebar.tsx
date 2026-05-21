@@ -21,6 +21,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { platformDocsByCategory, platformDocsProjects } from "@/lib/protocol";
+import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -43,10 +44,10 @@ export function AppSidebar({ activeSlug, className, ...props }: AppSidebarProps)
               tooltip="Micronaut Platform Docs"
               className="h-12 p-2 pr-10"
             >
-              <a href="/docs/" aria-label="Micronaut Platform Docs">
+              <a href={withBasePath("/docs/")} aria-label="Micronaut Platform Docs">
                 <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <img
-                    src="/micronaut-assets/icons/micronaut-sally.svg"
+                    src={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")}
                     alt=""
                     aria-hidden="true"
                     className="size-5 object-contain"
@@ -84,7 +85,7 @@ export function AppSidebar({ activeSlug, className, ...props }: AppSidebarProps)
                     className="h-auto items-start gap-2 py-2 pr-8 font-normal group-data-[collapsible=icon]:items-center"
                     tooltip={category.name}
                   >
-                    <a href={`/docs/#${category.slug}`}>
+                    <a href={withBasePath(`/docs/#${category.slug}`)}>
                       <IconGlyph name={category.icon} className="mt-0.5 size-4 shrink-0 group-data-[collapsible=icon]:mt-0" />
                       <span className="whitespace-normal break-words leading-5">{category.name}</span>
                     </a>
@@ -105,7 +106,7 @@ export function AppSidebar({ activeSlug, className, ...props }: AppSidebarProps)
                           isActive={project.slug === activeSlug}
                           className="my-px ml-[7px] mr-2 h-[31px] w-[calc(100%-15px)] whitespace-normal px-2 py-1.5 text-[0.85rem] leading-[1.19rem]"
                         >
-                          <a href={project.href}>
+                          <a href={withBasePath(project.href)}>
                             <span className="whitespace-normal break-words">{project.displayName}</span>
                           </a>
                         </SidebarMenuSubButton>

@@ -32,6 +32,15 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Configure Astro base path
+        run: |
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          if [ "$repo_name" = "${GITHUB_REPOSITORY_OWNER}.github.io" ]; then
+            echo "ASTRO_BASE=/" >> "$GITHUB_ENV"
+          else
+            echo "ASTRO_BASE=/$repo_name/" >> "$GITHUB_ENV"
+          fi
+
       - name: Build web
         run: npm run build
 
@@ -57,4 +66,3 @@ jobs:
       - name: Deploy Pages artifact
         id: deployment
         uses: actions/deploy-pages@v5
-
