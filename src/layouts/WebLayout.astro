@@ -1,0 +1,30 @@
+---
+import "@/styles/globals.css";
+import { SiteHeader } from "@/components/web/site-header";
+
+interface Props {
+  title: string;
+  description?: string;
+  surface?: "main" | "docs" | "guides" | "launch";
+  hideHeader?: boolean;
+}
+
+const { title, description = "Micronaut web prototype", surface = "main", hideHeader = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/micronaut-assets/icons/micronaut-sally.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="min-h-screen bg-background text-foreground">
+      {!hideHeader && <SiteHeader surface={surface} client:load />}
+      <slot />
+    </div>
+  </body>
+</html>

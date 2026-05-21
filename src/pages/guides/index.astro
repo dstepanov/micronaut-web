@@ -1,0 +1,58 @@
+---
+import WebLayout from "@/layouts/WebLayout.astro";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { GuidesCatalogTabs } from "@/components/web/guides-catalog-tabs";
+import { GuidesFilterPanel } from "@/components/web/guides-filter-panel";
+import { micronautProtocol } from "@/lib/protocol";
+
+const all = micronautProtocol.guides.guides;
+---
+
+<WebLayout title="Micronaut Guides" surface="guides">
+  <div class="flex min-h-[calc(100vh-4rem)]">
+    <GuidesFilterPanel />
+    <main class="min-w-0 flex-1">
+      <section class="mx-auto grid max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10">
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+          <div class="max-w-3xl">
+            <Badge variant="secondary">Guides</Badge>
+            <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">Micronaut Guide Explorer</h1>
+            <p class="mt-4 text-lg leading-8 text-muted-foreground">
+              Search and browse tutorials by topic, tag, language, build tool, cloud provider, and runtime.
+            </p>
+          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Catalog</CardTitle>
+              <CardDescription>Rendered from the checked-in guide protocol.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-3 gap-3">
+              <div class="rounded-lg bg-muted p-3">
+                <div class="text-xl font-semibold">{all.length}</div>
+                <div class="text-xs text-muted-foreground">Guides</div>
+              </div>
+              <div class="rounded-lg bg-muted p-3">
+                <div class="text-xl font-semibold">{micronautProtocol.guides.categories.length}</div>
+                <div class="text-xs text-muted-foreground">Topics</div>
+              </div>
+              <div class="rounded-lg bg-muted p-3">
+                <div class="text-xl font-semibold">{new Set(all.flatMap((guide) => guide.tags)).size}</div>
+                <div class="text-xs text-muted-foreground">Tags</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <GuidesCatalogTabs client:load />
+      </section>
+    </main>
+  </div>
+</WebLayout>

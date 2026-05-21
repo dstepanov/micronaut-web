@@ -1,0 +1,36 @@
+{
+  "name": "micronaut-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "protocol": "node scripts/validate-protocol.mjs",
+    "sync:platform-projects": "node scripts/sync-platform-docs-fixture.mjs",
+    "dev": "npm run protocol && astro dev --host 127.0.0.1",
+    "build": "npm run protocol && astro build && node scripts/prepare-template-artifacts.mjs",
+    "preview": "astro preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@astrojs/react": "latest",
+    "@radix-ui/react-dialog": "latest",
+    "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-tabs": "latest",
+    "astro": "latest",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "latest",
+    "cmdk": "^1.1.1",
+    "lucide-react": "^1.16.0",
+    "radix-ui": "^1.4.3",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "typescript": "latest"
+  },
+  "overrides": {
+    "vite": "^7.0.0"
+  }
+}

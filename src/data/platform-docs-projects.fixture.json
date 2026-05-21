@@ -1,0 +1,1731 @@
+{
+  "source": "micronaut-platform-docs/gradle platform metadata",
+  "publishedSource": "https://dstepanov.github.io/micronaut-platform-docs/",
+  "projectCount": 68,
+  "categories": [
+    {
+      "slug": "most-popular",
+      "name": "Most Popular",
+      "icon": "book-open",
+      "description": "Frequently used framework, data, security, API, messaging, and integration modules.",
+      "projectSlugs": [
+        "core",
+        "data",
+        "security",
+        "graphql",
+        "spring",
+        "kafka",
+        "openapi"
+      ]
+    },
+    {
+      "slug": "ai",
+      "name": "AI",
+      "icon": "bot",
+      "description": "Integrations for AI services, tools, resources, prompts, and model-facing protocols.",
+      "projectSlugs": [
+        "langchain4j",
+        "mcp"
+      ]
+    },
+    {
+      "slug": "dev-and-test",
+      "name": "Dev & Test",
+      "icon": "test-tube-2",
+      "description": "Testing, development-time services, generated resources, and local inspection tools.",
+      "projectSlugs": [
+        "test",
+        "test-resources",
+        "control-panel"
+      ]
+    },
+    {
+      "slug": "build",
+      "name": "Build",
+      "icon": "code",
+      "description": "Build-time optimization, source generation, Gradle support, and migration automation.",
+      "projectSlugs": [
+        "aot",
+        "gradle",
+        "sourcegen",
+        "openrewrite"
+      ]
+    },
+    {
+      "slug": "data-access",
+      "name": "Data Access",
+      "icon": "database",
+      "description": "Persistence, database clients, repositories, SQL, NoSQL, caches, and storage engines.",
+      "projectSlugs": [
+        "data",
+        "cassandra",
+        "coherence",
+        "eclipsestore",
+        "mongodb",
+        "neo4j",
+        "r2dbc",
+        "redis",
+        "sql"
+      ]
+    },
+    {
+      "slug": "database-migration",
+      "name": "Database Migration",
+      "icon": "database-zap",
+      "description": "Schema migration integrations for relational databases and release-managed changes.",
+      "projectSlugs": [
+        "flyway",
+        "liquibase"
+      ]
+    },
+    {
+      "slug": "errors",
+      "name": "Errors",
+      "icon": "braces",
+      "description": "Structured error payloads and interoperable failure response formats.",
+      "projectSlugs": [
+        "problem-json"
+      ]
+    },
+    {
+      "slug": "messaging",
+      "name": "Messaging",
+      "icon": "message-square",
+      "description": "Message brokers, event-driven services, stream processing, and publish-subscribe workflows.",
+      "projectSlugs": [
+        "jms",
+        "kafka",
+        "mqtt",
+        "nats",
+        "pulsar",
+        "rabbitmq"
+      ]
+    },
+    {
+      "slug": "analytics",
+      "name": "Analytics",
+      "icon": "chart-line",
+      "description": "Search, metrics, monitoring, management, telemetry, and observability integrations.",
+      "projectSlugs": [
+        "elasticsearch",
+        "jmx",
+        "micrometer",
+        "opensearch",
+        "tracing"
+      ]
+    },
+    {
+      "slug": "api",
+      "name": "API",
+      "icon": "route",
+      "description": "API protocols, contracts, serialization formats, schema tooling, and compatibility layers.",
+      "projectSlugs": [
+        "graphql",
+        "grpc",
+        "guice",
+        "jackson-xml",
+        "jaxrs",
+        "json-schema",
+        "openapi",
+        "serde",
+        "servlet",
+        "spring"
+      ]
+    },
+    {
+      "slug": "cloud",
+      "name": "Cloud",
+      "icon": "cloud",
+      "description": "Cloud platforms, service discovery, container platforms, object storage, and deployment integrations.",
+      "projectSlugs": [
+        "aws",
+        "azure",
+        "discovery-client",
+        "gcp",
+        "kubernetes",
+        "object-storage",
+        "oracle-cloud",
+        "pulsar",
+        "tracing"
+      ]
+    },
+    {
+      "slug": "configuration",
+      "name": "Configuration",
+      "icon": "sliders-horizontal",
+      "description": "Configuration formats and platform-aligned dependency sets for application settings.",
+      "projectSlugs": [
+        "logging",
+        "toml"
+      ]
+    },
+    {
+      "slug": "languages",
+      "name": "Languages",
+      "icon": "code",
+      "description": "Language-specific integrations and JVM polyglot support.",
+      "projectSlugs": [
+        "groovy",
+        "kotlin",
+        "graal-languages"
+      ]
+    },
+    {
+      "slug": "misc",
+      "name": "Misc",
+      "icon": "boxes",
+      "description": "General-purpose modules for certificates, caching, chatbots, email, CLI apps, and sessions.",
+      "projectSlugs": [
+        "acme",
+        "cache",
+        "chatbots",
+        "email",
+        "picocli",
+        "session"
+      ]
+    },
+    {
+      "slug": "reactive",
+      "name": "Reactive",
+      "icon": "workflow",
+      "description": "Reactive libraries, HTTP integrations, converters, and context propagation support.",
+      "projectSlugs": [
+        "reactor",
+        "rxjava3"
+      ]
+    },
+    {
+      "slug": "views",
+      "name": "Views",
+      "icon": "layout-template",
+      "description": "Server-side rendering, feeds, and tenant-aware web application support.",
+      "projectSlugs": [
+        "multitenancy",
+        "rss",
+        "views"
+      ]
+    },
+    {
+      "slug": "validation",
+      "name": "Validation",
+      "icon": "check-circle",
+      "description": "Validation APIs, constraint handling, validator integrations, and configuration checks.",
+      "projectSlugs": [
+        "hibernate-validator",
+        "validation"
+      ]
+    },
+    {
+      "slug": "other",
+      "name": "Other",
+      "icon": "folder-git-2",
+      "description": "Platform modules that are not mapped to a curated docs-index category yet.",
+      "projectSlugs": []
+    }
+  ],
+  "projects": [
+    {
+      "slug": "core",
+      "displayName": "Micronaut Core",
+      "shortName": "Core",
+      "projectKey": "core",
+      "module": "io.micronaut:micronaut-core-bom",
+      "repositoryName": "micronaut-core",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-core.git",
+      "publishedGuideUrl": "https://docs.micronaut.io/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#core-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-core",
+      "platformVersionKey": "managed-micronaut-core",
+      "version": "5.0.0-RC2",
+      "icon": "image:micronaut-sally.svg",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular"
+      ],
+      "shortDescription": "Core framework runtime",
+      "longDescription": "Micronaut Core supplies runtime APIs and compile-time infrastructure for injection, configuration, AOP, validation, HTTP, serialization, and native images so platform modules build fast, modular applications consistently across diverse deployment environments."
+    },
+    {
+      "slug": "test",
+      "displayName": "Micronaut Test",
+      "shortName": "Test",
+      "projectKey": "test",
+      "module": "io.micronaut.test:micronaut-test-bom",
+      "repositoryName": "micronaut-test",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-test.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-test/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#test-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-test",
+      "platformVersionKey": "managed-micronaut-test",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:test-tube-2",
+      "primaryCategory": "dev-and-test",
+      "categorySlugs": [
+        "dev-and-test"
+      ],
+      "shortDescription": "Testing support",
+      "longDescription": "Micronaut Test connects JUnit, Spock, Kotest, embedded servers, clients, dependency injection, transactions, and contexts so tests exercise real wiring while remaining isolated, repeatable, and CI-friendly across local and pipeline runs."
+    },
+    {
+      "slug": "kotlin",
+      "displayName": "Micronaut Kotlin",
+      "shortName": "Kotlin",
+      "projectKey": "kotlin",
+      "module": "io.micronaut.kotlin:micronaut-kotlin-bom",
+      "repositoryName": "micronaut-kotlin",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-kotlin.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-kotlin/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#kotlin-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-kotlin",
+      "platformVersionKey": "managed-micronaut-kotlin",
+      "version": "5.0.0-RC1",
+      "icon": "brand:kotlin",
+      "primaryCategory": "languages",
+      "categorySlugs": [
+        "languages"
+      ],
+      "shortDescription": "Kotlin language support",
+      "longDescription": "Micronaut Kotlin adds Kotlin-friendly extensions, annotation processing guidance, coroutine support, nullability-aware APIs, and testing conveniences so idiomatic Kotlin keeps compile-time injection, configuration binding, and native-image readiness across service modules cleanly."
+    },
+    {
+      "slug": "spring",
+      "displayName": "Micronaut Spring",
+      "shortName": "Spring",
+      "projectKey": "spring",
+      "module": "io.micronaut.spring:micronaut-spring-bom",
+      "repositoryName": "micronaut-spring",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-spring.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-spring/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#spring-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-spring",
+      "platformVersionKey": "managed-micronaut-spring",
+      "version": "6.0.0-RC1",
+      "icon": "brand:spring",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular",
+        "api"
+      ],
+      "shortDescription": "Spring integration extensions",
+      "longDescription": "Micronaut Spring supports selected Spring annotations, beans, events, transactions, and integration patterns so migrated code can run on the lightweight container while teams adopt compile-time injection gradually with less rewriting."
+    },
+    {
+      "slug": "liquibase",
+      "displayName": "Micronaut Liquibase",
+      "shortName": "Liquibase",
+      "projectKey": "liquibase",
+      "module": "io.micronaut.liquibase:micronaut-liquibase-bom",
+      "repositoryName": "micronaut-liquibase",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-liquibase.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-liquibase/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#liquibase-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-liquibase",
+      "platformVersionKey": "managed-micronaut-liquibase",
+      "version": "7.0.0-RC1",
+      "icon": "brand:liquibase",
+      "primaryCategory": "database-migration",
+      "categorySlugs": [
+        "database-migration"
+      ],
+      "shortDescription": "Liquibase integration",
+      "longDescription": "Micronaut Liquibase runs changelogs during startup or deployment, connecting migrations to datasources, contexts, labels, rollback files, and per-datasource settings so schemas evolve predictably beside dependent services in every environment safely."
+    },
+    {
+      "slug": "flyway",
+      "displayName": "Micronaut Flyway",
+      "shortName": "Flyway",
+      "projectKey": "flyway",
+      "module": "io.micronaut.flyway:micronaut-flyway-bom",
+      "repositoryName": "micronaut-flyway",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-flyway.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-flyway/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#flyway-introduction",
+      "branch": "8.0.x",
+      "submodulePath": "repos/micronaut-flyway",
+      "platformVersionKey": "managed-micronaut-flyway",
+      "version": "8.0.0-RC1",
+      "icon": "brand:flyway",
+      "primaryCategory": "database-migration",
+      "categorySlugs": [
+        "database-migration"
+      ],
+      "shortDescription": "Flyway integration",
+      "longDescription": "Micronaut Flyway runs versioned SQL or Java migrations for configured datasources, exposes migration settings through configuration, and keeps schema changes aligned with releases without custom startup code in services reliably."
+    },
+    {
+      "slug": "elasticsearch",
+      "displayName": "Micronaut Elasticsearch",
+      "shortName": "Elasticsearch",
+      "projectKey": "elasticsearch",
+      "module": "io.micronaut.elasticsearch:micronaut-elasticsearch-bom",
+      "repositoryName": "micronaut-elasticsearch",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-elasticsearch.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-elasticsearch/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#elasticsearch-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-elasticsearch",
+      "platformVersionKey": "managed-micronaut-elasticsearch",
+      "version": "6.0.0-RC1",
+      "icon": "brand:elasticsearch",
+      "primaryCategory": "analytics",
+      "categorySlugs": [
+        "analytics"
+      ],
+      "shortDescription": "Elasticsearch integration",
+      "longDescription": "Micronaut Elasticsearch configures clients, health checks, and cluster access for search-backed applications, supporting indexing and querying while keeping search infrastructure injectable, configurable, and testable across environments without custom setup code."
+    },
+    {
+      "slug": "graphql",
+      "displayName": "Micronaut Graphql",
+      "shortName": "Graphql",
+      "projectKey": "graphql",
+      "module": "io.micronaut.graphql:micronaut-graphql-bom",
+      "repositoryName": "micronaut-graphql",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-graphql.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-graphql/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#graphql-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-graphql",
+      "platformVersionKey": "managed-micronaut-graphql",
+      "version": "5.0.0-RC1",
+      "icon": "brand:graphql",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular",
+        "api"
+      ],
+      "shortDescription": "GraphQL integration",
+      "longDescription": "Micronaut GraphQL provides schema loading, data fetchers, instrumentation, execution configuration, and runtime wiring so GraphQL APIs share injection, validation, security, testing, and configuration with HTTP services inside production applications cleanly."
+    },
+    {
+      "slug": "grpc",
+      "displayName": "Micronaut GRPC",
+      "shortName": "GRPC",
+      "projectKey": "grpc",
+      "module": "io.micronaut.grpc:micronaut-grpc-bom",
+      "repositoryName": "micronaut-grpc",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-grpc.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-grpc/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#grpc-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-grpc",
+      "platformVersionKey": "managed-micronaut-grpc",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:waypoints",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "gRPC integration",
+      "longDescription": "Micronaut gRPC adds server and client support for protobuf stubs, services, channels, interceptors, SSL, and health checks while keeping RPC components injectable, configurable, and lifecycle-managed beside HTTP endpoints and services."
+    },
+    {
+      "slug": "kafka",
+      "displayName": "Micronaut Kafka",
+      "shortName": "Kafka",
+      "projectKey": "kafka",
+      "module": "io.micronaut.kafka:micronaut-kafka-bom",
+      "repositoryName": "micronaut-kafka",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-kafka.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-kafka/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#kafka-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-kafka",
+      "platformVersionKey": "managed-micronaut-kafka",
+      "version": "6.0.0-RC1",
+      "icon": "brand:apachekafka",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular",
+        "messaging"
+      ],
+      "shortDescription": "Kafka messaging",
+      "longDescription": "Micronaut Kafka integrates producers, consumers, and event-driven workflows with serialization, batching, offsets, errors, health checks, and configuration so services exchange typed messages through injectable components with predictable lifecycle behavior reliably."
+    },
+    {
+      "slug": "groovy",
+      "displayName": "Micronaut Groovy",
+      "shortName": "Groovy",
+      "projectKey": "groovy",
+      "module": "io.micronaut.groovy:micronaut-groovy-bom",
+      "repositoryName": "micronaut-groovy",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-groovy.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-groovy/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#groovy-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-groovy",
+      "platformVersionKey": "managed-micronaut-groovy",
+      "version": "5.0.0-RC1",
+      "icon": "brand:apachegroovy",
+      "primaryCategory": "languages",
+      "categorySlugs": [
+        "languages"
+      ],
+      "shortDescription": "Groovy language support",
+      "longDescription": "Micronaut Groovy supports Groovy applications with compile-time processing, AST integration, testing conveniences, and language-specific behavior so Groovy code uses injection, configuration, AOP, and HTTP APIs efficiently with native-image readiness preserved."
+    },
+    {
+      "slug": "micrometer",
+      "displayName": "Micronaut Micrometer",
+      "shortName": "Micrometer",
+      "projectKey": "micrometer",
+      "module": "io.micronaut.micrometer:micronaut-micrometer-bom",
+      "repositoryName": "micronaut-micrometer",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-micrometer.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-micrometer/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#micrometer-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-micrometer",
+      "platformVersionKey": "managed-micronaut-micrometer",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:chart-line",
+      "primaryCategory": "analytics",
+      "categorySlugs": [
+        "analytics"
+      ],
+      "shortDescription": "Metrics instrumentation",
+      "longDescription": "Micronaut Micrometer connects applications to metrics registries with binders, annotations, management endpoints, and configuration so HTTP, messaging, cache, database, and custom telemetry is published consistently without manual metrics plumbing code."
+    },
+    {
+      "slug": "sql",
+      "displayName": "Micronaut SQL",
+      "shortName": "SQL",
+      "projectKey": "sql",
+      "module": "io.micronaut.sql:micronaut-sql-bom",
+      "repositoryName": "micronaut-sql",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-sql.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-sql/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#sql-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-sql",
+      "platformVersionKey": "managed-micronaut-sql",
+      "version": "7.0.0-RC1",
+      "icon": "lucide:database",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "SQL database support",
+      "longDescription": "Micronaut SQL provides JDBC infrastructure for datasource configuration, pools, transactions, schema tooling, and persistence support, giving applications a consistent base for relational access across environments while staying platform aligned cleanly."
+    },
+    {
+      "slug": "mongodb",
+      "displayName": "Micronaut MongoDB",
+      "shortName": "MongoDB",
+      "projectKey": "mongo",
+      "module": "io.micronaut.mongodb:micronaut-mongo-bom",
+      "repositoryName": "micronaut-mongodb",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-mongodb.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-mongodb/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#mongodb-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-mongodb",
+      "platformVersionKey": "managed-micronaut-mongo",
+      "version": "6.0.0-RC1",
+      "icon": "brand:mongodb",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "MongoDB integration",
+      "longDescription": "Micronaut MongoDB configures clients, BSON codecs, health checks, optional transactions, and repository access so document database connectivity remains injectable, lifecycle-managed, and consistent across application environments without custom connection setup code."
+    },
+    {
+      "slug": "redis",
+      "displayName": "Micronaut Redis",
+      "shortName": "Redis",
+      "projectKey": "redis",
+      "module": "io.micronaut.redis:micronaut-redis-bom",
+      "repositoryName": "micronaut-redis",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-redis.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-redis/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#redis-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-redis",
+      "platformVersionKey": "managed-micronaut-redis",
+      "version": "7.0.0-RC1",
+      "icon": "brand:redis",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "Redis integration",
+      "longDescription": "Micronaut Redis integrates Redis clients for caching, pub/sub, health checks, connection settings, and data access so services use fast state and messaging through configured beans instead of custom setup code."
+    },
+    {
+      "slug": "neo4j",
+      "displayName": "Micronaut Neo4j",
+      "shortName": "Neo4j",
+      "projectKey": "neo4j",
+      "module": "io.micronaut.neo4j:micronaut-neo4j-bom",
+      "repositoryName": "micronaut-neo4j",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-neo4j.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-neo4j/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#neo4j-introduction",
+      "branch": "8.0.x",
+      "submodulePath": "repos/micronaut-neo4j",
+      "platformVersionKey": "managed-micronaut-neo4j",
+      "version": "8.0.0-RC1",
+      "icon": "brand:neo4j",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "Neo4j integration",
+      "longDescription": "Micronaut Neo4j connects applications to graph databases with managed drivers, sessions, transactions, and health checks so graph access works with HTTP, repositories, validation, security, and configuration in one application model."
+    },
+    {
+      "slug": "rabbitmq",
+      "displayName": "Micronaut Rabbitmq",
+      "shortName": "Rabbitmq",
+      "projectKey": "rabbitmq",
+      "module": "io.micronaut.rabbitmq:micronaut-rabbitmq-bom",
+      "repositoryName": "micronaut-rabbitmq",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-rabbitmq.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-rabbitmq/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#rabbitmq-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-rabbitmq",
+      "platformVersionKey": "managed-micronaut-rabbitmq",
+      "version": "5.0.0-RC1",
+      "icon": "brand:rabbitmq",
+      "primaryCategory": "messaging",
+      "categorySlugs": [
+        "messaging"
+      ],
+      "shortDescription": "RabbitMQ messaging",
+      "longDescription": "Micronaut RabbitMQ provides AMQP messaging with publishers, listeners, exchanges, queues, acknowledgements, serialization, retries, error handling, and configuration so message-driven components remain typed, injectable, and testable beside other application beans reliably."
+    },
+    {
+      "slug": "aws",
+      "displayName": "Micronaut AWS",
+      "shortName": "AWS",
+      "projectKey": "aws",
+      "module": "io.micronaut.aws:micronaut-aws-bom",
+      "repositoryName": "micronaut-aws",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-aws.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-aws/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#aws-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-aws",
+      "platformVersionKey": "managed-micronaut-aws",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:cloud",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "AWS cloud integrations",
+      "longDescription": "Micronaut AWS integrates serverless functions, SDK clients, parameters, secrets, messaging, storage, tracing, and deployment support so services consume Amazon infrastructure through injection and configuration instead of custom bootstrap per module."
+    },
+    {
+      "slug": "rss",
+      "displayName": "Micronaut RSS",
+      "shortName": "RSS",
+      "projectKey": "rss",
+      "module": "io.micronaut.rss:micronaut-rss-bom",
+      "repositoryName": "micronaut-rss",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-rss.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-rss/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#rss-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-rss",
+      "platformVersionKey": "managed-micronaut-rss",
+      "version": "5.0.0-RC1",
+      "icon": "brand:rss",
+      "primaryCategory": "views",
+      "categorySlugs": [
+        "views"
+      ],
+      "shortDescription": "RSS feed generation",
+      "longDescription": "Micronaut RSS publishes standards-compatible feeds with feed models, entries, metadata, links, and response rendering so services expose updates or articles without assembling XML manually or duplicating response logic in endpoints."
+    },
+    {
+      "slug": "gcp",
+      "displayName": "Micronaut GCP",
+      "shortName": "GCP",
+      "projectKey": "gcp",
+      "module": "io.micronaut.gcp:micronaut-gcp-bom",
+      "repositoryName": "micronaut-gcp",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-gcp.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-gcp/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#gcp-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-gcp",
+      "platformVersionKey": "managed-micronaut-gcp",
+      "version": "6.0.0-RC1",
+      "icon": "brand:googlecloud",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Google Cloud integrations",
+      "longDescription": "Micronaut GCP integrates functions, cloud clients, configuration, tracing, logging, and runtime behavior so applications target Google Cloud while keeping development and testing familiar through injected services and settings locally too."
+    },
+    {
+      "slug": "kubernetes",
+      "displayName": "Micronaut Kubernetes",
+      "shortName": "Kubernetes",
+      "projectKey": "kubernetes",
+      "module": "io.micronaut.kubernetes:micronaut-kubernetes-bom",
+      "repositoryName": "micronaut-kubernetes",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-kubernetes.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-kubernetes/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#kubernetes-introduction",
+      "branch": "8.0.x",
+      "submodulePath": "repos/micronaut-kubernetes",
+      "platformVersionKey": "managed-micronaut-kubernetes",
+      "version": "8.0.0-RC1",
+      "icon": "brand:kubernetes",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Kubernetes integration",
+      "longDescription": "Micronaut Kubernetes supports service discovery, configuration, health, leader election, service account access, and cluster metadata so applications adapt to Kubernetes without scattering infrastructure code through business components or profiles repeatedly."
+    },
+    {
+      "slug": "acme",
+      "displayName": "Micronaut ACME",
+      "shortName": "ACME",
+      "projectKey": "acme",
+      "module": "io.micronaut.acme:micronaut-acme-bom",
+      "repositoryName": "micronaut-acme",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-acme.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-acme/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#acme-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-acme",
+      "platformVersionKey": "managed-micronaut-acme",
+      "version": "6.0.0-RC1",
+      "icon": "brand:letsencrypt",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "ACME certificate automation",
+      "longDescription": "Micronaut ACME automates certificate issuance and renewal with ACME challenge handling, configuration, and HTTPS integration points for services that need certificates without manual operational scripts during deployment and renewal workflows."
+    },
+    {
+      "slug": "openapi",
+      "displayName": "Micronaut Openapi",
+      "shortName": "Openapi",
+      "projectKey": "openapi",
+      "module": "io.micronaut.openapi:micronaut-openapi-bom",
+      "repositoryName": "micronaut-openapi",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-openapi.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-openapi/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#openapi-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-openapi",
+      "platformVersionKey": "managed-micronaut-openapi",
+      "version": "7.0.0-RC1",
+      "icon": "brand:openapiinitiative",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular",
+        "api"
+      ],
+      "shortDescription": "OpenAPI and Swagger",
+      "longDescription": "Micronaut OpenAPI generates API descriptions, schemas, Swagger UI assets, and documentation from code, helping HTTP APIs publish accurate contracts without maintaining separate specifications manually during development and release workflows reliably."
+    },
+    {
+      "slug": "security",
+      "displayName": "Micronaut Security",
+      "shortName": "Security",
+      "projectKey": "security",
+      "module": "io.micronaut.security:micronaut-security-bom",
+      "repositoryName": "micronaut-security",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-security.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-security/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#security-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-security",
+      "platformVersionKey": "managed-micronaut-security",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:shield",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular"
+      ],
+      "shortDescription": "Security solution",
+      "longDescription": "Micronaut Security provides authentication and authorization with tokens, sessions, OAuth, OpenID Connect, LDAP, intercept rules, endpoint protection, and events while keeping policies configurable, explicit, and testable across services and environments."
+    },
+    {
+      "slug": "views",
+      "displayName": "Micronaut Views",
+      "shortName": "Views",
+      "projectKey": "views",
+      "module": "io.micronaut.views:micronaut-views-bom",
+      "repositoryName": "micronaut-views",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-views.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-views/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#views-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-views",
+      "platformVersionKey": "managed-micronaut-views",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:layout-template",
+      "primaryCategory": "views",
+      "categorySlugs": [
+        "views"
+      ],
+      "shortDescription": "Server-side views",
+      "longDescription": "Micronaut Views integrates server-side templates with HTTP applications, handling view resolution, model binding, static resources, rendering configuration, and HTML responses through normal controllers, validation, security, and injection like APIs too."
+    },
+    {
+      "slug": "picocli",
+      "displayName": "Micronaut Picocli",
+      "shortName": "Picocli",
+      "projectKey": "picocli",
+      "module": "io.micronaut.picocli:micronaut-picocli-bom",
+      "repositoryName": "micronaut-picocli",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-picocli.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-picocli/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#picocli-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-picocli",
+      "platformVersionKey": "managed-micronaut-picocli",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:terminal",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "Picocli command apps",
+      "longDescription": "Micronaut Picocli combines command-line applications with dependency injection, configuration, testing utilities, native-image packaging, and distribution patterns so CLI tools share services without HTTP bootstrap or separate startup code at runtime."
+    },
+    {
+      "slug": "hibernate-validator",
+      "displayName": "Micronaut Hibernate Validator",
+      "shortName": "Hibernate Validator",
+      "projectKey": "hibernate-validator",
+      "module": "io.micronaut.beanvalidation:micronaut-hibernate-validator-bom",
+      "repositoryName": "micronaut-hibernate-validator",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-hibernate-validator.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-hibernate-validator/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#hibernate-validator-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-hibernate-validator",
+      "platformVersionKey": "managed-micronaut-hibernate-validator",
+      "version": "5.0.0-RC1",
+      "icon": "brand:hibernate",
+      "primaryCategory": "validation",
+      "categorySlugs": [
+        "validation"
+      ],
+      "shortDescription": "Hibernate Validator integration",
+      "longDescription": "Micronaut Hibernate Validator integrates Hibernate Validator with managed components, supporting constraints, validator factories, localized messages, bean validation, controller argument validation, and configuration validation through familiar Jakarta Validation behavior and semantics."
+    },
+    {
+      "slug": "cassandra",
+      "displayName": "Micronaut Cassandra",
+      "shortName": "Cassandra",
+      "projectKey": "cassandra",
+      "module": "io.micronaut.cassandra:micronaut-cassandra-bom",
+      "repositoryName": "micronaut-cassandra",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-cassandra.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-cassandra/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#cassandra-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-cassandra",
+      "platformVersionKey": "managed-micronaut-cassandra",
+      "version": "7.0.0-RC1",
+      "icon": "brand:apachecassandra",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "Cassandra integration",
+      "longDescription": "Micronaut Cassandra configures drivers, sessions, serialization, and health checks for Apache Cassandra clusters so services inject database resources and participate in the application lifecycle across local and deployed environments cleanly."
+    },
+    {
+      "slug": "jmx",
+      "displayName": "Micronaut JMX",
+      "shortName": "JMX",
+      "projectKey": "jmx",
+      "module": "io.micronaut.jmx:micronaut-jmx-bom",
+      "repositoryName": "micronaut-jmx",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-jmx.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-jmx/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#jmx-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-jmx",
+      "platformVersionKey": "managed-micronaut-jmx",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:gauge",
+      "primaryCategory": "analytics",
+      "categorySlugs": [
+        "analytics"
+      ],
+      "shortDescription": "JMX monitoring",
+      "longDescription": "Micronaut JMX exposes application state through JVM management tooling with management beans, metrics views, operational data, and configuration beside HTTP management endpoints and monitoring systems without custom adapters or code."
+    },
+    {
+      "slug": "data",
+      "displayName": "Micronaut Data",
+      "shortName": "Data",
+      "projectKey": "data",
+      "module": "io.micronaut.data:micronaut-data-bom",
+      "repositoryName": "micronaut-data",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-data.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-data/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#data-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-data",
+      "platformVersionKey": "managed-micronaut-data",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:database",
+      "primaryCategory": "most-popular",
+      "categorySlugs": [
+        "most-popular",
+        "data-access"
+      ],
+      "shortDescription": "Data repository support",
+      "longDescription": "Micronaut Data precomputes repository queries ahead of time and executes them through a small runtime layer for SQL and NoSQL stores, pagination, transactions, projections, criteria APIs, and reflection-free repository access."
+    },
+    {
+      "slug": "cache",
+      "displayName": "Micronaut Cache",
+      "shortName": "Cache",
+      "projectKey": "cache",
+      "module": "io.micronaut.cache:micronaut-cache-bom",
+      "repositoryName": "micronaut-cache",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-cache.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-cache/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#cache-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-cache",
+      "platformVersionKey": "managed-micronaut-cache",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:database-zap",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "Cache abstraction",
+      "longDescription": "Micronaut Cache adds annotation-driven caching with pluggable backends, key generation, invalidation, conditions, async behavior, and backend configuration while keeping cache decisions near services and portable across infrastructure choices in tests."
+    },
+    {
+      "slug": "nats",
+      "displayName": "Micronaut NATS",
+      "shortName": "NATS",
+      "projectKey": "nats",
+      "module": "io.micronaut.nats:micronaut-nats-bom",
+      "repositoryName": "micronaut-nats",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-nats.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-nats/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#nats-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-nats",
+      "platformVersionKey": "managed-micronaut-nats",
+      "version": "5.0.0-RC1",
+      "icon": "brand:natsdotio",
+      "primaryCategory": "messaging",
+      "categorySlugs": [
+        "messaging"
+      ],
+      "shortDescription": "NATS messaging",
+      "longDescription": "Micronaut NATS integrates injectable publishers and subscribers with serialization, request-reply patterns, configuration binding, connection lifecycle, and event-driven components for typed service messaging without ad hoc glue code in applications reliably."
+    },
+    {
+      "slug": "jackson-xml",
+      "displayName": "Micronaut Jackson XML",
+      "shortName": "Jackson XML",
+      "projectKey": "jackson-xml",
+      "module": "io.micronaut.xml:micronaut-jackson-xml-bom",
+      "repositoryName": "micronaut-jackson-xml",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-jackson-xml.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-jackson-xml/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#jackson-xml-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-jackson-xml",
+      "platformVersionKey": "managed-micronaut-jackson-xml",
+      "version": "5.0.0-RC1",
+      "icon": "brand:json",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "Jackson XML support",
+      "longDescription": "Micronaut Jackson XML adds XML media support for HTTP clients, controllers, and codecs using Jackson, content negotiation, serialization configuration, and object mapping for integrations still depending on XML contracts today."
+    },
+    {
+      "slug": "jaxrs",
+      "displayName": "Micronaut Jaxrs",
+      "shortName": "Jaxrs",
+      "projectKey": "jaxrs",
+      "module": "io.micronaut.jaxrs:micronaut-jaxrs-bom",
+      "repositoryName": "micronaut-jaxrs",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-jaxrs.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-jaxrs/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#jaxrs-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-jaxrs",
+      "platformVersionKey": "managed-micronaut-jaxrs",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:route",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "JAX-RS compatibility",
+      "longDescription": "Micronaut JAX-RS supports selected Jakarta REST annotations and HTTP patterns so teams reuse JAX-RS-style controllers, parameters, and metadata on compile-time routing and injection during incremental migration from older stacks safely."
+    },
+    {
+      "slug": "servlet",
+      "displayName": "Micronaut Servlet",
+      "shortName": "Servlet",
+      "projectKey": "servlet",
+      "module": "io.micronaut.servlet:micronaut-servlet-bom",
+      "repositoryName": "micronaut-servlet",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-servlet.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-servlet/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#servlet-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-servlet",
+      "platformVersionKey": "managed-micronaut-servlet",
+      "version": "6.0.0-RC1",
+      "icon": "brand:apachetomcat",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "Servlet runtime support",
+      "longDescription": "Micronaut Servlet runs applications on Jetty, Tomcat, Undertow, and other servlet containers while adapting controllers, filters, configuration, injection, and security to servlet deployments that require existing container infrastructure in production."
+    },
+    {
+      "slug": "rxjava3",
+      "displayName": "Micronaut Rxjava3",
+      "shortName": "Rxjava3",
+      "projectKey": "rxjava3",
+      "module": "io.micronaut.rxjava3:micronaut-rxjava3-bom",
+      "repositoryName": "micronaut-rxjava3",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-rxjava3.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-rxjava3/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#rxjava3-introduction",
+      "branch": "4.0.x",
+      "submodulePath": "repos/micronaut-rxjava3",
+      "platformVersionKey": "managed-micronaut-rxjava3",
+      "version": "4.0.0-RC1",
+      "icon": "brand:reactivex",
+      "primaryCategory": "reactive",
+      "categorySlugs": [
+        "reactive"
+      ],
+      "shortDescription": "RxJava 3 integration",
+      "longDescription": "Micronaut RxJava 3 integrates RxJava types with HTTP clients, controllers, conversion services, and components so reactive flows remain usable in APIs and services with configuration, lifecycle, injection, and testing support."
+    },
+    {
+      "slug": "reactor",
+      "displayName": "Micronaut Reactor",
+      "shortName": "Reactor",
+      "projectKey": "reactor",
+      "module": "io.micronaut.reactor:micronaut-reactor-bom",
+      "repositoryName": "micronaut-reactor",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-reactor.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-reactor/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#reactor-introduction",
+      "branch": "4.0.x",
+      "submodulePath": "repos/micronaut-reactor",
+      "platformVersionKey": "managed-micronaut-reactor",
+      "version": "4.0.0-RC1",
+      "icon": "lucide:workflow",
+      "primaryCategory": "reactive",
+      "categorySlugs": [
+        "reactive"
+      ],
+      "shortDescription": "Project Reactor integration",
+      "longDescription": "Micronaut Reactor integrates Mono, Flux, and Reactor context behavior with HTTP handling, conversion, clients, filters, controllers, services, and observability across reactive applications using dependency injection and configuration in production systems."
+    },
+    {
+      "slug": "azure",
+      "displayName": "Micronaut Azure",
+      "shortName": "Azure",
+      "projectKey": "azure",
+      "module": "io.micronaut.azure:micronaut-azure-bom",
+      "repositoryName": "micronaut-azure",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-azure.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-azure/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#azure-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-azure",
+      "platformVersionKey": "managed-micronaut-azure",
+      "version": "6.0.0-RC2",
+      "icon": "lucide:cloud",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Microsoft Azure integrations",
+      "longDescription": "Micronaut Azure connects applications to Azure services and hosting models with functions, cloud clients, configuration, identity, tracing, and deployment workflows through injection and settings from local development to production cloud."
+    },
+    {
+      "slug": "jms",
+      "displayName": "Micronaut JMS",
+      "shortName": "JMS",
+      "projectKey": "jms",
+      "module": "io.micronaut.jms:micronaut-jms-bom",
+      "repositoryName": "micronaut-jms",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-jms.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-jms/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#jms-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-jms",
+      "platformVersionKey": "managed-micronaut-jms",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:message-square",
+      "primaryCategory": "messaging",
+      "categorySlugs": [
+        "messaging"
+      ],
+      "shortDescription": "JMS messaging",
+      "longDescription": "Micronaut JMS integrates producers, listeners, destinations, acknowledgements, transactions, serialization, and configuration so enterprise messaging uses typed handlers and injection with existing brokers and repeatable integration test suites in CI too."
+    },
+    {
+      "slug": "discovery-client",
+      "displayName": "Micronaut Discovery Client",
+      "shortName": "Discovery Client",
+      "projectKey": "discovery",
+      "module": "io.micronaut.discovery:micronaut-discovery-client-bom",
+      "repositoryName": "micronaut-discovery-client",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-discovery-client.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-discovery-client/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#discovery-client-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-discovery-client",
+      "platformVersionKey": "managed-micronaut-discovery",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:radar",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Service discovery",
+      "longDescription": "Micronaut Discovery Client provides service registration and lookup with Consul, Eureka, health integration, metadata, and configuration-driven resolution so clients avoid hardcoded locations and duplicated discovery logic across modules in services."
+    },
+    {
+      "slug": "oracle-cloud",
+      "displayName": "Micronaut Oracle Cloud",
+      "shortName": "Oracle Cloud",
+      "projectKey": "oraclecloud",
+      "module": "io.micronaut.oraclecloud:micronaut-oraclecloud-bom",
+      "repositoryName": "micronaut-oracle-cloud",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-oracle-cloud.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-oracle-cloud/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#oracle-cloud-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-oracle-cloud",
+      "platformVersionKey": "managed-micronaut-oraclecloud",
+      "version": "6.0.0-RC2",
+      "icon": "lucide:cloud",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Oracle Cloud integrations",
+      "longDescription": "Micronaut Oracle Cloud integrates OCI functions, SDK clients, configuration, authentication, object storage, and deployment workflows so services consume cloud resources through injected clients and environment-aware configuration in deployments and tests."
+    },
+    {
+      "slug": "pulsar",
+      "displayName": "Micronaut Pulsar",
+      "shortName": "Pulsar",
+      "projectKey": "pulsar",
+      "module": "io.micronaut.pulsar:micronaut-pulsar-bom",
+      "repositoryName": "micronaut-pulsar",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-pulsar.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-pulsar/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#pulsar-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-pulsar",
+      "platformVersionKey": "managed-micronaut-pulsar",
+      "version": "3.0.0-RC1",
+      "icon": "brand:apachepulsar",
+      "primaryCategory": "messaging",
+      "categorySlugs": [
+        "messaging",
+        "cloud"
+      ],
+      "shortDescription": "Apache Pulsar messaging",
+      "longDescription": "Micronaut Pulsar integrates producers and consumers with subscriptions, schemas, serialization, error handling, configuration, and typed message handlers for lifecycle-managed event-driven services across development and production environments using dependency injection reliably."
+    },
+    {
+      "slug": "mqtt",
+      "displayName": "Micronaut MQTT",
+      "shortName": "MQTT",
+      "projectKey": "mqtt",
+      "module": "io.micronaut.mqtt:micronaut-mqtt-bom",
+      "repositoryName": "micronaut-mqtt",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-mqtt.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-mqtt/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#mqtt-introduction",
+      "branch": "4.0.x",
+      "submodulePath": "repos/micronaut-mqtt",
+      "platformVersionKey": "managed-micronaut-mqtt",
+      "version": "4.0.0-RC1",
+      "icon": "brand:mqtt",
+      "primaryCategory": "messaging",
+      "categorySlugs": [
+        "messaging"
+      ],
+      "shortDescription": "MQTT messaging",
+      "longDescription": "Micronaut MQTT supports publish and subscribe workflows for MQTT brokers with topics, serialization, quality-of-service options, connection settings, and handler methods for IoT messaging through framework components and tests locally too."
+    },
+    {
+      "slug": "r2dbc",
+      "displayName": "Micronaut R2DBC",
+      "shortName": "R2DBC",
+      "projectKey": "r2dbc",
+      "module": "io.micronaut.r2dbc:micronaut-r2dbc-bom",
+      "repositoryName": "micronaut-r2dbc",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-r2dbc.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-r2dbc/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#r2dbc-introduction",
+      "branch": "7.0.x",
+      "submodulePath": "repos/micronaut-r2dbc",
+      "platformVersionKey": "managed-micronaut-r2dbc",
+      "version": "7.0.1-RC1",
+      "icon": "lucide:database",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "R2DBC database support",
+      "longDescription": "Micronaut R2DBC provides reactive relational connectivity with clients, connection configuration, transactions, health checks, and repositories so nonblocking services use SQL without JDBC or separate database setup code in tests too."
+    },
+    {
+      "slug": "coherence",
+      "displayName": "Micronaut Coherence",
+      "shortName": "Coherence",
+      "projectKey": "coherence",
+      "module": "io.micronaut.coherence:micronaut-coherence-bom",
+      "repositoryName": "micronaut-coherence",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-coherence.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-coherence/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#coherence-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-coherence",
+      "platformVersionKey": "managed-micronaut-coherence",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:boxes",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "Oracle Coherence integration",
+      "longDescription": "Micronaut Coherence integrates Oracle Coherence for distributed caches, sessions, repositories, configuration, health checks, and data-grid patterns through injected components instead of custom bootstrap or scattered cache access code in applications."
+    },
+    {
+      "slug": "multitenancy",
+      "displayName": "Micronaut Multitenancy",
+      "shortName": "Multitenancy",
+      "projectKey": "multitenancy",
+      "module": "io.micronaut.multitenancy:micronaut-multitenancy-bom",
+      "repositoryName": "micronaut-multitenancy",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-multitenancy.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-multitenancy/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#multitenancy-introduction",
+      "branch": "6.0.x",
+      "submodulePath": "repos/micronaut-multitenancy",
+      "platformVersionKey": "managed-micronaut-multitenancy",
+      "version": "6.0.0-RC1",
+      "icon": "lucide:users",
+      "primaryCategory": "views",
+      "categorySlugs": [
+        "views"
+      ],
+      "shortDescription": "Multitenancy support",
+      "longDescription": "Micronaut Multitenancy provides tenant resolution and propagation with filters, resolvers, configuration, and helper APIs so routing, data access, and services react to tenant context without duplicating tenant plumbing everywhere repeatedly."
+    },
+    {
+      "slug": "problem-json",
+      "displayName": "Micronaut Problem JSON",
+      "shortName": "Problem JSON",
+      "projectKey": "problem",
+      "module": "io.micronaut.problem:micronaut-problem-json-bom",
+      "repositoryName": "micronaut-problem-json",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-problem-json.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-problem-json/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#problem-json-introduction",
+      "branch": "4.0.x",
+      "submodulePath": "repos/micronaut-problem-json",
+      "platformVersionKey": "managed-micronaut-problem",
+      "version": "4.0.0-RC1",
+      "icon": "brand:json",
+      "primaryCategory": "errors",
+      "categorySlugs": [
+        "errors"
+      ],
+      "shortDescription": "Problem JSON responses",
+      "longDescription": "Micronaut Problem JSON returns RFC 7807 error payloads with exception mapping, validation errors, content negotiation, and structured details so clients receive predictable documents instead of endpoint-specific responses and handlers everywhere."
+    },
+    {
+      "slug": "aot",
+      "displayName": "Micronaut AOT",
+      "shortName": "AOT",
+      "projectKey": "aot",
+      "module": "io.micronaut.aot:micronaut-aot-bom",
+      "repositoryName": "micronaut-aot",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-aot.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-aot/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#aot-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-aot",
+      "platformVersionKey": "managed-micronaut-aot",
+      "version": "3.0.0-RC1",
+      "icon": "lucide:cpu",
+      "primaryCategory": "build",
+      "categorySlugs": [
+        "build"
+      ],
+      "shortDescription": "AOT optimizations",
+      "longDescription": "Micronaut AOT performs ahead-of-time optimizations that precompute metadata, reduce startup work, improve native-image behavior, and tune runtime artifacts for faster, smaller deployments while preserving framework features and configuration flexibility intact."
+    },
+    {
+      "slug": "serde",
+      "displayName": "Micronaut Serialization",
+      "shortName": "Serialization",
+      "projectKey": "serialization",
+      "module": "io.micronaut.serde:micronaut-serde-bom",
+      "repositoryName": "micronaut-serialization",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-serialization.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-serialization/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#serde-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-serde",
+      "platformVersionKey": "managed-micronaut-serialization",
+      "version": "3.0.0-RC3",
+      "icon": "brand:json",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "Build-time serialization",
+      "longDescription": "Micronaut Serialization generates reflection-free serializers and deserializers from compile-time metadata for JSON, JSON-B, Jackson annotations, BSON, custom serializers, and fast native-image payload handling without runtime introspection or reflection costs overhead."
+    },
+    {
+      "slug": "toml",
+      "displayName": "Micronaut Toml",
+      "shortName": "Toml",
+      "projectKey": "toml",
+      "module": "io.micronaut.toml:micronaut-toml-bom",
+      "repositoryName": "micronaut-toml",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-toml.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-toml/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#toml-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-toml",
+      "platformVersionKey": "managed-micronaut-toml",
+      "version": "3.0.0-RC1",
+      "icon": "brand:toml",
+      "primaryCategory": "configuration",
+      "categorySlugs": [
+        "configuration"
+      ],
+      "shortDescription": "TOML configuration",
+      "longDescription": "Micronaut TOML loads configuration from TOML property sources so structured settings flow into environments, configuration properties, validation, and injection like other supported formats in the platform configuration model cleanly too."
+    },
+    {
+      "slug": "email",
+      "displayName": "Micronaut Email",
+      "shortName": "Email",
+      "projectKey": "email",
+      "module": "io.micronaut.email:micronaut-email-bom",
+      "repositoryName": "micronaut-email",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-email.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-email/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#email-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-email",
+      "platformVersionKey": "managed-micronaut-email",
+      "version": "3.0.0-RC1",
+      "icon": "lucide:mail",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "Transactional email",
+      "longDescription": "Micronaut Email abstracts message composition and sending with provider integrations, templates, attachments, configuration, transactional workflows, and test-friendly APIs for application mail delivery without binding business code to transports or providers."
+    },
+    {
+      "slug": "tracing",
+      "displayName": "Micronaut Tracing",
+      "shortName": "Tracing",
+      "projectKey": "tracing",
+      "module": "io.micronaut.tracing:micronaut-tracing-bom",
+      "repositoryName": "micronaut-tracing",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-tracing.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-tracing/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#tracing-introduction",
+      "branch": "8.0.x",
+      "submodulePath": "repos/micronaut-tracing",
+      "platformVersionKey": "managed-micronaut-tracing",
+      "version": "8.0.0-RC1",
+      "icon": "brand:opentelemetry",
+      "primaryCategory": "analytics",
+      "categorySlugs": [
+        "analytics",
+        "cloud"
+      ],
+      "shortDescription": "Distributed tracing",
+      "longDescription": "Micronaut Tracing propagates trace context through HTTP, messaging, and service flows, instruments framework components, and connects applications to tracing backends for request visibility, latency analysis, and failure investigation across services."
+    },
+    {
+      "slug": "object-storage",
+      "displayName": "Micronaut Object Storage",
+      "shortName": "Object Storage",
+      "projectKey": "object-storage",
+      "module": "io.micronaut.objectstorage:micronaut-object-storage-bom",
+      "repositoryName": "micronaut-object-storage",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-object-storage.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-object-storage/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#object-storage-introduction",
+      "branch": "3.0.x",
+      "submodulePath": "repos/micronaut-object-storage",
+      "platformVersionKey": "managed-micronaut-object-storage",
+      "version": "3.0.0-RC1",
+      "icon": "lucide:box",
+      "primaryCategory": "cloud",
+      "categorySlugs": [
+        "cloud"
+      ],
+      "shortDescription": "Object storage abstraction",
+      "longDescription": "Micronaut Object Storage provides uniform APIs for reading, writing, deleting, and listing objects across cloud providers while configuration selects the concrete backend per environment, deployment, or repeatable test suite locally."
+    },
+    {
+      "slug": "chatbots",
+      "displayName": "Micronaut Chatbots",
+      "shortName": "Chatbots",
+      "projectKey": "chatbots",
+      "module": "io.micronaut.chatbots:micronaut-chatbots-bom",
+      "repositoryName": "micronaut-chatbots",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-chatbots.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-chatbots/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#chatbots-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-chatbots",
+      "platformVersionKey": "managed-micronaut-chatbots",
+      "version": "2.0.0-RC2",
+      "icon": "lucide:bot",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "Chatbot integrations",
+      "longDescription": "Micronaut Chatbots helps build bot workflows with request handling, commands, responses, security, configuration, and deployment patterns so bot logic uses injected application services instead of platform-specific webhook code per target."
+    },
+    {
+      "slug": "test-resources",
+      "displayName": "Micronaut Test Resources",
+      "shortName": "Test Resources",
+      "projectKey": "test-resources",
+      "module": "io.micronaut.testresources:micronaut-test-resources-bom",
+      "repositoryName": "micronaut-test-resources",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-test-resources.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-test-resources/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#test-resources-introduction",
+      "branch": "4.0.x",
+      "submodulePath": "repos/micronaut-test-resources",
+      "platformVersionKey": "managed-micronaut-test-resources",
+      "version": "4.0.0-RC1",
+      "icon": "lucide:test-tube-2",
+      "primaryCategory": "dev-and-test",
+      "categorySlugs": [
+        "dev-and-test"
+      ],
+      "shortDescription": "Test resource provisioning",
+      "longDescription": "Micronaut Test Resources provisions external dependencies for tests and local development, starting containers or services and providing connection properties for databases, brokers, or cloud-like services so tests match production wiring."
+    },
+    {
+      "slug": "validation",
+      "displayName": "Micronaut Validation",
+      "shortName": "Validation",
+      "projectKey": "validation",
+      "module": "io.micronaut.validation:micronaut-validation-bom",
+      "repositoryName": "micronaut-validation",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-validation.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-validation/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#validation-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-validation",
+      "platformVersionKey": "managed-micronaut-validation",
+      "version": "5.0.0-RC2",
+      "icon": "lucide:check-circle",
+      "primaryCategory": "validation",
+      "categorySlugs": [
+        "validation"
+      ],
+      "shortDescription": "Validation support",
+      "longDescription": "Micronaut Validation performs bean validation from compile-time metadata, handling constraints, controller arguments, configuration properties, localized messages, and validators without reflection-heavy scanning or duplicated rules across controllers, services, and settings objects."
+    },
+    {
+      "slug": "session",
+      "displayName": "Micronaut Session",
+      "shortName": "Session",
+      "projectKey": "session",
+      "module": "io.micronaut.session:micronaut-session-bom",
+      "repositoryName": "micronaut-session",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-session.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-session/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#session-introduction",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-session",
+      "platformVersionKey": "managed-micronaut-session",
+      "version": "5.0.0-RC1",
+      "icon": "lucide:cookie",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "HTTP session support",
+      "longDescription": "Micronaut Session adds HTTP session management with stores, cookies, filters, configuration, and security integration so server-side user state remains explicit, testable, and framework-managed across environments and deployment models cleanly too."
+    },
+    {
+      "slug": "control-panel",
+      "displayName": "Micronaut Control Panel",
+      "shortName": "Control Panel",
+      "projectKey": "control-panel",
+      "module": "io.micronaut.controlpanel:micronaut-control-panel-bom",
+      "repositoryName": "micronaut-control-panel",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-control-panel.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-control-panel/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#control-panel-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-control-panel",
+      "platformVersionKey": "managed-micronaut-control-panel",
+      "version": "2.0.0-RC1",
+      "icon": "lucide:sliders-horizontal",
+      "primaryCategory": "dev-and-test",
+      "categorySlugs": [
+        "dev-and-test"
+      ],
+      "shortDescription": "Development control panel",
+      "longDescription": "Micronaut Control Panel provides a development UI for inspecting routes, beans, configuration, environment details, management information, and operational state without custom debug endpoints or log digging during feature work locally."
+    },
+    {
+      "slug": "logging",
+      "displayName": "Micronaut Logging",
+      "shortName": "Logging",
+      "projectKey": "logging",
+      "module": "io.micronaut.logging:micronaut-logging-bom",
+      "repositoryName": "micronaut-logging",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-logging.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-logging/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#logging-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-logging",
+      "platformVersionKey": "managed-micronaut-logging",
+      "version": "2.0.0-RC1",
+      "icon": "lucide:logs",
+      "primaryCategory": "configuration",
+      "categorySlugs": [
+        "configuration"
+      ],
+      "shortDescription": "Logging dependency set",
+      "longDescription": "Micronaut Logging coordinates logging dependencies, APIs, implementations, bridges, configuration, and versions so platform-aligned services, libraries, tests, and examples avoid conflicts and inconsistent setup across generated documentation and applications as well."
+    },
+    {
+      "slug": "sourcegen",
+      "displayName": "Micronaut Sourcegen",
+      "shortName": "Sourcegen",
+      "projectKey": "sourcegen",
+      "module": "io.micronaut.sourcegen:micronaut-sourcegen-bom",
+      "repositoryName": "micronaut-sourcegen",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-sourcegen.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#sourcegen-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-sourcegen",
+      "platformVersionKey": "managed-micronaut-sourcegen",
+      "version": "2.0.0-RC4",
+      "icon": "lucide:code",
+      "primaryCategory": "build",
+      "categorySlugs": [
+        "build"
+      ],
+      "shortDescription": "Source generation API",
+      "longDescription": "Micronaut Sourcegen provides APIs for generating source code from structured models, supporting Java, Kotlin, and tooling artifacts with shared abstractions for names and types, members, files, and generated code cleanly."
+    },
+    {
+      "slug": "eclipsestore",
+      "displayName": "Micronaut Eclipsestore",
+      "shortName": "Eclipsestore",
+      "projectKey": "eclipsestore",
+      "module": "io.micronaut.eclipsestore:micronaut-eclipsestore-bom",
+      "repositoryName": "micronaut-eclipsestore",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-eclipsestore.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-eclipsestore/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#eclipsestore-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-eclipsestore",
+      "platformVersionKey": "managed-micronaut-eclipsestore",
+      "version": "2.0.0-RC1",
+      "icon": "lucide:archive",
+      "primaryCategory": "data-access",
+      "categorySlugs": [
+        "data-access"
+      ],
+      "shortDescription": "EclipseStore integration",
+      "longDescription": "Micronaut EclipseStore integrates object persistence with storage configuration, health checks, injected storage components, and data access patterns so services persist graphs with familiar lifecycle, configuration, and testing workflows locally too."
+    },
+    {
+      "slug": "opensearch",
+      "displayName": "Micronaut Opensearch",
+      "shortName": "Opensearch",
+      "projectKey": "opensearch",
+      "module": "io.micronaut.opensearch:micronaut-opensearch-bom",
+      "repositoryName": "micronaut-opensearch",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-opensearch.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-opensearch/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#opensearch-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-opensearch",
+      "platformVersionKey": "managed-micronaut-opensearch",
+      "version": "2.0.0-RC1",
+      "icon": "brand:opensearch",
+      "primaryCategory": "analytics",
+      "categorySlugs": [
+        "analytics"
+      ],
+      "shortDescription": "OpenSearch integration",
+      "longDescription": "Micronaut OpenSearch configures clients and health checks for OpenSearch clusters, supporting indexing, searching, and environment-specific settings without custom clients or scattered search configuration inside services and tests across deployments reliably."
+    },
+    {
+      "slug": "json-schema",
+      "displayName": "Micronaut JSON Schema",
+      "shortName": "JSON Schema",
+      "projectKey": "json-schema",
+      "module": "io.micronaut.jsonschema:micronaut-json-schema-bom",
+      "repositoryName": "micronaut-json-schema",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-json-schema.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-json-schema/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#json-schema-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-json-schema",
+      "platformVersionKey": "managed-micronaut-json-schema",
+      "version": "2.0.0-RC1",
+      "icon": "brand:json",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "JSON Schema support",
+      "longDescription": "Micronaut JSON Schema generates schemas from application and serialization models, including configuration and validation metadata, so teams publish machine-readable contracts without separate schema sources or duplicated model metadata in tooling."
+    },
+    {
+      "slug": "guice",
+      "displayName": "Micronaut Guice",
+      "shortName": "Guice",
+      "projectKey": "guice",
+      "module": "io.micronaut.guice:micronaut-guice-bom",
+      "repositoryName": "micronaut-guice",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-guice.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-guice/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#guice-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-guice",
+      "platformVersionKey": "managed-micronaut-guice",
+      "version": "2.0.0-RC1",
+      "icon": "lucide:package",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "Guice module import",
+      "longDescription": "Micronaut Guice lets applications reuse selected Guice modules and bindings inside framework applications, supporting interoperability while new components adopt the compile-time bean model during gradual migrations with less rewriting safely."
+    },
+    {
+      "slug": "graal-languages",
+      "displayName": "Micronaut Graal Languages",
+      "shortName": "Graal Languages",
+      "projectKey": "graal-languages",
+      "module": "io.micronaut.graal-languages:micronaut-graal-languages-bom",
+      "repositoryName": "micronaut-graal-languages",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-graal-languages.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-graal-languages/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#graal-languages-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-graal-languages",
+      "platformVersionKey": "managed-micronaut-graal-languages",
+      "version": "2.0.0-RC2",
+      "icon": "lucide:gem",
+      "primaryCategory": "languages",
+      "categorySlugs": [
+        "languages"
+      ],
+      "shortDescription": "Graal language integration",
+      "longDescription": "Micronaut Graal Languages integrates GraalVM dynamic language runtimes and polyglot capabilities so language-specific components can participate in configuration and dependency injection beside JVM code where useful and practical for services."
+    },
+    {
+      "slug": "langchain4j",
+      "displayName": "Micronaut Langchain4j",
+      "shortName": "Langchain4j",
+      "projectKey": "langchain4j",
+      "module": "io.micronaut.langchain4j:micronaut-langchain4j-bom",
+      "repositoryName": "micronaut-langchain4j",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-langchain4j.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-langchain4j/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#langchain4j-introduction",
+      "branch": "2.0.x",
+      "submodulePath": "repos/micronaut-langchain4j",
+      "platformVersionKey": "managed-micronaut-langchain4j",
+      "version": "2.0.0-RC1",
+      "icon": "brand:langchain",
+      "primaryCategory": "ai",
+      "categorySlugs": [
+        "ai"
+      ],
+      "shortDescription": "LangChain4j integration",
+      "longDescription": "Micronaut LangChain4j integrates AI services with model clients, tools, embeddings, retrieval workflows, and injectable components while preserving configuration, lifecycle, testing, and observability for production AI features and deployments reliably too."
+    },
+    {
+      "slug": "mcp",
+      "displayName": "Micronaut MCP",
+      "shortName": "MCP",
+      "projectKey": "mcp",
+      "module": "io.micronaut.mcp:micronaut-mcp-bom",
+      "repositoryName": "micronaut-mcp",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-mcp.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-mcp/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#mcp-introduction",
+      "branch": "1.0.x",
+      "submodulePath": "repos/micronaut-mcp",
+      "platformVersionKey": "managed-micronaut-mcp",
+      "version": "1.0.0-RC1",
+      "icon": "lucide:plug",
+      "primaryCategory": "ai",
+      "categorySlugs": [
+        "ai"
+      ],
+      "shortDescription": "Model Context Protocol",
+      "longDescription": "Micronaut MCP adds Model Context Protocol support for exposing tools, resources, prompts, and server capabilities through framework-managed components, configuration, injection, and lifecycle management instead of standalone protocol wiring or bridges."
+    },
+    {
+      "slug": "openrewrite",
+      "displayName": "Micronaut Openrewrite",
+      "shortName": "Openrewrite",
+      "projectKey": "openrewrite",
+      "module": "io.micronaut.openrewrite:micronaut-openrewrite-bom",
+      "repositoryName": "micronaut-openrewrite",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-openrewrite.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-openrewrite/latest/guide/",
+      "publishedPlatformHref": "https://dstepanov.github.io/micronaut-platform-docs/#openrewrite-introduction",
+      "branch": "1.0.x",
+      "submodulePath": "repos/micronaut-openrewrite",
+      "platformVersionKey": "managed-micronaut-openrewrite",
+      "version": "1.0.0-RC1",
+      "icon": "lucide:folder-git-2",
+      "primaryCategory": "build",
+      "categorySlugs": [
+        "build"
+      ],
+      "shortDescription": "OpenRewrite recipes",
+      "longDescription": "Micronaut OpenRewrite provides recipes for migrations, dependency updates, source transformations, and modernization tasks so teams apply consistent, reviewable changes across applications and libraries for current and future platform releases safely."
+    }
+  ]
+}

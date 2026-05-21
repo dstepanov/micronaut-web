@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://micronaut.io/protocol/micronaut-web.schema.json",
+  "title": "Micronaut Web Protocol",
+  "type": "object",
+  "required": ["protocolVersion", "generatedAt", "surfaces", "docs", "guides"],
+  "properties": {
+    "protocolVersion": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surface" }
+    },
+    "docs": {
+      "type": "object",
+      "required": ["categories", "projects"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/category" }
+        },
+        "projects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/project" }
+        }
+      }
+    },
+    "guides": {
+      "type": "object",
+      "required": ["categories", "guides"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/category" }
+        },
+        "guides": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/guide" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "surface": {
+      "type": "object",
+      "required": ["id", "name", "path", "description"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "category": {
+      "type": "object",
+      "required": ["slug", "name", "description", "icon"],
+      "properties": {
+        "slug": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "projectSlugs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "guideSlugs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["slug", "displayName", "href", "shortDescription", "longDescription"],
+      "properties": {
+        "slug": { "type": "string" },
+        "displayName": { "type": "string" },
+        "href": { "type": "string" },
+        "module": { "type": "string" },
+        "repositoryUrl": { "type": "string" },
+        "publishedGuideUrl": { "type": "string" },
+        "primaryCategory": { "type": "string" },
+        "categorySlugs": { "type": "array", "items": { "type": "string" } },
+        "shortDescription": { "type": "string" },
+        "longDescription": { "type": "string" },
+        "sections": { "type": "array", "items": { "$ref": "#/$defs/section" } },
+        "references": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "searchTerms": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "guide": {
+      "type": "object",
+      "required": ["slug", "title", "href", "intro", "tags", "categories", "variants"],
+      "properties": {
+        "slug": { "type": "string" },
+        "title": { "type": "string" },
+        "href": { "type": "string" },
+        "intro": { "type": "string" },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "publicationDate": { "type": "string" },
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } },
+        "searchTerms": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": ["id", "number", "title", "summary"],
+      "properties": {
+        "id": { "type": "string" },
+        "number": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": ["label", "href"],
+      "properties": {
+        "label": { "type": "string" },
+        "href": { "type": "string" }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "required": ["id", "label", "language", "buildTool", "href"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "language": { "type": "string" },
+        "buildTool": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "href": { "type": "string" }
+      }
+    }
+  }
+}

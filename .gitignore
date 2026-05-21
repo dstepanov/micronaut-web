@@ -1,0 +1,22 @@
+.DS_Store
+
+# Editors and local tool state
+.idea/
+.vscode/
+.playwright-mcp/
+
+# Node and Astro output
+node_modules/
+.astro/
+dist/
+
+# Gradle output and local state
+.gradle/
+build/
+buildSrc/build/
+buildSrc/.gradle/
+buildSrc/.kotlin/
+**/build/
+
+# Local visual review artifacts
+docs-sidebar*.png

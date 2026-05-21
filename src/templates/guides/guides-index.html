@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="{{pageDescription}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="{{assetBasePath}}/micronaut-assets/icons/micronaut-sally.svg" />
+    {{headAssetsHtml}}
+    {{themeScriptHtml}}
+    <title>{{pageTitle}}</title>
+  </head>
+  <body>
+    <div class="min-h-screen bg-background text-foreground" data-micronaut-template="guides-index">
+      {{topNavigationHtml}}
+      <main class="min-w-0 flex-1">
+        <section class="mx-auto grid max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guide-catalog>
+          {{contentHtml}}
+        </section>
+      </main>
+      <script type="application/json" id="micronaut-search-index">{{searchIndexJson}}</script>
+      {{bodyScriptsHtml}}
+    </div>
+  </body>
+</html>

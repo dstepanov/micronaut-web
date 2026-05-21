@@ -1,0 +1,120 @@
+---
+import WebLayout from "@/layouts/WebLayout.astro";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { micronautProtocol, guideBySlug } from "@/lib/protocol";
+
+export function getStaticPaths() {
+  return micronautProtocol.guides.guides.map((guide) => ({
+    params: { slug: guide.slug }
+  }));
+}
+
+const guide = guideBySlug(Astro.params.slug!);
+if (!guide) {
+  return Astro.redirect("/guides/");
+}
+
+const topTags = guide.tags.slice(0, 8);
+---
+
+<WebLayout title={`${guide.title} | Micronaut Guides`} surface="guides">
+  <main class="mx-auto grid max-w-[1180px] gap-8 px-4 py-8 md:px-6 xl:grid-cols-[minmax(0,1fr)_250px]">
+    <article class="min-w-0">
+      <header class="mb-8">
+        <Badge variant="secondary">{guide.categories[0] || "Guide"}</Badge>
+        <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">{guide.title}</h1>
+        <p class="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">{guide.intro}</p>
+        <div class="mt-5 flex flex-wrap gap-2">
+          {topTags.map((tag) => <Badge variant="outline">{tag}</Badge>)}
+        </div>
+      </header>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Variants</CardTitle>
+          <CardDescription>Rendered from the guide protocol after the title and description.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div class="overflow-hidden rounded-lg border">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-muted text-xs text-muted-foreground">
+                <tr>
+                  <th class="px-4 py-3 font-medium">Language</th>
+                  <th class="px-4 py-3 font-medium">Build</th>
+                  <th class="hidden px-4 py-3 font-medium md:table-cell">Features</th>
+                  <th class="px-4 py-3 font-medium">Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {guide.variants.map((variant) => (
+                  <tr id={variant.id} class="border-t">
+                    <td class="px-4 py-3">{variant.language}</td>
+                    <td class="px-4 py-3">{variant.buildTool}</td>
+                    <td class="hidden px-4 py-3 text-muted-foreground md:table-cell">
+                      {variant.features.slice(0, 4).join(", ") || "default"}
+                    </td>
+                    <td class="px-4 py-3">
+                      <Button asChild variant="ghost" size="sm">
+                        <a href={variant.href}>Select</a>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div class="grid gap-8 text-base leading-7">
+        <section id="overview">
+          <h2 class="text-2xl font-semibold tracking-tight">Overview</h2>
+          <p class="mt-3 max-w-3xl text-muted-foreground">
+            This Astro page is generated from guide metadata. The protocol keeps guide discovery, variants,
+            tags, and detail rendering independent from the final hosting location.
+          </p>
+          <div class="mt-4 overflow-hidden rounded-lg border bg-muted/50">
+            <pre class="overflow-x-auto p-4 text-sm leading-7"><code>{`mn create-app example --features=${guide.tags.slice(0, 3).join(",") || "http-server"}
+cd example
+./gradlew run`}</code></pre>
+          </div>
+        </section>
+        <section id="next-steps">
+          <h2 class="text-2xl font-semibold tracking-tight">Next steps</h2>
+          <p class="mt-3 max-w-3xl text-muted-foreground">
+            The same data shape can point to rendered AsciiDoc content, downloaded starter projects, and
+            generated guide assets while this web layer keeps one shared Micronaut design system.
+          </p>
+        </section>
+      </div>
+    </article>
+    <aside class="hidden xl:block">
+      <div class="sticky top-24 grid gap-3 text-sm">
+        <h2 class="font-medium">On this guide</h2>
+        <Separator />
+        <a href="#overview" class="rounded-md px-2 py-1.5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground">Overview</a>
+        <a href="#next-steps" class="rounded-md px-2 py-1.5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground">Next steps</a>
+        <Separator />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{guide.estimatedMinutes} min</CardTitle>
+            <CardDescription>{guide.publicationDate || "Published guide"}</CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <span class="text-xs text-muted-foreground">{guide.authors.slice(0, 2).join(", ")}</span>
+          </CardFooter>
+        </Card>
+      </div>
+    </aside>
+  </main>
+</WebLayout>

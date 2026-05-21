@@ -1,0 +1,306 @@
+---
+import WebLayout from "@/layouts/WebLayout.astro";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ActionLink } from "@/components/web/action-link";
+import { IconGlyph } from "@/components/web/icon-glyph";
+import { MainCodeShowcase } from "@/components/web/main-code-showcase";
+import SiteFooter from "@/components/web/site-footer.astro";
+
+const features = [
+  {
+    title: "Compile-time dependency injection",
+    icon: "cpu",
+    copy: "Generate dependency metadata at build time and reduce runtime reflection."
+  },
+  {
+    title: "Fast startup and low memory",
+    icon: "gauge",
+    copy: "Designed for lean services, serverless functions, and native images."
+  },
+  {
+    title: "Cloud-native by default",
+    icon: "cloud",
+    copy: "Service discovery, tracing, configuration, and cloud runtime support."
+  },
+  {
+    title: "Built-in testing support",
+    icon: "test-tube-2",
+    copy: "Start tests quickly with dependency injection and application context support."
+  },
+  {
+    title: "HTTP server and client",
+    icon: "route",
+    copy: "Create controllers and declarative clients with familiar annotations."
+  },
+  {
+    title: "Micronaut Data",
+    icon: "database",
+    copy: "Repository APIs that avoid runtime model scanning."
+  },
+  {
+    title: "OpenAPI Visibility",
+    icon: "file-json",
+    copy: "Keep service contracts discoverable and documented."
+  },
+  {
+    title: "Java, Kotlin, and Groovy",
+    icon: "code",
+    copy: "Use the JVM language that fits your team."
+  }
+];
+
+const cloudLogos = [
+  { label: "Kubernetes", icon: "brand:kubernetes" },
+  { label: "Google Cloud", icon: "brand:googlecloud" },
+  { label: "OpenTelemetry", icon: "brand:opentelemetry" },
+  { label: "Apache Kafka", icon: "brand:apachekafka" },
+  { label: "Redis", icon: "brand:redis" },
+  { label: "MongoDB", icon: "brand:mongodb" }
+];
+
+const stories = [
+  {
+    name: "Samsung SmartThings",
+    tag: "Cloud services",
+    outcome: "Modernized IoT microservices with the Micronaut framework.",
+    href: "/micronaut-success-stories/from-monolith-to-microservices-with-the-micronaut-framework/"
+  },
+  {
+    name: "Kestra",
+    tag: "Workflow platform",
+    outcome: "Runs workflow orchestration services on Micronaut with a public success story.",
+    href: "/micronaut-success-stories/micronaut-framework-at-kestra/"
+  },
+  {
+    name: "AgoraPulse",
+    tag: "Data access",
+    outcome: "Shares a production application journey built around Micronaut.",
+    href: "/micronaut-success-stories/agorapulse-micronaut-journey/"
+  }
+];
+---
+
+<WebLayout
+  title="Micronaut Framework"
+  description="A modern, JVM-based, full-stack framework for building modular, easily testable microservice and serverless applications"
+  surface="main"
+>
+  <main>
+    <section class="border-b bg-card">
+      <div class="mx-auto grid max-w-[1200px] gap-10 px-4 py-14 md:px-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:py-20">
+        <div class="max-w-4xl">
+          <Badge variant="secondary" className="mb-5">Fast cloud applications on the JVM</Badge>
+          <h1 class="max-w-4xl text-4xl font-bold leading-tight text-foreground md:text-[4rem]">
+            A modern, JVM-based framework for fast cloud applications
+          </h1>
+          <p class="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground md:text-xl">
+            Build modular microservices and serverless applications with compile-time dependency injection, fast startup, low memory overhead, and native-image support.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-2">
+            <Badge variant="outline">Compile-time DI</Badge>
+            <Badge variant="outline">No runtime reflection</Badge>
+            <Badge variant="outline">GraalVM native ready</Badge>
+          </div>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <ActionLink href="/docs/" label="View the documentation" size="lg" />
+            <ActionLink href="/launch/" label="Launch a project" size="lg" variant="secondary" />
+            <ActionLink href="/guides/" label="Browse guides" size="lg" variant="outline" />
+          </div>
+          <a href="/guides/creating-your-first-micronaut-app/" class="mt-4 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">
+            New to Micronaut? Start with the quickstart
+          </a>
+        </div>
+
+        <Card className="overflow-hidden border-primary/20 bg-background">
+          <CardHeader>
+            <div class="flex items-center gap-3">
+              <div class="grid size-12 place-items-center rounded-lg bg-primary/10">
+                <IconGlyph name="rocket" className="size-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Reimagine startup time and memory consumption</CardTitle>
+                <CardDescription>Compile-time framework work keeps runtime behavior lean.</CardDescription>
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <Badge variant="secondary">Compile-time DI</Badge>
+              <Badge variant="secondary">No runtime reflection</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div class="grid gap-3 rounded-lg border border-primary/30 bg-card p-4">
+              <div class="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
+                <span class="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">1</span>
+                <div>
+                  <p class="text-sm font-semibold text-foreground">Analyze annotations</p>
+                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Resolve dependency and AOP metadata during compilation.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
+                <span class="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">2</span>
+                <div>
+                  <p class="text-sm font-semibold text-foreground">Generate metadata</p>
+                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Precompute the runtime model instead of discovering it later.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
+                <span class="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">3</span>
+                <div>
+                  <p class="text-sm font-semibold text-foreground">Start with less runtime work</p>
+                  <p class="mt-1 text-sm leading-5 text-muted-foreground">Keep startup paths lean for services, serverless, and native images.</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+
+    <section class="mx-auto grid max-w-[1200px] gap-6 px-4 py-14 md:px-6 lg:py-20">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Badge variant="outline">Key Features</Badge>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight md:text-4xl">Built around Micronaut's strongest differentiators</h2>
+        </div>
+        <p class="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+          Compile-time APIs, native-image readiness, integrated testing, cloud support, and productive data access work together instead of competing for attention.
+        </p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {features.map((feature) => (
+          <Card className="transition hover:-translate-y-0.5 hover:border-primary/50">
+            <CardHeader>
+              <div class="mb-2 grid size-10 place-items-center rounded-md bg-primary/10 text-primary">
+                <IconGlyph name={feature.icon} className="size-5" />
+              </div>
+              <CardTitle className="text-lg">{feature.title}</CardTitle>
+              <CardDescription>{feature.copy}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <section class="border-y bg-card">
+      <div class="mx-auto grid max-w-[1200px] gap-8 px-4 py-14 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:py-20">
+        <div>
+          <Badge variant="secondary">Code examples</Badge>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight">From endpoint to tested client</h2>
+          <p class="mt-4 text-sm leading-6 text-muted-foreground md:text-base">
+            Define a controller, create a declarative HTTP client, and test both using the same compact application model.
+          </p>
+        </div>
+        <MainCodeShowcase client:load />
+      </div>
+    </section>
+
+    <section class="mx-auto grid max-w-[1200px] gap-6 px-4 py-14 md:px-6 lg:py-20">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Badge variant="outline">Who uses Micronaut?</Badge>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight md:text-4xl">Production teams, public success stories</h2>
+        </div>
+        <ActionLink href="/micronaut-success-stories/" label="All success stories" variant="outline" />
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        {stories.map((story) => (
+          <Card className="transition hover:border-primary/50">
+            <CardHeader>
+              <Badge variant="secondary">{story.tag}</Badge>
+              <CardTitle className="text-lg">{story.name}</CardTitle>
+              <CardDescription>{story.outcome}</CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <ActionLink href={story.href} label="Read story" variant="ghost" className="-ml-3" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <section class="border-y bg-card">
+      <div class="mx-auto grid max-w-[1200px] gap-6 px-4 py-14 md:px-6 lg:grid-cols-3 lg:py-20">
+        <Card>
+          <CardHeader>
+            <IconGlyph name="cloud" className="mb-3 size-7 text-primary" />
+            <CardTitle>Natively Cloud Native</CardTitle>
+            <CardDescription>
+              The Micronaut framework's cloud support is built right in, including support for common discovery services, distributed tracing tools, and cloud runtimes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div class="grid grid-cols-2 gap-3">
+              {cloudLogos.map((item) => (
+                <div class="grid min-h-20 place-items-center gap-2 rounded-md bg-muted p-3 text-center" title={item.label}>
+                  <IconGlyph name={item.icon} className="size-7" />
+                  <span class="text-xs font-medium text-muted-foreground">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <ActionLink href="/docs/" label="Explore cloud support" variant="ghost" className="-ml-3" />
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <IconGlyph name="cpu" className="mb-3 size-7 text-primary" />
+            <CardTitle>GraalVM startup</CardTitle>
+            <CardDescription>
+              The Micronaut framework features a dependency injection and aspect-oriented programming runtime that uses no reflection. This makes it easier for Micronaut applications to run on GraalVM.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <ActionLink
+              href="/guides/micronaut-creating-first-graal-app/"
+              label="Learn about GraalVM"
+              variant="ghost"
+              className="-ml-3"
+            />
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <IconGlyph name="database" className="mb-3 size-7 text-primary" />
+            <CardTitle>Works Hand-In-Hand with Micronaut Data</CardTitle>
+            <CardDescription>
+              Micronaut Data is a productivity-boosting open source technology that dramatically improves runtime and memory performance of data access repository logic for the microservice and serverless era.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <ActionLink href="/docs/data/" label="View Micronaut Data docs" variant="ghost" className="-ml-3" />
+          </CardFooter>
+        </Card>
+      </div>
+    </section>
+
+    <section class="mx-auto grid max-w-[1200px] gap-6 border-t px-4 py-14 md:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:py-20">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Start with docs, guides, or Launch</h2>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+          Choose the path that matches how you want to evaluate Micronaut today.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <ActionLink href="/docs/" label="View documentation" />
+        <ActionLink href="/launch/" label="Launch a project" variant="secondary" />
+        <ActionLink href="/guides/" label="Browse guides" variant="outline" />
+      </div>
+      <Separator className="lg:col-span-2" />
+    </section>
+  </main>
+  <SiteFooter />
+</WebLayout>

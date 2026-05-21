@@ -1,0 +1,176 @@
+---
+import WebLayout from "@/layouts/WebLayout.astro";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ActionLink } from "@/components/web/action-link";
+import { IconGlyph } from "@/components/web/icon-glyph";
+import SiteFooter from "@/components/web/site-footer.astro";
+import { mainSitePageContent, mainSitePages } from "@/data/main-site-pages";
+
+export function getStaticPaths() {
+  return mainSitePages.map((page) => ({
+    params: { slug: page.slug },
+    props: { page }
+  }));
+}
+
+const { page } = Astro.props;
+const content = mainSitePageContent[page.slug];
+---
+
+<WebLayout title={`${page.title} | Micronaut`} description={page.description} surface="main">
+  <main>
+    <section class="border-b bg-card">
+      <div class="mx-auto grid max-w-[1200px] gap-8 px-4 py-14 md:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:py-20">
+        <div class="max-w-4xl">
+          <Badge variant="secondary">{page.eyebrow}</Badge>
+          <h1 class="mt-5 max-w-4xl text-4xl font-bold leading-tight text-foreground md:text-6xl">
+            {page.title}
+          </h1>
+          <p class="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">
+            {page.description}
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            {page.primaryCta && (
+              <ActionLink
+                href={page.primaryCta.href}
+                label={page.primaryCta.label}
+                external={page.primaryCta.external}
+                size="lg"
+              />
+            )}
+            {page.secondaryCta && (
+              <ActionLink
+                href={page.secondaryCta.href}
+                label={page.secondaryCta.label}
+                external={page.secondaryCta.external}
+                variant="outline"
+                size="lg"
+              />
+            )}
+          </div>
+        </div>
+
+        <Card className="bg-background">
+          <CardHeader>
+            <div class="grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
+              <IconGlyph name={page.sections[0]?.icon ?? "book-open"} className="size-6" />
+            </div>
+            <CardTitle>Source material</CardTitle>
+            <CardDescription>
+              Migrated from the public Micronaut site into the shared Astro web shell.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <ActionLink href={page.sourceUrl} label="Open canonical page" variant="ghost" className="-ml-3" external />
+          </CardFooter>
+        </Card>
+      </div>
+    </section>
+
+    <section class="mx-auto grid max-w-[1200px] gap-6 px-4 py-14 md:px-6 lg:py-20">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Badge variant="outline">Overview</Badge>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight md:text-4xl">What this page covers</h2>
+        </div>
+        <p class="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+          These migrated pages keep the main website navigable while dynamic archives, legal text, and form-driven pages retain a canonical source link.
+        </p>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        {page.sections.map((section) => (
+          <Card className="transition hover:-translate-y-0.5 hover:border-primary/50">
+            <CardHeader>
+              <div class="mb-2 grid size-10 place-items-center rounded-md bg-primary/10 text-primary">
+                <IconGlyph name={section.icon} className="size-5" />
+              </div>
+              <CardTitle className="text-lg">{section.title}</CardTitle>
+              <CardDescription>{section.body}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    {content && (
+      <section class="border-y bg-card">
+        <div class="mx-auto grid max-w-[1200px] gap-6 px-4 py-14 md:px-6 lg:py-20">
+          <div class="max-w-3xl">
+            <Badge variant="secondary">Migrated content</Badge>
+            <h2 class="mt-4 text-3xl font-bold tracking-tight md:text-4xl">Source content, adapted for Astro</h2>
+            {content.intro && <p class="mt-4 text-base leading-7 text-muted-foreground">{content.intro}</p>}
+          </div>
+
+          <div class="grid gap-4 lg:grid-cols-2">
+            {content.blocks.map((block) => (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{block.title}</CardTitle>
+                  {block.body && <CardDescription>{block.body}</CardDescription>}
+                </CardHeader>
+                {(block.items || block.code) && (
+                  <CardContent className="grid gap-4">
+                    {block.items && (
+                      <ul class="grid gap-2 text-sm leading-6 text-muted-foreground">
+                        {block.items.map((item) => (
+                          <li class="grid grid-cols-[18px_minmax(0,1fr)] gap-2">
+                            <IconGlyph name="check-circle" className="mt-0.5 size-4 text-primary" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {block.code && (
+                      <pre class="overflow-x-auto rounded-lg border bg-[#151a20] p-4 text-[0.82rem] leading-6 text-[#f6f8f9]"><code>{block.code}</code></pre>
+                    )}
+                  </CardContent>
+                )}
+                {block.links && block.links.length > 0 && (
+                  <CardFooter className="flex flex-wrap gap-2">
+                    {block.links.map((link) => (
+                      <ActionLink
+                        href={link.href}
+                        label={link.label}
+                        external={link.external}
+                        variant="outline"
+                        size="sm"
+                      />
+                    ))}
+                  </CardFooter>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section class="border-y bg-card">
+      <div class="mx-auto grid max-w-[1200px] gap-6 px-4 py-12 md:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight md:text-3xl">Continue with Micronaut</h2>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+            Move from this main-site page into documentation, guides, or a generated starter project.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <ActionLink href="/docs/" label="View documentation" />
+          <ActionLink href="/launch/" label="Launch a project" variant="secondary" />
+          <ActionLink href="/guides/" label="Browse guides" variant="outline" />
+        </div>
+        <Separator className="lg:col-span-2" />
+      </div>
+    </section>
+  </main>
+  <SiteFooter />
+</WebLayout>
