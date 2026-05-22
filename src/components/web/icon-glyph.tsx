@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   Bot,
   BookOpen,
   Boxes,
@@ -40,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
 
 const icons: Record<string, LucideIcon> = {
+  "arrow-right": ArrowRight,
   archive: Boxes,
   "book-open": BookOpen,
   bot: Bot,
@@ -92,6 +94,16 @@ export function IconGlyph({ name, className }: { name: string; className?: strin
     return (
       <img
         src={withBasePath(`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`)}
+        className={cn("object-contain", className)}
+        alt=""
+        aria-hidden="true"
+      />
+    );
+  }
+  if (name.startsWith("feature:")) {
+    return (
+      <img
+        src={withBasePath(`/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`)}
         className={cn("object-contain", className)}
         alt=""
         aria-hidden="true"

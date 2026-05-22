@@ -17,6 +17,36 @@ npm run build
 `npm run sync:platform-projects` refreshes the test fixture at `src/data/platform-docs-projects.fixture.json` from the local Micronaut Platform Docs metadata checkout.
 `npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web` for Java consumers.
 
+## Design Tokens
+
+The shared palette intentionally follows the classic micronaut.io direction:
+
+- black hero and footer surfaces
+- white content areas
+- Micronaut blue for primary CTAs, active states, links, and section bands
+- restrained cool gray borders and muted text
+- near-black code panels
+
+The logo must stay black on light surfaces and white on dark surfaces. Do not recolor Micronaut logos with blue or other accents; use blue for UI treatments around the brand, not for the mark itself.
+
+Core brand tokens live in `src/styles/globals.css`:
+
+```text
+Brand black:        #000000
+Brand white:        #ffffff
+Micronaut blue:     #2f73b9
+Classic site blue:  #337ab7
+Blue hover:         #245e99
+Blue deep:          #173f67
+Blue soft:          #eaf3fb
+Light border:       #d9e1e8
+Dark background:    #050505
+Dark surface:       #111111
+Dark blue:          #66a9e6
+```
+
+Tailwind can access the extra Micronaut-specific variables through the `@theme inline` mappings, for example `bg-micronaut-blue`, `text-micronaut-blue-deep`, `bg-hero`, `bg-blue-band`, and `bg-code`.
+
 ## Protocol
 
 `src/data/protocol.json` contains:
@@ -82,4 +112,4 @@ String html = HtmlTemplateRenderer.renderResource(
 
 ## Shared Assets
 
-`public/micronaut-assets` contains the Micronaut logos and project/language icon SVGs copied from `~/dev/micronaut-ui`. The React shell consumes those assets through `MicronautLogo` and `IconGlyph` so the prototype matches the platform docs visual system without inventing replacement marks.
+`public/micronaut-assets` contains the Micronaut logos and project/language icon SVGs copied from `~/dev/micronaut-ui`. It also keeps local copies of the classic micronaut.io feature SVGs under `public/micronaut-assets/icons/features` for product and Launch feature cards. The React shell consumes those assets through `MicronautLogo` and `IconGlyph` so the prototype matches the platform docs and micronaut.io visual systems without inventing replacement marks.

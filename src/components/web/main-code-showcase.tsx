@@ -233,8 +233,7 @@ export function MainCodeShowcase() {
             <div className="grid gap-3">
               {activeVariant ? (
                 <div>
-                  <p className="text-xs font-semibold uppercase text-primary">{activeVariant.fileName}</p>
-                  <h3 className="mt-1 text-base font-semibold leading-6 text-foreground">{example.title}</h3>
+                  <h3 className="text-base font-semibold leading-6 text-foreground">{example.title}</h3>
                   <p className="mt-1 max-w-[34rem] text-sm leading-6 text-muted-foreground">{example.description}</p>
                 </div>
               ) : null}

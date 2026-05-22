@@ -45,14 +45,14 @@ class LaunchPagePlaywrightTest {
             page.getByTestId("test-junit").click();
             page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("2 Features")).click();
             page.getByTestId("feature-group-search").fill("management");
-            page.getByTestId("capability-management").click();
+            page.getByTestId("capability-most-popular").click();
             page.getByTestId("feature-management").click();
             page.keyboard().press("Escape");
             page.getByTestId("feature-group-search").fill("");
-            page.getByTestId("capability-api-errors").click();
+            page.getByTestId("capability-errors").click();
             page.getByTestId("feature-problem-json").click();
             page.keyboard().press("Escape");
-            page.getByTestId("capability-http-client").click();
+            page.getByTestId("capability-api").click();
             page.getByTestId("feature-http-client-jdk").click();
             page.keyboard().press("Escape");
             page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("3 Launch Panel")).click();

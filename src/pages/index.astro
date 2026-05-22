@@ -21,53 +21,53 @@ import { withBasePath } from "@/lib/base-path";
 const features = [
   {
     title: "Compile-time dependency injection",
-    icon: "cpu",
+    icon: "feature:aspect-oriented-api",
     copy: "Generate dependency metadata at build time and reduce runtime reflection.",
     href: "/docs/core/",
     priority: true
   },
   {
     title: "Fast startup and low memory",
-    icon: "gauge",
+    icon: "feature:aot-compilation",
     copy: "Designed for lean services, serverless functions, and native images.",
     href: "/docs/aot/",
     priority: true
   },
   {
     title: "Cloud-native by default",
-    icon: "cloud",
+    icon: "feature:natively-cloud-native",
     copy: "Service discovery, tracing, configuration, and cloud runtime support.",
     href: "/docs/kubernetes/",
     priority: true
   },
   {
     title: "Built-in testing support",
-    icon: "test-tube-2",
+    icon: "feature:fast-easy-testing",
     copy: "Start tests quickly with dependency injection and application context support.",
     href: "/docs/test/",
     priority: true
   },
   {
     title: "HTTP server and client",
-    icon: "route",
+    icon: "feature:smooth-learning-curve",
     copy: "Create controllers and declarative clients with familiar annotations.",
     href: "/docs/core/"
   },
   {
     title: "Micronaut Data",
-    icon: "database",
+    icon: "feature:fast-data-config",
     copy: "Repository APIs that avoid runtime model scanning.",
     href: "/docs/data/"
   },
   {
     title: "OpenAPI Visibility",
-    icon: "file-json",
+    icon: "feature:seamless-api-visibility",
     copy: "Keep service contracts discoverable and documented.",
     href: "/docs/openapi/"
   },
   {
     title: "Java, Kotlin, and Groovy",
-    icon: "code",
+    icon: "feature:polyglot-framework",
     copy: "Use the JVM language that fits your team.",
     href: "/learn/"
   }
@@ -84,13 +84,7 @@ const cloudLogos = [
 
 const stories = successStories.map((story) => ({
   ...story,
-  logo: story.logo ? withBasePath(story.logo) : undefined,
-  initials: story.organization
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase()
+  logo: story.logo ? withBasePath(story.logo) : undefined
 }));
 const featuredStories = stories.slice(0, 3);
 const secondaryStories = stories.slice(3);
@@ -210,10 +204,10 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
             aria-label={`${feature.title}: ${feature.copy}`}
           >
-            <Card className={`h-full min-h-[174px] transition group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:bg-accent/30 group-hover:shadow-md ${feature.priority ? "border-primary/25" : ""}`}>
+            <Card className={`h-full min-h-[174px] bg-card transition group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:bg-accent/30 group-hover:shadow-md ${feature.priority ? "border-primary/25" : ""}`}>
               <CardHeader>
-                <div class="mb-2 grid size-11 place-items-center rounded-md bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                  <IconGlyph name={feature.icon} className="size-5" />
+                <div class="mb-2 grid size-12 place-items-center">
+                  <IconGlyph name={feature.icon} className="size-9" />
                 </div>
                 <CardTitle className="text-[1rem] leading-6">{feature.title}</CardTitle>
                 <CardDescription className="text-[0.92rem]">{feature.copy}</CardDescription>
@@ -230,7 +224,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
       </div>
     </section>
 
-    <section class="border-b bg-card">
+    <section class="border-b bg-background">
       <div class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-[var(--section-y)] sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] xl:px-0">
         <div>
           <Badge variant="secondary">Code examples</Badge>
@@ -268,13 +262,13 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
         {featuredStories.map((story) => (
           <Card className="h-full min-h-[260px] transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
             <CardHeader>
-              <div class="flex h-16 min-w-0 items-center">
-                {story.logo ? (
-                  <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-[11rem] object-contain object-left", story.logoClass]} loading="lazy" />
-                ) : (
-                  <span class="grid size-12 place-items-center rounded-lg bg-primary/10 text-base font-semibold text-primary">{story.initials}</span>
-                )}
-              </div>
+              {story.logo ? (
+                <div class="flex h-16 min-w-0 items-center">
+                  <span class="inline-flex h-14 max-w-[12rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" />
+                  </span>
+                </div>
+              ) : null}
               <CardAction className="row-span-1">
                 <Badge variant="secondary">{story.tag}</Badge>
               </CardAction>
@@ -300,10 +294,10 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:shadow-md">
               <CardHeader className="gap-3 px-5">
                 {story.logo ? (
-                  <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-10 max-w-[9rem] object-contain object-left", story.logoClass]} loading="lazy" />
-                ) : (
-                  <span class="grid size-10 place-items-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">{story.initials}</span>
-                )}
+                  <span class="inline-flex h-11 max-w-[10rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" />
+                  </span>
+                ) : null}
                 <CardAction className="row-span-1">
                   <Badge variant="outline">{story.tag}</Badge>
                 </CardAction>
@@ -319,7 +313,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
       </div>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {customerLogos.map((customer) => (
-          <div class="flex h-24 items-center justify-center rounded-md border bg-background px-5">
+          <div class="flex h-24 items-center justify-center rounded-md border bg-white px-5 shadow-sm dark:bg-white">
             <img src={customer.image} alt={`${customer.name} logo`} class:list={["max-h-full max-w-full object-contain", customer.className]} loading="lazy" />
           </div>
         ))}
@@ -327,11 +321,13 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
       </div>
     </section>
 
-    <section class="border-b bg-card">
+    <section class="border-b bg-muted/35 dark:bg-background">
       <div class="mx-auto grid max-w-[var(--page-max)] gap-6 px-5 py-[var(--section-y)] sm:px-6 lg:grid-cols-[1.08fr_0.96fr_0.96fr] xl:px-0">
-        <Card className="h-full min-h-[420px] border-primary/20 shadow-md shadow-black/[0.03]">
+        <Card className="h-full min-h-[420px] border-primary/20 bg-card shadow-md shadow-black/[0.03]">
           <CardHeader>
-            <IconGlyph name="cloud" className="mb-3 size-7 text-primary" />
+            <span class="mb-3 flex size-12 items-center justify-center">
+              <IconGlyph name="feature:natively-cloud-native" className="size-9" />
+            </span>
             <CardTitle>Cloud-native by default</CardTitle>
             <CardDescription>
               Built-in support for service discovery, distributed tracing, cloud configuration, and cloud runtimes.
@@ -360,9 +356,11 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
           </CardFooter>
         </Card>
 
-        <Card className="h-full min-h-[420px] shadow-md shadow-black/[0.03]">
+        <Card className="h-full min-h-[420px] bg-card shadow-md shadow-black/[0.03]">
           <CardHeader>
-            <IconGlyph name="cpu" className="mb-3 size-7 text-primary" />
+            <span class="mb-3 flex size-12 items-center justify-center">
+              <IconGlyph name="feature:aot-compilation" className="size-9" />
+            </span>
             <CardTitle>GraalVM startup</CardTitle>
             <CardDescription>
               Micronaut's dependency injection and AOP model avoid reflection-heavy runtime behavior, making applications a strong fit for GraalVM Native Image.
@@ -372,9 +370,13 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             <div class="grid gap-3 rounded-lg bg-muted p-4 text-sm">
               <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
                 <div class="rounded-md bg-card p-3 text-center font-medium">Compile</div>
-                <div class="h-px bg-primary/35"></div>
+                <div class="flex justify-center text-primary">
+                  <IconGlyph name="arrow-right" className="size-5" />
+                </div>
                 <div class="rounded-md bg-card p-3 text-center font-medium">Optimize</div>
-                <div class="h-px bg-primary/35"></div>
+                <div class="flex justify-center text-primary">
+                  <IconGlyph name="arrow-right" className="size-5" />
+                </div>
                 <div class="rounded-md bg-primary p-3 text-center font-medium text-primary-foreground">Native image</div>
               </div>
             </div>
@@ -397,9 +399,11 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
           </CardFooter>
         </Card>
 
-        <Card className="h-full min-h-[420px] shadow-md shadow-black/[0.03]">
+        <Card className="h-full min-h-[420px] bg-card shadow-md shadow-black/[0.03]">
           <CardHeader>
-            <IconGlyph name="database" className="mb-3 size-7 text-primary" />
+            <span class="mb-3 flex size-12 items-center justify-center">
+              <IconGlyph name="feature:fast-data-config" className="size-9" />
+            </span>
             <CardTitle>Works hand-in-hand with Micronaut Data</CardTitle>
             <CardDescription>
               Build data access layers with repository APIs and compile-time query generation designed for fast, predictable applications.

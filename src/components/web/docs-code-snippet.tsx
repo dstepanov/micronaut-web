@@ -70,7 +70,7 @@ function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
       src={withBasePath(icon || "/micronaut-assets/icons/languages/text.svg")}
       alt=""
       aria-hidden="true"
-      className="docs-code-language-icon size-3.5"
+      className="docs-code-language-icon size-3.5 dark:invert"
     />
   );
 }

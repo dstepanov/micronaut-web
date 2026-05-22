@@ -88,6 +88,7 @@ import {
   type ResolvedDecisionChoice,
   type ResolvedDecisionGroup
 } from "@/lib/launch-decisions";
+import { IconGlyph } from "@/components/web/icon-glyph";
 import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 import launchProjectConfig from "@/data/launch-project-config.json";
@@ -153,18 +154,29 @@ type FormState = {
 type BuilderStepId = "settings" | "features" | "launch";
 
 type FeatureCategoryId =
-  | "popular"
-  | "web"
-  | "data"
-  | "ai"
-  | "cloud"
-  | "email"
-  | "messaging"
-  | "security"
+  | "most-popular"
+  | "mcp"
+  | "langchain4j"
+  | "dev-and-test"
+  | "build"
+  | "data-access"
+  | "database-migration"
+  | "errors"
   | "serialization"
-  | "testing"
-  | "observability"
-  | "all";
+  | "messaging"
+  | "logging"
+  | "api"
+  | "cloud"
+  | "configuration"
+  | "languages"
+  | "cache"
+  | "email"
+  | "chatbots"
+  | "misc"
+  | "reactive"
+  | "views"
+  | "validation"
+  | "other";
 
 type LaunchProjectConfig = {
   defaults: {
@@ -172,13 +184,14 @@ type LaunchProjectConfig = {
     basePackage: string;
     features: string[];
   };
-  featureCategories: { id: FeatureCategoryId; label: string }[];
+  featureCategories: { id: FeatureCategoryId; label: string; icon: string; description: string }[];
   popularFeatures: string[];
   recommendedFeatures: string[];
   popularCapabilityGroups: string[];
   capabilityGroups: {
     id: string;
     title: string;
+    icon?: string;
     description: string;
     featureNames: string[];
     matchPattern: string;
@@ -213,6 +226,7 @@ const capabilityGroupRank = new Map(projectConfig.popularCapabilityGroups.map((i
 type CapabilityGroup = {
   id: string;
   title: string;
+  icon?: string;
   description: string;
   featureNames: string[];
   match: RegExp;
@@ -293,6 +307,7 @@ const capabilityGroups: CapabilityGroup[] = [
   ...projectConfig.capabilityGroups.map((group) => ({
     id: group.id,
     title: group.title,
+    icon: group.icon,
     description: group.description,
     featureNames: group.featureNames,
     match: new RegExp(group.matchPattern),
@@ -715,45 +730,78 @@ function searchableFeatureText(feature: LaunchFeature) {
 }
 
 function featureMatchesCategory(feature: LaunchFeature, category: FeatureCategoryId) {
-  if (category === "all") {
-    return true;
-  }
   const text = searchableFeatureText(feature);
   const backendCategory = (feature.category ?? "").toLowerCase();
-  if (category === "popular") {
+  if (category === "most-popular") {
     return popularFeatureNames.has(feature.name);
   }
-  if (category === "web") {
-    return ["api", "server", "client", "view rendering"].includes(backendCategory)
-      || /\b(server|http|openapi|graphql|websocket|views?)\b/.test(text);
-  }
-  if (category === "data") {
+  if (category === "data-access") {
     return backendCategory === "database"
       || /data|database|jdbc|jpa|hibernate|jooq|mongo|redis|sql|r2dbc|coherence|cosmos/.test(text);
   }
-  if (category === "ai") {
-    return /ai|langchain4j|langchain|mcp|model|embedding|vector|openai|anthropic|ollama|bedrock|gemini|vertex|mistral|qdrant|pgvector/.test(text);
+  if (category === "database-migration") {
+    return /flyway|liquibase|migration|schema/.test(text);
+  }
+  if (category === "errors") {
+    return /problem-json|errors?|problem/.test(text);
+  }
+  if (category === "serialization") {
+    return /serialization|serde|jackson|databind|bson|json-p|jsonp|xml|json-schema|json schema|object mapping|payload/.test(text);
+  }
+  if (category === "mcp") {
+    return /mcp|model context protocol|tool integration|model-facing|model client/.test(text);
+  }
+  if (category === "langchain4j") {
+    return /langchain4j|langchain|embedding|vector|openai|anthropic|ollama|bedrock|gemini|vertex|mistral|qdrant|pgvector|mongodb-atlas|neo4j|oracle vector/.test(text);
+  }
+  if (category === "dev-and-test") {
+    return backendCategory === "testing"
+      || /test|junit|spock|kotest|mock|testcontainers|localstack|jrebel/.test(text);
+  }
+  if (category === "build") {
+    return /aot|aop|aspect-oriented|aspect oriented|graalvm|crac|shade|sourcegen|openrewrite|asciidoctor|kapt|ksp|lombok|buildless|develocity/.test(text);
   }
   if (category === "cloud") {
-    return /cloud|aws|amazon|azure|gcp|google|oracle|oci|kubernetes|discovery|function|parameter store|secret|vault|config-kubernetes|config-consul/.test(text);
-  }
-  if (category === "email") {
-    return /email|mail|ses|javamail|mailjet|mailtrap|postmark|sendgrid/.test(text);
+    return /cloud|aws|amazon|azure|gcp|google|oracle|oci|kubernetes|discovery|function|parameter store|secret|vault|object-storage/.test(text);
   }
   if (category === "messaging") {
     return /messaging|kafka|rabbit|jms|mqtt|nats|pulsar/.test(text);
   }
-  if (category === "security") {
-    return /security|auth|jwt|oauth|ldap|session/.test(text);
+  if (category === "logging") {
+    return /logging|logs?|observability|management|metrics|micrometer|tracing|health|jmx/.test(text);
   }
-  if (category === "serialization") {
-    return /serialization|jackson|json|serde|xml|yaml/.test(text);
+  if (category === "api") {
+    return ["api", "server", "client", "view rendering"].includes(backendCategory)
+      || /\b(api|server|http|openapi|graphql|websocket|spring|guice)\b/.test(text);
   }
-  if (category === "testing") {
-    return backendCategory === "testing"
-      || /test|junit|spock|kotest|mock|testcontainers/.test(text);
+  if (category === "configuration") {
+    return /configuration|config|consul|archaius|config4k/.test(text);
   }
-  return /observability|management|metrics|micrometer|tracing|log|health/.test(text);
+  if (category === "languages") {
+    return /language|groovy|kotlin|graalpy/.test(text);
+  }
+  if (category === "cache") {
+    return /cache|caching|caffeine|ehcache|hazelcast|infinispan|coherence cache/.test(text);
+  }
+  if (category === "email") {
+    return /email|mail|ses|javamail|mailjet|mailtrap|postmark|sendgrid|email-template/.test(text);
+  }
+  if (category === "chatbots") {
+    return /chatbot|chatbots|alexa|telegram|basecamp/.test(text);
+  }
+  if (category === "misc") {
+    return /acme|picocli|session|multi-tenancy/.test(text);
+  }
+  if (category === "reactive") {
+    return /reactive|reactor|rxjava/.test(text);
+  }
+  if (category === "views") {
+    return /views?|view rendering|thymeleaf|freemarker|handlebars|jte|pebble|rocker|soy|velocity|htmx|turbo|rss/.test(text);
+  }
+  if (category === "validation") {
+    return /validation|validator|http-validation|jspecify|nullaway/.test(text);
+  }
+  return true;
 }
 
 function featureIsRecommended(feature: LaunchFeature) {
@@ -780,7 +828,7 @@ function featuresMatchingQuery(features: LaunchFeature[], query: string) {
 }
 
 function categoryFeatureGroups(features: LaunchFeature[], existingFeatureNames: Set<string>, hiddenCategoryIds: Set<FeatureCategoryId>): { group: CapabilityGroup; features: LaunchFeature[] }[] {
-  const categories = featureCategories.filter((category) => !["all", "popular"].includes(category.id) && !hiddenCategoryIds.has(category.id));
+  const categories = featureCategories.filter((category) => !hiddenCategoryIds.has(category.id));
 
   return categories
     .map((category) => {
@@ -795,7 +843,8 @@ function categoryFeatureGroups(features: LaunchFeature[], existingFeatureNames: 
         group: {
           id: `category-${category.id}`,
           title: category.label,
-          description: `Additional ${category.label.toLowerCase()} starter features from the backend catalog.`,
+          icon: category.icon,
+          description: category.description,
           featureNames: groupFeatures.map((feature) => feature.name),
           match: /.*/
         },
@@ -1086,9 +1135,19 @@ function CapabilityGroupPanel({
     <Card className="gap-0">
       {showHeader && (
         <CardHeader className="flex flex-row items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle className="text-sm leading-5">{group.title}</CardTitle>
-            <CardDescription className="mt-0.5 line-clamp-2 text-xs leading-5">{group.description}</CardDescription>
+          <div className="flex min-w-0 items-start gap-2">
+            {group.icon && (
+              <span className={cn(
+                "mt-0.5 flex shrink-0 items-center justify-center",
+                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
+              )}>
+                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
+              </span>
+            )}
+            <div className="min-w-0">
+              <CardTitle className="text-sm leading-5">{group.title}</CardTitle>
+              <CardDescription className="mt-0.5 line-clamp-2 text-xs leading-5">{group.description}</CardDescription>
+            </div>
           </div>
           <Badge variant={selectedCount > 0 ? "default" : "secondary"} className="shrink-0">
             {selectedCount > 0 ? `${selectedCount} selected` : featureCountLabel(features.length)}
@@ -1204,7 +1263,12 @@ function PlatformPinnedFeature({
           data-testid="pinned-platform"
         >
           <span className="flex items-start justify-between gap-2">
-            <span className="text-sm font-semibold leading-5">Platform</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="flex size-9 shrink-0 items-center justify-center">
+                <IconGlyph name="feature:polyglot-framework" className="size-7" />
+              </span>
+              <span className="text-sm font-semibold leading-5">Platform</span>
+            </span>
             <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
           </span>
           <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
@@ -1272,6 +1336,7 @@ function TestingPinnedFeature({
   const libraryGroup: CapabilityGroup = {
     id: "testing-libraries",
     title: "Libraries",
+    icon: "feature:fast-easy-testing",
     description: "Assertions, containers, mock servers, REST Assured, and other testing helpers.",
     featureNames: features.map((feature) => feature.name),
     match: /.*/
@@ -1286,11 +1351,16 @@ function TestingPinnedFeature({
           data-testid="pinned-testing"
         >
           <span className="flex items-start justify-between gap-2">
-            <span className="text-sm font-semibold leading-5">Testing</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="flex size-9 shrink-0 items-center justify-center">
+                <IconGlyph name="feature:fast-easy-testing" className="size-7" />
+              </span>
+              <span className="text-sm font-semibold leading-5">Dev & Test</span>
+            </span>
             <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
           </span>
           <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
-            Test framework and optional test support libraries.
+            Test framework, local services, and optional test support libraries.
           </span>
           <span className="truncate rounded-md bg-background px-2 py-1 text-xs font-medium">
             {testLabel} / {selectedCount} libraries
@@ -1299,9 +1369,14 @@ function TestingPinnedFeature({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Testing</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="flex size-9 shrink-0 items-center justify-center">
+              <IconGlyph name="feature:fast-easy-testing" className="size-7" />
+            </span>
+            Dev & Test
+          </DialogTitle>
           <DialogDescription>
-            Choose the generated test framework, then add optional testing libraries.
+            Choose the generated test framework, then add optional development and testing libraries.
           </DialogDescription>
         </DialogHeader>
         <PlatformOptionButtons
@@ -1352,7 +1427,17 @@ function CapabilityGroupDialog({
           )}
           data-testid={`capability-${group.id}`}
         >
-          <span className="min-w-0 break-words text-sm font-semibold leading-5">{group.title}</span>
+          <span className="flex min-w-0 items-center gap-2">
+            {group.icon && (
+              <span className={cn(
+                "flex shrink-0 items-center justify-center",
+                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
+              )}>
+                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
+              </span>
+            )}
+            <span className="min-w-0 break-words text-sm font-semibold leading-5">{group.title}</span>
+          </span>
           <span className="min-w-0 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{group.description}</span>
           <span className="flex flex-wrap gap-1.5">
             <Badge variant={selectedCount > 0 ? "default" : "secondary"}>
@@ -1375,7 +1460,17 @@ function CapabilityGroupDialog({
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>{group.title}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {group.icon && (
+              <span className={cn(
+                "flex shrink-0 items-center justify-center",
+                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
+              )}>
+                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
+              </span>
+            )}
+            {group.title}
+          </DialogTitle>
           <DialogDescription>{group.description}</DialogDescription>
         </DialogHeader>
         <div className="relative">
@@ -1474,15 +1569,27 @@ function DecisionChoiceDetails({
 
 function DecisionGroupPanel({
   group,
-  onSelect
+  featureGroup,
+  selectedFeatureNames,
+  onSelect,
+  onToggleFeature
 }: {
   group: ResolvedDecisionGroup;
+  featureGroup?: { group: CapabilityGroup; features: LaunchFeature[] };
+  selectedFeatureNames: string[];
   onSelect: (group: ResolvedDecisionGroup, choice: ResolvedDecisionChoice) => void;
+  onToggleFeature: (featureName: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const activeChoice = group.activeChoice;
   const customized = group.selectedChoices.length > 0;
   const stateLabel = group.conflicted ? "Conflict" : customized ? "Selected" : "Default";
+  const additionalConfigurationGroup: CapabilityGroup | undefined = featureGroup
+    ? {
+        ...featureGroup.group,
+        title: "Additional options"
+      }
+    : undefined;
 
   function selectChoice(choice: ResolvedDecisionChoice) {
     onSelect(group, choice);
@@ -1496,15 +1603,21 @@ function DecisionGroupPanel({
           type="button"
           className={cn(
             "grid min-h-24 gap-2 rounded-lg border bg-background p-3 text-left transition hover:border-primary/60",
-            group.conflicted ? "border-destructive/70" : "border-primary bg-primary/5"
+            group.conflicted && "border-destructive/70",
+            customized && !group.conflicted && "border-primary bg-primary/5"
           )}
           data-testid={`decision-row-${group.id}`}
         >
           <span className="flex items-start justify-between gap-2">
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold leading-5">{group.title}</span>
-              <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
-                {activeChoice?.title ?? "Review required"}
+            <span className="flex min-w-0 items-start gap-2">
+              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center">
+                <IconGlyph name="feature:smooth-learning-curve" className="size-7" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold leading-5">{group.title}</span>
+                <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
+                  {activeChoice?.title ?? "Review required"}
+                </span>
               </span>
             </span>
             <Badge variant={group.conflicted ? "outline" : customized ? "default" : "secondary"} className="shrink-0">
@@ -1519,7 +1632,12 @@ function DecisionGroupPanel({
       </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
             <DialogHeader>
-              <DialogTitle>{group.title}</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <span className="flex size-9 shrink-0 items-center justify-center">
+                  <IconGlyph name="feature:smooth-learning-curve" className="size-7" />
+                </span>
+                {group.title}
+              </DialogTitle>
               <DialogDescription>{group.description}</DialogDescription>
             </DialogHeader>
           {group.conflicted && (
@@ -1560,9 +1678,11 @@ function DecisionGroupPanel({
                         {!defaultChoice && selected && <Badge variant="secondary">Selected</Badge>}
                       </span>
                       <span className="text-sm leading-6 text-muted-foreground">{choice.summary}</span>
-                      <span className="text-xs leading-5 text-muted-foreground">
-                        Impact: {choice.impact}
-                      </span>
+                      {group.id !== "configuration" && (
+                        <span className="text-xs leading-5 text-muted-foreground">
+                          Impact: {choice.impact}
+                        </span>
+                      )}
                     </span>
                   </label>
                   <DecisionChoiceDetails
@@ -1575,6 +1695,17 @@ function DecisionGroupPanel({
               );
             })}
           </fieldset>
+          {additionalConfigurationGroup && featureGroup.features.length > 0 && (
+            <>
+              <Separator className="my-4" />
+              <CapabilityGroupPanel
+                group={additionalConfigurationGroup}
+                features={featureGroup.features}
+                selectedFeatureNames={selectedFeatureNames}
+                onToggle={onToggleFeature}
+              />
+            </>
+          )}
           </DialogContent>
     </Dialog>
   );
@@ -2140,15 +2271,29 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
   const decisionGroups = allDecisionGroups.filter((group) => group.id === "configuration");
   const conflictedDecisionGroups = decisionGroups.filter((group) => group.conflicted);
   const capabilityGroupFeatures = useMemo(
-    () => capabilityGroups
-      .map((group) => ({
-        group,
-        features: featuresForCapabilityGroup(availableFeatures, group)
-      }))
-      .filter(({ features }) => features.length > 0),
+    () => {
+      const assignedFeatureNames = new Set<string>();
+      return capabilityGroups
+        .map((group) => {
+          const features = featuresForCapabilityGroup(availableFeatures, group)
+            .filter((feature) => {
+              if (assignedFeatureNames.has(feature.name)) {
+                return false;
+              }
+              assignedFeatureNames.add(feature.name);
+              return true;
+            });
+          return {
+            group,
+            features
+          };
+        })
+        .filter(({ features }) => features.length > 0);
+    },
     [availableFeatures]
   );
-  const testingFeatureGroup = capabilityGroupFeatures.find(({ group }) => group.id === "testing");
+  const testingFeatureGroup = capabilityGroupFeatures.find(({ group }) => group.id === "dev-and-test");
+  const configurationFeatureGroup = capabilityGroupFeatures.find(({ group }) => group.id === "configuration");
   const capabilityFeatureNames = useMemo(
     () => new Set(capabilityGroupFeatures.flatMap(({ features }) => features.map((feature) => feature.name))),
     [capabilityGroupFeatures]
@@ -2163,7 +2308,7 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
   );
   const allFeatureGroupFeatures = useMemo(
     () => [
-      ...capabilityGroupFeatures.filter(({ group }) => group.id !== "testing"),
+      ...capabilityGroupFeatures.filter(({ group }) => group.id !== "dev-and-test" && group.id !== "configuration"),
       ...categoryGroupFeatures
     ],
     [capabilityGroupFeatures, categoryGroupFeatures]
@@ -2446,7 +2591,10 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                       <DecisionGroupPanel
                         key={group.id}
                         group={group}
+                        featureGroup={group.id === "configuration" ? configurationFeatureGroup : undefined}
+                        selectedFeatureNames={state.features}
                         onSelect={selectDecisionChoice}
+                        onToggleFeature={toggleFeature}
                       />
                     ))}
                     {filteredFeatureGroupFeatures.map(({ group, features, matchedFeatures }) => (
