@@ -1,0 +1,203 @@
+{
+  "defaults": {
+    "appName": "demo",
+    "basePackage": "com.example",
+    "features": ["serialization-jackson"]
+  },
+  "featureCategories": [
+    { "id": "popular", "label": "Popular" },
+    { "id": "web", "label": "Web" },
+    { "id": "data", "label": "Data" },
+    { "id": "ai", "label": "AI" },
+    { "id": "cloud", "label": "Cloud" },
+    { "id": "email", "label": "Email" },
+    { "id": "messaging", "label": "Messaging" },
+    { "id": "security", "label": "Security" },
+    { "id": "serialization", "label": "Serialization" },
+    { "id": "testing", "label": "Testing" },
+    { "id": "observability", "label": "Observability" },
+    { "id": "all", "label": "All" }
+  ],
+  "popularFeatures": [
+    "serialization-jackson",
+    "validation",
+    "management",
+    "openapi",
+    "data-jdbc",
+    "data-jpa",
+    "jdbc-hikari",
+    "security-jwt",
+    "micrometer",
+    "kafka"
+  ],
+  "recommendedFeatures": [
+    "serialization-jackson",
+    "validation",
+    "management",
+    "openapi"
+  ],
+  "popularCapabilityGroups": ["serialization", "validation", "api-tooling", "security", "management", "observability", "logging", "cache", "object-storage", "ai", "email", "views", "sql-databases", "nosql-databases", "db-pool", "messaging", "http-client", "http-server", "cloud-deployment", "testing", "chatbots-iot", "developer-tools", "api-errors"],
+  "capabilityGroups": [
+    {
+      "id": "api-errors",
+      "title": "API errors",
+      "description": "Structured error responses and API error contracts.",
+      "featureNames": ["problem-json"],
+      "matchPattern": "\\b(problem-json|problem|errors?)\\b"
+    },
+    {
+      "id": "api-tooling",
+      "title": "API tooling",
+      "description": "OpenAPI, GraphQL, JSON Schema, retries, and API support libraries.",
+      "featureNames": ["openapi", "swagger-ui", "rapidoc", "redoc", "openapi-explorer", "openapi-adoc", "graphql", "json-schema", "json-schema-generator", "json-schema-validation", "annotation-api", "micronaut-aop", "retry", "sourcegen-generator"],
+      "matchPattern": "\\b(openapi|swagger|rapidoc|redoc|graphql|json-schema|schema|annotation-api|aop|retry|sourcegen|api tooling)\\b"
+    },
+    {
+      "id": "http-client",
+      "title": "HTTP client",
+      "description": "Outbound HTTP client options for calling other services.",
+      "featureNames": ["http-client", "http-client-jdk", "reactor-http-client", "rxjava3-http-client"],
+      "matchPattern": "\\b(http-client|client)\\b"
+    },
+    {
+      "id": "http-server",
+      "title": "HTTP server",
+      "description": "Server-side HTTP capabilities for request handling.",
+      "featureNames": ["netty-server", "http-server-jdk", "http-poja", "jetty-server", "tomcat-server", "undertow-server", "ktor", "jax-rs", "websocket", "http-session", "coherence-session"],
+      "matchPattern": "\\b(netty-server|http-server|server|websocket|jetty|tomcat|undertow|ktor|jax-rs|session)\\b"
+    },
+    {
+      "id": "serialization",
+      "title": "Serialization",
+      "description": "Jackson and Micronaut Serialization support.",
+      "featureNames": ["serialization-jackson", "serialization-bson", "serialization-jsonp", "jackson-databind", "jackson-xml"],
+      "matchPattern": "\\b(serialization|jackson|serde|json)\\b"
+    },
+    {
+      "id": "validation",
+      "title": "Validation",
+      "description": "Bean validation, HTTP validation, nullability, and problem response support.",
+      "featureNames": ["validation", "hibernate-validator", "micronaut-http-validation", "jspecify", "nullaway"],
+      "matchPattern": "\\b(validation|validator|http-validation|jspecify|nullaway|nullability)\\b"
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "description": "Authentication, authorization, sessions, CSRF, LDAP, OAuth, and JWT.",
+      "featureNames": ["security", "security-jwt", "security-oauth2", "security-session", "security-ldap", "security-csrf", "amazon-cognito", "acme"],
+      "matchPattern": "\\b(security|auth|jwt|oauth|session|ldap|csrf|cognito|acme|ssl)\\b"
+    },
+    {
+      "id": "management",
+      "title": "Management",
+      "description": "Management and operational endpoints.",
+      "featureNames": ["management", "jmx", "control-panel"],
+      "matchPattern": "\\b(management|health|endpoint|jmx|control-panel)\\b"
+    },
+    {
+      "id": "observability",
+      "title": "Observability",
+      "description": "Metrics, tracing, and instrumentation exporters.",
+      "featureNames": ["micrometer-annotation", "micrometer-observation", "micrometer-observation-http", "micrometer-appoptics", "micrometer-atlas", "micrometer-azure-monitor", "micrometer-cloudwatch", "micrometer-datadog", "micrometer-dynatrace", "micrometer-elastic", "micrometer-ganglia", "micrometer-graphite", "micrometer-humio", "micrometer-influx", "micrometer-jmx", "micrometer-kairos", "micrometer-new-relic", "micrometer-oracle-cloud", "micrometer-prometheus", "micrometer-prometheus-pushgateway", "micrometer-signalfx", "micrometer-stackdriver", "micrometer-statsd", "micrometer-wavefront", "azure-tracing", "gcp-cloud-trace", "tracing-jaeger", "tracing-zipkin", "tracing-opentelemetry-exporter-logging", "tracing-opentelemetry-exporter-otlp", "tracing-opentelemetry-gcp", "tracing-opentelemetry-jaeger", "tracing-opentelemetry-xray", "tracing-opentelemetry-zipkin"],
+      "matchPattern": "\\b(micrometer|metrics?|observation|tracing|trace|opentelemetry|prometheus|datadog|new-relic|zipkin|jaeger|xray)\\b"
+    },
+    {
+      "id": "logging",
+      "title": "Logging",
+      "description": "Logging backends and structured logging integrations.",
+      "featureNames": ["logback", "log4j2", "slf4j-simple", "slf4j-simple-logger", "jul-to-slf4j", "liquibase-slf4j", "amazon-cloudwatch-logging", "azure-logging", "gcp-logging", "oracle-cloud-logging"],
+      "matchPattern": "\\b(logback|log4j2|slf4j|jul-to-slf4j|liquibase-slf4j|logging|logs?)\\b"
+    },
+    {
+      "id": "cache",
+      "title": "Cache",
+      "description": "Caching APIs and cache provider integrations.",
+      "featureNames": ["cache-caffeine", "cache-coherence", "cache-ehcache", "cache-hazelcast", "cache-infinispan", "redis-lettuce"],
+      "matchPattern": "\\b(cache|caffeine|ehcache|hazelcast|infinispan|redis)\\b"
+    },
+    {
+      "id": "object-storage",
+      "title": "Object storage",
+      "description": "Uniform object storage APIs for AWS, Azure, GCP, local, and Oracle Cloud providers.",
+      "featureNames": ["object-storage-aws", "object-storage-azure", "object-storage-gcp", "object-storage-local", "object-storage-oracle-cloud"],
+      "matchPattern": "\\b(object-storage|object storage|s3|blob storage|gcs|bucket|buckets)\\b"
+    },
+    {
+      "id": "ai",
+      "title": "AI",
+      "description": "LangChain4j, MCP, model providers, vector stores, and AI service integrations.",
+      "featureNames": ["langchain4j-openai", "langchain4j-anthropic", "langchain4j-ollama", "langchain4j-bedrock", "langchain4j-googleai-gemini", "langchain4j-vertexai", "langchain4j-vertexai-gemini", "langchain4j-azure", "langchain4j-mistralai", "langchain4j-hugging-face", "langchain4j-store-pgvector", "langchain4j-store-qdrant", "langchain4j-store-opensearch", "langchain4j-store-elasticsearch", "langchain4j-store-mongodb-atlas", "langchain4j-store-neo4j", "langchain4j-store-oracle", "mcp-http", "mcp-stdio", "mcp-client-java-sdk", "mcp-client-langchain4j"],
+      "matchPattern": "\\b(ai|langchain4j|langchain|mcp|model|embedding|embeddings|vector|openai|anthropic|ollama|bedrock|gemini|vertex|mistral|hugging-face|qdrant|pgvector)\\b"
+    },
+    {
+      "id": "email",
+      "title": "Email",
+      "description": "Transactional email providers and template support.",
+      "featureNames": ["email-amazon-ses", "email-javamail", "email-mailjet", "email-mailtrap", "email-postmark", "email-sendgrid", "email-template"],
+      "matchPattern": "\\b(email|mail|ses|javamail|mailjet|mailtrap|postmark|sendgrid|templates?)\\b"
+    },
+    {
+      "id": "views",
+      "title": "Views",
+      "description": "Server-side rendering and template integrations.",
+      "featureNames": ["views-thymeleaf", "views-freemarker", "views-handlebars", "views-jte", "views-pebble", "views-react", "views-rocker", "views-soy", "views-velocity", "views-fieldset", "htmx", "turbo", "rss", "rss-itunes-podcast"],
+      "matchPattern": "\\b(views?|view rendering|thymeleaf|freemarker|handlebars|jte|pebble|react ssr|rocker|soy|velocity|fieldset|templates?|htmx|turbo|rss)\\b"
+    },
+    {
+      "id": "sql-databases",
+      "title": "SQL databases",
+      "description": "Relational database drivers, SQL DSLs, migrations, and SQL persistence starters.",
+      "featureNames": ["h2", "postgres", "mysql", "mariadb", "oracle", "sqlserver", "data-jdbc", "data-r2dbc", "data-jpa", "data-hibernate-reactive", "data-spring-jdbc", "hibernate-jpa", "hibernate-reactive-jpa", "hibernate-jpamodelgen", "jakarta-data", "jooq", "sql-jdbi", "jasync-sql", "r2dbc", "flyway", "liquibase", "vertx-mysql-client", "vertx-pg-client"],
+      "matchPattern": "\\b(sql|database|relational|jdbc|r2dbc|jpa|hibernate|jooq|jdbi|flyway|liquibase|postgres|mysql|mariadb|oracle|sqlserver|h2)\\b"
+    },
+    {
+      "id": "nosql-databases",
+      "title": "NoSQL databases",
+      "description": "Document, key-value, graph, search, and distributed data stores.",
+      "featureNames": ["azure-cosmos-db", "data-azure-cosmos", "cassandra", "coherence", "coherence-data", "data-mongodb", "data-mongodb-reactive", "mongo-sync", "mongo-reactive", "dynamodb", "eclipsestore", "eclipsestore-rest", "neo4j-bolt", "elasticsearch", "opensearch-amazon", "opensearch-httpclient5", "opensearch-restclient"],
+      "matchPattern": "\\b(nosql|cosmos|cassandra|coherence|mongodb|mongo|dynamodb|eclipsestore|redis|neo4j|elasticsearch|opensearch|search engine|document|key-value|graph)\\b"
+    },
+    {
+      "id": "db-pool",
+      "title": "DB pool",
+      "description": "JDBC connection pool implementations.",
+      "featureNames": ["jdbc-hikari", "jdbc-dbcp", "jdbc-tomcat", "jdbc-ucp"],
+      "matchPattern": "\\b(jdbc-hikari|hikari|jdbc-dbcp|dbcp|jdbc-tomcat|tomcat-jdbc|jdbc-ucp|connection pool|pool)\\b"
+    },
+    {
+      "id": "messaging",
+      "title": "Messaging",
+      "description": "Kafka, RabbitMQ, JMS, MQTT, NATS, and Pulsar integrations.",
+      "featureNames": ["kafka", "kafka-streams", "rabbitmq", "jms-core", "jms-activemq-artemis", "jms-activemq-classic", "jms-oracle-aq", "jms-sqs", "mqtt", "mqtt-hivemq", "mqttv3", "nats", "pulsar", "gcp-pubsub"],
+      "matchPattern": "\\b(kafka|rabbit|rabbitmq|jms|mqtt|nats|pulsar|messaging)\\b"
+    },
+    {
+      "id": "cloud-deployment",
+      "title": "Cloud & deployment",
+      "description": "Cloud providers, serverless runtimes, Kubernetes, service discovery, distributed configuration, packaging, and CI/CD.",
+      "featureNames": ["aws-cdk", "aws-lambda", "aws-lambda-custom-runtime", "aws-lambda-events-serde", "aws-parameter-store", "aws-secrets-manager", "aws-v2-sdk", "arm", "x86", "azure-function", "azure-key-vault", "gcp-secrets-manager", "google-cloud-function", "oracle-cloud-atp", "oracle-cloud-devops-build-ci", "oracle-cloud-httpclient-netty", "oracle-cloud-sdk", "oracle-cloud-vault", "oracle-function", "config-consul", "config-kubernetes", "coherence-distributed-configuration", "netflix-archaius", "discovery-client", "discovery-core", "discovery-consul", "discovery-eureka", "discovery-kubernetes", "kubernetes", "kubernetes-client", "kubernetes-informer", "kubernetes-reactor-client", "knative", "dekorate-halkyon", "dekorate-jaeger", "dekorate-knative", "dekorate-kubernetes", "dekorate-openshift", "dekorate-prometheus", "dekorate-servicecatalog", "amazon-api-gateway", "amazon-api-gateway-http", "jib", "graalvm", "crac", "micronaut-aot", "shade", "github-workflow-ci", "github-workflow-docker-registry", "github-workflow-graal-docker-registry", "github-workflow-google-cloud-run", "github-workflow-google-cloud-run-graalvm", "github-workflow-azure-container-instance", "github-workflow-azure-container-instance-graalvm", "github-workflow-oracle-cloud-functions", "github-workflow-oracle-cloud-functions-graalvm", "gitlab-workflow-ci", "aws-codebuild-workflow-ci", "google-cloud-workflow-ci", "netflix-ribbon"],
+      "matchPattern": "\\b(cloud|aws|amazon|azure|gcp|google|oracle|oci|lambda|function|serverless|kubernetes|knative|dekorate|discovery|distributed configuration|config-|secret|vault|parameter|packaging|graalvm|aot|jib|workflow|ci|cd|deployment)\\b"
+    },
+    {
+      "id": "testing",
+      "title": "Testing",
+      "description": "Test libraries, assertions, containers, mock servers, and test utilities.",
+      "featureNames": ["assertj", "awaitility", "hamcrest", "json-path", "json-smart", "junit-params", "junit-platform-suite-engine", "micronaut-test-rest-assured", "mockito", "mockserver-client-java", "test-netty-leak", "test-resources", "testcontainers", "localstack"],
+      "matchPattern": "\\b(test|testing|junit|assertj|awaitility|hamcrest|json-path|json-smart|mock|rest-assured|testcontainers|localstack)\\b"
+    },
+    {
+      "id": "chatbots-iot",
+      "title": "Chatbots & IoT",
+      "description": "Chatbot controllers and IoT-style service integrations.",
+      "featureNames": ["aws-alexa", "chatbots-basecamp-http", "chatbots-telegram-http"],
+      "matchPattern": "\\b(alexa|chatbot|chatbots|telegram|basecamp|iot|internet of things)\\b"
+    },
+    {
+      "id": "developer-tools",
+      "title": "Developer tools",
+      "description": "Documentation, language integrations, local productivity tools, and framework compatibility helpers.",
+      "featureNames": ["asciidoctor", "buildless", "develocity", "config4k", "graalpy", "groovy-datetime", "groovy-dateutil", "groovy-ginq", "groovy-json", "groovy-sql", "groovy-toml", "groovy-xml", "groovy-yaml", "guice", "kapt", "kotlin-extension-functions", "ksp", "lombok", "openrewrite", "spring", "spring-boot", "spring-data-jdbc", "spring-data-jpa", "spring-web", "jrebel", "multi-tenancy", "netflix-hystrix"],
+      "matchPattern": "\\b(asciidoctor|documentation|buildless|develocity|graalpy|groovy|guice|kapt|ksp|kotlin|lombok|openrewrite|spring|jrebel|multi-tenancy|hystrix|ribbon|developer tools?)\\b"
+    }
+  ]
+}

@@ -40,21 +40,27 @@ class LaunchPagePlaywrightTest {
 
             page.navigate(baseUrl);
             page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Build a Micronaut project")).waitFor();
-            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Runtime")).click();
             page.getByTestId("build-gradle").click();
             page.getByTestId("lang-java").click();
             page.getByTestId("test-junit").click();
-            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Starter features")).click();
-            page.getByTestId("feature-search").fill("management");
+            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("2 Features")).click();
+            page.getByTestId("feature-group-search").fill("management");
+            page.getByTestId("capability-management").click();
             page.getByTestId("feature-management").click();
-            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Decision Center")).click();
-            page.getByTestId("decision-row-errors").click();
-            page.getByTestId("decision-errors-problem-json").click();
-            page.getByTestId("decision-row-http-client").click();
-            page.getByTestId("decision-http-client-http-client").click();
-            page.getByTestId("decision-row-http-client").click();
-            page.getByTestId("decision-http-client-http-client-jdk").click();
-            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Launch Panel")).click();
+            page.keyboard().press("Escape");
+            page.getByTestId("feature-group-search").fill("");
+            page.getByTestId("capability-api-errors").click();
+            page.getByTestId("feature-problem-json").click();
+            page.keyboard().press("Escape");
+            page.getByTestId("capability-http-client").click();
+            page.getByTestId("feature-http-client-jdk").click();
+            page.keyboard().press("Escape");
+            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("3 Launch Panel")).click();
+            page.getByTestId("preview-project").click();
+            page.getByRole(AriaRole.DIALOG, new Page.GetByRoleOptions().setName("Previewing a Java application using Gradle")).waitFor();
+            page.getByText("src/main/java/com/example/Application.java").waitFor();
+            page.getByText("package com.example;").waitFor();
+            page.keyboard().press("Escape");
 
             var createUrl = page.getByTestId("create-url").inputValue();
             var decodedCreateUrl = URLDecoder.decode(createUrl, StandardCharsets.UTF_8);
@@ -89,7 +95,7 @@ class LaunchPagePlaywrightTest {
 
             page.navigate(baseUrl + "?type=default&name=orders&package=com.acme&lang=JAVA&build=GRADLE&test=JUNIT&javaVersion=JDK_21&features=management,problem-json,http-client-jdk");
             page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Build a Micronaut project")).waitFor();
-            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("Launch Panel")).click();
+            page.getByRole(AriaRole.TAB, new Page.GetByRoleOptions().setName("3 Launch Panel")).click();
             page.waitForFunction("() => document.querySelector('[data-testid=\"create-url\"]')?.value.includes('com.acme.orders')");
 
             var createUrl = page.getByTestId("create-url").inputValue();
@@ -129,10 +135,12 @@ class LaunchPagePlaywrightTest {
     private void assertGeneratedZip(Path zipPath) throws IOException {
         assertTrue(Files.size(zipPath) > 10_000, "Generated ZIP should contain a real project");
         try (var zip = new ZipFile(zipPath.toFile())) {
-            assertNotNull(zip.getEntry("demo/build.gradle"));
+            var buildFile = Optional.ofNullable(zip.getEntry("demo/build.gradle"))
+                .or(() -> Optional.ofNullable(zip.getEntry("demo/build.gradle.kts")))
+                .orElseThrow();
             assertNotNull(zip.getEntry("demo/src/main/java/com/example/Application.java"));
             assertNotNull(zip.getEntry("demo/micronaut-cli.yml"));
-            var buildGradle = readZipEntry(zip, "demo/build.gradle");
+            var buildGradle = readZipEntry(zip, buildFile.getName());
             var cli = readZipEntry(zip, "demo/micronaut-cli.yml");
             assertTrue(buildGradle.contains("io.micronaut:micronaut-management"), buildGradle);
             assertTrue(buildGradle.contains("sourceCompatibility = JavaVersion.toVersion"), buildGradle);

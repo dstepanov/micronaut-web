@@ -54,6 +54,7 @@ const menuGroups = [
     links: [
       { href: "/resources/", label: "Resources overview", description: "Main index for resource pages." },
       { href: "/blog/", label: "Blog", description: "Project news and technical articles." },
+      { href: "/foundation/", label: "Foundation", description: "Governance, sponsorship, brand, and community policy." },
       { href: "/upcoming-events/", label: "Upcoming Events", description: "Events, talks, webinars, and community sessions." },
       { href: "/category/release-announcements/", label: "Release Announcements", description: "Framework and ecosystem release updates." },
       { href: "/micronaut-roadmap/", label: "Roadmap", description: "Project direction and planned investment areas." },
@@ -112,31 +113,48 @@ export function SiteHeader({
   surface?: SurfaceId;
   hideBrand?: boolean;
 }) {
+  const desktopPrimaryLinks = primaryLinks.filter((link) => link.surface !== "main" && link.surface !== "launch");
+  const desktopMenuGroups = menuGroups.filter((group) => group.label !== "Foundation");
+
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
         {!hideBrand ? (
           <a href={withBasePath("/")} className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
-            <MicronautLogo className="h-10 w-[176px]" />
+            <MicronautLogo className="h-11 w-[192px]" />
           </a>
         ) : null}
-        <NavigationMenu viewport={false} className="hidden md:flex">
+        <NavigationMenu viewport={false} className="hidden lg:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuLink
-                  href={withBasePath("/")}
-                  active={surface === "main"}
-                  className={cn(
-                  "h-8 rounded-md px-3 py-1.5 text-[0.86rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                href={withBasePath("/")}
+                active={surface === "main"}
+                className={cn(
+                  "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                   surface === "main" && "bg-accent text-accent-foreground"
                 )}
               >
                 Main
               </NavigationMenuLink>
             </NavigationMenuItem>
-            {menuGroups.map((group) => (
+            {desktopPrimaryLinks.map((link) => (
+              <NavigationMenuItem key={link.href}>
+                <NavigationMenuLink
+                  href={withBasePath(link.href)}
+                  active={surface === link.surface}
+                  className={cn(
+                    "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                    surface === link.surface && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  {link.label}
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            ))}
+            {desktopMenuGroups.map((group) => (
               <NavigationMenuItem key={group.label}>
-                <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.86rem]">
+                <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.88rem]">
                   {group.label}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -163,24 +181,10 @@ export function SiteHeader({
                 </NavigationMenuContent>
               </NavigationMenuItem>
             ))}
-            {primaryLinks.filter((link) => link.surface !== "main" && link.surface !== "launch").map((link) => (
-              <NavigationMenuItem key={link.href}>
-                <NavigationMenuLink
-                  href={withBasePath(link.href)}
-                  active={surface === link.surface}
-                  className={cn(
-                    "h-8 rounded-md px-3 py-1.5 text-[0.86rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                    surface === link.surface && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  {link.label}
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
           </NavigationMenuList>
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          <SearchDialog className="h-9 w-9 justify-start px-2 sm:w-56 sm:px-3 lg:w-[260px]" />
+          <SearchDialog className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]" />
           <Button variant="outline" size="sm" className="hidden h-9 md:inline-flex" asChild>
             <a href={withBasePath("/launch/")}>Launch</a>
           </Button>

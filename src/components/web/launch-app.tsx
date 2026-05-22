@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownToLine,
   Braces,
-  ChevronDown,
   ChevronRight,
   Check,
+  Cloud,
   Code2,
   Copy,
   ExternalLink,
@@ -18,7 +18,6 @@ import {
   Folder,
   FolderGit2,
   Link2,
-  ListFilter,
   Package,
   Search,
   Settings,
@@ -33,6 +32,7 @@ import { Collapsible } from "radix-ui";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CodeBlock as UiCodeBlock } from "@/components/ui/code-block";
 import {
   Card,
   CardContent,
@@ -43,6 +43,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -64,7 +65,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -88,7 +88,9 @@ import {
   type ResolvedDecisionChoice,
   type ResolvedDecisionGroup
 } from "@/lib/launch-decisions";
+import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
+import launchProjectConfig from "@/data/launch-project-config.json";
 
 export type LaunchOption = {
   title?: string;
@@ -120,6 +122,7 @@ export type LaunchFeature = {
 export type LaunchInitialData = {
   apiBaseUrl: string;
   generatedAt: string;
+  micronautVersion: string;
   source: "live" | "fallback";
   selectOptions: {
     type: LaunchOptionGroup;
@@ -147,11 +150,15 @@ type FormState = {
   features: string[];
 };
 
+type BuilderStepId = "settings" | "features" | "launch";
+
 type FeatureCategoryId =
   | "popular"
   | "web"
   | "data"
+  | "ai"
   | "cloud"
+  | "email"
   | "messaging"
   | "security"
   | "serialization"
@@ -159,13 +166,31 @@ type FeatureCategoryId =
   | "observability"
   | "all";
 
-type FeatureScope = "compatible" | "selected" | "recommended";
+type LaunchProjectConfig = {
+  defaults: {
+    appName: string;
+    basePackage: string;
+    features: string[];
+  };
+  featureCategories: { id: FeatureCategoryId; label: string }[];
+  popularFeatures: string[];
+  recommendedFeatures: string[];
+  popularCapabilityGroups: string[];
+  capabilityGroups: {
+    id: string;
+    title: string;
+    description: string;
+    featureNames: string[];
+    matchPattern: string;
+  }[];
+};
 
 type PreviewFile = {
   path: string;
   sourceSet: "Application" | "Tests" | "Resources" | "Build";
   description: string;
   language: string;
+  content?: string | null;
 };
 
 type PreviewTreeNode = {
@@ -175,40 +200,111 @@ type PreviewTreeNode = {
   children?: PreviewTreeNode[];
 };
 
-const categoryOrder = ["API", "Server", "Database", "Messaging", "Cloud", "Security", "Serialization", "Testing", "Management", "Development Tools"];
+type LaunchPreviewResponse = {
+  contents?: Record<string, string | null>;
+};
 
-const featureCategories: { id: FeatureCategoryId; label: string }[] = [
-  { id: "popular", label: "Popular" },
-  { id: "web", label: "Web" },
-  { id: "data", label: "Data" },
-  { id: "cloud", label: "Cloud" },
-  { id: "messaging", label: "Messaging" },
-  { id: "security", label: "Security" },
-  { id: "serialization", label: "Serialization" },
-  { id: "testing", label: "Testing" },
-  { id: "observability", label: "Observability" },
-  { id: "all", label: "All" }
+const projectConfig = launchProjectConfig as LaunchProjectConfig;
+const featureCategories = projectConfig.featureCategories;
+const popularFeatureNames = new Set(projectConfig.popularFeatures);
+const recommendedFeatureNames = new Set(projectConfig.recommendedFeatures);
+const capabilityGroupRank = new Map(projectConfig.popularCapabilityGroups.map((id, index) => [id, index]));
+
+type CapabilityGroup = {
+  id: string;
+  title: string;
+  description: string;
+  featureNames: string[];
+  match: RegExp;
+  categoryId?: FeatureCategoryId;
+};
+
+type FeatureGroupResult = {
+  group: CapabilityGroup;
+  features: LaunchFeature[];
+  matchedFeatures: LaunchFeature[];
+};
+
+type CloudProviderId = "all" | "oracle" | "google" | "aws" | "azure" | "local" | "other";
+
+type CloudProviderTab = {
+  id: CloudProviderId;
+  label: string;
+  shortLabel: string;
+  description: string;
+  brandIcon?: string;
+  textIcon?: string;
+  Icon?: LucideIcon;
+};
+
+const cloudProviderTabs: CloudProviderTab[] = [
+  {
+    id: "all",
+    label: "All cloud",
+    shortLabel: "All",
+    description: "All cloud-related starter features in this group.",
+    Icon: Cloud
+  },
+  {
+    id: "oracle",
+    label: "Oracle Cloud",
+    shortLabel: "Oracle",
+    description: "OCI functions, SDK, vault, logging, database, and object storage features.",
+    brandIcon: "oracle"
+  },
+  {
+    id: "google",
+    label: "Google Cloud",
+    shortLabel: "Google",
+    description: "Google Cloud functions, Cloud Run, trace, logging, secret manager, and storage features.",
+    brandIcon: "googlecloud"
+  },
+  {
+    id: "aws",
+    label: "AWS",
+    shortLabel: "AWS",
+    description: "Amazon Web Services Lambda, CDK, SDK, secrets, parameters, storage, and observability features.",
+    textIcon: "AWS"
+  },
+  {
+    id: "azure",
+    label: "Azure",
+    shortLabel: "Azure",
+    description: "Microsoft Azure functions, identity, logs, tracing, secrets, and storage features.",
+    textIcon: "AZ"
+  },
+  {
+    id: "local",
+    label: "Local",
+    shortLabel: "Local",
+    description: "Local or development-time cloud-compatible implementations.",
+    Icon: Package
+  },
+  {
+    id: "other",
+    label: "Other",
+    shortLabel: "Other",
+    description: "Cloud, container, discovery, and deployment features that are not provider-specific.",
+    Icon: Cloud
+  }
 ];
 
-const popularFeatureNames = new Set([
-  "serialization-jackson",
-  "validation",
-  "management",
-  "openapi",
-  "data-jdbc",
-  "data-hibernate-jpa",
-  "jdbc-hikari",
-  "security-jwt",
-  "micrometer",
-  "kafka"
-]);
-
-const recommendedFeatureNames = new Set([
-  "serialization-jackson",
-  "validation",
-  "management",
-  "openapi"
-]);
+const capabilityGroups: CapabilityGroup[] = [
+  ...projectConfig.capabilityGroups.map((group) => ({
+    id: group.id,
+    title: group.title,
+    description: group.description,
+    featureNames: group.featureNames,
+    match: new RegExp(group.matchPattern),
+    categoryId: featureCategories.some((category) => category.id === group.id)
+      ? group.id as FeatureCategoryId
+      : undefined
+  })).sort((left, right) => {
+    const leftRank = capabilityGroupRank.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = capabilityGroupRank.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+    return leftRank - rightRank || left.title.localeCompare(right.title);
+  })
+];
 
 function optionValueExists(options: LaunchOption[], value: string | null) {
   return Boolean(value && options.some((option) => option.value === value));
@@ -259,8 +355,46 @@ function createQuery(state: FormState) {
   return params.toString();
 }
 
+function defaultFeaturesSelected(state: FormState) {
+  return state.features.join(",") === [...projectConfig.defaults.features].sort().join(",");
+}
+
+function publicLaunchUrl(state: FormState, micronautVersion: string, activity?: string, showing?: string) {
+  const url = new URL("https://micronaut.io/launch/");
+  url.searchParams.set("type", state.type);
+  url.searchParams.set("name", cleanSegment(state.appName, "demo"));
+  url.searchParams.set("package", packageName(state.basePackage));
+  url.searchParams.set("javaVersion", state.javaVersion);
+  url.searchParams.set("lang", state.lang);
+  url.searchParams.set("build", state.build);
+  url.searchParams.set("test", state.test);
+  url.searchParams.set("version", micronautVersion);
+  if (!defaultFeaturesSelected(state) && state.features.length > 0) {
+    url.searchParams.set("features", state.features.join(","));
+  }
+  if (activity) {
+    url.searchParams.set("activity", activity);
+  }
+  if (showing) {
+    url.searchParams.set("showing", showing);
+  }
+  return url.toString();
+}
+
 function apiUrl(baseUrl: string, action: "create" | "preview" | "diff", typeSlug: string, state: FormState) {
   return `${baseUrl}/${action}/${typeSlug}/${projectName(state.appName, state.basePackage)}?${createQuery(state)}`;
+}
+
+function previewJsonUrl(previewUrl: string) {
+  if (typeof window === "undefined") {
+    return previewUrl;
+  }
+  if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    return previewUrl;
+  }
+
+  const url = new URL(previewUrl);
+  return `/launch-preview-proxy${url.pathname}${url.search}`;
 }
 
 function cliCommand(typeSlug: string, state: FormState) {
@@ -417,6 +551,42 @@ function buildPreviewTree(files: PreviewFile[]) {
   return Array.from(roots.values());
 }
 
+function buildPreviewPathTree(files: PreviewFile[]) {
+  const root: PreviewTreeNode = {
+    name: "Project",
+    children: []
+  };
+
+  files.forEach((file) => {
+    let current = root;
+    file.path.split("/").forEach((segment, index, segments) => {
+      const last = index === segments.length - 1;
+      const childPath = segments.slice(0, index + 1).join("/");
+      const existing = current.children?.find((child) => child.name === segment);
+
+      if (existing) {
+        current = existing;
+        return;
+      }
+
+      const next: PreviewTreeNode = last
+        ? { name: segment, path: file.path, file }
+        : { name: segment, path: childPath, children: [] };
+      current.children = [...(current.children ?? []), next].sort((left, right) => {
+        const leftFolder = Boolean(left.children?.length);
+        const rightFolder = Boolean(right.children?.length);
+        if (leftFolder !== rightFolder) {
+          return leftFolder ? -1 : 1;
+        }
+        return left.name.localeCompare(right.name);
+      });
+      current = next;
+    });
+  });
+
+  return root.children ?? [];
+}
+
 function sourceSetIcon(sourceSet: PreviewFile["sourceSet"]): LucideIcon {
   if (sourceSet === "Application") {
     return Package;
@@ -444,6 +614,77 @@ function fileIcon(file: PreviewFile): LucideIcon {
     return FileText;
   }
   return File;
+}
+
+function previewSourceSet(path: string): PreviewFile["sourceSet"] {
+  if (path.startsWith("src/test/")) {
+    return "Tests";
+  }
+  if (path.startsWith("src/main/resources/")) {
+    return "Resources";
+  }
+  if (path.startsWith("src/main/")) {
+    return "Application";
+  }
+  return "Build";
+}
+
+function previewLanguage(path: string) {
+  if (path.endsWith(".gradle.kts")) {
+    return "kotlin";
+  }
+  if (path.endsWith(".gradle")) {
+    return "groovy";
+  }
+  if (path.endsWith(".properties")) {
+    return "properties";
+  }
+  if (path.endsWith(".yml") || path.endsWith(".yaml")) {
+    return "yaml";
+  }
+  if (path.endsWith(".toml")) {
+    return "toml";
+  }
+  if (path.endsWith(".xml")) {
+    return "xml";
+  }
+  if (path.endsWith(".json")) {
+    return "json";
+  }
+  if (path.endsWith(".java")) {
+    return "java";
+  }
+  if (path.endsWith(".kt") || path.endsWith(".kts")) {
+    return "kotlin";
+  }
+  if (path.endsWith(".groovy")) {
+    return "groovy";
+  }
+  if (path.endsWith(".md")) {
+    return "markdown";
+  }
+  if (path === "gradlew" || path.endsWith(".sh")) {
+    return "bash";
+  }
+  return "text";
+}
+
+function previewFilesFromContents(contents: Record<string, string | null>): PreviewFile[] {
+  return Object.entries(contents)
+    .map(([path, content]) => ({
+      path,
+      sourceSet: previewSourceSet(path),
+      description: content === null
+        ? "Binary file returned by the live Micronaut Launch preview."
+        : "Generated file returned by the live Micronaut Launch preview.",
+      language: previewLanguage(path),
+      content
+    }))
+    .sort((left, right) => {
+      const sourceOrder = ["Application", "Tests", "Resources", "Build"];
+      return sourceOrder.indexOf(left.sourceSet) - sourceOrder.indexOf(right.sourceSet)
+        || left.path.localeCompare(right.path);
+    });
 }
 
 function optionLabel(options: LaunchOption[], value: string) {
@@ -478,17 +719,26 @@ function featureMatchesCategory(feature: LaunchFeature, category: FeatureCategor
     return true;
   }
   const text = searchableFeatureText(feature);
+  const backendCategory = (feature.category ?? "").toLowerCase();
   if (category === "popular") {
     return popularFeatureNames.has(feature.name);
   }
   if (category === "web") {
-    return /api|server|http|openapi|graphql|websocket|views/.test(text);
+    return ["api", "server", "client", "view rendering"].includes(backendCategory)
+      || /\b(server|http|openapi|graphql|websocket|views?)\b/.test(text);
   }
   if (category === "data") {
-    return /data|database|jdbc|jpa|hibernate|jooq|mongo|redis|sql|r2dbc|cache/.test(text);
+    return backendCategory === "database"
+      || /data|database|jdbc|jpa|hibernate|jooq|mongo|redis|sql|r2dbc|coherence|cosmos/.test(text);
+  }
+  if (category === "ai") {
+    return /ai|langchain4j|langchain|mcp|model|embedding|vector|openai|anthropic|ollama|bedrock|gemini|vertex|mistral|qdrant|pgvector/.test(text);
   }
   if (category === "cloud") {
-    return /cloud|aws|azure|gcp|kubernetes|discovery|config|function/.test(text);
+    return /cloud|aws|amazon|azure|gcp|google|oracle|oci|kubernetes|discovery|function|parameter store|secret|vault|config-kubernetes|config-consul/.test(text);
+  }
+  if (category === "email") {
+    return /email|mail|ses|javamail|mailjet|mailtrap|postmark|sendgrid/.test(text);
   }
   if (category === "messaging") {
     return /messaging|kafka|rabbit|jms|mqtt|nats|pulsar/.test(text);
@@ -500,13 +750,63 @@ function featureMatchesCategory(feature: LaunchFeature, category: FeatureCategor
     return /serialization|jackson|json|serde|xml|yaml/.test(text);
   }
   if (category === "testing") {
-    return /test|junit|spock|kotest|mock|testcontainers/.test(text);
+    return backendCategory === "testing"
+      || /test|junit|spock|kotest|mock|testcontainers/.test(text);
   }
   return /observability|management|metrics|micrometer|tracing|log|health/.test(text);
 }
 
 function featureIsRecommended(feature: LaunchFeature) {
   return recommendedFeatureNames.has(feature.name);
+}
+
+function featuresForCapabilityGroup(features: LaunchFeature[], group: CapabilityGroup) {
+  const featureByName = new Map(features.map((feature) => [feature.name, feature]));
+  const exactMatches = group.featureNames.flatMap((name) => {
+    const feature = featureByName.get(name);
+    return feature ? [feature] : [];
+  });
+
+  return exactMatches;
+}
+
+function featuresMatchingQuery(features: LaunchFeature[], query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  return features.filter((feature) => searchableFeatureText(feature).includes(normalizedQuery)).slice(0, 4);
+}
+
+function categoryFeatureGroups(features: LaunchFeature[], existingFeatureNames: Set<string>, hiddenCategoryIds: Set<FeatureCategoryId>): { group: CapabilityGroup; features: LaunchFeature[] }[] {
+  const categories = featureCategories.filter((category) => !["all", "popular"].includes(category.id) && !hiddenCategoryIds.has(category.id));
+
+  return categories
+    .map((category) => {
+      const groupFeatures = features.filter((feature) => {
+        if (existingFeatureNames.has(feature.name)) {
+          return false;
+        }
+        const primaryCategory = categories.find((item) => featureMatchesCategory(feature, item.id));
+        return primaryCategory?.id === category.id;
+      });
+      return {
+        group: {
+          id: `category-${category.id}`,
+          title: category.label,
+          description: `Additional ${category.label.toLowerCase()} starter features from the backend catalog.`,
+          featureNames: groupFeatures.map((feature) => feature.name),
+          match: /.*/
+        },
+        features: groupFeatures
+      };
+    })
+    .filter(({ features }) => features.length > 0);
+}
+
+function featureCountLabel(count: number) {
+  return `${count} feature${count === 1 ? "" : "s"}`;
 }
 
 function isEditableShortcutTarget(target: EventTarget | null) {
@@ -523,13 +823,13 @@ function initialState(data: LaunchInitialData): FormState {
 
   return {
     type: data.selectOptions.type.defaultOption.value,
-    appName: "demo",
-    basePackage: "com.example",
+    appName: projectConfig.defaults.appName,
+    basePackage: projectConfig.defaults.basePackage,
     javaVersion: data.selectOptions.jdkVersion.defaultOption.value,
     lang,
     build: langDefaults?.build ?? data.selectOptions.build.defaultOption.value,
     test: langDefaults?.test ?? data.selectOptions.test.defaultOption.value,
-    features: ["serialization-jackson"]
+    features: [...projectConfig.defaults.features].sort()
   };
 }
 
@@ -595,7 +895,7 @@ function CodeBlock({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copyValue() {
-    await navigator.clipboard?.writeText(value);
+    await copyText(value);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
   }
@@ -625,6 +925,22 @@ function CodeBlock({ value, label }: { value: string; label: string }) {
   );
 }
 
+async function copyText(value: string) {
+  try {
+    await navigator.clipboard?.writeText(value);
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  }
+}
+
 function FeatureImpactSheet({ feature }: { feature: LaunchFeature }) {
   return (
     <Sheet>
@@ -635,19 +951,19 @@ function FeatureImpactSheet({ feature }: { feature: LaunchFeature }) {
       </SheetTrigger>
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{feature.title}</SheetTitle>
-          <SheetDescription>{feature.description}</SheetDescription>
+          <SheetTitle className="break-words">{feature.title}</SheetTitle>
+          <SheetDescription className="break-words">{feature.description}</SheetDescription>
         </SheetHeader>
         <div className="grid gap-5 px-4 text-sm leading-6">
           <div className="grid gap-2">
             <p className="font-semibold">Feature id</p>
-            <code className="w-fit rounded-md border bg-muted px-2 py-1 text-xs">{feature.name}</code>
+            <code className="max-w-full break-all rounded-md border bg-muted px-2 py-1 text-xs">{feature.name}</code>
           </div>
           <Separator />
           <div className="grid gap-2">
             <p className="font-semibold">Generated impact</p>
             <p className="text-muted-foreground">
-              Adds the {feature.name} starter feature to the Micronaut Launch request. The backend resolves the exact dependencies, generated files, and configuration for the selected language and build tool.
+              Adds the <code className="break-all">{feature.name}</code> starter feature to the Micronaut Launch request. The backend resolves the exact dependencies, generated files, and configuration for the selected language and build tool.
             </p>
           </div>
           <div className="grid gap-2">
@@ -657,6 +973,55 @@ function FeatureImpactSheet({ feature }: { feature: LaunchFeature }) {
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function FeatureDetailsDialog({
+  feature,
+  checked,
+  onToggle
+}: {
+  feature: LaunchFeature;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button type="button" variant="ghost" size="sm" aria-label={`View details for ${feature.title}`}>
+          Details
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="break-words">{feature.title}</DialogTitle>
+          <DialogDescription className="break-words">{feature.description}</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 text-sm">
+          <div className="grid gap-2">
+            <p className="font-semibold">Feature id</p>
+            <code className="max-w-full break-all rounded-md border bg-muted px-2 py-1 text-xs">{feature.name}</code>
+          </div>
+          <div className="grid gap-2">
+            <p className="font-semibold">Generated impact</p>
+            <p className="leading-6 text-muted-foreground">
+              Adds this starter feature to the Micronaut Launch request. The backend resolves the exact dependencies, generated files, and configuration for the selected project settings.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {feature.category && <Badge variant="outline">{feature.category}</Badge>}
+            {feature.preview && <Badge variant="outline">Preview</Badge>}
+            {feature.community && <Badge variant="outline">Community</Badge>}
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button type="button" variant={checked ? "outline" : "default"} onClick={onToggle}>
+            {checked ? <X className="size-4" /> : <Check className="size-4" />}
+            {checked ? "Remove feature" : "Add feature"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -699,6 +1064,341 @@ function FeatureCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function CapabilityGroupPanel({
+  group,
+  features,
+  selectedFeatureNames,
+  onToggle,
+  showHeader = true
+}: {
+  group: CapabilityGroup;
+  features: LaunchFeature[];
+  selectedFeatureNames: string[];
+  onToggle: (featureName: string) => void;
+  showHeader?: boolean;
+}) {
+  const selectedCount = features.filter((feature) => selectedFeatureNames.includes(feature.name)).length;
+
+  return (
+    <Card className="gap-0">
+      {showHeader && (
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle className="text-sm leading-5">{group.title}</CardTitle>
+            <CardDescription className="mt-0.5 line-clamp-2 text-xs leading-5">{group.description}</CardDescription>
+          </div>
+          <Badge variant={selectedCount > 0 ? "default" : "secondary"} className="shrink-0">
+            {selectedCount > 0 ? `${selectedCount} selected` : featureCountLabel(features.length)}
+          </Badge>
+        </CardHeader>
+      )}
+      <CardContent className={cn("grid gap-3", !showHeader && "pt-0")}>
+        {features.length > 0 ? (
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {features.map((feature) => {
+              const checked = selectedFeatureNames.includes(feature.name);
+              return (
+                <Card
+                  key={feature.name}
+                  className={cn(
+                    "min-w-0 gap-0 py-0 transition hover:border-primary/60",
+                    checked && "border-primary bg-primary/5"
+                  )}
+                >
+                  <CardHeader className="p-3 pb-2">
+                    <label className="flex min-h-20 cursor-pointer items-start gap-3" data-testid={`feature-${feature.name}`}>
+                      <Checkbox checked={checked} onCheckedChange={() => onToggle(feature.name)} aria-label={`Select ${feature.title}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          <span className="min-w-0 break-words text-sm font-medium leading-5">{feature.title}</span>
+                          {featureIsRecommended(feature) && <Badge variant="secondary" className="text-[0.68rem]">Default</Badge>}
+                        </span>
+                        <span className="mt-0.5 block line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{feature.description}</span>
+                      </span>
+                    </label>
+                  </CardHeader>
+                  <CardContent className="grid gap-2 px-3 pb-3 pt-0">
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <code className="min-w-0 flex-1 truncate text-[0.68rem] text-muted-foreground" title={feature.name}>{feature.name}</code>
+                      <FeatureDetailsDialog feature={feature} checked={checked} onToggle={() => onToggle(feature.name)} />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="rounded-md border border-dashed px-3 py-4 text-xs leading-5 text-muted-foreground">
+            No matching backend features are available for the selected application type.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlatformOptionButtons({
+  label,
+  options,
+  value,
+  onChange,
+  testIdPrefix
+}: {
+  label: string;
+  options: LaunchOption[];
+  value: string;
+  onChange: (value: string) => void;
+  testIdPrefix: string;
+}) {
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="text-sm font-medium">{label}</legend>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const selected = option.value === value;
+          return (
+            <Button
+              key={option.value}
+              type="button"
+              variant={selected ? "default" : "outline"}
+              size="sm"
+              onClick={() => onChange(option.value)}
+              aria-pressed={selected}
+              data-testid={`${testIdPrefix}-${option.value.toLowerCase().replace(/_/g, "-")}`}
+            >
+              {label === "Java version" ? `JDK ${option.label}` : option.label}
+            </Button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+function PlatformPinnedFeature({
+  state,
+  initialData,
+  languageLabel,
+  buildLabel,
+  javaLabel,
+  onUpdate,
+  onLanguageChange
+}: {
+  state: FormState;
+  initialData: LaunchInitialData;
+  languageLabel: string;
+  buildLabel: string;
+  javaLabel: string;
+  onUpdate: (next: Partial<FormState>) => void;
+  onLanguageChange: (value: string) => void;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className="grid min-h-24 gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-left transition hover:border-primary/60"
+          data-testid="pinned-platform"
+        >
+          <span className="flex items-start justify-between gap-2">
+            <span className="text-sm font-semibold leading-5">Platform</span>
+            <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
+          </span>
+          <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+            Language, build tool, and target JDK for the generated project.
+          </span>
+          <span className="truncate rounded-md bg-background px-2 py-1 text-xs font-medium">
+            {languageLabel} / {buildLabel} / JDK {javaLabel}
+          </span>
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Platform</DialogTitle>
+          <DialogDescription>
+            Change the generated source language, build files, and Java compatibility.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-5">
+          <PlatformOptionButtons
+            label="Language"
+            value={state.lang}
+            options={initialData.selectOptions.lang.options}
+            onChange={onLanguageChange}
+            testIdPrefix="platform-lang"
+          />
+          <PlatformOptionButtons
+            label="Build tool"
+            value={state.build}
+            options={initialData.selectOptions.build.options}
+            onChange={(value) => onUpdate({ build: value })}
+            testIdPrefix="platform-build"
+          />
+          <PlatformOptionButtons
+            label="Java version"
+            value={state.javaVersion}
+            options={initialData.selectOptions.jdkVersion.options}
+            onChange={(value) => onUpdate({ javaVersion: value })}
+            testIdPrefix="platform-jdk"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function TestingPinnedFeature({
+  testLabel,
+  testValue,
+  testOptions,
+  group,
+  selectedFeatureNames,
+  onTestChange,
+  onToggle
+}: {
+  testLabel: string;
+  testValue: string;
+  testOptions: LaunchOption[];
+  group?: { group: CapabilityGroup; features: LaunchFeature[] };
+  selectedFeatureNames: string[];
+  onTestChange: (value: string) => void;
+  onToggle: (featureName: string) => void;
+}) {
+  const features = group?.features ?? [];
+  const selectedCount = features.filter((feature) => selectedFeatureNames.includes(feature.name)).length;
+  const libraryGroup: CapabilityGroup = {
+    id: "testing-libraries",
+    title: "Libraries",
+    description: "Assertions, containers, mock servers, REST Assured, and other testing helpers.",
+    featureNames: features.map((feature) => feature.name),
+    match: /.*/
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className="grid min-h-24 gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-left transition hover:border-primary/60"
+          data-testid="pinned-testing"
+        >
+          <span className="flex items-start justify-between gap-2">
+            <span className="text-sm font-semibold leading-5">Testing</span>
+            <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
+          </span>
+          <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+            Test framework and optional test support libraries.
+          </span>
+          <span className="truncate rounded-md bg-background px-2 py-1 text-xs font-medium">
+            {testLabel} / {selectedCount} libraries
+          </span>
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>Testing</DialogTitle>
+          <DialogDescription>
+            Choose the generated test framework, then add optional testing libraries.
+          </DialogDescription>
+        </DialogHeader>
+        <PlatformOptionButtons
+          label="Framework"
+          value={testValue}
+          options={testOptions}
+          onChange={onTestChange}
+          testIdPrefix="testing-framework"
+        />
+        <CapabilityGroupPanel
+          group={libraryGroup}
+          features={features}
+          selectedFeatureNames={selectedFeatureNames}
+          onToggle={onToggle}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CapabilityGroupDialog({
+  group,
+  features,
+  matchedFeatures = [],
+  selectedFeatureNames,
+  onToggle
+}: {
+  group: CapabilityGroup;
+  features: LaunchFeature[];
+  matchedFeatures?: LaunchFeature[];
+  selectedFeatureNames: string[];
+  onToggle: (featureName: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const selectedCount = features.filter((feature) => selectedFeatureNames.includes(feature.name)).length;
+  const filteredFeatures = query.trim()
+    ? features.filter((feature) => searchableFeatureText(feature).includes(query.trim().toLowerCase()))
+    : features;
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "grid min-h-24 min-w-0 gap-2 overflow-hidden rounded-lg border bg-background p-3 text-left transition hover:border-primary/60",
+            selectedCount > 0 && "border-primary bg-primary/5"
+          )}
+          data-testid={`capability-${group.id}`}
+        >
+          <span className="min-w-0 break-words text-sm font-semibold leading-5">{group.title}</span>
+          <span className="min-w-0 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{group.description}</span>
+          <span className="flex flex-wrap gap-1.5">
+            <Badge variant={selectedCount > 0 ? "default" : "secondary"}>
+              {selectedCount > 0 ? `${selectedCount} selected` : featureCountLabel(features.length)}
+            </Badge>
+          </span>
+          {matchedFeatures.length > 0 && (
+            <span className="grid min-w-0 gap-1 border-t pt-2">
+              <span className="text-[0.68rem] font-medium uppercase tracking-normal text-muted-foreground">Matches</span>
+              <span className="flex min-w-0 flex-wrap gap-1">
+                {matchedFeatures.map((feature) => (
+                  <Badge key={feature.name} variant="outline" className="min-w-0 max-w-full overflow-hidden text-[0.68rem]">
+                    <span className="min-w-0 truncate" title={feature.name}>{feature.name}</span>
+                  </Badge>
+                ))}
+              </span>
+            </span>
+          )}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>{group.title}</DialogTitle>
+          <DialogDescription>{group.description}</DialogDescription>
+        </DialogHeader>
+        <div className="relative">
+          <Label htmlFor={`feature-search-${group.id}`} className="sr-only">Search {group.title} features</Label>
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id={`feature-search-${group.id}`}
+            type="search"
+            className="pl-9"
+            placeholder={`Find a ${group.title.toLowerCase()} feature`}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <CapabilityGroupPanel
+          group={group}
+          features={filteredFeatures}
+          selectedFeatureNames={selectedFeatureNames}
+          onToggle={onToggle}
+          showHeader={false}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -774,47 +1474,54 @@ function DecisionChoiceDetails({
 
 function DecisionGroupPanel({
   group,
-  expanded,
-  onToggle,
   onSelect
 }: {
   group: ResolvedDecisionGroup;
-  expanded: boolean;
-  onToggle: () => void;
   onSelect: (group: ResolvedDecisionGroup, choice: ResolvedDecisionChoice) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const activeChoice = group.activeChoice;
   const customized = group.selectedChoices.length > 0;
   const stateLabel = group.conflicted ? "Conflict" : customized ? "Selected" : "Default";
 
-  return (
-    <div className={cn("overflow-hidden rounded-lg border bg-background", group.conflicted && "border-destructive/70")}>
-      <button
-        type="button"
-        className="grid w-full gap-3 p-4 text-left transition hover:bg-muted/50 md:grid-cols-[minmax(9rem,0.8fr)_minmax(0,1fr)_auto] md:items-center"
-        aria-expanded={expanded}
-        onClick={onToggle}
-        data-testid={`decision-row-${group.id}`}
-      >
-        <span className="flex items-center gap-2 font-semibold">
-          <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
-          {group.title}
-        </span>
-        <span className="min-w-0 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{activeChoice?.title ?? "Review required"}</span>
-          <span className="hidden md:inline"> - {activeChoice?.summary ?? group.description}</span>
-        </span>
-        <Badge variant={group.conflicted ? "outline" : customized ? "default" : "secondary"}>
-          {stateLabel}
-        </Badge>
-      </button>
+  function selectChoice(choice: ResolvedDecisionChoice) {
+    onSelect(group, choice);
+    setOpen(false);
+  }
 
-      {expanded && (
-        <div className="border-t p-4">
-          <div className="mb-4 grid gap-1">
-            <p className="text-sm font-medium">{group.question}</p>
-            <p className="text-sm leading-6 text-muted-foreground">{group.description}</p>
-          </div>
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "grid min-h-24 gap-2 rounded-lg border bg-background p-3 text-left transition hover:border-primary/60",
+            group.conflicted ? "border-destructive/70" : "border-primary bg-primary/5"
+          )}
+          data-testid={`decision-row-${group.id}`}
+        >
+          <span className="flex items-start justify-between gap-2">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold leading-5">{group.title}</span>
+              <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
+                {activeChoice?.title ?? "Review required"}
+              </span>
+            </span>
+            <Badge variant={group.conflicted ? "outline" : customized ? "default" : "secondary"} className="shrink-0">
+              {stateLabel}
+            </Badge>
+          </span>
+          <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
+            {activeChoice?.summary ?? group.description}
+          </span>
+          <span className="text-xs font-medium text-primary">Change</span>
+        </button>
+      </DialogTrigger>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>{group.title}</DialogTitle>
+              <DialogDescription>{group.description}</DialogDescription>
+            </DialogHeader>
           {group.conflicted && (
             <Alert variant="destructive" className="mb-4">
               <ShieldAlert className="size-4" />
@@ -843,7 +1550,7 @@ function DecisionGroupPanel({
                       className="mt-1 size-4 accent-primary"
                       name={`decision-${group.id}`}
                       checked={selected}
-                      onChange={() => onSelect(group, choice)}
+                      onChange={() => selectChoice(choice)}
                     />
                     <span className="grid gap-1">
                       <span className="flex flex-wrap items-center gap-2 font-semibold">
@@ -862,15 +1569,14 @@ function DecisionGroupPanel({
                     group={group}
                     choice={choice}
                     selected={selected}
-                    onSelect={() => onSelect(group, choice)}
+                    onSelect={() => selectChoice(choice)}
                   />
                 </div>
               );
             })}
           </fieldset>
-        </div>
-      )}
-    </div>
+          </DialogContent>
+    </Dialog>
   );
 }
 
@@ -897,37 +1603,41 @@ function PreviewTree({
       <SidebarMenuItem>
         <SidebarMenuButton
           type="button"
-          size={level > 1 ? "sm" : "default"}
+          size="sm"
           isActive={selectedPath === node.path}
-          className="data-[active=true]:bg-sidebar-accent"
+          className="h-7 rounded-sm px-1.5 font-normal data-[active=true]:bg-muted"
           onClick={() => onSelect(node.path!)}
+          style={{ paddingLeft: `${Math.max(level, 0) * 1.05 + 0.35}rem` }}
         >
-          <Icon />
-          <span>{node.name}</span>
+          <Icon className="size-4 shrink-0" />
+          <span className="truncate">{node.name}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
   }
 
-  const Icon = level === 0 && ["Application", "Tests", "Resources", "Build"].includes(node.name)
-    ? sourceSetIcon(node.name as PreviewFile["sourceSet"])
-    : Folder;
+  const Icon = Folder;
 
   return (
     <SidebarMenuItem>
       <Collapsible.Root
         className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-        defaultOpen={level < 2 || containsSelectedPath}
+        defaultOpen={level < 4 || containsSelectedPath}
       >
         <Collapsible.Trigger asChild>
-          <SidebarMenuButton type="button" size={level > 1 ? "sm" : "default"}>
-            <ChevronRight className="transition-transform" />
-            <Icon />
-            <span>{node.name}</span>
+          <SidebarMenuButton
+            type="button"
+            size="sm"
+            className="h-7 rounded-sm px-1.5 font-semibold"
+            style={{ paddingLeft: `${Math.max(level, 0) * 1.05 + 0.35}rem` }}
+          >
+            <ChevronRight className="size-3.5 shrink-0 transition-transform" />
+            <Icon className="size-4 shrink-0 fill-current" />
+            <span className="truncate">{node.name}</span>
           </SidebarMenuButton>
         </Collapsible.Trigger>
         <Collapsible.Content>
-          <SidebarMenuSub>
+          <SidebarMenuSub className="mx-0 border-l-0 pl-0">
             {(node.children ?? []).map((child) => (
               <PreviewTree
                 key={`${child.path ?? node.name}/${child.name}`}
@@ -948,21 +1658,31 @@ function SourceSetPreviewDialog({
   state,
   initialData,
   previewUrl,
-  createUrl,
-  command,
-  curl
+  className
 }: {
   state: FormState;
   initialData: LaunchInitialData;
   previewUrl: string;
-  createUrl: string;
-  command: string;
-  curl: string;
+  className?: string;
 }) {
-  const files = previewFiles(state, initialData);
+  const [open, setOpen] = useState(false);
+  const [previewContents, setPreviewContents] = useState<Record<string, string | null> | null>(null);
+  const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "loaded" | "error">("idle");
+  const [previewError, setPreviewError] = useState("");
+  const [copiedLink, setCopiedLink] = useState(false);
+  const fallbackFiles = previewFiles(state, initialData);
+  const files = previewContents ? previewFilesFromContents(previewContents) : fallbackFiles;
   const [selectedPath, setSelectedPath] = useState(files[0]?.path ?? "");
   const selectedFile = files.find((file) => file.path === selectedPath) ?? files[0];
-  const fileTree = buildPreviewTree(files);
+  const fileTree = buildPreviewPathTree(files);
+  const previewTitle = `Previewing a ${optionLabel(initialData.selectOptions.lang.options, state.lang)} application using ${optionLabel(initialData.selectOptions.build.options, state.build)}`;
+  const previewShareUrl = publicLaunchUrl(state, initialData.micronautVersion, "preview", selectedFile?.path);
+
+  async function copyPreviewLink() {
+    await copyText(previewShareUrl);
+    setCopiedLink(true);
+    window.setTimeout(() => setCopiedLink(false), 1800);
+  }
 
   useEffect(() => {
     if (!files.some((file) => file.path === selectedPath)) {
@@ -970,87 +1690,140 @@ function SourceSetPreviewDialog({
     }
   }, [files, selectedPath]);
 
+  useEffect(() => {
+    setCopiedLink(false);
+  }, [selectedPath]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setPreviewStatus("loading");
+    setPreviewError("");
+
+    fetch(previewJsonUrl(previewUrl), {
+      headers: { Accept: "application/json" },
+      signal: controller.signal
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Preview request returned ${response.status}`);
+        }
+        const payload = await response.json() as LaunchPreviewResponse;
+        if (!payload.contents) {
+          throw new Error("Preview response did not include file contents");
+        }
+        setPreviewContents(payload.contents);
+        setPreviewStatus("loaded");
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setPreviewContents(null);
+        setPreviewStatus("error");
+        setPreviewError(error instanceof Error ? error.message : "Preview request failed");
+      });
+
+    return () => controller.abort();
+  }, [open, previewUrl]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" className={className} data-testid="preview-project">
           <FileCode2 className="size-4" />
           Preview project
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Preview project</DialogTitle>
-          <DialogDescription>
-            Browse the generated source sets for the current Launch settings. File contents open from the live Micronaut Launch preview endpoint.
+      <DialogContent showCloseButton={false} className="h-[86vh] max-h-[calc(100vh-3rem)] gap-0 overflow-hidden p-0 sm:max-w-[82vw]">
+        <DialogHeader className="border-b bg-background px-5 py-4">
+          <DialogTitle className="text-2xl font-semibold leading-tight">{previewTitle}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Browse generated files and file contents from the Micronaut Launch preview response.
           </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="files" className="gap-4">
-          <TabsList className="grid h-auto w-full grid-cols-3">
-            <TabsTrigger value="files">Files</TabsTrigger>
-            <TabsTrigger value="json">Request JSON</TabsTrigger>
-            <TabsTrigger value="commands">Commands</TabsTrigger>
-          </TabsList>
-          <TabsContent value="files" className="grid gap-4">
-            <div className="grid min-h-[420px] gap-4 md:grid-cols-[minmax(14rem,0.75fr)_minmax(0,1fr)]">
-              <SidebarProvider className="h-full min-h-0 w-full">
-                <Sidebar collapsible="none" className="h-full max-h-[520px] w-full overflow-hidden rounded-lg border bg-sidebar">
-                  <SidebarContent className="overflow-y-auto">
-                    <SidebarGroup>
-                      <SidebarGroupLabel>Files</SidebarGroupLabel>
-                      <SidebarGroupContent>
-                        <SidebarMenu>
-                          {fileTree.map((root) => (
-                            <PreviewTree
-                              key={root.name}
-                              node={root}
-                              selectedPath={selectedFile?.path}
-                              onSelect={setSelectedPath}
-                              level={0}
-                            />
-                          ))}
-                        </SidebarMenu>
-                      </SidebarGroupContent>
-                    </SidebarGroup>
-                  </SidebarContent>
-                </Sidebar>
-              </SidebarProvider>
-              <div className="grid gap-4">
-                <div className="rounded-lg border bg-muted/30 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{selectedFile?.path}</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedFile?.description}</p>
-                    </div>
-                    {selectedFile && <Badge variant="outline">{selectedFile.language}</Badge>}
-                  </div>
-                </div>
-                <Alert>
-                  <FileCode2 className="size-4" />
-                  <AlertTitle>Live preview data</AlertTitle>
-                  <AlertDescription>
-                    The official backend returns file contents at the preview endpoint. This static page cannot read that cross-origin JSON directly, so the file browser keeps the generated project shape local and opens the backend response for exact contents.
-                  </AlertDescription>
-                </Alert>
-                <CodeBlock value={previewUrl} label="Preview endpoint" />
+        <div className="grid min-h-0 flex-1 grid-cols-[22rem_minmax(0,1fr)] overflow-hidden">
+          <aside className="min-h-0 border-r bg-muted/10">
+            <SidebarProvider className="h-full min-h-0 w-full">
+              <Sidebar collapsible="none" className="h-full w-full overflow-hidden border-0 bg-muted/10">
+                <SidebarContent className="overflow-y-auto px-3 py-3">
+                  <SidebarGroup className="p-0">
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {fileTree.map((root) => (
+                          <PreviewTree
+                            key={root.name}
+                            node={root}
+                            selectedPath={selectedFile?.path}
+                            onSelect={setSelectedPath}
+                            level={0}
+                          />
+                        ))}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                </SidebarContent>
+              </Sidebar>
+            </SidebarProvider>
+          </aside>
+          <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-background">
+            <div className="flex min-h-12 items-center justify-between gap-3 border-b bg-muted/20 px-4 py-2">
+              <div className="min-w-0">
+                <p className="truncate font-mono text-sm font-medium" title={selectedFile?.path}>
+                  {selectedFile?.path ?? "No file selected"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {previewStatus === "loading" ? "Loading live preview contents" : selectedFile?.language ?? "text"}
+                </p>
               </div>
+              {previewStatus === "error" && (
+                <Badge variant="destructive">Preview fallback</Badge>
+              )}
             </div>
-            <Button asChild>
-              <a href={previewUrl} target="_blank" rel="noreferrer">
-                <ExternalLink className="size-4" />
-                Open live preview
-              </a>
+            {previewStatus === "loading" && !selectedFile?.content ? (
+              <div className="p-5 text-sm text-muted-foreground">Loading preview JSON...</div>
+            ) : previewStatus === "error" && !selectedFile?.content ? (
+              <div className="grid gap-2 p-5 text-sm text-muted-foreground">
+                <p className="font-medium text-destructive">Preview JSON unavailable</p>
+                <p>{previewError}</p>
+                <code className="break-all rounded-md border bg-background p-3 text-xs">{previewUrl}</code>
+              </div>
+            ) : selectedFile?.content === null ? (
+              <div className="p-5 text-sm text-muted-foreground">Binary file content is not included in the preview JSON.</div>
+            ) : selectedFile && selectedFile.content !== undefined ? (
+              <UiCodeBlock
+                code={selectedFile.content ?? ""}
+                filename={selectedFile.path}
+                language={selectedFile.language}
+              />
+            ) : (
+              <div className="p-5 text-sm text-muted-foreground">Select a file to preview its contents.</div>
+            )}
+          </section>
+        </div>
+        <div className="flex items-center justify-end gap-6 border-t bg-background px-5 py-4">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => void copyPreviewLink()}
+            aria-label="Copy link to this preview"
+            data-testid="copy-preview-link"
+          >
+            {copiedLink ? <Check className="size-4" /> : <Link2 className="size-4" />}
+            {copiedLink ? "Copied" : "Link to This"}
+          </Button>
+          <span className="sr-only" aria-live="polite">
+            {copiedLink ? "Preview link copied" : ""}
+          </span>
+          <DialogClose asChild>
+            <Button type="button" variant="ghost">
+              Close
             </Button>
-          </TabsContent>
-          <TabsContent value="json" className="grid gap-4">
-            <CodeBlock value={previewUrl} label="Preview endpoint" />
-            <CodeBlock value={createUrl} label="Create endpoint" />
-          </TabsContent>
-          <TabsContent value="commands" className="grid gap-4">
-            <CodeBlock value={command} label="Micronaut CLI" />
-            <CodeBlock value={curl} label="cURL" />
-          </TabsContent>
-        </Tabs>
+          </DialogClose>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -1094,8 +1867,38 @@ function DiffProjectDialog({ diffUrl }: { diffUrl: string }) {
   );
 }
 
+function BuilderStepNav({
+  previous,
+  next,
+  onPrevious,
+  onNext
+}: {
+  previous?: string;
+  next?: string;
+  onPrevious?: () => void;
+  onNext?: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
+      {previous ? (
+        <Button type="button" variant="outline" onClick={onPrevious}>
+          Previous: {previous}
+        </Button>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+      {next && (
+        <Button type="button" onClick={onNext}>
+          Next: {next}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function LaunchPanel({
   state,
+  initialData,
   runtime,
   testLabel,
   createUrl,
@@ -1113,6 +1916,7 @@ function LaunchPanel({
   onRemoveFeature
 }: {
   state: FormState;
+  initialData: LaunchInitialData;
   runtime: string;
   testLabel: string;
   createUrl: string;
@@ -1139,7 +1943,7 @@ function LaunchPanel({
       <CardHeader className="gap-4">
         <div className="grid gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle>Launch Panel</CardTitle>
+            <CardTitle>Ready to generate</CardTitle>
             <Badge variant={conflictedDecisionGroups.length > 0 ? "outline" : "secondary"}>
               {readiness}
             </Badge>
@@ -1173,12 +1977,12 @@ function LaunchPanel({
               Download ZIP
             </a>
           </Button>
-          <Button asChild variant="outline" className="w-full">
-            <a href={previewUrl} target="_blank" rel="noreferrer" data-testid="preview-url">
-              <FileCode2 className="size-4" />
-              Preview project
-            </a>
-          </Button>
+          <SourceSetPreviewDialog
+            state={state}
+            initialData={initialData}
+            previewUrl={previewUrl}
+            className="w-full"
+          />
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -1253,9 +2057,9 @@ function LaunchPanel({
               <div className="flex flex-wrap gap-2">
                 {selectedFeatures.length === 0 && <p className="text-sm text-muted-foreground">No optional features selected.</p>}
                 {selectedFeatures.map((feature) => (
-                  <Badge key={feature.name} variant="secondary" className="gap-1 py-1">
-                    {feature.name}
-                    <button type="button" aria-label={`Remove ${feature.title}`} onClick={() => onRemoveFeature(feature.name)}>
+                  <Badge key={feature.name} variant="secondary" className="min-w-0 max-w-full gap-1 py-1">
+                    <span className="min-w-0 max-w-[18rem] truncate" title={feature.name}>{feature.name}</span>
+                    <button type="button" className="shrink-0" aria-label={`Remove ${feature.title}`} onClick={() => onRemoveFeature(feature.name)}>
                       <X className="size-3" />
                     </button>
                   </Badge>
@@ -1324,59 +2128,74 @@ function LaunchPanel({
 export function LaunchApp({ initialData }: LaunchAppProps) {
   const [state, setState] = useState<FormState>(() => initialState(initialData));
   const [shareHydrated, setShareHydrated] = useState(false);
-  const [featureQuery, setFeatureQuery] = useState("");
-  const [featureCategory, setFeatureCategory] = useState<FeatureCategoryId>("popular");
-  const [featureScope, setFeatureScope] = useState<FeatureScope>("compatible");
-  const [openDecisionGroupId, setOpenDecisionGroupId] = useState("configuration");
+  const [featureGroupQuery, setFeatureGroupQuery] = useState("");
+  const [activeBuilderStep, setActiveBuilderStep] = useState<BuilderStepId>("settings");
 
   const typeSlug = slugFromType(state.type, initialData.applicationTypes);
   const availableFeatures = initialData.featuresByType[typeSlug] ?? initialData.featuresByType.default ?? [];
-  const decisionGroups = useMemo(
+  const allDecisionGroups = useMemo(
     () => resolveDecisionGroups(availableFeatures, state.features),
     [availableFeatures, state.features]
   );
+  const decisionGroups = allDecisionGroups.filter((group) => group.id === "configuration");
   const conflictedDecisionGroups = decisionGroups.filter((group) => group.conflicted);
+  const capabilityGroupFeatures = useMemo(
+    () => capabilityGroups
+      .map((group) => ({
+        group,
+        features: featuresForCapabilityGroup(availableFeatures, group)
+      }))
+      .filter(({ features }) => features.length > 0),
+    [availableFeatures]
+  );
+  const testingFeatureGroup = capabilityGroupFeatures.find(({ group }) => group.id === "testing");
+  const capabilityFeatureNames = useMemo(
+    () => new Set(capabilityGroupFeatures.flatMap(({ features }) => features.map((feature) => feature.name))),
+    [capabilityGroupFeatures]
+  );
+  const categoryGroupFeatures = useMemo(
+    () => categoryFeatureGroups(
+      availableFeatures,
+      capabilityFeatureNames,
+      new Set(capabilityGroups.flatMap((group) => group.categoryId ? [group.categoryId] : []))
+    ),
+    [availableFeatures, capabilityFeatureNames]
+  );
+  const allFeatureGroupFeatures = useMemo(
+    () => [
+      ...capabilityGroupFeatures.filter(({ group }) => group.id !== "testing"),
+      ...categoryGroupFeatures
+    ],
+    [capabilityGroupFeatures, categoryGroupFeatures]
+  );
+  const filteredFeatureGroupFeatures = useMemo<FeatureGroupResult[]>(() => {
+    const query = featureGroupQuery.trim().toLowerCase();
+    if (!query) {
+      return allFeatureGroupFeatures.map(({ group, features }) => ({
+        group,
+        features,
+        matchedFeatures: []
+      }));
+    }
+    return allFeatureGroupFeatures.flatMap(({ group, features }) => {
+      const matchedFeatures = featuresMatchingQuery(features, query);
+      const groupMatches = [group.title, group.description].join(" ").toLowerCase().includes(query);
+      if (!groupMatches && matchedFeatures.length === 0) {
+        return [];
+      }
+      return [{
+        group,
+        features,
+        matchedFeatures
+      }];
+    });
+  }, [allFeatureGroupFeatures, featureGroupQuery]);
   const decisionFeatureNames = useMemo(
     () => new Set(decisionGroups.flatMap((group) => group.choices.flatMap((choice) => choice.featureName ? [choice.featureName] : []))),
     [decisionGroups]
   );
   const selectedFeatures = availableFeatures.filter((feature) => state.features.includes(feature.name));
-  const selectedDecisionFeatures = selectedFeatures.filter((feature) => decisionFeatureNames.has(feature.name));
   const optionalSelectedFeatures = selectedFeatures.filter((feature) => !decisionFeatureNames.has(feature.name));
-  const explorableFeatures = availableFeatures.filter((feature) => !decisionFeatureNames.has(feature.name));
-  const categoryCounts = useMemo(
-    () => new Map(featureCategories.map((category) => [
-      category.id,
-      category.id === "all"
-        ? explorableFeatures.length
-        : explorableFeatures.filter((feature) => featureMatchesCategory(feature, category.id)).length
-    ])),
-    [explorableFeatures]
-  );
-  const filteredFeatures = useMemo(() => {
-    const query = featureQuery.trim().toLowerCase();
-    const byScope = featureScope === "selected"
-      ? explorableFeatures.filter((feature) => state.features.includes(feature.name))
-      : featureScope === "recommended"
-        ? explorableFeatures.filter(featureIsRecommended)
-        : explorableFeatures;
-    const byCategory = featureCategory === "all" || featureScope === "selected"
-      ? byScope
-      : byScope.filter((feature) => featureMatchesCategory(feature, featureCategory));
-    const byQuery = query
-      ? byCategory.filter((feature) => searchableFeatureText(feature).includes(query))
-      : byCategory;
-
-    return [...byQuery].sort((left, right) => {
-      const leftSelected = state.features.includes(left.name) ? 0 : 1;
-      const rightSelected = state.features.includes(right.name) ? 0 : 1;
-      const leftCategory = categoryOrder.indexOf(left.category ?? "");
-      const rightCategory = categoryOrder.indexOf(right.category ?? "");
-      const leftRank = leftCategory === -1 ? categoryOrder.length : leftCategory;
-      const rightRank = rightCategory === -1 ? categoryOrder.length : rightCategory;
-      return leftSelected - rightSelected || leftRank - rightRank || left.title.localeCompare(right.title);
-    });
-  }, [explorableFeatures, featureCategory, featureQuery, featureScope, state.features]);
 
   const createUrl = apiUrl(initialData.apiBaseUrl, "create", typeSlug, state);
   const previewUrl = apiUrl(initialData.apiBaseUrl, "preview", typeSlug, state);
@@ -1385,10 +2204,10 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
   const curl = `curl --location --request GET '${createUrl}' --output ${cleanSegment(state.appName, "demo")}.zip`;
   const runtime = runtimeSummary(state, initialData);
   const testLabel = optionLabel(initialData.selectOptions.test.options, state.test);
-  const shareUrl =
-    typeof window === "undefined"
-      ? "/launch/"
-      : `${window.location.origin}/launch/?type=${typeSlug}&name=${encodeURIComponent(state.appName)}&package=${encodeURIComponent(state.basePackage)}&lang=${state.lang}&build=${state.build}&test=${state.test}&javaVersion=${state.javaVersion}&features=${encodeURIComponent(state.features.join(","))}`;
+  const languageLabel = optionLabel(initialData.selectOptions.lang.options, state.lang);
+  const buildLabel = optionLabel(initialData.selectOptions.build.options, state.build);
+  const javaLabel = optionLabel(initialData.selectOptions.jdkVersion.options, state.javaVersion);
+  const shareUrl = publicLaunchUrl(state, initialData.micronautVersion);
   const defaultDecisionCount = decisionGroups.filter((group) => !group.conflicted && group.selectedChoices.length === 0).length;
   const customizedDecisionCount = decisionGroups.filter((group) => !group.conflicted && group.selectedChoices.length > 0).length;
   const sanitizedAppName = cleanSegment(state.appName, "demo");
@@ -1401,28 +2220,15 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
     }
     if (window.location.search.length > 1) {
       setState(stateFromSearchParams(initialData, new URLSearchParams(window.location.search)));
-      setFeatureScope("selected");
-      setFeatureCategory("all");
     }
     setShareHydrated(true);
   }, [initialData, shareHydrated]);
 
   useEffect(() => {
-    if (openDecisionGroupId && decisionGroups.length > 0 && !decisionGroups.some((group) => group.id === openDecisionGroupId)) {
-      setOpenDecisionGroupId(decisionGroups[0].id);
-    }
-  }, [decisionGroups, openDecisionGroupId]);
-
-  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "/" && !isEditableShortcutTarget(event.target)) {
-        event.preventDefault();
-        document.getElementById("feature-search-input")?.focus();
-      }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setFeatureCategory("all");
-        document.getElementById("feature-search-input")?.focus();
+        document.getElementById("feature-group-search")?.focus();
       }
     }
 
@@ -1448,7 +2254,6 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
       ...current,
       features: applyDecisionChoice(current.features, group, choice)
     }));
-    setOpenDecisionGroupId("");
   }
 
   function updateLanguage(value: string) {
@@ -1461,10 +2266,10 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
   }
 
   return (
-    <main className="flex min-h-[calc(100dvh-57px)] flex-col overflow-hidden">
+    <main className="flex h-[calc(100dvh-57px)] flex-col overflow-hidden">
       <section className="shrink-0 border-b bg-card">
-        <div className="mx-auto grid max-w-[1440px] gap-2 px-4 py-3 md:px-6">
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto grid max-w-[1440px] gap-1 px-4 py-2.5 md:px-6">
+          <div className="flex flex-col gap-1">
             <div className="min-w-0">
               <h1 className="text-xl font-bold leading-tight text-foreground md:text-2xl">
                 Build a Micronaut project
@@ -1473,79 +2278,25 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                 Configure project settings, choose stack decisions, add starter features, and generate a ZIP.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <SourceSetPreviewDialog
-                state={state}
-                initialData={initialData}
-                previewUrl={previewUrl}
-                createUrl={createUrl}
-                command={command}
-                curl={curl}
-              />
-              <DiffProjectDialog diffUrl={diffUrl} />
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={initialData.source === "live" ? "default" : "outline"}>
-              {initialData.source === "live" ? "Live backend" : "Fallback catalog"}
-            </Badge>
-            <Badge variant="outline">{new Date(initialData.generatedAt).toLocaleDateString()}</Badge>
-            <Badge variant="outline">{availableFeatures.length} feature options</Badge>
-            <Badge variant={conflictedDecisionGroups.length > 0 ? "outline" : "secondary"}>
-              {conflictedDecisionGroups.length > 0 ? `${conflictedDecisionGroups.length} conflict${conflictedDecisionGroups.length === 1 ? "" : "s"}` : "No conflicts"}
-            </Badge>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid min-h-0 w-full max-w-[1440px] flex-1 px-4 py-3 md:px-6">
-        <Tabs defaultValue="settings" className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3" data-testid="builder-tabs">
-            <TabsList className="flex h-auto w-full shrink-0 justify-start gap-1 overflow-x-auto p-1">
-              <TabsTrigger value="settings" className="h-auto min-w-[11.5rem] flex-none justify-start gap-2 px-2 py-2 text-left lg:min-w-0 lg:flex-1">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold">1</span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold leading-4">Project settings</span>
-                  <span className="block truncate text-[0.68rem] font-normal text-muted-foreground">{projectName(state.appName, state.basePackage)}</span>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="decisions" className="h-auto min-w-[11.5rem] flex-none justify-start gap-2 px-2 py-2 text-left lg:min-w-0 lg:flex-1">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold">2</span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold leading-4">Decision Center</span>
-                  <span className="block truncate text-[0.68rem] font-normal text-muted-foreground">
-                    {conflictedDecisionGroups.length > 0 ? `${conflictedDecisionGroups.length} conflict${conflictedDecisionGroups.length === 1 ? "" : "s"}` : `${customizedDecisionCount} customized`}
-                  </span>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="features" className="h-auto min-w-[11.5rem] flex-none justify-start gap-2 px-2 py-2 text-left lg:min-w-0 lg:flex-1">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold">3</span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold leading-4">Starter features</span>
-                  <span className="block truncate text-[0.68rem] font-normal text-muted-foreground">{optionalSelectedFeatures.length} optional</span>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="launch" className="h-auto min-w-[11.5rem] flex-none justify-start gap-2 px-2 py-2 text-left lg:min-w-0 lg:flex-1">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-background text-xs font-semibold">4</span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold leading-4">Launch Panel</span>
-                  <span className="block truncate text-[0.68rem] font-normal text-muted-foreground">{conflictedDecisionGroups.length > 0 ? "Review first" : "Ready"}</span>
-                </span>
-              </TabsTrigger>
+      <section className="mx-auto grid min-h-0 w-full max-w-[1440px] flex-1 px-4 py-2 md:px-6">
+        <Tabs value={activeBuilderStep} onValueChange={(value) => setActiveBuilderStep(value as BuilderStepId)} className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-2" data-testid="builder-tabs">
+            <TabsList className="grid h-auto w-full shrink-0 grid-cols-3 gap-1 p-1">
+              <TabsTrigger value="settings" className="h-9 min-w-0 px-1 text-[0.68rem] sm:px-2 sm:text-sm">1 Project settings</TabsTrigger>
+              <TabsTrigger value="features" className="h-9 min-w-0 px-1 text-[0.68rem] sm:px-2 sm:text-sm">2 Features</TabsTrigger>
+              <TabsTrigger value="launch" className="h-9 min-w-0 px-1 text-[0.68rem] sm:px-2 sm:text-sm">3 Launch Panel</TabsTrigger>
             </TabsList>
-            <TabsContent value="settings" className="mt-0 min-h-0 overflow-y-auto pr-1">
-          <Card className="min-h-full">
-            <CardHeader>
-              <CardTitle>Project settings</CardTitle>
-              <CardDescription>Start with the project identity, then tune runtime choices only when needed.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="project" className="gap-5">
-                <TabsList className="grid h-auto w-full grid-cols-3">
-                  <TabsTrigger value="project">Project</TabsTrigger>
-                  <TabsTrigger value="runtime">Runtime</TabsTrigger>
-                  <TabsTrigger value="summary">Summary</TabsTrigger>
-                </TabsList>
-                <TabsContent value="project" className="grid gap-5">
+            <TabsContent value="settings" className="mt-0 grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden pr-1">
+              <div className="min-h-0 overflow-y-auto pr-1">
+                <div className="grid gap-3">
+                  <Card>
+                  <CardHeader>
+                    <CardDescription>Set the generated project identity and application type.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-5">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="launch-name">Name</Label>
@@ -1581,8 +2332,15 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                     options={initialData.selectOptions.type.options}
                     onChange={(value) => update({ type: value, features: state.features.filter((name) => (initialData.featuresByType[slugFromType(value, initialData.applicationTypes)] ?? []).some((feature) => feature.name === name)) })}
                   />
-                </TabsContent>
-                <TabsContent value="runtime" className="grid gap-5">
+                  </CardContent>
+                  </Card>
+
+                  <Card>
+                  <CardHeader>
+                    <CardTitle>Runtime</CardTitle>
+                    <CardDescription>{runtime}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-5">
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <OptionSelect
                       id="launch-java"
@@ -1613,12 +2371,7 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                       onChange={(value) => update({ test: value })}
                     />
                   </div>
-                  <div className="grid gap-3 rounded-lg border bg-muted/40 p-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <span className="text-sm font-semibold">Runtime</span>
-                      <span className="text-sm text-muted-foreground">{runtime}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 rounded-lg border bg-muted/40 p-4">
                       <Button type="button" variant={state.build === "GRADLE" ? "default" : "outline"} size="sm" onClick={() => update({ build: "GRADLE" })} aria-pressed={state.build === "GRADLE"} data-testid="build-gradle">
                         Gradle
                       </Button>
@@ -1631,88 +2384,23 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                       <Button type="button" variant={state.test === "JUNIT" ? "default" : "outline"} size="sm" onClick={() => update({ test: "JUNIT" })} aria-pressed={state.test === "JUNIT"} data-testid="test-junit">
                         JUnit
                       </Button>
-                    </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="summary" className="grid gap-3">
-                  <div className="grid gap-2 rounded-lg border bg-muted/40 p-4 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Coordinate</span>
-                      <span className="text-right font-medium">{projectName(state.appName, state.basePackage)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Runtime</span>
-                      <span className="text-right font-medium">{runtime}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Configuration</span>
-                      <span className="text-right font-medium">{configurationFileName(state)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">Optional features</span>
-                      <span className="font-medium">{optionalSelectedFeatures.length}</span>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-            </TabsContent>
-
-            <TabsContent value="decisions" className="mt-0 min-h-0 overflow-y-auto pr-1">
-          <Card className="min-h-full">
-            <CardHeader>
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <CardTitle>Decision Center</CardTitle>
-                  <CardDescription>
-                    Review framework-wide choices without opening every default.
-                  </CardDescription>
+                  </CardContent>
+                  </Card>
                 </div>
-                <Badge variant={conflictedDecisionGroups.length > 0 ? "outline" : "secondary"}>
-                  {conflictedDecisionGroups.length > 0 ? `${conflictedDecisionGroups.length} conflict${conflictedDecisionGroups.length === 1 ? "" : "s"}` : "No conflicts"}
-                </Badge>
               </div>
-            </CardHeader>
-            <CardContent className="grid gap-4" data-testid="decision-center">
-              <div className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                <span>{decisionGroups.length} decisions checked</span>
-                <span aria-hidden="true">-</span>
-                <span>{conflictedDecisionGroups.length} conflicts</span>
-                <span aria-hidden="true">-</span>
-                <span>{customizedDecisionCount > 0 ? `${customizedDecisionCount} customized` : `${defaultDecisionCount} defaults`}</span>
-              </div>
-              {conflictedDecisionGroups.length > 0 && (
-                <Alert variant="destructive">
-                  <ShieldAlert className="size-4" />
-                  <AlertTitle>Resolve one-choice groups before sharing this stack</AlertTitle>
-                  <AlertDescription>
-                    Expert feature selection can still add conflicting features. Use the decision cards below to keep one option per group.
-                  </AlertDescription>
-                </Alert>
-              )}
-              <div className="grid gap-3">
-                {decisionGroups.map((group) => (
-                  <DecisionGroupPanel
-                    key={group.id}
-                    group={group}
-                    expanded={openDecisionGroupId === group.id}
-                    onToggle={() => setOpenDecisionGroupId(openDecisionGroupId === group.id ? "" : group.id)}
-                    onSelect={selectDecisionChoice}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              <BuilderStepNav
+                next="Features"
+                onNext={() => setActiveBuilderStep("features")}
+              />
             </TabsContent>
 
-            <TabsContent value="features" className="mt-0 min-h-0 overflow-y-auto pr-1">
-          <Card className="min-h-full">
-            <CardHeader>
+            <TabsContent value="features" className="mt-0 grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden pr-1">
+          <Card className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)]">
+            <CardHeader className="shrink-0">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <CardTitle>Starter features</CardTitle>
-                  <CardDescription>Search features, browse by category, or review selected additions.</CardDescription>
+                  <CardDescription>Search groups or features, then open any box to change configuration or add backend starter capabilities.</CardDescription>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={() => update({ features: state.features.filter((name) => decisionFeatureNames.has(name)) })} disabled={optionalSelectedFeatures.length === 0}>
                   <X className="size-4" />
@@ -1720,132 +2408,99 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="grid gap-5">
-              <div className="relative">
-                <Label htmlFor="feature-search-input" className="sr-only">Search starter features</Label>
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="feature-search-input"
-                  type="search"
-                  className="pl-9"
-                  placeholder="Search features, categories, or descriptions"
-                  value={featureQuery}
-                  onChange={(event) => setFeatureQuery(event.target.value)}
-                  data-testid="feature-search"
-                />
-              </div>
-              <Tabs value={featureCategory} onValueChange={(value) => setFeatureCategory(value as FeatureCategoryId)} className="gap-3">
-                <TabsList className="flex h-auto w-full flex-wrap justify-start">
-                  {featureCategories.map((category) => (
-                    <TabsTrigger key={category.id} value={category.id} className="flex-none">
-                      {category.label}
-                      <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[0.65rem] text-muted-foreground">
-                        {categoryCounts.get(category.id) ?? 0}
-                      </span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button type="button" variant={featureScope === "compatible" ? "default" : "outline"} size="sm" onClick={() => setFeatureScope("compatible")} aria-pressed={featureScope === "compatible"}>
-                  <ListFilter className="size-4" />
-                  Compatible ({explorableFeatures.length})
-                </Button>
-                <Button type="button" variant={featureScope === "selected" ? "default" : "outline"} size="sm" onClick={() => setFeatureScope("selected")} aria-pressed={featureScope === "selected"}>
-                  Selected ({optionalSelectedFeatures.length})
-                </Button>
-                <Button type="button" variant={featureScope === "recommended" ? "default" : "outline"} size="sm" onClick={() => setFeatureScope("recommended")} aria-pressed={featureScope === "recommended"}>
-                  Recommended ({explorableFeatures.filter(featureIsRecommended).length})
-                </Button>
-                {(featureQuery || featureCategory !== "popular" || featureScope !== "compatible") && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setFeatureQuery("");
-                      setFeatureCategory("popular");
-                      setFeatureScope("compatible");
-                    }}
-                  >
-                    <X className="size-4" />
-                    Clear filters
-                  </Button>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground" role="status" aria-live="polite">
-                <span>
-                  Showing {Math.min(filteredFeatures.length, 80)} of {filteredFeatures.length} matching feature{filteredFeatures.length === 1 ? "" : "s"}
-                </span>
-                <span>
-                  {optionalSelectedFeatures.length} selected outside framework decisions
-                </span>
-              </div>
-              {featureScope === "selected" && selectedDecisionFeatures.length > 0 && (
-                <div className="grid gap-2 rounded-lg border bg-muted/40 p-4">
-                  <p className="text-sm font-semibold">Framework decision features</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDecisionFeatures.map((feature) => (
-                      <Badge key={feature.name} variant="outline">{feature.name}</Badge>
-                    ))}
-                  </div>
-                  <p className="text-xs leading-5 text-muted-foreground">
-                    Change these from the Decision Center so one-choice groups stay consistent.
-                  </p>
-                </div>
-              )}
-              <div className="grid gap-3 md:grid-cols-2">
-                {filteredFeatures.slice(0, 80).map((feature) => (
-                  <FeatureCard
-                    key={feature.name}
-                    feature={feature}
-                    checked={state.features.includes(feature.name)}
-                    recommended={featureIsRecommended(feature)}
-                    onToggle={() => toggleFeature(feature.name)}
+            <CardContent className="grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3">
+                <div className="relative shrink-0">
+                  <Label htmlFor="feature-group-search" className="sr-only">Search feature groups</Label>
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="feature-group-search"
+                    type="search"
+                    className="pl-9"
+                    placeholder="Search groups or features"
+                    value={featureGroupQuery}
+                    onChange={(event) => setFeatureGroupQuery(event.target.value)}
+                    data-testid="feature-group-search"
                   />
-                ))}
-                {filteredFeatures.length === 0 && (
-                  <div className="rounded-lg border border-dashed p-8 text-center">
-                    <p className="font-semibold">No compatible features found for this filter.</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Clear filters or switch to All.</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-4"
-                      onClick={() => {
-                        setFeatureQuery("");
-                        setFeatureCategory("all");
-                        setFeatureScope("compatible");
-                      }}
-                    >
-                      Show all features
-                    </Button>
-                  </div>
-                )}
-              </div>
+                </div>
+                <div className="min-h-0 overflow-y-auto pr-1">
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-6" data-testid="decision-center">
+                    <PlatformPinnedFeature
+                      state={state}
+                      initialData={initialData}
+                      languageLabel={languageLabel}
+                      buildLabel={buildLabel}
+                      javaLabel={javaLabel}
+                      onUpdate={update}
+                      onLanguageChange={updateLanguage}
+                    />
+                    <TestingPinnedFeature
+                      testLabel={testLabel}
+                      testValue={state.test}
+                      testOptions={initialData.selectOptions.test.options}
+                      group={testingFeatureGroup}
+                      selectedFeatureNames={state.features}
+                      onTestChange={(value) => update({ test: value })}
+                      onToggle={toggleFeature}
+                    />
+                    {decisionGroups.map((group) => (
+                      <DecisionGroupPanel
+                        key={group.id}
+                        group={group}
+                        onSelect={selectDecisionChoice}
+                      />
+                    ))}
+                    {filteredFeatureGroupFeatures.map(({ group, features, matchedFeatures }) => (
+                      <CapabilityGroupDialog
+                        key={group.id}
+                        group={group}
+                        features={features}
+                        matchedFeatures={matchedFeatures}
+                        selectedFeatureNames={state.features}
+                        onToggle={toggleFeature}
+                      />
+                    ))}
+                    {filteredFeatureGroupFeatures.length === 0 && (
+                      <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground sm:col-span-2 lg:col-span-6">
+                        No feature groups match this search.
+                      </div>
+                    )}
+                    </div>
+                </div>
             </CardContent>
           </Card>
+              <BuilderStepNav
+                previous="Project settings"
+                next="Launch Panel"
+                onPrevious={() => setActiveBuilderStep("settings")}
+                onNext={() => setActiveBuilderStep("launch")}
+              />
             </TabsContent>
 
-            <TabsContent value="launch" className="mt-0 min-h-0 overflow-y-auto pr-1">
-              <LaunchPanel
-                state={state}
-                runtime={runtime}
-                testLabel={testLabel}
-                createUrl={createUrl}
-                previewUrl={previewUrl}
-                diffUrl={diffUrl}
-                command={command}
-                curl={curl}
-                shareUrl={shareUrl}
-                selectedFeatures={optionalSelectedFeatures}
-                decisionGroups={decisionGroups}
-                catalogCount={availableFeatures.length}
-                conflictedDecisionGroups={conflictedDecisionGroups}
-                source={initialData.source}
-                generatedAt={initialData.generatedAt}
-                onRemoveFeature={toggleFeature}
+            <TabsContent value="launch" className="mt-0 grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden pr-1">
+              <div className="min-h-0 overflow-y-auto pr-1">
+                <LaunchPanel
+                  state={state}
+                  initialData={initialData}
+                  runtime={runtime}
+                  testLabel={testLabel}
+                  createUrl={createUrl}
+                  previewUrl={previewUrl}
+                  diffUrl={diffUrl}
+                  command={command}
+                  curl={curl}
+                  shareUrl={shareUrl}
+                  selectedFeatures={optionalSelectedFeatures}
+                  decisionGroups={decisionGroups}
+                  catalogCount={availableFeatures.length}
+                  conflictedDecisionGroups={conflictedDecisionGroups}
+                  source={initialData.source}
+                  generatedAt={initialData.generatedAt}
+                  onRemoveFeature={toggleFeature}
+                />
+              </div>
+              <BuilderStepNav
+                previous="Features"
+                onPrevious={() => setActiveBuilderStep("features")}
               />
             </TabsContent>
           </Tabs>

@@ -1,6 +1,8 @@
 import { promises as fs } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { build } from "esbuild";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceTemplatesDirectory = path.join(projectDirectory, "src", "templates");
@@ -10,7 +12,7 @@ const outputTemplatesDirectory = path.join(outputDirectory, "templates");
 const manifestFile = path.join(outputDirectory, "assets-manifest.json");
 const manifestDirectory = path.join(outputDirectory, "manifests");
 
-const requiredPlaceholders = {
+const copiedTemplatePlaceholders = {
   "docs/docs-index.html": [
     "pageTitle",
     "pageDescription",
@@ -61,13 +63,25 @@ const requiredPlaceholders = {
   ]
 };
 
+const generatedSnippetTemplates = await renderGeneratedSnippetTemplates();
+const requiredTemplates = {
+  ...copiedTemplatePlaceholders,
+  ...Object.fromEntries(
+    Object.entries(generatedSnippetTemplates).map(([relativeTemplate, generated]) => [
+      relativeTemplate,
+      generated.placeholders
+    ])
+  )
+};
+
 await fs.rm(outputTemplatesDirectory, { recursive: true, force: true });
 await fs.mkdir(outputTemplatesDirectory, { recursive: true });
 
-for (const [relativeTemplate, placeholders] of Object.entries(requiredPlaceholders)) {
+for (const [relativeTemplate, placeholders] of Object.entries(requiredTemplates)) {
   const source = path.join(sourceTemplatesDirectory, relativeTemplate);
   const destination = path.join(outputTemplatesDirectory, relativeTemplate);
-  const content = await fs.readFile(source, "utf8");
+  const generated = generatedSnippetTemplates[relativeTemplate];
+  const content = generated?.html ?? (await fs.readFile(source, "utf8"));
   for (const placeholder of placeholders) {
     if (!content.includes(`{{${placeholder}}}`)) {
       throw new Error(`${relativeTemplate} is missing required placeholder {{${placeholder}}}.`);
@@ -82,18 +96,18 @@ const assets = {
   micronautAssets: await listFiles(path.join(distDirectory, "micronaut-assets"))
 };
 const allTemplates = Object.fromEntries(
-  Object.keys(requiredPlaceholders).map((template) => [
+  Object.keys(requiredTemplates).map((template) => [
     template,
     {
-      resource: `META-INF/micronaut-web/templates/${path.basename(template)}`,
-      placeholders: requiredPlaceholders[template]
+      resource: `META-INF/micronaut-web/templates/${template.split("/").slice(1).join("/")}`,
+      placeholders: requiredTemplates[template]
     }
   ])
 );
 const manifest = {
   templateRoot: "META-INF/micronaut-web/templates",
   surfaceRoot: "META-INF/micronaut-web/surfaces",
-  placeholders: Array.from(new Set(Object.values(requiredPlaceholders).flat())).sort(),
+  placeholders: Array.from(new Set(Object.values(requiredTemplates).flat())).sort(),
   templates: allTemplates,
   assets
 };
@@ -109,7 +123,50 @@ for (const surface of ["docs", "guides"]) {
     `${JSON.stringify({ ...manifest, templates }, null, 2)}\n`
   );
 }
-console.log(`Prepared ${Object.keys(requiredPlaceholders).length} HTML templates and asset manifest.`);
+console.log(`Prepared ${Object.keys(requiredTemplates).length} HTML templates and asset manifest.`);
+
+async function renderGeneratedSnippetTemplates() {
+  await fs.mkdir(outputDirectory, { recursive: true });
+  const tempDirectory = await fs.mkdtemp(path.join(outputDirectory, ".snippet-template-renderer-"));
+  const outfile = path.join(tempDirectory, "docs-snippet-templates.mjs");
+  try {
+    await build({
+      entryPoints: [path.join(projectDirectory, "src", "components", "web", "docs-snippet-templates.tsx")],
+      outfile,
+      bundle: true,
+      format: "esm",
+      jsx: "automatic",
+      platform: "node",
+      packages: "external",
+      logLevel: "silent",
+      plugins: [
+        {
+          name: "micronaut-web-alias",
+          setup(buildContext) {
+            buildContext.onResolve({ filter: /^@\// }, (args) => ({
+              path: resolveSourceImport(args.path)
+            }));
+          }
+        }
+      ]
+    });
+    const module = await import(pathToFileURL(outfile).href);
+    return module.renderDocsSnippetTemplates();
+  } finally {
+    await fs.rm(tempDirectory, { recursive: true, force: true });
+  }
+}
+
+function resolveSourceImport(specifier) {
+  const candidate = path.join(projectDirectory, "src", specifier.slice(2));
+  for (const extension of ["", ".tsx", ".ts", ".jsx", ".js"]) {
+    const resolved = `${candidate}${extension}`;
+    if (existsSync(resolved)) {
+      return resolved;
+    }
+  }
+  return candidate;
+}
 
 async function listFiles(directory) {
   try {

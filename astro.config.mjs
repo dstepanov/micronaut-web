@@ -16,6 +16,15 @@ export default defineConfig({
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client"]
     },
+    server: {
+      proxy: {
+        "/launch-preview-proxy": {
+          target: "https://launch.micronaut.io",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/launch-preview-proxy/, "")
+        }
+      }
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url))

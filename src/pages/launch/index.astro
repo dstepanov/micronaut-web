@@ -7,10 +7,12 @@ const API_BASE_URL = "https://launch.micronaut.io";
 type SelectOptionsResponse = LaunchInitialData["selectOptions"];
 type ApplicationTypesResponse = { types: LaunchInitialData["applicationTypes"] };
 type FeaturesResponse = { features: LaunchInitialData["featuresByType"][string] };
+type VersionsResponse = { versions: Record<string, string> };
 
 const fallbackData: LaunchInitialData = {
   apiBaseUrl: API_BASE_URL,
   generatedAt: new Date().toISOString(),
+  micronautVersion: "5.0.0",
   source: "fallback",
   selectOptions: {
     type: {
@@ -70,6 +72,14 @@ const fallbackData: LaunchInitialData = {
       { name: "toml", title: "TOML Configuration", description: "Uses TOML for application configuration", category: "Configuration", preview: false, community: false },
       { name: "serialization-jackson", title: "Micronaut Serialization Jackson Core", description: "Adds support using Micronaut Serialization with Jackson Core", category: "API", preview: false, community: false },
       { name: "management", title: "Micronaut Management", description: "Adds management and monitoring endpoints", category: "Management", preview: false, community: false },
+      { name: "logback", title: "Logback", description: "Adds Logback logging support", category: "Logging", preview: false, community: false },
+      { name: "log4j2", title: "Log4j 2 Logging", description: "Adds Log4j 2 logging support", category: "Logging", preview: false, community: false },
+      { name: "slf4j-simple", title: "SLF4J Simple Logging", description: "Adds SLF4J Simple Logging through simplelogger.properties", category: "Logging", preview: false, community: false },
+      { name: "slf4j-simple-logger", title: "SLF4J Simple Logger", description: "Adds SLF4J Simple Logger support", category: "Logging", preview: false, community: false },
+      { name: "jul-to-slf4j", title: "SLF4J JUL Bridge", description: "Adds routing for java.util.logging to SLF4J", category: "Logging", preview: false, community: false },
+      { name: "liquibase-slf4j", title: "Liquibase SLF4J", description: "Adds SLF4J logging support for Liquibase", category: "Logging", preview: false, community: false },
+      { name: "cache-caffeine", title: "Caffeine Cache", description: "Adds Caffeine cache support", category: "Cache", preview: false, community: false },
+      { name: "cache-coherence", title: "Coherence Cache", description: "Adds support for caching using Coherence", category: "Cache", preview: false, community: false },
       { name: "problem-json", title: "Problem JSON", description: "Adds application/problem+json style responses", category: "API", preview: false, community: false },
       { name: "http-client", title: "Micronaut HTTP Client", description: "Adds the standard Micronaut HTTP client", category: "Client", preview: false, community: false },
       { name: "http-client-jdk", title: "JDK HTTP Client", description: "Adds the JDK HTTP client integration", category: "Client", preview: false, community: false },
@@ -77,9 +87,52 @@ const fallbackData: LaunchInitialData = {
       { name: "rxjava3", title: "RxJava 3", description: "Adds RxJava 3 support", category: "Reactive", preview: false, community: false },
       { name: "reactor-http-client", title: "Reactor HTTP Client", description: "Adds the Reactor variation of the Micronaut HTTP client", category: "Client", preview: false, community: false },
       { name: "rxjava3-http-client", title: "RxJava 3 HTTP Client", description: "Adds the RxJava 3 variation of the Micronaut HTTP client", category: "Client", preview: false, community: false },
+      { name: "netty-server", title: "Netty Server", description: "Adds the Netty HTTP server runtime", category: "Server", preview: false, community: false },
       { name: "openapi", title: "OpenAPI Support", description: "Adds support for OpenAPI (Swagger)", category: "API", preview: false, community: false },
+      { name: "jdbc-hikari", title: "JDBC Hikari", description: "Adds HikariCP JDBC connection pool support", category: "Database", preview: false, community: false },
+      { name: "h2", title: "H2 Database", description: "Adds the H2 database driver and default config", category: "Database", preview: false, community: false },
+      { name: "postgres", title: "PostgresSQL", description: "Adds the PostgresSQL driver and default config", category: "Database", preview: false, community: false },
+      { name: "mysql", title: "MySQL", description: "Adds the MySQL driver and default config", category: "Database", preview: false, community: false },
+      { name: "oracle", title: "Oracle Database Server", description: "Adds the Oracle driver and default config", category: "Database", preview: false, community: false },
+      { name: "sqlserver", title: "Microsoft SQL Server", description: "Adds the SQL Server driver and default config", category: "Database", preview: false, community: false },
       { name: "data-jdbc", title: "Micronaut Data JDBC", description: "Adds support for Micronaut Data JDBC", category: "Database", preview: false, community: false },
-      { name: "validation", title: "Micronaut Validation", description: "Adds support for Micronaut Validation", category: "Validation", preview: false, community: false }
+      { name: "data-r2dbc", title: "Micronaut Data R2DBC", description: "Micronaut Data support for Reactive Database Connectivity", category: "Database", preview: false, community: false },
+      { name: "data-jpa", title: "Micronaut Data JPA", description: "Adds support for Micronaut Data Hibernate/JPA", category: "Database", preview: false, community: false },
+      { name: "coherence-data", title: "Coherence Data", description: "Adds support for using Micronaut Data with Coherence", category: "Database", preview: false, community: false },
+      { name: "data-azure-cosmos", title: "Micronaut Data Azure Cosmos", description: "Adds support for defining data repositories for Azure Cosmos Db", category: "Database", preview: false, community: false },
+      { name: "jooq", title: "jOOQ", description: "Adds support for jOOQ", category: "Database", preview: false, community: false },
+      { name: "flyway", title: "Flyway Database Migration", description: "Adds support for Flyway database migrations", category: "Database", preview: false, community: false },
+      { name: "liquibase", title: "Liquibase Database Migration", description: "Adds support for Liquibase database migrations", category: "Database", preview: false, community: false },
+      { name: "azure-cosmos-db", title: "Azure Cosmos DB", description: "Enables access to Azure Cosmos DB", category: "Database", preview: false, community: false },
+      { name: "cassandra", title: "Cassandra Driver", description: "Adds support for Cassandra persistence", category: "Database", preview: false, community: false },
+      { name: "coherence", title: "Coherence", description: "Adds support for using Coherence", category: "Database", preview: false, community: false },
+      { name: "data-mongodb", title: "Micronaut Data MongoDB", description: "Adds support for defining synchronous data repositories for MongoDB", category: "Database", preview: false, community: false },
+      { name: "data-mongodb-reactive", title: "Micronaut Data MongoDB Reactive", description: "Adds support for defining reactive data repositories for MongoDB", category: "Database", preview: false, community: false },
+      { name: "dynamodb", title: "Amazon DynamoDB", description: "Integrates with Amazon DynamoDB", category: "Database", preview: false, community: false },
+      { name: "redis-lettuce", title: "Lettuce Redis Driver", description: "Configures the Lettuce driver for Redis", category: "Database", preview: false, community: false },
+      { name: "neo4j-bolt", title: "Neo4j Bolt Driver", description: "Adds support for the Neo4j Bolt Driver", category: "Database", preview: false, community: false },
+      { name: "validation", title: "Micronaut Validation", description: "Adds support for Micronaut Validation", category: "Validation", preview: false, community: false },
+      { name: "junit-platform-suite-engine", title: "JUnit Platform Suite Engine", description: "Adds JUnit Platform Suite Engine support", category: "Testing", preview: false, community: false },
+      { name: "kafka", title: "Kafka", description: "Adds Kafka messaging support", category: "Messaging", preview: false, community: false },
+      { name: "rabbitmq", title: "RabbitMQ", description: "Adds RabbitMQ messaging support", category: "Messaging", preview: false, community: false },
+      { name: "mqtt", title: "MQTT", description: "Adds MQTT messaging support", category: "Messaging", preview: false, community: false },
+      { name: "nats", title: "Nats", description: "Adds NATS messaging support", category: "Messaging", preview: false, community: false },
+      { name: "pulsar", title: "Pulsar", description: "Adds Apache Pulsar messaging support", category: "Messaging", preview: false, community: false },
+      { name: "object-storage-aws", title: "Object Storage - AWS", description: "Adds the AWS object storage implementation", category: "Cloud", preview: false, community: false },
+      { name: "object-storage-azure", title: "Object Storage - Azure", description: "Adds the Azure object storage implementation", category: "Cloud", preview: false, community: false },
+      { name: "object-storage-gcp", title: "Object Storage - GCP", description: "Adds the GCP object storage implementation", category: "Cloud", preview: false, community: false },
+      { name: "object-storage-local", title: "Object Storage - Local", description: "Adds a local object storage implementation", category: "Development Tools", preview: false, community: false },
+      { name: "object-storage-oracle-cloud", title: "Object Storage - Oracle Cloud", description: "Adds the Oracle Cloud object storage implementation", category: "Cloud", preview: false, community: false },
+      { name: "views-thymeleaf", title: "Thymeleaf Views", description: "Adds server-side view rendering using Thymeleaf", category: "View Rendering", preview: false, community: false },
+      { name: "views-freemarker", title: "Freemarker Views", description: "Adds server-side view rendering using Apache Freemarker", category: "View Rendering", preview: false, community: false },
+      { name: "views-handlebars", title: "Handlebars Views", description: "Adds server-side view rendering using Handlebars", category: "View Rendering", preview: false, community: false },
+      { name: "views-jte", title: "JTE Views", description: "Adds server-side view rendering using JTE", category: "View Rendering", preview: false, community: false },
+      { name: "views-pebble", title: "Pebble Views", description: "Adds server-side view rendering using Pebble", category: "View Rendering", preview: false, community: false },
+      { name: "views-react", title: "React SSR", description: "Adds server-side rendering of React components", category: "View Rendering", preview: true, community: false },
+      { name: "views-rocker", title: "Rocker Views", description: "Adds server-side view rendering using Rocker", category: "View Rendering", preview: false, community: false },
+      { name: "views-soy", title: "Soy Views", description: "Adds server-side view rendering using Soy templates", category: "View Rendering", preview: false, community: false },
+      { name: "views-velocity", title: "Velocity Views", description: "Adds server-side view rendering using Apache Velocity", category: "View Rendering", preview: false, community: false },
+      { name: "views-fieldset", title: "Form & Fieldset Generator", description: "Adds APIs to generate HTML fieldset representations", category: "View Rendering", preview: false, community: false }
     ]
   }
 };
@@ -94,9 +147,10 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 async function loadLaunchData(): Promise<LaunchInitialData> {
   try {
-    const [selectOptions, applicationTypes] = await Promise.all([
+    const [selectOptions, applicationTypes, versions] = await Promise.all([
       fetchJson<SelectOptionsResponse>("/select-options"),
-      fetchJson<ApplicationTypesResponse>("/application-types")
+      fetchJson<ApplicationTypesResponse>("/application-types"),
+      fetchJson<VersionsResponse>("/versions")
     ]);
     const featuresEntries = await Promise.all(
       applicationTypes.types.map(async (type) => {
@@ -108,6 +162,7 @@ async function loadLaunchData(): Promise<LaunchInitialData> {
     return {
       apiBaseUrl: API_BASE_URL,
       generatedAt: new Date().toISOString(),
+      micronautVersion: versions.versions["micronaut.version"] ?? versions.versions["micronaut.core.version"] ?? fallbackData.micronautVersion,
       source: "live",
       selectOptions,
       applicationTypes: applicationTypes.types,

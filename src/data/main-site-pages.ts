@@ -32,6 +32,12 @@ export type SuccessStory = {
   tag: string;
   summary: string;
   detail: string;
+  proofs?: string[];
+  scenario: string;
+  challenge: string;
+  micronautUse: string;
+  outcome: string;
+  technologies: string[];
   href: string;
   sourceUrl: string;
   logo?: string;
@@ -45,6 +51,12 @@ export const successStories: SuccessStory[] = [
     tag: "API performance",
     summary: "Sonar uses Micronaut with AWS Lambda SnapStart and CRaC-oriented lifecycle support.",
     detail: "The story focuses on serverless readiness, application snapshotting, and SonarQube analysis for Micronaut code quality.",
+    proofs: ["AWS Lambda SnapStart", "CRaC lifecycle support"],
+    scenario: "Serverless API performance",
+    challenge: "Keep Lambda-based services responsive while coordinating startup work, static analysis, and production lifecycle behavior.",
+    micronautUse: "Micronaut provides the HTTP/API foundation and works with SnapStart and CRaC-oriented lifecycle hooks.",
+    outcome: "A production story around serverless readiness, snapshotting, and Micronaut code-quality analysis.",
+    technologies: ["AWS Lambda", "SnapStart", "CRaC", "SonarQube"],
     href: "/using-micronaut-framework-at-sonar/",
     sourceUrl: "https://micronaut.io/using-micronaut-framework-at-sonar/",
     logo: "/micronaut-assets/home/sonar-black-and-grey.svg",
@@ -56,6 +68,12 @@ export const successStories: SuccessStory[] = [
     tag: "Grails migration",
     summary: "Agorapulse moved a large Grails codebase toward Micronaut while running serverless functions and backend applications.",
     detail: "The article highlights AWS Lambda, more than 100 serverless functions, more than 50 server applications, and open-source Micronaut libraries.",
+    proofs: ["100+ serverless functions", "50+ server applications"],
+    scenario: "Grails-to-Micronaut migration",
+    challenge: "Modernize a mature Grails estate without stopping active serverless and backend application development.",
+    micronautUse: "Micronaut supports the migration path across Lambda functions, backend services, and shared open-source libraries.",
+    outcome: "A mixed estate with more than 100 serverless functions, more than 50 server applications, and reusable Micronaut libraries.",
+    technologies: ["Grails", "AWS Lambda", "Serverless", "Micronaut Libraries"],
     href: "/micronaut-success-stories/agorapulse-micronaut-journey/",
     sourceUrl: "https://micronaut.io/micronaut-success-stories/agorapulse-micronaut-journey/",
     logo: "/micronaut-assets/home/agorapulse-logo-white-bg.png",
@@ -67,6 +85,12 @@ export const successStories: SuccessStory[] = [
     tag: "Workflow orchestration",
     summary: "Kestra uses Micronaut for REST APIs, HTTP clients, OpenAPI generation, cloud readiness, and reactive workloads.",
     detail: "The article covers Kubernetes probes, environment-specific configuration, observability, modularity, SSE log streaming, and a plugin system with hundreds of plugins.",
+    proofs: ["OpenAPI generation", "Kubernetes readiness"],
+    scenario: "Workflow orchestration platform",
+    challenge: "Build a modular orchestration service with REST APIs, generated contracts, observability, streaming logs, and plugin extension points.",
+    micronautUse: "Micronaut powers APIs, HTTP clients, OpenAPI generation, probes, configuration, reactive workloads, and SSE log streaming.",
+    outcome: "A cloud-ready orchestration platform with modular services and a large plugin ecosystem.",
+    technologies: ["REST APIs", "OpenAPI", "Kubernetes", "SSE"],
     href: "/micronaut-success-stories/micronaut-framework-at-kestra/",
     sourceUrl: "https://micronaut.io/micronaut-success-stories/micronaut-framework-at-kestra/"
   },
@@ -76,6 +100,12 @@ export const successStories: SuccessStory[] = [
     tag: "IoT microservices",
     summary: "Samsung SmartThings moved from a legacy monolith toward a lightweight Micronaut microservices system.",
     detail: "The story covers smart-home IoT scale, hundreds of services, sub-second operation goals, faster testing, and improved cloud efficiency.",
+    proofs: ["Smart-home IoT scale", "Sub-second goals"],
+    scenario: "IoT monolith modernization",
+    challenge: "Move smart-home services away from a legacy monolith while preserving responsiveness at connected-device scale.",
+    micronautUse: "Micronaut supports lightweight microservices, faster tests, and cloud-efficient runtime behavior.",
+    outcome: "A microservices direction for hundreds of services with sub-second operation goals and better delivery ergonomics.",
+    technologies: ["IoT", "Microservices", "Testing", "Cloud"],
     href: "/micronaut-success-stories/from-monolith-to-microservices-with-the-micronaut-framework/",
     sourceUrl: "https://micronaut.io/micronaut-success-stories/from-monolith-to-microservices-with-the-micronaut-framework/",
     logo: "/micronaut-assets/home/samsung-smart-things.png",
@@ -87,6 +117,12 @@ export const successStories: SuccessStory[] = [
     tag: "Virtual events",
     summary: "CSS and Object Computing built a secure virtual conference platform on AWS with Micronaut in four weeks.",
     detail: "The article covers the pandemic shift from in-person events, matchmaking workflows, virtual conference delivery, and a compressed delivery schedule.",
+    proofs: ["AWS delivery", "Four-week build"],
+    scenario: "Rapid virtual-event platform",
+    challenge: "Replace in-person conference workflows with secure virtual matchmaking and conference delivery under a compressed deadline.",
+    micronautUse: "Micronaut backed a fast AWS delivery path for event workflows and application services.",
+    outcome: "A secure virtual conference platform delivered in four weeks.",
+    technologies: ["AWS", "Virtual Events", "Security", "Matchmaking"],
     href: "/responding-to-unexpected-disruption-with-agility-and-speed/",
     sourceUrl: "https://micronaut.io/responding-to-unexpected-disruption-with-agility-and-speed/"
   },
@@ -96,6 +132,12 @@ export const successStories: SuccessStory[] = [
     tag: "Microservices upgrade",
     summary: "A manufacturing organization replaced an obsolete legacy tool with a Micronaut-backed microservice solution in four weeks.",
     detail: "The story highlights a Netty-backed Micronaut server, a lean SPA, JSON communication, sub-second interactions, and very short deployment downtime.",
+    proofs: ["Four-week upgrade", "Sub-second interactions"],
+    scenario: "Legacy tool replacement",
+    challenge: "Replace an obsolete engineering tool with a modern service while keeping downtime low and interactions fast.",
+    micronautUse: "A Netty-backed Micronaut server handled JSON communication for a lean SPA.",
+    outcome: "A microservice upgrade delivered in four weeks with sub-second interactions and short deployment downtime.",
+    technologies: ["Netty", "JSON", "SPA", "Microservices"],
     href: "/micronaut-success-stories/seamless-microservices-upgrade/",
     sourceUrl: "https://micronaut.io/micronaut-success-stories/seamless-microservices-upgrade/"
   },
@@ -105,6 +147,12 @@ export const successStories: SuccessStory[] = [
     tag: "Serverless SaaS",
     summary: "Caribou combined Micronaut, GraalVM, Kotlin, and AWS Lambda to reduce cold-start pressure for a SaaS backend.",
     detail: "The article covers a REST API, GitHub integration, Lambda cold starts, GraalVM native images, fast tests, Swagger support, and developer productivity.",
+    proofs: ["GraalVM native images", "AWS Lambda cold starts"],
+    scenario: "Serverless SaaS backend",
+    challenge: "Keep a SaaS REST API productive while reducing Lambda cold-start pressure and supporting GitHub integration.",
+    micronautUse: "Micronaut combines Kotlin, fast testing, Swagger/OpenAPI support, and GraalVM native images for the backend.",
+    outcome: "A productive serverless SaaS architecture built around Micronaut, GraalVM, Kotlin, and AWS Lambda.",
+    technologies: ["GraalVM", "Kotlin", "AWS Lambda", "Swagger"],
     href: "/micronaut-success-stories/caribou-success-story/",
     sourceUrl: "https://micronaut.io/micronaut-success-stories/caribou-success-story/"
   }
