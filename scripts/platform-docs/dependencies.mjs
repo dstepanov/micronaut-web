@@ -1,14 +1,26 @@
-import { listingBlockHtml, macroAttribute } from "./listing.mjs";
+import { macroAttribute } from "./listing.mjs";
+import { snippetMarkerHtml } from "./snippet-markers.mjs";
 
 export function dependencyBlocksHtml(target, attrs, context) {
   const dependency = dependencyForTargetAndAttributes(target.trim(), attrs, context);
   const gradle = gradleDependency(dependency);
   const maven = mavenDependency(dependency);
-  const classes = "multi-language-sample docs-code-dependency-snippet";
-  return [
-    listingBlockHtml(gradle, "gradle", dependency.title, classes, "gradle", dependency.description),
-    listingBlockHtml(maven, "maven", "", classes)
-  ].join("\n");
+  return snippetMarkerHtml("dependency", {
+    title: dependency.title,
+    description: dependency.description,
+    samples: [
+      {
+        language: "gradle",
+        highlighterLanguage: "gradle",
+        source: gradle
+      },
+      {
+        language: "maven",
+        highlighterLanguage: "maven",
+        source: maven
+      }
+    ]
+  });
 }
 
 function dependencyForTargetAndAttributes(target, attrs, context) {

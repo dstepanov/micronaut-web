@@ -79,3 +79,10 @@ export function renderDocsSnippetTemplates() {
     "docs/snippets/properties-snippet.html": template(renderToStaticMarkup(<PropertiesSnippetTemplate />), propertiesSnippetPlaceholders)
   };
 }
+
+export function renderDocsSnippetStaticSupport() {
+  return {
+    styles: docsSnippetStyles,
+    templates: renderDocsSnippetTemplates()
+  };
+}

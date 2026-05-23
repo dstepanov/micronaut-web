@@ -3,12 +3,12 @@ import path from "node:path";
 
 import { isDirectory } from "./files.mjs";
 
-export async function copyProjectImageAssets(project, platformDocsDirectory, publicDirectory) {
+export async function copyProjectImageAssets(project, platformDocsDirectory, generatedDocsDirectory) {
   const sourceDirectory = path.join(platformDocsDirectory, project.submodulePath, "src", "main", "docs", "resources", "img");
   if (!(await isDirectory(sourceDirectory))) {
     return;
   }
-  const targetDirectory = path.join(publicDirectory, "assets", project.slug, "docs", "img");
+  const targetDirectory = path.join(generatedDocsDirectory, "assets", project.slug, "docs", "img");
   await fs.mkdir(path.dirname(targetDirectory), { recursive: true });
   await fs.cp(sourceDirectory, targetDirectory, { recursive: true });
 }

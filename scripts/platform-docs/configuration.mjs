@@ -1,6 +1,6 @@
 import { parseAttributeList } from "./adoc-attributes.mjs";
 import { configurationSamples } from "./configuration-samples.mjs";
-import { listingBlockHtml } from "./listing.mjs";
+import { snippetMarkerHtml } from "./snippet-markers.mjs";
 
 export function renderConfigurationBlocksInSource(source) {
   return source.replace(
@@ -8,10 +8,11 @@ export function renderConfigurationBlocksInSource(source) {
     (_, rawAttributes, configurationSource) => {
       const attributes = parseAttributeList(rawAttributes || "");
       const title = attributes.title || "";
-      const blocks = configurationSamples(configurationSource)
-        .map((sample) => listingBlockHtml(sample.source, sample.language, title, "multi-language-sample", sample.highlighterLanguage))
-        .join("\n");
-      return `++++\n${blocks}\n++++`;
+      const marker = snippetMarkerHtml("code", {
+        title,
+        samples: configurationSamples(configurationSource)
+      });
+      return `++++\n${marker}\n++++`;
     }
   );
 }

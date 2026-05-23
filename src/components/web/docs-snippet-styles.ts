@@ -6,6 +6,7 @@ const copyButtonMarker = "docs-snippet-copy docs-code-copy";
 
 export const docsSnippetStyles = {
   card: "docs-snippet-template docs-code-block my-5 flex flex-col gap-0 overflow-hidden rounded-xl border border-code-border bg-code-tab py-0 text-code-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20",
+  cardWithFooter: "docs-code-block-with-footer",
   standaloneCard: "docs-code-block docs-snippet-card my-5 flex flex-col gap-0 overflow-hidden rounded-xl border border-code-border bg-code-tab py-0 text-code-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20",
   propertiesCard: "docs-properties-template my-5 flex flex-col gap-0 overflow-hidden rounded-xl border border-border bg-card py-0 text-card-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20",
   codeSnippetTemplate: "docs-code-snippet-template",
@@ -17,8 +18,8 @@ export const docsSnippetStyles = {
   content: "docs-snippet-panels overflow-hidden bg-code px-0 text-code-foreground",
   panel: "docs-code-content docs-snippet-card-content bg-code text-code-foreground",
   codePre: "shiki shiki-themes github-light-default github-dark-default !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground",
-  codeElement: "shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6",
-  footer: "docs-snippet-card-footer docs-code-callouts block border-t border-code-border bg-code-tab px-6 py-4 text-sm leading-6 text-code-foreground [&_code]:!rounded-none [&_code]:!bg-code-foreground/10 [&_code]:!p-0 [&_code]:!text-[1em] [&_code]:!leading-[inherit] [&_code]:!text-code-foreground",
+  codeElement: "shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem]",
+  footer: "docs-snippet-card-footer docs-code-callouts block border-t border-code-border bg-code-tab px-6 py-3 text-sm leading-5 text-code-foreground [&_ol]:!gap-1 [&_li]:!gap-2 [&_code]:!rounded-none [&_code]:!bg-code-foreground/10 [&_code]:!p-0 [&_code]:!text-[1em] [&_code]:!leading-[inherit] [&_code]:!text-code-foreground",
   heading: "docs-snippet-heading flex min-w-0 items-center gap-2 text-sm leading-5 font-semibold text-code-foreground",
   propertiesHeading: "docs-properties-heading flex min-w-0 items-center gap-2 text-sm leading-5 font-semibold",
   description: "docs-snippet-description text-xs leading-5 text-code-muted",
@@ -43,7 +44,7 @@ export const docsSnippetStyles = {
   languageText: "docs-code-language-text inline-flex items-center leading-none",
   languageTextSelector: ".docs-code-language-text",
   languageIcon: "docs-code-language-icon inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none [&_svg]:block [&_svg]:size-full",
-  languageImageIcon: "docs-code-language-icon block size-3.5 shrink-0 self-center align-middle",
+  languageImageIcon: "docs-code-language-icon block size-3.5 shrink-0 self-center align-middle dark:brightness-0 dark:invert",
   languageIconFill: "docs-code-language-icon-fill",
   kindIcon: "docs-snippet-kind-icon"
 };

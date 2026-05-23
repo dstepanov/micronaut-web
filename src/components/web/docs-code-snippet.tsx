@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import {
   CopyIcon,
@@ -12,13 +12,15 @@ import {
 import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 import { withBasePath } from "@/lib/base-path";
 
-export type CodeSnippetLanguage = "java" | "kotlin" | "groovy" | "bash" | "text";
+export type CodeSnippetLanguage = "java" | "kotlin" | "groovy" | "bash" | "gradle" | "maven" | "text";
 
 export type CodeSnippetVariant = {
   language: CodeSnippetLanguage;
   label: string;
   fileName: string;
   code: string;
+  highlightedHtml?: string;
+  highlighterLanguage?: string;
 };
 
 export type CodeSnippetExample = {
@@ -26,36 +28,19 @@ export type CodeSnippetExample = {
   label: string;
   title: string;
   description: string;
+  callouts?: ReactNode[];
   variants: CodeSnippetVariant[];
 };
 
 const languageIcons: Partial<Record<CodeSnippetLanguage, string>> = {
   bash: "/micronaut-assets/icons/brands/gnubash.svg",
+  gradle: "/micronaut-assets/icons/brands/gradle.svg",
   groovy: "/micronaut-assets/icons/brands/apachegroovy.svg",
   java: "/micronaut-assets/icons/languages/java.svg",
   kotlin: "/micronaut-assets/icons/brands/kotlin.svg",
+  maven: "/micronaut-assets/icons/brands/apachemaven.svg",
   text: "/micronaut-assets/icons/languages/text.svg"
 };
-
-const shikiThemes = {
-  light: "github-light-default",
-  dark: "github-dark-default"
-} as const;
-
-const shikiLanguageAliases: Record<string, string> = {
-  bash: "shellscript",
-  console: "shellscript",
-  gradle: "kotlin",
-  maven: "xml",
-  pom: "xml",
-  sh: "shellscript",
-  shell: "shellscript",
-  text: "text",
-  txt: "text",
-  zsh: "shellscript"
-};
-
-const highlightedCodeCache = new Map<string, Promise<string>>();
 
 function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
   const icon = languageIcons[language] || languageIcons.text;
@@ -70,68 +55,27 @@ function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
   );
 }
 
-function shikiLanguage(language: string) {
-  const normalized = language.trim().toLowerCase();
-  return shikiLanguageAliases[normalized] || normalized || "text";
-}
-
-function extractCodeHtml(html: string) {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  return (template.content.querySelector("code")?.innerHTML || "")
-    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
-}
-
-async function highlightedCodeHtml(code: string, language: string) {
-  const cacheKey = `${language}\0${code}`;
-  const cached = highlightedCodeCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  const highlighted = import("shiki")
-    .then(({ codeToHtml }) => codeToHtml(code, {
-      lang: shikiLanguage(language),
-      themes: shikiThemes
-    }))
-    .then(extractCodeHtml);
-  highlightedCodeCache.set(cacheKey, highlighted);
-  return highlighted;
-}
-
-export function ShikiCodeBlock({ code, language }: { code: string; language: string }) {
-  const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    setHighlightedHtml(null);
-    highlightedCodeHtml(code, language)
-      .then((html) => {
-        if (active) {
-          setHighlightedHtml(html);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setHighlightedHtml(null);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [code, language]);
+export function ShikiCodeBlock({
+  code,
+  highlightedHtml,
+  language
+}: {
+  code: string;
+  highlightedHtml?: string;
+  language: string;
+}) {
+  const normalizedLanguage = language.trim().toLowerCase() || "text";
 
   return (
     <pre className={docsSnippetStyles.codePre} tabIndex={0}>
       {highlightedHtml ? (
         <code
-          className={`language-${language} ${docsSnippetStyles.codeElement}`}
-          data-lang={language}
+          className={`language-${normalizedLanguage} ${docsSnippetStyles.codeElement}`}
+          data-lang={normalizedLanguage}
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
         />
       ) : (
-        <code className={`language-${language} ${docsSnippetStyles.codeElement}`} data-lang={language}>
+        <code className={`language-${normalizedLanguage} ${docsSnippetStyles.codeElement}`} data-lang={normalizedLanguage}>
           {code}
         </code>
       )}
@@ -258,6 +202,15 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
           </span>
         </DocsSnippetCopyButton>
       }
+      footer={example.callouts?.length ? (
+        <ol>
+          {example.callouts.map((callout, index) => (
+            <li key={index}>
+              <p>{callout}</p>
+            </li>
+          ))}
+        </ol>
+      ) : undefined}
     >
       {example.variants.map((variant, index) => {
         const active = index === activeIndex;
@@ -271,7 +224,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
             hidden={!active}
             className={docsSnippetStyles.panel}
           >
-            <ShikiCodeBlock code={variant.code} language={variant.language} />
+            <ShikiCodeBlock code={variant.code} highlightedHtml={variant.highlightedHtml} language={variant.language} />
           </div>
         );
       })}

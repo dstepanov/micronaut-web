@@ -10,6 +10,7 @@ const generatedCssBanner = "/* Generated from src/styles/docs-snippet-runtime.so
 
 const requiredSharedKeys = [
   "card",
+  "cardWithFooter",
   "standaloneCard",
   "propertiesCard",
   "codeSnippetTemplate",
@@ -48,6 +49,7 @@ const consumers = [
     file: "src/components/web/docs-snippet-card.tsx",
     requiredUses: [
       "docsSnippetStyles.card",
+      "docsSnippetStyles.cardWithFooter",
       "docsSnippetStyles.codeSnippetTemplate",
       "docsSnippetStyles.dependencySnippetTemplate",
       "docsSnippetStyles.copyButtonMarker",
@@ -102,12 +104,11 @@ const consumers = [
   {
     file: "src/components/web/generated-docs-enhancer.astro",
     requiredUses: [
-      "define:vars={{ docsSnippetStyles }}",
-      "docsSnippetStyles.card",
+      "renderDocsSnippetTemplates",
+      "define:vars={{ docsSnippetStyles, docsSnippetTemplates }}",
+      "renderSharedSnippetCard",
+      "renderSharedPropertiesCard",
       "docsSnippetStyles.standaloneCard",
-      "docsSnippetStyles.propertiesCard",
-      "docsSnippetStyles.codeSnippetTemplate",
-      "docsSnippetStyles.dependencySnippetTemplate",
       "docsSnippetStyles.copyButton",
       "docsSnippetStyles.codePre",
       "docsSnippetStyles.codeElement",
@@ -115,6 +116,7 @@ const consumers = [
       "docsSnippetStyles.externalHeaderTitle",
       "docsSnippetStyles.externalHeaderDescription",
       "docsSnippetStyles.externalTitle",
+      "docsSnippetStyles.cardWithFooter",
       "docsSnippetStyles.languageText",
       "docsSnippetStyles.kindIcon"
     ]

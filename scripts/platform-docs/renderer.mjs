@@ -7,6 +7,7 @@ import { attribute, html } from "./html.mjs";
 import { renderAttributes, sourceDocsEditUrl } from "./project-meta.mjs";
 import { readProperties } from "./project-manifest.mjs";
 import { normalizeAsciiDocSource } from "./source-normalizer.mjs";
+import { renderStaticDocsSnippets } from "./static-snippets.mjs";
 import { readGuideToc } from "./toc.mjs";
 import { optimizeImages, prefixIds, rewriteUrls } from "./urls.mjs";
 
@@ -33,6 +34,7 @@ export async function renderProject(asciidoctor, platformDocsDirectory, project,
   }
 
   content = unwrapBlockParagraphs(content);
+  content = await renderStaticDocsSnippets(content);
   content = await highlightListingBlocks(content);
   content = prefixIds(content, project.slug);
   content = rewriteUrls(content, project);

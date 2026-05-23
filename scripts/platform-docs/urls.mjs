@@ -6,7 +6,15 @@ export function prefixIds(input, slug) {
   const prefix = `${slug}-`;
   return input
     .replace(/\bid="([^"]+)"/g, (match, id) => id.startsWith(prefix) ? match : `id="${prefix}${id}"`)
-    .replace(/\bhref="#([^"]+)"/g, (match, id) => id.startsWith(prefix) ? match : `href="#${prefix}${id}"`);
+    .replace(/\bhref="#([^"]+)"/g, (match, id) => id.startsWith(prefix) ? match : `href="#${prefix}${id}"`)
+    .replace(/\b(aria-activedescendant|aria-controls|aria-describedby|aria-labelledby|aria-owns|for)="([^"]+)"/g, (match, name, value) => {
+      const refs = value.trim().split(/\s+/).filter(Boolean);
+      if (!refs.length) {
+        return match;
+      }
+      const prefixed = refs.map((id) => id.startsWith(prefix) ? id : `${prefix}${id}`).join(" ");
+      return `${name}="${attribute(prefixed)}"`;
+    });
 }
 
 export function rewriteUrls(input, project) {
@@ -39,7 +47,7 @@ export function optimizeImages(input) {
 }
 
 function pageRelativeAssetUrl(value) {
-  return `../../${value.replace(/^\/+/, "")}`;
+  return `../${value.replace(/^\/+/, "")}`;
 }
 
 function firstSuffixIndex(value) {

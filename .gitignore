@@ -10,6 +10,11 @@ node_modules/
 .astro/
 dist/
 
+# Generated platform docs output
+src/content/generated-docs/*.html
+src/content/generated-docs/assets/
+public/assets/
+
 # Gradle output and local state
 .gradle/
 build/

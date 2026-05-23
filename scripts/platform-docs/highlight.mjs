@@ -20,7 +20,7 @@ export function unwrapBlockParagraphs(input) {
     }
     const wrapperEnd = paragraphEnd + 4 + wrapper[0].length;
     const paragraphContent = input.slice(contentStart, paragraphEnd).trim();
-    if (!paragraphContent.startsWith("<div class=\"listingblock")) {
+    if (!paragraphContent.startsWith("<micronaut-snippet")) {
       continue;
     }
     result += input.slice(position, paragraphStart);
@@ -60,12 +60,6 @@ export function shikiStyle() {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
   font-size: 0.875rem;
   line-height: 1.45;
-}
-.shiki span {
-  color: var(--shiki-light);
-  font-style: var(--shiki-light-font-style);
-  font-weight: var(--shiki-light-font-weight);
-  text-decoration: var(--shiki-light-text-decoration);
 }
 .dark .shiki {
   background-color: var(--shiki-dark-bg);
@@ -134,7 +128,7 @@ function normalizeCodeLanguage(language) {
   return String(language || "text").trim().toLowerCase();
 }
 
-function shikiLanguage(language) {
+export function shikiLanguage(language) {
   const normalized = normalizeCodeLanguage(language);
   return {
     conf: "properties",

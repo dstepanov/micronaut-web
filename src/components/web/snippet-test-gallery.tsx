@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { DocsCodeSnippet, ShikiCodeBlock, type CodeSnippetExample } from "@/components/web/docs-code-snippet";
+import { DocsCodeSnippet, ShikiCodeBlock, type CodeSnippetExample, type CodeSnippetVariant } from "@/components/web/docs-code-snippet";
 import {
   CopyIcon,
   DocsPropertiesSnippetCard,
@@ -11,101 +11,65 @@ import {
   DocsSnippetLanguageButton
 } from "@/components/web/docs-snippet-card";
 import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+import { componentCodeVariants, componentTerminalVariants, dependencyVariants } from "@/components/web/snippet-test-data";
+import { snippetVariantHighlightKey } from "@/lib/snippet-highlight-key";
 
-const componentCodeExample: CodeSnippetExample = {
+type SnippetTestGalleryProps = {
+  highlightedHtmlByKey?: Record<string, string>;
+};
+
+const componentCodeExampleBase: CodeSnippetExample = {
   id: "snippet-test-controller",
   label: "Controller",
   title: "Controller with callout-ready annotations",
   description: "Component-rendered Java, Kotlin, and Groovy tabs using the shared snippet card.",
-  variants: [
-    {
-      language: "java",
-      label: "Java",
-      fileName: "HelloController.java",
-      code: `import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-
-@Controller("/hello")
-class HelloController {
-
-    @Get
-    String index() {
-        return "Hello World";
-    }
-}`
-    },
-    {
-      language: "kotlin",
-      label: "Kotlin",
-      fileName: "HelloController.kt",
-      code: `import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-
-@Controller("/hello")
-class HelloController {
-
-    @Get
-    fun index(): String {
-        return "Hello World"
-    }
-}`
-    },
-    {
-      language: "groovy",
-      label: "Groovy",
-      fileName: "HelloController.groovy",
-      code: `import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-
-@Controller('/hello')
-class HelloController {
-
-    @Get
-    String index() {
-        'Hello World'
-    }
-}`
-    }
-  ]
+  callouts: [
+    <>
+      The <code>@Controller</code> annotation defines the class as a controller mapped to the path <code>/hello</code>
+    </>,
+    <>
+      The <code>@Get</code> annotation maps the index method to all requests that use an HTTP GET
+    </>,
+    <>
+      A String <code>"Hello World"</code> is returned as the response
+    </>
+  ],
+  variants: componentCodeVariants
 };
 
-const componentTerminalExample: CodeSnippetExample = {
+const componentTerminalExampleBase: CodeSnippetExample = {
   id: "snippet-test-terminal",
   label: "Terminal",
   title: "Launch command",
   description: "Single-language terminal snippets should use the same light shell.",
-  variants: [
-    {
-      language: "bash",
-      label: "Bash",
-      fileName: "mn create-app",
-      code: `mn create-app example.micronaut.hello-world \\
-  --features=http-client,graalvm \\
-  --build=gradle \\
-  --lang=java`
-    }
-  ]
+  variants: componentTerminalVariants
 };
 
-const dependencyVariants = [
-  {
-    language: "gradle",
-    label: "Gradle",
-    fileName: "build.gradle",
-    code: `implementation("io.micronaut:micronaut-http-client")`
-  },
-  {
-    language: "maven",
-    label: "Maven",
-    fileName: "pom.xml",
-    code: `<dependency>
-    <groupId>io.micronaut</groupId>
-    <artifactId>micronaut-http-client</artifactId>
-</dependency>`
-  }
-];
+function exampleWithHighlightedHtml(
+  example: CodeSnippetExample,
+  highlightedHtmlByKey: Record<string, string> | undefined
+) {
+  return {
+    ...example,
+    variants: variantsWithHighlightedHtml(example.id, example.variants, highlightedHtmlByKey)
+  };
+}
 
-export function SnippetTestGallery() {
+function variantsWithHighlightedHtml(
+  snippetId: string,
+  variants: CodeSnippetVariant[],
+  highlightedHtmlByKey: Record<string, string> | undefined
+) {
+  return variants.map((variant) => ({
+    ...variant,
+    highlightedHtml: highlightedHtmlByKey?.[snippetVariantHighlightKey(snippetId, variant.language)]
+  }));
+}
+
+export function SnippetTestGallery({ highlightedHtmlByKey }: SnippetTestGalleryProps) {
+  const componentCodeExample = exampleWithHighlightedHtml(componentCodeExampleBase, highlightedHtmlByKey);
+  const componentTerminalExample = exampleWithHighlightedHtml(componentTerminalExampleBase, highlightedHtmlByKey);
+
   return (
     <div className="grid gap-8">
       <section data-snippet-fixture="component-code" className="grid gap-3">
@@ -135,7 +99,7 @@ export function SnippetTestGallery() {
             Uses the dependency variant of the shared snippet card.
           </p>
         </div>
-        <ComponentDependencySnippet />
+        <ComponentDependencySnippet highlightedHtmlByKey={highlightedHtmlByKey} />
       </section>
 
       <section data-snippet-fixture="component-properties" className="grid gap-3">
@@ -181,10 +145,18 @@ export function SnippetTestGallery() {
   );
 }
 
-function ComponentDependencySnippet() {
+function ComponentDependencySnippet({ highlightedHtmlByKey }: SnippetTestGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [copied, setCopied] = useState(false);
-  const activeVariant = dependencyVariants[activeIndex] || dependencyVariants[0];
+  const highlightedDependencyVariants = variantsWithHighlightedHtml(
+    "snippet-test-dependency",
+    dependencyVariants,
+    highlightedHtmlByKey
+  );
+  const activeVariant = highlightedDependencyVariants[activeIndex] || highlightedDependencyVariants[0];
+  if (!activeVariant) {
+    return null;
+  }
 
   async function copyActiveSnippet() {
     try {
@@ -212,7 +184,7 @@ function ComponentDependencySnippet() {
       className="m-0"
       controls={
         <div className={docsSnippetStyles.tabs} role="tablist" aria-label="Dependency format">
-          {dependencyVariants.map((variant, index) => {
+          {highlightedDependencyVariants.map((variant, index) => {
             const active = index === activeIndex;
             return (
               <DocsSnippetLanguageButton
@@ -250,7 +222,7 @@ function ComponentDependencySnippet() {
         </DocsSnippetCopyButton>
       }
     >
-      {dependencyVariants.map((variant, index) => {
+      {highlightedDependencyVariants.map((variant, index) => {
         const active = index === activeIndex;
         return (
           <div
@@ -262,7 +234,7 @@ function ComponentDependencySnippet() {
             hidden={!active}
             className={docsSnippetStyles.panel}
           >
-            <ShikiCodeBlock code={variant.code} language={variant.language} />
+            <ShikiCodeBlock code={variant.code} highlightedHtml={variant.highlightedHtml} language={variant.language} />
           </div>
         );
       })}

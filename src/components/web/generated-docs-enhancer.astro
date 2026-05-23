@@ -1,8 +1,11 @@
 ---
+import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
 import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+
+const docsSnippetTemplates = renderDocsSnippetTemplates();
 ---
 
-<script is:inline define:vars={{ docsSnippetStyles }}>
+<script is:inline define:vars={{ docsSnippetStyles, docsSnippetTemplates }}>
   (() => {
     const languageLabels = {
       bash: "Terminal",
@@ -132,15 +135,14 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
         .replaceAll(">", "&gt;")
         .replaceAll("\"", "&quot;");
 
-    const cardClass = docsSnippetStyles.card;
-    const cardHeaderClass = docsSnippetStyles.textHeader;
     const snippetToolbarClass = docsSnippetStyles.toolbarHeader;
-    const cardActionClass = docsSnippetStyles.cardAction;
     const toolbarActionClass = docsSnippetStyles.toolbarAction;
-    const cardContentClass = docsSnippetStyles.content;
     const cardFooterClass = docsSnippetStyles.footer;
     const copyButtonClass = docsSnippetStyles.copyButton;
     const staticLanguageClass = docsSnippetStyles.staticLanguage;
+    const sharedTemplateHtml = Object.fromEntries(
+      Object.entries(docsSnippetTemplates).map(([name, template]) => [name, template.html])
+    );
 
     const setClassName = (element, className) => {
       element.className = className;
@@ -149,6 +151,44 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
     const addClassName = (element, className) => {
       element.classList.add(...className.split(/\s+/).filter(Boolean));
     };
+
+    const renderSharedTemplate = (name, replacements) => {
+      const source = sharedTemplateHtml[name];
+      if (!source) {
+        return undefined;
+      }
+      const html = source.replace(/{{(\w+)}}/g, (_, key) => replacements[key] ?? "");
+      const template = document.createElement("template");
+      template.innerHTML = html.trim();
+      return template.content.firstElementChild;
+    };
+
+    const renderSharedSnippetCard = ({ dependency, hasCallouts, snippetId, optionsLabel, copyLabel }) => {
+      const element = renderSharedTemplate(
+        dependency ? "docs/snippets/dependency-snippet.html" : "docs/snippets/code-snippet.html",
+        {
+          snippetId: escapeHtml(snippetId),
+          optionsLabel: escapeHtml(optionsLabel),
+          optionButtonsHtml: "",
+          copyLabel: escapeHtml(copyLabel),
+          snippetPanelsHtml: ""
+        }
+      );
+      if (hasCallouts) {
+        element?.classList.add(docsSnippetStyles.cardWithFooter);
+      }
+      return element;
+    };
+
+    const renderSharedPropertiesCard = ({ propertiesId, propertiesAnchorId, propertiesTitle, propertiesEyebrow, propertiesCountLabel }) =>
+      renderSharedTemplate("docs/snippets/properties-snippet.html", {
+        propertiesId: escapeHtml(propertiesId),
+        propertiesAnchorId: escapeHtml(propertiesAnchorId),
+        propertiesTitle: escapeHtml(propertiesTitle),
+        propertiesEyebrow: escapeHtml(propertiesEyebrow),
+        propertiesCountLabel: escapeHtml(propertiesCountLabel),
+        propertiesTableHtml: ""
+      });
 
     const decorateButton = (button, variant = "ghost", size = "xs") => {
       button.setAttribute("data-slot", "button");
@@ -378,6 +418,57 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
       });
     };
 
+    const bindStaticSnippetTemplate = (template) => {
+      if (template.dataset.staticSnippetEnhanced === "true") {
+        return;
+      }
+      const tabs = Array.from(template.querySelectorAll(".docs-snippet-tabs button[role='tab']"));
+      const panels = tabs
+        .map((tab) => document.getElementById(tab.getAttribute("aria-controls") || ""))
+        .filter(Boolean);
+      const copyButton = template.querySelector("[data-copy-active-snippet]");
+      if (!tabs.length || !panels.length) {
+        return;
+      }
+      template.dataset.staticSnippetEnhanced = "true";
+      let activeIndex = Math.max(0, tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true"));
+
+      const activate = (nextIndex) => {
+        activeIndex = nextIndex;
+        panels.forEach((panel, index) => {
+          const active = index === activeIndex;
+          panel.hidden = !active;
+          panel.setAttribute("aria-hidden", String(!active));
+        });
+        tabs.forEach((tab, index) => {
+          const active = index === activeIndex;
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+          decorateLanguageButton(tab, active);
+        });
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => activate(index));
+        tab.addEventListener("keydown", (event) => {
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
+            return;
+          }
+          event.preventDefault();
+          const offset = event.key === "ArrowRight" ? 1 : -1;
+          const nextIndex = (index + offset + tabs.length) % tabs.length;
+          activate(nextIndex);
+          tabs[nextIndex].focus();
+        });
+      });
+
+      if (copyButton) {
+        decorateCopyButtonIcon(copyButton);
+        bindCopyButton(copyButton, () => snippetText(panels[activeIndex]));
+      }
+      activate(activeIndex);
+    };
+
     const ensureCodeBlockCopy = (block) => {
       let button = block.querySelector(":scope > .docs-code-copy");
       if (!button) {
@@ -493,28 +584,20 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
         }
         const originalParent = block.parentNode;
         const referenceNode = block;
-        const template = document.createElement("section");
-        template.setAttribute("data-slot", "card");
-        template.className = `${cardClass} ${hasCallouts ? "docs-code-block-with-footer" : ""} ${dependency ? docsSnippetStyles.dependencySnippetTemplate : docsSnippetStyles.codeSnippetTemplate}`;
-        template.dataset.snippetKind = dependency ? "dependency" : "code";
-
-        const header = document.createElement("div");
-        header.setAttribute("data-slot", "card-header");
-        header.className = snippetToolbarClass;
-
-        const panels = document.createElement("div");
-        panels.setAttribute("data-slot", "card-content");
-        panels.className = cardContentClass;
-
-        const tabs = document.createElement("div");
-        tabs.className = docsSnippetStyles.tabs;
-        tabs.setAttribute("role", "tablist");
-        tabs.setAttribute("aria-label", dependency ? "Dependency format" : "Code language");
-
-        const action = document.createElement("div");
-        action.setAttribute("data-slot", "card-action");
-        action.className = toolbarActionClass;
-        const copyButton = makeCopyButton();
+        const template = renderSharedSnippetCard({
+          dependency,
+          hasCallouts,
+          snippetId: `docs-snippet-${groupIndex}`,
+          optionsLabel: dependency ? "Dependency format" : "Code language",
+          copyLabel: "Copy code"
+        });
+        const panels = template?.querySelector(":scope > [data-slot='card-content']");
+        const tabs = template?.querySelector(".docs-snippet-tabs");
+        const copyButton = template?.querySelector("[data-copy-active-snippet]");
+        if (!template || !panels || !tabs || !copyButton) {
+          continue;
+        }
+        decorateCopyButtonIcon(copyButton);
         let activeIndex = 0;
 
         const activate = (nextIndex) => {
@@ -575,13 +658,10 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
         bindCopyButton(copyButton, () => snippetText(group[activeIndex]));
 
-        action.append(copyButton);
-        header.append(tabs, action);
         const intro = makeExternalSnippetIntro(titleHtml, descriptionHtml, dependency);
         if (intro) {
           originalParent.insertBefore(intro, referenceNode);
         }
-        template.append(header, panels);
         originalParent.insertBefore(template, referenceNode);
         group.forEach((panel) => panels.append(panel));
         if (hasCallouts) {
@@ -594,6 +674,7 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
     const enhanceProperties = (root) => {
       const tables = Array.from(root.querySelectorAll("table.tableblock"));
+      let propertiesIndex = 0;
       for (const table of tables) {
         const caption = table.querySelector("caption");
         if (!caption || !/configuration properties/i.test(caption.textContent || "") || table.closest(".docs-properties-template")) {
@@ -604,48 +685,27 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
         const rows = table.querySelectorAll("tbody tr").length;
         const previous = table.previousElementSibling;
         const anchor = previous?.tagName === "A" && previous.id ? previous : undefined;
-        const template = document.createElement("section");
-        template.setAttribute("data-slot", "card");
-        template.className = docsSnippetStyles.propertiesCard;
-        if (anchor) {
-          template.id = `${anchor.id}-properties`;
-          anchor.className = docsSnippetStyles.propertiesAnchor;
+        const propertiesAnchorId = anchor?.id || `generated-properties-${propertiesIndex}`;
+        const template = renderSharedPropertiesCard({
+          propertiesId: `${propertiesAnchorId}-properties`,
+          propertiesAnchorId,
+          propertiesTitle: title,
+          propertiesEyebrow: "Configuration properties",
+          propertiesCountLabel: `${rows} ${rows === 1 ? "property" : "properties"}`
+        });
+        const scroller = template?.querySelector(":scope > [data-slot='card-content']");
+        if (!template || !scroller) {
+          continue;
         }
-
-        const header = document.createElement("header");
-        header.setAttribute("data-slot", "card-header");
-        header.className = cardHeaderClass;
-        const heading = document.createElement("div");
-        heading.setAttribute("data-slot", "card-title");
-        heading.className = docsSnippetStyles.propertiesHeading;
-        heading.innerHTML = `${snippetKindIcon("properties")}<span class="docs-properties-heading-title"></span>`;
-        heading.querySelector(".docs-properties-heading-title").textContent = title;
-        const description = document.createElement("div");
-        description.setAttribute("data-slot", "card-description");
-        description.className = docsSnippetStyles.propertiesDescription;
-        description.textContent = "Configuration properties";
-        const count = document.createElement("span");
-        count.setAttribute("data-slot", "badge");
-        count.dataset.variant = "secondary";
-        count.className = docsSnippetStyles.propertiesCount;
-        count.textContent = `${rows} ${rows === 1 ? "property" : "properties"}`;
-        const action = document.createElement("div");
-        action.setAttribute("data-slot", "card-action");
-        action.className = cardActionClass;
-        action.append(count);
         caption.classList.add("sr-only");
-        header.append(heading, description, action);
 
-        const scroller = document.createElement("div");
-        scroller.setAttribute("data-slot", "card-content");
-        scroller.className = docsSnippetStyles.propertiesScroll;
         const insertionPoint = anchor || table;
         insertionPoint.parentNode.insertBefore(template, insertionPoint);
         if (anchor) {
-          template.append(anchor);
+          anchor.remove();
         }
         scroller.append(table);
-        template.append(header, scroller);
+        propertiesIndex += 1;
       }
     };
 
@@ -655,6 +715,7 @@ import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
       });
 
       root.querySelectorAll(".docs-snippet-template").forEach((template) => {
+        bindStaticSnippetTemplate(template);
         const heading = template.querySelector(":scope .docs-snippet-heading");
         if (heading && !heading.querySelector(".docs-code-language-icon")) {
           heading.insertAdjacentHTML("afterbegin", snippetKindIcon(template.dataset.snippetKind || "code"));

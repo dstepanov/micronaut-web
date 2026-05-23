@@ -24,7 +24,6 @@ const platformDocsDirectory = path.resolve(
   path.join(projectDirectory, "..", "..", "micronaut-platform-docs")
 );
 const outputDirectory = path.resolve(options.output || path.join(projectDirectory, "src", "content", "generated-docs"));
-const publicDirectory = path.resolve(options.publicDir || path.join(projectDirectory, "public"));
 const selectedSlugs = splitList(options.slugs || process.env.PLATFORM_DOCS_PROJECT_SLUGS || "");
 
 const asciidoctor = asciidoctorFactory();
@@ -41,7 +40,7 @@ const platformVersions = await readTomlStringVersions(
   path.join(platformDocsDirectory, "repos", "micronaut-platform", "gradle", "libs.versions.toml")
 );
 
-await fs.mkdir(outputDirectory, { recursive: true });
+await cleanGeneratedDocsOutput(outputDirectory, selectedSlugs);
 
 let rendered = 0;
 let skipped = 0;
@@ -56,7 +55,7 @@ for (const project of projects) {
 
     const html = await renderProject(asciidoctor, platformDocsDirectory, project, platformVersions[project.platformVersionKey] || "");
     await fs.writeFile(path.join(outputDirectory, `${project.slug}.html`), `${html}\n`, "utf8");
-    await copyProjectImageAssets(project, platformDocsDirectory, publicDirectory);
+    await copyProjectImageAssets(project, platformDocsDirectory, outputDirectory);
     rendered += 1;
     console.log(`Rendered ${project.slug}`);
   } catch (error) {
@@ -66,3 +65,25 @@ for (const project of projects) {
 }
 
 console.log(`Rendered ${rendered} platform docs fragments to ${path.relative(projectDirectory, outputDirectory)}${skipped ? ` (${skipped} skipped)` : ""}.`);
+
+async function cleanGeneratedDocsOutput(directory, slugs) {
+  await fs.mkdir(directory, { recursive: true });
+  if (slugs.length) {
+    await Promise.all(slugs.flatMap((slug) => [
+      fs.rm(path.join(directory, `${slug}.html`), { force: true }),
+      fs.rm(path.join(directory, "assets", slug), { force: true, recursive: true })
+    ]));
+    return;
+  }
+
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  await Promise.all(entries.map((entry) => {
+    if (entry.isFile() && entry.name.endsWith(".html")) {
+      return fs.rm(path.join(directory, entry.name), { force: true });
+    }
+    if (entry.isDirectory() && entry.name === "assets") {
+      return fs.rm(path.join(directory, entry.name), { force: true, recursive: true });
+    }
+    return undefined;
+  }));
+}

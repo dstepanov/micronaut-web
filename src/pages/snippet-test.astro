@@ -2,26 +2,29 @@
 import { Badge } from "@/components/ui/badge";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
 import { SnippetTestGallery } from "@/components/web/snippet-test-gallery";
+import { componentCodeVariants, componentTerminalVariants, dependencyVariants } from "@/components/web/snippet-test-data";
 import WebLayout from "@/layouts/WebLayout.astro";
+import { highlightCodeSnippetHtml } from "@/lib/docs-code-highlighting";
+import { snippetVariantHighlightKey } from "@/lib/snippet-highlight-key";
 
+const snippetTestHighlightGroups = [
+  { id: "snippet-test-controller", variants: componentCodeVariants },
+  { id: "snippet-test-terminal", variants: componentTerminalVariants },
+  { id: "snippet-test-dependency", variants: dependencyVariants }
+];
+const snippetTestHighlightedHtmlByKey = Object.fromEntries(
+  await Promise.all(
+    snippetTestHighlightGroups.flatMap((group) =>
+      group.variants.map(async (variant) => [
+        snippetVariantHighlightKey(group.id, variant.language),
+        await highlightCodeSnippetHtml(variant.code, variant.highlighterLanguage || variant.language)
+      ] as const)
+    )
+  )
+);
 const generatedDocsFixture = `
 <div class="project">
   <h1>Snippet Fixture</h1>
-</div>
-
-<div data-snippet-fixture="generated-standalone">
-  <div class="listingblock docs-code-block" data-lang="java">
-    <div class="title">Asynchronously listening for Events with <code>@EventListener</code></div>
-    <div class="content">
-      <pre class="shiki shiki-themes github-light-default github-dark-default" style="background-color:#ffffff;--shiki-dark-bg:#0d1117;color:#1f2328;--shiki-dark:#e6edf3" tabindex="0"><code class="language-java shiki-code" data-lang="java"><span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">import</span><span style="color:#1F2328;--shiki-dark:#E6EDF3"> io.micronaut.runtime.event.annotation.EventListener;</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">class</span><span style="color:#953800;--shiki-dark:#FFA657"> SampleListener</span><span style="color:#1F2328;--shiki-dark:#E6EDF3"> {</span></span>
-<span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">    @</span><span style="color:#CF222E;--shiki-dark:#FF7B72">EventListener</span></span>
-<span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">    void</span><span style="color:#8250DF;--shiki-dark:#D2A8FF"> onStartup</span><span style="color:#1F2328;--shiki-dark:#E6EDF3">(StartupEvent event) {</span></span>
-<span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">    }</span></span>
-<span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">}</span></span></code></pre>
-    </div>
-  </div>
 </div>
 
 <div data-snippet-fixture="generated-multi">
@@ -32,7 +35,7 @@ const generatedDocsFixture = `
 <span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">class</span><span style="color:#953800;--shiki-dark:#FFA657"> HelloController</span><span style="color:#1F2328;--shiki-dark:#E6EDF3"> {</span></span>
 <span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">    @</span><span style="color:#CF222E;--shiki-dark:#FF7B72">Get</span><span style="color:#1F2328;--shiki-dark:#E6EDF3"> </span><span style="color:#6E7781;--shiki-dark:#8B949E">// <i class="conum" data-value="2"></i></span></span>
 <span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">    String</span><span style="color:#8250DF;--shiki-dark:#D2A8FF"> index</span><span style="color:#1F2328;--shiki-dark:#E6EDF3">() {</span></span>
-<span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">        return</span><span style="color:#0A3069;--shiki-dark:#A5D6FF"> "Hello World"</span><span style="color:#1F2328;--shiki-dark:#E6EDF3">;</span></span>
+<span class="line"><span style="color:#CF222E;--shiki-dark:#FF7B72">        return</span><span style="color:#0A3069;--shiki-dark:#A5D6FF"> "Hello World"</span><span style="color:#1F2328;--shiki-dark:#E6EDF3">; </span><span style="color:#6E7781;--shiki-dark:#8B949E">// <i class="conum" data-value="3"></i></span></span>
 <span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">    }</span></span>
 <span class="line"><span style="color:#1F2328;--shiki-dark:#E6EDF3">}</span></span></code></pre>
     </div>
@@ -48,8 +51,9 @@ const generatedDocsFixture = `
   </div>
   <div class="colist arabic">
     <ol>
-      <li><p>The <code>@Controller</code> annotation defines the class as a controller mapped to the path <code>/hello</code>.</p></li>
-      <li><p>The <code>@Get</code> annotation maps the method to HTTP GET requests.</p></li>
+      <li><p>The <code>@Controller</code> annotation defines the class as a controller mapped to the path <code>/hello</code></p></li>
+      <li><p>The <code>@Get</code> annotation maps the index method to all requests that use an HTTP GET</p></li>
+      <li><p>A String <code>"Hello World"</code> is returned as the response</p></li>
     </ol>
   </div>
 </div>
@@ -99,7 +103,7 @@ const generatedDocsFixture = `
         <Badge variant="secondary" className="mb-4">Internal visual test</Badge>
         <h1 class="text-3xl font-bold tracking-tight md:text-4xl">Snippet Rendering Test</h1>
         <p class="mt-3 text-base leading-7 text-muted-foreground">
-          This page renders the shared React snippet components beside generated-docs HTML fixtures, then compares their computed styles in the browser.
+          This page renders the shared React snippet components and compares them against an offscreen generated-docs fixture.
         </p>
       </header>
 
@@ -110,19 +114,16 @@ const generatedDocsFixture = `
             These snippets are rendered directly through the reusable React components.
           </p>
         </div>
-        <SnippetTestGallery client:load />
+        <SnippetTestGallery highlightedHtmlByKey={snippetTestHighlightedHtmlByKey} client:load />
       </section>
 
-      <section class="grid gap-6">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight">Generated docs path</h2>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            These fixtures start as generated documentation markup and are upgraded by the same enhancer used by docs pages.
-          </p>
-        </div>
-        <div class="generated-docs-content grid gap-8" data-generated-docs set:html={generatedDocsFixture} />
-        <GeneratedDocsEnhancer />
+      <section class="sr-only" aria-hidden="true">
+        <h2>Generated docs validation fixture</h2>
       </section>
+      <div class="pointer-events-none absolute left-0 top-0 -z-10 w-[960px] opacity-0" aria-hidden="true">
+        <div class="generated-docs-content grid gap-8" data-generated-docs set:html={generatedDocsFixture} />
+      </div>
+      <GeneratedDocsEnhancer />
 
       <section class="rounded-xl border bg-card p-5 text-sm" data-snippet-validation>
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -212,6 +213,7 @@ const generatedDocsFixture = `
       pushResult(results, Boolean(generatedCard), "generated multi-language card enhanced");
       pushResult(results, Boolean(generatedDependency), "generated dependency card enhanced");
       pushResult(results, Boolean(generatedProperties), "generated properties table enhanced");
+      pushResult(results, Boolean(componentPre?.querySelector("span[style*='--shiki-dark']")), "component code uses Shiki token spans");
       pushResult(results, Boolean(componentCopy?.classList.contains("docs-snippet-copy") && generatedCopy?.classList.contains("docs-snippet-copy")), "copy buttons use the shared marker class");
       pushResult(results, Boolean(componentDependencyHeader), "component dependency title is outside the card");
       pushResult(results, Boolean(componentDependency && !componentDependency.querySelector(".docs-snippet-heading")), "component dependency card has toolbar-only header");

@@ -192,13 +192,6 @@ const { html = "" } = Astro.props;
     color: var(--shiki-light, #1f2328) !important;
   }
 
-  .main-site-markdown :global(.shiki span[style]) {
-    color: var(--shiki-light, currentColor) !important;
-    font-style: var(--shiki-light-font-style, inherit) !important;
-    font-weight: var(--shiki-light-font-weight, inherit) !important;
-    text-decoration: var(--shiki-light-text-decoration, inherit) !important;
-  }
-
   :global(.dark) .main-site-markdown :global(.shiki) {
     border-color: #30363d !important;
     background-color: var(--shiki-dark-bg, #0d1117) !important;

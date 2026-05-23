@@ -2,16 +2,26 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { splitList } from "./cli.mjs";
-import { listingBlockHtml, macroAttribute } from "./listing.mjs";
+import { macroAttribute } from "./listing.mjs";
+import { snippetMarkerHtml } from "./snippet-markers.mjs";
 
 export function snippetBlocksHtml(target, attrs, context) {
   const samples = [];
   for (const snippetTarget of splitList(target)) {
     samples.push(...findSnippetSamplesSync(snippetTarget, attrs, context));
   }
-  return dedupeSamples(samples).map((sample, index) =>
-    listingBlockHtml(sample.source, sample.language, index === 0 ? macroAttribute(attrs, "title") || "" : "", "multi-language-sample")
-  ).join("\n");
+  const deduped = dedupeSamples(samples);
+  if (!deduped.length) {
+    return "";
+  }
+  return snippetMarkerHtml("code", {
+    title: macroAttribute(attrs, "title") || "",
+    description: macroAttribute(attrs, "description") || "",
+    samples: deduped.map((sample) => ({
+      language: sample.language,
+      source: sample.source
+    }))
+  });
 }
 
 function findSnippetSamplesSync(target, attrs, context) {
@@ -106,31 +116,103 @@ function sortSnippetDirectories(directories) {
   return directories.sort((left, right) => rank(left) - rank(right) || left.localeCompare(right));
 }
 
-function extractTaggedSource(source, tags) {
-  const selectedTags = splitList(tags);
+export function extractTaggedSource(source, tags) {
+  const selectedTags = splitList(tags).map(cleanTagName).filter(Boolean);
   const lines = source.replace(/\s+$/, "").split(/\r?\n/);
   if (!selectedTags.length) {
-    return lines.filter((line) => !/^\s*(?:\/\/|#|<!--)?\s*(?:end)?tag::/.test(line)).join("\n").trim();
+    return lines
+      .map((line) => lineWithoutTagDirective(line))
+      .filter((line) => line !== undefined)
+      .join("\n")
+      .trim();
   }
 
   const output = [];
   for (const tag of selectedTags) {
-    let active = false;
+    const tagOutput = [];
+    let activeDepth = 0;
     for (const line of lines) {
-      if (line.includes(`tag::${tag}[`)) {
-        active = true;
+      const parsed = parseTagDirectiveLine(line);
+      const directive = parsed?.directive;
+      if (directive) {
+        if (parsed.before !== undefined && activeDepth > 0) {
+          tagOutput.push(parsed.before);
+        }
+        if (directive.name === tag && directive.kind === "tag") {
+          activeDepth += 1;
+        } else if (directive.name === tag && directive.kind === "end" && activeDepth > 0) {
+          activeDepth -= 1;
+        }
         continue;
       }
-      if (active && line.includes(`end::${tag}[`)) {
-        active = false;
-        continue;
+      if (activeDepth > 0) {
+        tagOutput.push(line);
       }
-      if (active) {
-        output.push(line);
-      }
+    }
+    const selected = trimBlankLines(tagOutput).join("\n");
+    if (selected.trim()) {
+      output.push(selected);
     }
   }
   return output.join("\n\n").trim();
+}
+
+function trimBlankLines(lines) {
+  let start = 0;
+  let end = lines.length;
+  while (start < end && !lines[start].trim()) {
+    start += 1;
+  }
+  while (end > start && !lines[end - 1].trim()) {
+    end -= 1;
+  }
+  return lines.slice(start, end);
+}
+
+function cleanTagName(value) {
+  const trimmed = String(value || "").trim();
+  if ((trimmed.startsWith("\"") && trimmed.endsWith("\"")) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function lineWithoutTagDirective(line) {
+  const parsed = parseTagDirectiveLine(line);
+  if (!parsed) {
+    return line;
+  }
+  return parsed.before;
+}
+
+function parseTagDirectiveLine(line) {
+  const directive = tagDirective(line);
+  if (directive) {
+    return { directive };
+  }
+
+  const trailingMatch = /^(.*?)(?:[ \t]+)(?:(?:\/\/|#|;|<!--|\/\*)\s*)(tag|end)::([^\s\[\]]+)(?:\[[^\]]*]|\])?\s*(?:-->|\*\/)?\s*$/.exec(line);
+  if (!trailingMatch) {
+    return undefined;
+  }
+  return {
+    before: trailingMatch[1],
+    directive: {
+      kind: trailingMatch[2],
+      name: trailingMatch[3]
+    }
+  };
+}
+
+function tagDirective(line) {
+  const match = /^(?:(?:\/\/|#|;|<!--|\/\*|\*)\s*)?(tag|end)::([^\s\[\]]+)(?:\[[^\]]*]|\])?\s*(?:-->|\*\/)?\s*$/.exec(line.trim());
+  if (!match) {
+    return undefined;
+  }
+  return {
+    kind: match[1],
+    name: match[2]
+  };
 }
 
 function normalizeSnippetIndent(source, indentValue) {

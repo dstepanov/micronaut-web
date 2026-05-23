@@ -43,7 +43,7 @@ function cleanMacroAttributeValue(value, name) {
   return trimmed;
 }
 
-function inlineTitleHtml(value) {
+export function inlineTitleHtml(value) {
   let escaped = html(value);
   escaped = escaped.replace(/`([^`\r\n]+)`/g, (_, code) => `<code>${code}</code>`);
   return escaped;

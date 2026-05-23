@@ -141,6 +141,7 @@ type DocsSnippetCardProps = {
   className?: string;
   controls?: ReactNode;
   description?: ReactNode;
+  footer?: ReactNode;
   id?: string;
   kind?: DocsSnippetKind;
   title?: ReactNode;
@@ -152,6 +153,7 @@ export function DocsSnippetCard({
   className,
   controls,
   description,
+  footer,
   id,
   kind = "code",
   title
@@ -176,6 +178,7 @@ export function DocsSnippetCard({
         className={cn(
           docsSnippetStyles.card,
           kind === "dependency" ? docsSnippetStyles.dependencySnippetTemplate : docsSnippetStyles.codeSnippetTemplate,
+          footer ? docsSnippetStyles.cardWithFooter : undefined,
           className
         )}
         data-snippet-kind={kind}
@@ -202,6 +205,11 @@ export function DocsSnippetCard({
           {action ? <CardAction className={hasHeaderText ? undefined : docsSnippetStyles.toolbarAction}>{action}</CardAction> : null}
         </CardHeader>
         <CardContent className={docsSnippetStyles.content}>{children}</CardContent>
+        {footer ? (
+          <div data-slot="card-footer" className={docsSnippetStyles.footer}>
+            {footer}
+          </div>
+        ) : null}
       </Card>
     </>
   );

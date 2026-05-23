@@ -10,4 +10,70 @@ npm run render:platform-docs -- --slugs core,serde
 By default the renderer reads `/Users/denisstepanov/micronaut-platform-docs`,
 uses `gradle/platform-doc-projects.properties` and each project's
 `src/main/docs/guide/toc.yml`, and writes fragments back into this directory.
-Do not hand-edit the generated HTML files.
+Generated HTML files and copied docs assets are ignored by Git and are created
+by `npm run dev` and `npm run build` before Astro starts. Do not hand-edit the
+generated HTML files or the generated `assets/` tree.
+
+## Static Snippet Pipeline
+
+Docs snippets are rendered as static HTML during fragment generation. The
+AsciiDoc macros do not emit finished snippet cards directly. They emit semantic
+`<micronaut-snippet>` marker tags whose `data-payload` contains base64url JSON
+describing the snippet kind, title, description, and code samples.
+
+After Asciidoctor.js produces HTML, `scripts/platform-docs/static-snippets.mjs`
+parses the fragment, replaces each marker with static HTML, and wraps generated
+configuration property tables in the shared properties card. The static snippet
+markup comes from `src/components/web/docs-snippet-templates.tsx`; the renderer
+loads that support through `renderDocsSnippetStaticSupport()` so the generated
+HTML and browser enhancement use the same templates.
+
+The `[configuration]` preprocessor in `scripts/platform-docs/configuration.mjs`
+also emits snippet markers. `configuration-samples.mjs` parses the source YAML
+with `js-yaml`, formats TOML with `smol-toml`, and keeps the small remaining
+format adapters for Properties, Groovy config, and HOCON source text. Those
+adapters only generate source strings; Shiki still performs all syntax
+highlighting in the static snippet pipeline.
+
+Shiki highlighting stays in the build/server-side rendering path. Static snippet
+panels are highlighted by `static-snippets.mjs`, and ordinary listing blocks are
+highlighted by the platform docs renderer. React is used only to render static
+markup for these generated fragments; snippets are not hydrated React islands.
+
+`src/components/web/generated-docs-enhancer.astro` adds progressive behavior in
+the browser: language tabs, active-panel copy buttons, and copy controls for
+plain Shiki blocks. The baseline HTML remains useful without that script because
+the snippet cards, highlighted code, and property tables are already present in
+the generated fragment.
+
+## Style Ownership
+
+Tailwind class ownership for snippet cards is centralized in
+`src/components/web/docs-snippet-styles.ts`. Keep generated-template classes,
+browser enhancement classes, and test/gallery snippet classes aligned there
+instead of duplicating class strings in the renderer.
+
+Runtime CSS starts in `src/styles/docs-snippet-runtime.source.css` and is
+generated into `src/styles/generated/docs-snippet-runtime.css`. Do not edit the
+generated CSS file directly.
+
+## Useful Commands
+
+Render selected platform docs fragments:
+
+```bash
+npm run render:platform-docs -- --slugs core,serde
+```
+
+Regenerate and validate snippet runtime style sharing:
+
+```bash
+npm run snippet-styles
+```
+
+Run the protocol validation used by `dev` and `build`, including snippet style
+sharing checks:
+
+```bash
+npm run protocol
+```

@@ -5,15 +5,17 @@
   "type": "module",
   "scripts": {
     "generate:snippet-css": "node scripts/generate-docs-snippet-css.mjs",
-    "protocol": "npm run generate:snippet-css && node scripts/validate-protocol.mjs && node scripts/validate-docs-snippet-style-sharing.mjs",
+    "protocol": "npm run generate:snippet-css && npm run test:platform-docs && node scripts/validate-protocol.mjs && node scripts/validate-docs-snippet-style-sharing.mjs",
     "snippet-styles": "npm run generate:snippet-css && node scripts/validate-docs-snippet-style-sharing.mjs",
     "sync:platform-projects": "node scripts/sync-platform-docs-fixture.mjs",
     "sync:main-site-content": "node scripts/sync-main-site-content.mjs && npm run normalize:main-site-markdown",
     "normalize:main-site-markdown": "node scripts/normalize-main-site-markdown.mjs",
     "extract:main-site-resources": "node scripts/extract-main-site-resources.mjs",
     "render:platform-docs": "node scripts/render-platform-docs.mjs",
-    "dev": "npm run protocol && astro dev --host 127.0.0.1",
-    "build": "npm run protocol && astro build && node scripts/prepare-template-artifacts.mjs",
+    "prepare:generated-docs": "npm run render:platform-docs",
+    "test:platform-docs": "node --test scripts/platform-docs/*.test.mjs",
+    "dev": "npm run protocol && npm run prepare:generated-docs && astro dev --host 127.0.0.1",
+    "build": "npm run protocol && npm run prepare:generated-docs && astro build && node scripts/prepare-template-artifacts.mjs",
     "preview": "astro preview --host 127.0.0.1"
   },
   "dependencies": {
@@ -33,6 +35,7 @@
     "react": "latest",
     "react-dom": "latest",
     "shiki": "^4.1.0",
+    "smol-toml": "^1.6.1",
     "tailwind-merge": "latest",
     "tailwindcss": "latest"
   },
