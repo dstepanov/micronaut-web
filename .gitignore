@@ -14,6 +14,9 @@ dist/
 # Generated platform docs output
 src/content/generated-docs/*.html
 src/content/generated-docs/assets/
+src/content/generated-guides/manifest.json
+src/content/generated-guides/fragments/
+src/content/generated-guides/assets/
 public/assets/
 
 # Local visual review artifacts
