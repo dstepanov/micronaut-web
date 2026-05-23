@@ -11,21 +11,83 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { IconGlyph } from "@/components/web/icon-glyph";
+import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
-import { mainSitePageContent, mainSitePages, successStories } from "@/data/main-site-pages";
 import { withBasePath } from "@/lib/base-path";
+import {
+  getBlogArchiveRoutes,
+  getBlogPostByRouteSlug,
+  getBlogPosts,
+  getBlogPostsForArchive,
+  getMainSitePages,
+  getSuccessStories,
+  cleanExcerptText,
+  renderMarkdownHtml
+} from "@/lib/main-site-content";
 
-export function getStaticPaths() {
-  return mainSitePages.map((page) => ({
-    params: { slug: page.slug },
-    props: { page }
-  }));
+export async function getStaticPaths() {
+  const mainSitePages = await getMainSitePages();
+  const pageSlugs = new Set(mainSitePages.map((page) => page.slug));
+  const posts = await getBlogPosts();
+  const archives = await getBlogArchiveRoutes();
+  return [
+    ...mainSitePages.map((page) => ({
+      params: { slug: page.slug },
+      props: { page }
+    })),
+    ...archives
+      .filter((archive) => !pageSlugs.has(archive.slug))
+      .map((archive) => ({
+        params: { slug: archive.slug },
+        props: { archive }
+      })),
+    ...posts.flatMap((post) => post.routeSlugs
+      .filter((routeSlug) => !pageSlugs.has(routeSlug) && !(routeSlug.startsWith("blog/") && routeSlug.endsWith(".html")))
+      .map((routeSlug) => ({
+        params: { slug: routeSlug },
+        props: { post }
+      })))
+  ];
 }
 
-const { page } = Astro.props;
-const content = mainSitePageContent[page.slug];
-const intro = content?.intro ?? page.description;
-const isSuccessStoriesIndex = page.slug === "micronaut-success-stories";
+const { archive, page, post } = Astro.props;
+const routeSlug = page?.slug ?? archive?.slug ?? post.slug;
+const relatedPost = post ?? (!archive ? await getBlogPostByRouteSlug(routeSlug) : undefined);
+const entry = relatedPost?.entry ?? page?.entry;
+const pageData = page?.entry.data ?? (archive ? {
+  title: archive.title,
+  eyebrow: archive.eyebrow,
+  description: archive.description,
+  intro: archive.description,
+  contentSource: "blog-archive"
+} : {
+  title: relatedPost.entry.data.title,
+  eyebrow: relatedPost.entry.data.category === "success-story" ? "Success story" : "Blog",
+  description: cleanExcerptText(relatedPost.entry.data.description),
+  intro: undefined,
+  contentSource: relatedPost.entry.data.contentSource
+});
+const pageDescription = cleanExcerptText(pageData.description);
+const intro = pageData.intro ? cleanExcerptText(pageData.intro) : (relatedPost ? undefined : pageDescription);
+const isSuccessStoriesIndex = routeSlug === "micronaut-success-stories";
+const isBlogArchiveRoute = routeSlug === "blog"
+  || routeSlug.startsWith("blog/page/")
+  || routeSlug.startsWith("tag/")
+  || routeSlug.startsWith("category/");
+const isCanonicalPageContent = String(pageData.contentSource ?? "").startsWith("micronaut-public");
+const archivePosts = await getBlogPostsForArchive(routeSlug);
+const regularBlogPostCount = routeSlug === "blog"
+  ? (await getBlogPosts()).filter((candidate) => candidate.entry.data.category !== "success-story").length
+  : 0;
+const blogArchivePage = archive?.page ?? (routeSlug === "blog" ? 1 : undefined);
+const blogArchiveTotalPages = archive?.totalPages ?? (routeSlug === "blog" ? Math.ceil(regularBlogPostCount / 24) : undefined);
+const contentHtml = entry && !isBlogArchiveRoute ? await renderMarkdownHtml(entry) : "";
+const successStories = await getSuccessStories();
+const postDateFormatter = new Intl.DateTimeFormat("en", {
+  day: "numeric",
+  month: "short",
+  year: "numeric"
+});
 const successStoryCards = successStories.map((story) => ({
   ...story,
   logo: story.logo ? withBasePath(story.logo) : undefined,
@@ -56,7 +118,7 @@ const outcomeGroups = [
 ];
 ---
 
-<WebLayout title={`${page.title} | Micronaut`} description={page.description} surface="main">
+<WebLayout title={`${pageData.title} | Micronaut`} description={pageDescription} surface="main">
   {isSuccessStoriesIndex ? (
     <main class="bg-background">
       <section class="border-b bg-card">
@@ -71,13 +133,13 @@ const outcomeGroups = [
             </p>
           </div>
           {featuredStory && (
-            <Card className="border-primary/25 shadow-md shadow-black/[0.03]">
+            <Card className="border-brand-border shadow-md shadow-black/[0.03]">
               <CardHeader>
                 <div class="flex h-12 min-w-0 items-center">
                   {featuredStory.logo ? (
                     <img src={featuredStory.logo} alt={`${featuredStory.organization} logo`} class:list={["max-h-full max-w-[11rem] object-contain object-left", featuredStory.logoClass]} loading="lazy" />
                   ) : (
-                    <span class="grid size-11 place-items-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">{featuredStory.initials}</span>
+                    <span class="grid size-11 place-items-center rounded-lg bg-brand-soft text-sm font-semibold text-brand">{featuredStory.initials}</span>
                   )}
                 </div>
                 <CardAction className="row-span-1">
@@ -94,7 +156,7 @@ const outcomeGroups = [
                 </div>
               </CardContent>
               <CardFooter>
-                <a href={withBasePath(featuredStory.href)} class="text-sm font-medium text-primary underline-offset-4 hover:underline">
+                <a href={withBasePath(featuredStory.href)} class="text-sm font-medium text-brand underline-offset-4 hover:underline">
                   Read featured story -&gt;
                 </a>
               </CardFooter>
@@ -117,13 +179,13 @@ const outcomeGroups = [
 
           <div class="grid gap-4 lg:grid-cols-2">
             {successStoryCards.map((story) => (
-              <Card className="h-full transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
+              <Card className="h-full transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md">
                 <CardHeader>
                   <div class="flex h-12 min-w-0 items-center">
                     {story.logo ? (
                       <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-[10rem] object-contain object-left", story.logoClass]} loading="lazy" />
                     ) : (
-                      <span class="grid size-11 place-items-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">{story.initials}</span>
+                      <span class="grid size-11 place-items-center rounded-lg bg-brand-soft text-sm font-semibold text-brand">{story.initials}</span>
                     )}
                   </div>
                   <CardAction className="row-span-1">
@@ -154,7 +216,7 @@ const outcomeGroups = [
                   </div>
                 </CardContent>
                 <CardFooter className="mt-auto">
-                  <a href={withBasePath(story.href)} class="text-sm font-medium text-primary underline-offset-4 hover:underline">
+                  <a href={withBasePath(story.href)} class="text-sm font-medium text-brand underline-offset-4 hover:underline">
                     Read story -&gt;
                   </a>
                 </CardFooter>
@@ -176,7 +238,7 @@ const outcomeGroups = [
                 <ul class="grid gap-2 text-sm leading-6 text-muted-foreground">
                   {group.stories.map((story) => (
                     <li class="flex items-center gap-2">
-                      <IconGlyph name="check-circle" className="size-4 text-primary" />
+                      <IconGlyph name="check-circle" className="size-4 text-brand" />
                       <span>{story}</span>
                     </li>
                   ))}
@@ -189,54 +251,92 @@ const outcomeGroups = [
     </main>
   ) : (
     <main class="bg-card">
-      <article class="mx-auto max-w-[900px] px-5 py-12 sm:px-6 lg:py-16">
-        <header class="border-b pb-8">
-          <Badge variant="secondary">{page.eyebrow}</Badge>
-          <h1 class="mt-5 text-3xl font-bold leading-tight text-foreground md:text-5xl">
-            {page.title}
-          </h1>
-          {intro && (
-            <p class="mt-5 text-base leading-8 text-muted-foreground md:text-[1.05rem]">
-              {intro}
-            </p>
-          )}
-        </header>
+      <article class:list={[
+        "mx-auto px-5 py-12 sm:px-6 lg:py-16",
+        isCanonicalPageContent || isBlogArchiveRoute ? "max-w-[var(--page-max)]" : "max-w-[900px]"
+      ]}>
+        {(!isCanonicalPageContent || isBlogArchiveRoute) && (
+          <header class="border-b pb-8">
+            <Badge variant="secondary">{pageData.eyebrow}</Badge>
+            <h1 class="mt-5 text-3xl font-bold leading-tight text-foreground md:text-5xl">
+              {pageData.title}
+            </h1>
+            {intro && (
+              <p class="mt-5 text-base leading-8 text-muted-foreground md:text-[1.05rem]">
+                {intro}
+              </p>
+            )}
+          </header>
+        )}
 
-        <div class="divide-y">
-          {(content?.blocks ?? []).map((block) => (
-            <section class="py-8">
-              <h2 class="text-2xl font-semibold leading-tight text-foreground">{block.title}</h2>
-              {block.body && <p class="mt-3 text-base leading-8 text-muted-foreground">{block.body}</p>}
-              {block.items && (
-                <ul class="mt-5 grid gap-3 text-base leading-7 text-muted-foreground">
-                  {block.items.map((item) => (
-                    <li class="grid grid-cols-[20px_minmax(0,1fr)] gap-3">
-                      <IconGlyph name="check-circle" className="mt-1 size-4 text-primary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+        <MainSiteMarkdown html={contentHtml} />
+
+        {archivePosts.length > 0 && (
+          <section class:list={[
+            "pt-8",
+            contentHtml ? "mt-10 border-t" : ""
+          ]}>
+            <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 class="text-2xl font-semibold leading-tight text-foreground">
+                  {routeSlug === "blog" ? "Latest articles" : "Available articles"}
+                </h2>
+                <p class="mt-2 text-sm leading-6 text-muted-foreground">
+                  {archivePosts.length} {archivePosts.length === 1 ? "entry" : "entries"} shown
+                </p>
+              </div>
+              {routeSlug === "blog" && blogArchiveTotalPages && blogArchiveTotalPages > 1 && (
+                <a href={withBasePath("/blog/page/2/")} class="text-sm font-medium text-brand underline-offset-4 hover:underline">
+                  Browse older articles -&gt;
+                </a>
               )}
-              {block.code && (
-                <pre class="mt-5 overflow-x-auto rounded-lg border bg-[#151a20] p-4 text-[0.82rem] leading-6 text-[#f6f8f9]"><code>{block.code}</code></pre>
-              )}
-              {block.links && block.links.length > 0 && (
-                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2">
-                  {block.links.map((link) => (
-                    <a
-                      href={link.external ? link.href : withBasePath(link.href)}
-                      class="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                      target={link.external ? "_blank" : undefined}
-                      rel={link.external ? "noreferrer" : undefined}
-                    >
-                      {link.label} -&gt;
+            </div>
+            <div class="mt-5 grid gap-4 lg:grid-cols-2">
+              {archivePosts.map((post) => (
+                <Card className="h-full transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md">
+                  <CardHeader>
+                    <div class="col-span-full flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {post.entry.data.date && (
+                        <span>{postDateFormatter.format(post.entry.data.date)}</span>
+                      )}
+                      {post.entry.data.category && (
+                        <Badge variant="outline">{post.entry.data.category}</Badge>
+                      )}
+                    </div>
+                    <CardTitle className="col-span-full text-xl leading-7">{post.entry.data.title}</CardTitle>
+                    <CardDescription className="col-span-full line-clamp-3">{cleanExcerptText(post.entry.data.description)}</CardDescription>
+                  </CardHeader>
+                  <CardFooter className="mt-auto">
+                    <a href={withBasePath(post.href)} class="text-sm font-medium text-brand underline-offset-4 hover:underline">
+                      Read article -&gt;
                     </a>
-                  ))}
-                </div>
-              )}
-            </section>
-          ))}
-        </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+            {blogArchivePage && blogArchiveTotalPages && blogArchiveTotalPages > 1 && (
+              <nav class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm" aria-label="Blog archive pagination">
+                {blogArchivePage > 2 ? (
+                  <a href={withBasePath(`/blog/page/${blogArchivePage - 1}/`)} class="font-medium text-brand underline-offset-4 hover:underline">
+                    &lt;- Previous
+                  </a>
+                ) : blogArchivePage > 1 ? (
+                  <a href={withBasePath("/blog/")} class="font-medium text-brand underline-offset-4 hover:underline">
+                    &lt;- Previous
+                  </a>
+                ) : (
+                  <span />
+                )}
+                <span class="text-muted-foreground">Page {blogArchivePage} of {blogArchiveTotalPages}</span>
+                {blogArchivePage < blogArchiveTotalPages && (
+                  <a href={withBasePath(`/blog/page/${blogArchivePage + 1}/`)} class="font-medium text-brand underline-offset-4 hover:underline">
+                    Next -&gt;
+                  </a>
+                )}
+              </nav>
+            )}
+          </section>
+        )}
       </article>
     </main>
   )}

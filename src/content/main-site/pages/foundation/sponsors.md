@@ -1,0 +1,70 @@
+---
+order: 20
+title: Sponsors
+eyebrow: Foundation
+description: These are the organizations that have contributed to support the Micronaut Foundation.
+sourceUrl: https://micronaut.io/foundation/sponsors/
+intro: The sponsors page recognizes organizations, partners, and individual supporters who contribute to Micronaut Foundation sustainability.
+sections:
+  - title: Sponsor recognition
+    body: The sponsors page recognizes organizations and supporters contributing to project sustainability.
+    icon: gem
+  - title: Ecosystem health
+    body: Sponsorship helps fund ongoing work that benefits users across the Micronaut ecosystem.
+    icon: check-circle
+  - title: Support options
+    body: Corporate and community sponsorship routes provide different ways to participate.
+    icon: route
+contentSource: micronaut-public-markdown
+---
+
+### Our Ambassador Sponsor
+
+- [![](https://micronaut.io/wp-content/uploads/2023/10/unity_foundation_logo.svg)](https://unityfoundation.io/)
+- [![](https://micronaut.io/wp-content/uploads/2022/05/OCI_HTM_V1_Colored.svg)](https://objectcomputing.com/)
+
+### Silver Sponsor
+
+- [![](https://micronaut.io/wp-content/uploads/2022/05/MicroStream-Logo-Vertical.svg)](https://microstream.one/)
+
+### Bronze Sponsors
+
+- [![SAFRI.NET](https://micronaut.io/wp-content/uploads/2021/09/safri-net.svg)](https://www.safri.net/)
+- [![Vizor Games](https://micronaut.io/wp-content/uploads/2021/12/Logo_h.svg)](https://vizor-games.com/games/)
+- [![](https://micronaut.io/wp-content/uploads/2022/10/01-hivemq.svg)](https://www.hivemq.com/)
+
+### Engineering Partner
+
+- [![](https://micronaut.io/wp-content/uploads/2022/10/Oracle_rgb_c74634.png)](https://www.oracle.com/)
+
+### Tools and Infrastructure Partners
+
+- [![](https://micronaut.io/wp-content/uploads/2026/03/Logo_Full_Colour.png)](https://gradle.com)
+- [![](https://micronaut.io/wp-content/uploads/2024/11/jetbrains_logo.png-e1731082231197.webp)](https://www.jetbrains.com/idea/)
+- [![](https://micronaut.io/wp-content/uploads/2024/11/yklogo.svg)](https://www.yourkit.com/java/profiler)
+
+### Community All Star Sponsors
+
+- KORBINIAN BACHL
+- JEFF SCOTT BROWN
+- GÖRAN EHRSSON
+- ROBERT ELFANBAUM
+- PHILIPP ESCHENBACH
+- Joachim Grimm
+- Stefanos Kalantzis
+- Logan Kulinski
+- GIJS LEUSSINK
+- DANILO MARQUES
+- ANDREW MCKEE
+- HASAN MOHIUDDIN
+- Lukáš Moravec
+- EDGAR RIOS NAVARRO
+- BALASUBRAMANIAN RENGASAMY
+- MICHAL RICAN
+- JASON SCHINDLER
+- DEAN WETTE
+- JEN WIESE
+
+## Donate today and add your name to the list of Micronaut Foundation sponsors.
+
+[Donate now](https://micronaut.io/corporate-sponsorship/)

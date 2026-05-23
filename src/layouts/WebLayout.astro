@@ -1,6 +1,8 @@
 ---
 import "@/styles/globals.css";
+import "@/styles/generated/docs-snippet-runtime.css";
 import { SiteHeader } from "@/components/web/site-header";
+import { getMainSitePageSummaries } from "@/lib/main-site-content";
 import { withBasePath } from "@/lib/base-path";
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 }
 
 const { title, description = "Micronaut web experience", surface = "main", hideHeader = false } = Astro.props;
+const mainSitePages = await getMainSitePageSummaries();
 ---
 
 <!doctype html>
@@ -19,12 +22,27 @@ const { title, description = "Micronaut web experience", surface = "main", hideH
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const storageKey = "micronaut-web-theme";
+        let dark = false;
+        try {
+          const stored = localStorage.getItem(storageKey);
+          dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        } catch {
+          dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+        root.classList.toggle("dark", dark);
+        root.style.colorScheme = dark ? "dark" : "light";
+      })();
+    </script>
     <link rel="icon" href={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")} />
     <title>{title}</title>
   </head>
   <body>
     <div class="min-h-screen bg-background text-foreground">
-      {!hideHeader && <SiteHeader surface={surface} client:load />}
+      {!hideHeader && <SiteHeader surface={surface} mainSitePages={mainSitePages} client:load />}
       <slot />
     </div>
   </body>

@@ -11,7 +11,7 @@ export default defineConfig({
   },
   integrations: [react()],
   output: "static",
-  trailingSlash: "always",
+  trailingSlash: "ignore",
   vite: {
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client"]

@@ -44,6 +44,7 @@ const contentSections = generatedDocSections.length ? generatedDocSections : pro
   label: `${section.number}. ${section.title}`,
   depth: 2
 }));
+const sidebarSections = generatedDocHtml ? contentSections.filter((section) => section.depth === 1) : [];
 
 function extractGeneratedDocSections(html: string) {
   const sections: Array<{ id: string; label: string; depth: number }> = [];
@@ -51,6 +52,11 @@ function extractGeneratedDocSections(html: string) {
   for (const match of html.matchAll(headingPattern)) {
     const label = match[3]
       .replace(/<[^>]+>/g, "")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
       .replace(/\s+/g, " ")
       .trim();
     if (label) {
@@ -60,7 +66,7 @@ function extractGeneratedDocSections(html: string) {
         depth: Number(match[1])
       });
     }
-    if (sections.length >= 48) {
+    if (sections.length >= 600) {
       break;
     }
   }
@@ -69,23 +75,28 @@ function extractGeneratedDocSections(html: string) {
 ---
 
 <WebLayout title={`${project.displayName} Docs`} surface="docs" hideHeader>
-  <DocsShell activeSlug={project.slug} client:load>
-    <article class="grid w-full grid-cols-1 px-4 py-6 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0">
-      <div class="min-w-0 xl:px-14">
-        <header class="mb-7">
-          <div class="mb-4 flex items-center gap-3">
-            <span class="flex size-10 items-center justify-center rounded-lg bg-secondary">
-              <IconGlyph name={project.icon} className="size-5" />
-            </span>
-            <Badge variant="secondary">{project.primaryCategory}</Badge>
-          </div>
-          <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.displayName}</h1>
-          <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">{project.longDescription}</p>
-          <ProjectReferenceLinks references={project.references} />
-        </header>
+  <DocsShell activeSlug={project.slug} activeSections={sidebarSections} client:load>
+    <article class:list={[
+      "grid w-full grid-cols-1 py-6",
+      generatedDocHtml ? "px-4 md:px-12" : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0"
+    ]}>
+      <div class:list={["min-w-0", !generatedDocHtml && "xl:px-14"]}>
+        {!generatedDocHtml && (
+          <header class="mb-7">
+            <div class="mb-4 flex items-center gap-3">
+              <span class="flex size-10 items-center justify-center rounded-lg bg-secondary">
+                <IconGlyph name={project.icon} className="size-5" />
+              </span>
+              <Badge variant="secondary">{project.primaryCategory}</Badge>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.displayName}</h1>
+            <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">{project.longDescription}</p>
+            <ProjectReferenceLinks references={project.references} />
+          </header>
+        )}
         {generatedDocHtml ? (
           <>
-            <div class="generated-docs-content grid gap-3 text-sm leading-6 text-foreground" data-generated-docs set:html={generatedDocHtml} />
+            <div class="generated-docs-content" data-generated-docs set:html={generatedDocHtml} />
             <GeneratedDocsEnhancer />
           </>
         ) : (
@@ -116,20 +127,299 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
           </div>
         )}
       </div>
-      <aside class="hidden xl:block">
-        <div class="sticky top-24 grid gap-1.5 pl-2.5 pr-6 text-[0.82rem]">
-          <h2 class="font-medium">In this section</h2>
-          <Separator className="opacity-70" />
-          {contentSections.map((section) => (
-            <a href={`#${section.id}`} class:list={[
-              "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
-              section.depth > 1 && "pl-5 text-xs"
-            ]}>
-              {section.label}
-            </a>
-          ))}
-        </div>
-      </aside>
+      {!generatedDocHtml && (
+        <aside class="hidden xl:block">
+          <div class="sticky top-24 grid gap-1.5 pl-2.5 pr-6 text-[0.82rem]">
+            <h2 class="font-medium">In this section</h2>
+            <Separator className="opacity-70" />
+            {contentSections.map((section) => (
+              <a href={`#${section.id}`} class:list={[
+                "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
+                section.depth > 1 && "pl-5 text-xs"
+              ]}>
+                {section.label}
+              </a>
+            ))}
+          </div>
+        </aside>
+      )}
     </article>
   </DocsShell>
 </WebLayout>
+
+{generatedDocHtml && (
+  <script is:inline>
+    (() => {
+      const alignHash = () => {
+        if (!window.location.hash) {
+          return;
+        }
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        const target = document.getElementById(id);
+        if (!target || !target.closest("[data-generated-docs]")) {
+          return;
+        }
+        const scrollPaddingTop = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 80;
+        const top = target.getBoundingClientRect().top + window.scrollY - scrollPaddingTop;
+        window.scrollTo({ top: Math.max(0, top) });
+      };
+
+      const scheduleAlignHash = () => {
+        requestAnimationFrame(alignHash);
+        window.setTimeout(alignHash, 50);
+        window.setTimeout(alignHash, 250);
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", scheduleAlignHash, { once: true });
+      } else {
+        scheduleAlignHash();
+      }
+      window.addEventListener("load", scheduleAlignHash, { once: true });
+      window.addEventListener("astro:hydrate", scheduleAlignHash);
+      window.addEventListener("hashchange", scheduleAlignHash);
+    })();
+  </script>
+)}
+
+<style is:global>
+  .generated-docs-content {
+    min-width: 0;
+    color: var(--foreground);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  .generated-docs-content > style {
+    display: none;
+  }
+
+  .generated-docs-content .project h1 {
+    margin: 0.9rem 0 1.85rem;
+    font-size: clamp(2rem, 3.4vw, 2.5rem);
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .generated-docs-content .guide-section-heading {
+    position: relative;
+    min-width: 0;
+    margin-top: 2.25rem;
+  }
+
+  .generated-docs-content .project + .guide-section-heading {
+    margin-top: 0;
+  }
+
+  .generated-docs-content .guide-section-heading h1,
+  .generated-docs-content .guide-section-heading h2 {
+    margin: 0 0 0.9rem;
+    padding-right: 2.25rem;
+    scroll-margin-top: 5rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .generated-docs-content .guide-section-heading h1 {
+    font-size: clamp(2rem, 3.1vw, 2rem);
+    line-height: 1.18;
+  }
+
+  .generated-docs-content .guide-section-heading h2 {
+    font-size: clamp(1.55rem, 2.2vw, 1.8rem);
+    line-height: 1.22;
+  }
+
+  .generated-docs-content .guide-section-heading .anchor {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .generated-docs-content .contribute-btn {
+    position: absolute;
+    right: 0;
+    top: 0.2rem;
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    border-radius: 0.375rem;
+    color: var(--muted-foreground);
+    opacity: 0;
+    text-decoration: none;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+  }
+
+  .generated-docs-content .guide-section-heading:hover .contribute-btn,
+  .generated-docs-content .contribute-btn:focus-visible {
+    opacity: 1;
+  }
+
+  .generated-docs-content .contribute-btn:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .generated-docs-content .button-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .generated-docs-content .paragraph p {
+    margin: 0 0 1.25rem;
+  }
+
+  .generated-docs-content :where(.sect2, .sect3, .sect4, .sect5) {
+    min-width: 0;
+    margin-top: 1.55rem;
+  }
+
+  .generated-docs-content :where(.sect2, .sect3, .sect4, .sect5) > :where(h3, h4, h5, h6) {
+    margin: 0 0 0.8rem;
+    scroll-margin-top: 5rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .generated-docs-content .sect2 > h3 {
+    font-size: 1.35rem;
+    line-height: 1.3;
+  }
+
+  .generated-docs-content .sect3 > h4 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+  }
+
+  .generated-docs-content .sect4 > h5,
+  .generated-docs-content .sect5 > h6 {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .generated-docs-content :where(.ulist, .olist) {
+    margin: 0 0 1.25rem;
+  }
+
+  .generated-docs-content .ulist ul {
+    margin: 0;
+    padding-left: 1.45rem;
+    list-style: disc;
+  }
+
+  .generated-docs-content .olist ol {
+    margin: 0;
+    padding-left: 1.45rem;
+    list-style: decimal;
+  }
+
+  .generated-docs-content li + li {
+    margin-top: 0.8rem;
+  }
+
+  .generated-docs-content li > p {
+    margin: 0;
+  }
+
+  .generated-docs-content a {
+    color: var(--brand);
+    text-decoration: none;
+  }
+
+  .generated-docs-content a:hover {
+    text-decoration: underline;
+  }
+
+  .generated-docs-content :not(pre) > code {
+    border-radius: 0.25rem;
+    background: var(--muted);
+    padding: 0.05rem 0.25rem;
+    color: var(--foreground);
+    font-size: 0.9em;
+  }
+
+  .generated-docs-content :where(.listingblock, .literalblock, .exampleblock, .sidebarblock, .openblock, .admonitionblock) {
+    min-width: 0;
+    margin: 1.25rem 0;
+  }
+
+  .generated-docs-content :where(.listingblock, .literalblock) pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .generated-docs-content .admonitionblock {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--muted);
+  }
+
+  .generated-docs-content .admonitionblock table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .generated-docs-content .admonitionblock td.icon {
+    width: 4.25rem;
+    padding: 1rem 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+
+  .generated-docs-content .admonitionblock td.content {
+    padding: 1rem 1rem 1rem 0;
+    vertical-align: top;
+  }
+
+  .generated-docs-content .admonitionblock td.content > :last-child,
+  .generated-docs-content .admonitionblock td.content > :last-child p {
+    margin-bottom: 0;
+  }
+
+  .generated-docs-content table.tableblock {
+    width: 100%;
+    margin: 1.25rem 0;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .generated-docs-content table.tableblock caption {
+    margin-bottom: 0.55rem;
+    color: var(--foreground);
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .generated-docs-content table.tableblock :where(th, td) {
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.75rem;
+    vertical-align: top;
+  }
+
+  .generated-docs-content table.tableblock th {
+    background: var(--muted);
+    font-weight: 700;
+  }
+
+  .generated-docs-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .generated-docs-content .colist {
+    margin: -0.4rem 0 1.25rem;
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+  }
+</style>

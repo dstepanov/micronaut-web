@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocsCodeSnippet, type CodeSnippetExample, type CodeSnippetLanguage } from "@/components/web/docs-code-snippet";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
 const examples: CodeSnippetExample[] = [
   {
@@ -211,32 +212,24 @@ export function MainCodeShowcase() {
 
   return (
     <Tabs defaultValue="server" className="main-code-showcase gap-4">
-      <div className="overflow-x-auto pb-1">
-        <TabsList className="h-auto min-w-max bg-muted p-1.5">
-          {examples.map((example) => (
-            <TabsTrigger
-              key={example.id}
-              value={example.id}
-              className="min-h-10 px-3 text-[0.86rem] data-[state=active]:border data-[state=active]:border-primary/35 data-[state=active]:bg-card data-[state=active]:text-foreground sm:px-4 sm:text-sm"
-            >
-              {example.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </div>
+      <TabsList >
+        {examples.map((example) => (
+          <TabsTrigger
+            key={example.id}
+            value={example.id}
+            className="min-h-10 px-3 text-[0.86rem] data-[state=active]:border data-[state=active]:border-brand/35 data-[state=active]:bg-card data-[state=active]:text-foreground sm:px-4 sm:text-sm"
+          >
+            {example.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
       {examples.map((example) => {
         const activeLanguage = activeLanguages[example.id] || example.variants[0]?.language || "text";
-        const activeVariant = example.variants.find((variant) => variant.language === activeLanguage) || example.variants[0];
 
         return (
           <TabsContent key={example.id} value={example.id} className="mt-0">
-            <div className="grid gap-3">
-              {activeVariant ? (
-                <div>
-                  <h3 className="text-base font-semibold leading-6 text-foreground">{example.title}</h3>
-                  <p className="mt-1 max-w-[34rem] text-sm leading-6 text-muted-foreground">{example.description}</p>
-                </div>
-              ) : null}
+            <div className="grid gap-2">
+              <div className={docsSnippetStyles.externalTitle}>{example.title}</div>
               <DocsCodeSnippet
                 example={example}
                 activeLanguage={activeLanguage}

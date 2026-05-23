@@ -1,7 +1,12 @@
-<script is:inline>
+---
+import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+---
+
+<script is:inline define:vars={{ docsSnippetStyles }}>
   (() => {
     const languageLabels = {
       bash: "Terminal",
+      console: "Terminal",
       conf: "HOCON",
       gradle: "Gradle",
       "gradle-groovy": "Gradle",
@@ -10,6 +15,7 @@
       "groovy-config": "Groovy",
       hocon: "HOCON",
       java: "Java",
+      "json-config": "JSON",
       kotlin: "Kotlin",
       maven: "Maven",
       pom: "Maven",
@@ -18,6 +24,7 @@
       shell: "Terminal",
       sh: "Terminal",
       text: "Text",
+      toml: "TOML",
       xml: "XML",
       yaml: "YAML",
       yml: "YAML",
@@ -65,9 +72,19 @@
         body: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path>`,
         fill: false
       },
+      terminal: {
+        viewBox: "0 0 24 24",
+        body: `<polyline points="4 17 10 11 4 5"></polyline><line x1="12" x2="20" y1="19" y2="19"></line>`,
+        fill: false
+      },
       xml: {
         viewBox: "0 0 24 24",
         body: `<path d="m8 16-4-4 4-4"></path><path d="m16 8 4 4-4 4"></path><path d="m14 4-4 16"></path>`,
+        fill: false
+      },
+      json: {
+        viewBox: "0 0 24 24",
+        body: `<path d="M8 16H6a2 2 0 0 1-2-2v-1a2 2 0 0 0-1-1.73A2 2 0 0 0 4 9.54V8a2 2 0 0 1 2-2h2"></path><path d="M16 16h2a2 2 0 0 0 2-2v-1a2 2 0 0 1 1-1.73A2 2 0 0 1 20 9.54V8a2 2 0 0 0-2-2h-2"></path><path d="M12 8v8"></path>`,
         fill: false
       },
       yaml: {
@@ -85,11 +102,12 @@
       conf: "hocon",
       props: "properties",
       property: "properties",
-      bash: "text",
-      console: "text",
-      sh: "text",
-      shell: "text",
-      zsh: "text",
+      bash: "terminal",
+      console: "terminal",
+      "json-config": "json",
+      sh: "terminal",
+      shell: "terminal",
+      zsh: "terminal",
       txt: "text",
       plaintext: "text",
       yml: "yaml"
@@ -114,33 +132,29 @@
         .replaceAll(">", "&gt;")
         .replaceAll("\"", "&quot;");
 
-    const cardClass =
-      "docs-snippet-template flex flex-col gap-0 rounded-xl border bg-card py-0 text-card-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20 overflow-hidden";
-    const cardHeaderClass =
-      "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1 px-4 py-1.5 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-1.5 border-b";
-    const snippetToolbarClass =
-      "docs-code-toolbar docs-snippet-card-header flex min-h-8 items-center justify-between gap-2.5 px-2.5 py-1";
-    const cardActionClass = "col-start-2 row-span-2 row-start-1 self-start justify-self-end";
-    const toolbarActionClass = "ml-auto self-center justify-self-auto";
-    const cardContentClass = "docs-snippet-panels overflow-hidden px-0";
-    const cardFooterClass = "docs-snippet-card-footer docs-code-callouts flex items-center border-t px-6 pt-6 text-sm leading-6 text-muted-foreground";
-    const buttonBaseClass =
-      "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
-    const buttonXsClass = "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3";
-    const buttonGhostClass = "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50";
-    const buttonIconXsClass = "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3";
-    const copyButtonClass = `docs-snippet-copy docs-code-copy ${buttonBaseClass} ${buttonGhostClass} ${buttonIconXsClass}`;
+    const cardClass = docsSnippetStyles.card;
+    const cardHeaderClass = docsSnippetStyles.textHeader;
+    const snippetToolbarClass = docsSnippetStyles.toolbarHeader;
+    const cardActionClass = docsSnippetStyles.cardAction;
+    const toolbarActionClass = docsSnippetStyles.toolbarAction;
+    const cardContentClass = docsSnippetStyles.content;
+    const cardFooterClass = docsSnippetStyles.footer;
+    const copyButtonClass = docsSnippetStyles.copyButton;
+    const staticLanguageClass = docsSnippetStyles.staticLanguage;
 
     const setClassName = (element, className) => {
       element.className = className;
+    };
+
+    const addClassName = (element, className) => {
+      element.classList.add(...className.split(/\s+/).filter(Boolean));
     };
 
     const decorateButton = (button, variant = "ghost", size = "xs") => {
       button.setAttribute("data-slot", "button");
       button.dataset.variant = variant;
       button.dataset.size = size;
-      const sizeClass = size === "icon-xs" ? buttonIconXsClass : buttonXsClass;
-      setClassName(button, `${buttonBaseClass} ${buttonGhostClass} ${sizeClass}`);
+      setClassName(button, size === "icon-xs" ? docsSnippetStyles.buttonGhostIconXs : docsSnippetStyles.buttonGhostXs);
     };
 
     const decorateLanguageButton = (button, active) => {
@@ -149,7 +163,7 @@
       button.dataset.size = "xs";
       setClassName(
         button,
-        `${buttonBaseClass} ${buttonGhostClass} ${buttonXsClass} docs-code-language language-option ${active ? "selected font-semibold text-foreground" : "text-muted-foreground"}`
+        `${docsSnippetStyles.buttonGhostXs} ${docsSnippetStyles.languageButton} ${active ? docsSnippetStyles.languageButtonActive : docsSnippetStyles.languageButtonInactive}`
       );
     };
 
@@ -159,16 +173,16 @@
       const svgAttributes = generatedIcon.fill
         ? `fill="currentColor"`
         : `fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-      const fillClass = generatedIcon.fill ? " docs-code-language-icon-fill" : "";
-      return `<span class="docs-code-language-icon docs-code-language-icon-${key}${fillClass} inline-flex size-3.5 shrink-0 items-center justify-center [&_svg]:size-full${extraClass ? ` ${extraClass}` : ""}" aria-hidden="true"><svg viewBox="${generatedIcon.viewBox}" ${svgAttributes} focusable="false">${generatedIcon.body}</svg></span>`;
+      const fillClass = generatedIcon.fill ? ` ${docsSnippetStyles.languageIconFill}` : "";
+      return `<span class="${docsSnippetStyles.languageIcon} docs-code-language-icon-${key}${fillClass}${extraClass ? ` ${extraClass}` : ""}" aria-hidden="true"><svg viewBox="${generatedIcon.viewBox}" ${svgAttributes} focusable="false">${generatedIcon.body}</svg></span>`;
     };
 
     const codeLanguageTabHtml = (language, label) =>
-      `${codeLanguageIcon(language)}<span class="docs-code-language-text">${escapeHtml(label)}</span>`;
+      `${codeLanguageIcon(language)}<span class="${docsSnippetStyles.languageText}">${escapeHtml(label)}</span>`;
 
     const snippetKindIcon = (kind) => {
       const language = kind === "properties" ? "properties" : kind === "dependency" ? "gradle" : "text";
-      return codeLanguageIcon(language, "docs-snippet-kind-icon");
+      return codeLanguageIcon(language, docsSnippetStyles.kindIcon);
     };
 
     const normalizeOptionLanguage = (option) => {
@@ -248,6 +262,72 @@
       return button;
     };
 
+    const takeSnippetHeader = (blocks) => {
+      let titleHtml = "";
+      let descriptionHtml = "";
+      blocks.forEach((block) => {
+        const title = block.querySelector(":scope > .title");
+        const htmlValue = title?.innerHTML.trim();
+        if (!titleHtml && htmlValue) {
+          titleHtml = htmlValue;
+        }
+        const description = block.querySelector(":scope > .description, :scope > .docs-snippet-description");
+        const descriptionValue = description?.innerHTML.trim();
+        if (!descriptionHtml && descriptionValue) {
+          descriptionHtml = descriptionValue;
+        }
+        title?.remove();
+        description?.remove();
+      });
+      return { titleHtml, descriptionHtml };
+    };
+
+    const makeExternalSnippetTitle = (titleHtml) => {
+      const title = document.createElement("div");
+      title.className = docsSnippetStyles.externalTitle;
+      title.innerHTML = titleHtml;
+      return title;
+    };
+
+    const makeExternalSnippetHeader = (titleHtml, descriptionHtml) => {
+      const header = document.createElement("div");
+      header.className = docsSnippetStyles.externalHeader;
+      if (titleHtml) {
+        const title = document.createElement("div");
+        title.className = docsSnippetStyles.externalHeaderTitle;
+        title.innerHTML = titleHtml;
+        header.append(title);
+      }
+      if (descriptionHtml) {
+        const description = document.createElement("div");
+        description.className = docsSnippetStyles.externalHeaderDescription;
+        description.innerHTML = descriptionHtml;
+        header.append(description);
+      }
+      return header;
+    };
+
+    const makeExternalSnippetIntro = (titleHtml, descriptionHtml, forceHeader = false) => {
+      if (!titleHtml && !descriptionHtml) {
+        return undefined;
+      }
+      return forceHeader || descriptionHtml
+        ? makeExternalSnippetHeader(titleHtml, descriptionHtml)
+        : makeExternalSnippetTitle(titleHtml);
+    };
+
+    const makeStaticLanguage = (language) => {
+      const label = document.createElement("span");
+      label.setAttribute("data-slot", "button");
+      label.dataset.variant = "ghost";
+      label.dataset.size = "xs";
+      label.className = staticLanguageClass;
+      label.setAttribute("aria-label", `${formatLanguage(language)} snippet`);
+      label.dataset.lang = codeLanguageKey(language);
+      label.innerHTML = codeLanguageTabHtml(language, formatLanguage(language));
+      return label;
+    };
+
     const decorateCopyButtonIcon = (button) => {
       const icon = button.querySelector("svg");
       if (!icon) {
@@ -258,6 +338,17 @@
       icon.setAttribute("stroke-linecap", "round");
       icon.setAttribute("stroke-linejoin", "round");
       icon.setAttribute("stroke-width", "2");
+    };
+
+    const decorateCodeSurface = (root) => {
+      root.querySelectorAll("pre.shiki").forEach((pre) => {
+        setClassName(pre, docsSnippetStyles.codePre);
+        pre.setAttribute("tabindex", pre.getAttribute("tabindex") || "0");
+        const code = pre.querySelector("code");
+        if (code) {
+          addClassName(code, docsSnippetStyles.codeElement);
+        }
+      });
     };
 
     const setCopyState = (button, copied) => {
@@ -305,21 +396,8 @@
         }
         block.setAttribute("data-slot", "card");
         block.classList.remove("gap-6", "py-6");
-        block.classList.add(
-          "docs-code-block",
-          "docs-snippet-card",
-          "flex",
-          "flex-col",
-          "gap-0",
-          "rounded-xl",
-          "border",
-          "bg-card",
-          "py-0",
-          "text-card-foreground",
-          "shadow-sm",
-          "shadow-black/[0.03]",
-          "dark:shadow-black/20"
-        );
+        addClassName(block, docsSnippetStyles.standaloneCard);
+        decorateCodeSurface(block);
         if (!block.dataset.lang) {
           block.dataset.lang = block.querySelector("code")?.dataset.lang || "code";
         }
@@ -327,19 +405,27 @@
         if (block.classList.contains("multi-language-sample") || block.querySelector(":scope > [data-slot='card-header']")) {
           return;
         }
+        const { titleHtml, descriptionHtml } = takeSnippetHeader([block]);
+        const intro = makeExternalSnippetIntro(titleHtml, descriptionHtml);
+        if (intro) {
+          block.parentNode.insertBefore(intro, block);
+        }
         const content = block.querySelector(":scope > [data-slot='card-content'], :scope > .content");
+        if (content) {
+          addClassName(content, docsSnippetStyles.panel);
+        }
         const header = document.createElement("div");
         header.setAttribute("data-slot", "card-header");
         header.className = snippetToolbarClass;
-        const title = document.createElement("div");
-        title.setAttribute("data-slot", "card-title");
-        title.className = "docs-snippet-heading text-xs leading-none font-semibold";
-        title.innerHTML = `${codeLanguageIcon(block.dataset.lang)}<span></span>`;
-        title.querySelector("span").textContent = formatLanguage(block.dataset.lang);
         const action = document.createElement("div");
         action.setAttribute("data-slot", "card-action");
         action.className = toolbarActionClass;
         action.append(copyButton);
+        const title = document.createElement("div");
+        title.setAttribute("data-slot", "card-title");
+        title.className = docsSnippetStyles.heading;
+        title.innerHTML = `${codeLanguageIcon(block.dataset.lang)}<span class="${docsSnippetStyles.languageText}"></span>`;
+        title.querySelector(docsSnippetStyles.languageTextSelector).textContent = formatLanguage(block.dataset.lang);
         header.append(title, action);
         block.insertBefore(header, content || block.firstChild);
       });
@@ -366,10 +452,39 @@
         }
 
         if (group.length < 2) {
+          const dependency = isDependencyBlock(block);
+          const { titleHtml, descriptionHtml } = takeSnippetHeader(group);
+          const intro = makeExternalSnippetIntro(titleHtml, descriptionHtml, dependency);
+          if (intro) {
+            block.parentNode.insertBefore(intro, block);
+          }
+
+          if (!block.querySelector(":scope > [data-slot='card-header']")) {
+            const language = block.dataset.lang || block.querySelector("code")?.dataset.lang || "code";
+            const copyButton = block.querySelector(":scope > .docs-code-copy") || ensureCodeBlockCopy(block);
+            const content = block.querySelector(":scope > [data-slot='card-content'], :scope > .content");
+            decorateCodeSurface(block);
+            if (content) {
+              addClassName(content, docsSnippetStyles.panel);
+            }
+
+            const header = document.createElement("div");
+            header.setAttribute("data-slot", "card-header");
+            header.className = snippetToolbarClass;
+
+            const action = document.createElement("div");
+            action.setAttribute("data-slot", "card-action");
+            action.className = toolbarActionClass;
+            action.append(copyButton);
+
+            header.append(makeStaticLanguage(language), action);
+            block.insertBefore(header, content || block.firstChild);
+          }
           continue;
         }
 
         const dependency = isDependencyBlock(block);
+        const { titleHtml, descriptionHtml } = takeSnippetHeader(group);
         const afterGroup = nextElement(cursor);
         const hasCallouts = afterGroup?.classList?.contains("colist");
         if (hasCallouts) {
@@ -380,7 +495,7 @@
         const referenceNode = block;
         const template = document.createElement("section");
         template.setAttribute("data-slot", "card");
-        template.className = `${cardClass} docs-code-block ${hasCallouts ? "docs-code-block-with-footer" : ""} ${dependency ? "docs-properties-template docs-dependency-template" : "docs-code-snippet-template"}`;
+        template.className = `${cardClass} ${hasCallouts ? "docs-code-block-with-footer" : ""} ${dependency ? docsSnippetStyles.dependencySnippetTemplate : docsSnippetStyles.codeSnippetTemplate}`;
         template.dataset.snippetKind = dependency ? "dependency" : "code";
 
         const header = document.createElement("div");
@@ -392,7 +507,7 @@
         panels.className = cardContentClass;
 
         const tabs = document.createElement("div");
-        tabs.className = "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1";
+        tabs.className = docsSnippetStyles.tabs;
         tabs.setAttribute("role", "tablist");
         tabs.setAttribute("aria-label", dependency ? "Dependency format" : "Code language");
 
@@ -454,13 +569,18 @@
             }
             renderedContent.remove();
           }
-          panel.className = "docs-code-content docs-snippet-card-content";
+          panel.className = docsSnippetStyles.panel;
+          decorateCodeSurface(panel);
         });
 
         bindCopyButton(copyButton, () => snippetText(group[activeIndex]));
 
         action.append(copyButton);
         header.append(tabs, action);
+        const intro = makeExternalSnippetIntro(titleHtml, descriptionHtml, dependency);
+        if (intro) {
+          originalParent.insertBefore(intro, referenceNode);
+        }
         template.append(header, panels);
         originalParent.insertBefore(template, referenceNode);
         group.forEach((panel) => panels.append(panel));
@@ -480,16 +600,16 @@
           continue;
         }
 
-        const title = caption.textContent.trim();
+        const title = caption.textContent.trim().replace(/^Table\s+\d+\.\s*/i, "");
         const rows = table.querySelectorAll("tbody tr").length;
         const previous = table.previousElementSibling;
         const anchor = previous?.tagName === "A" && previous.id ? previous : undefined;
         const template = document.createElement("section");
         template.setAttribute("data-slot", "card");
-        template.className = "docs-properties-template flex flex-col gap-0 overflow-hidden rounded-xl border bg-card py-0 text-card-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20";
+        template.className = docsSnippetStyles.propertiesCard;
         if (anchor) {
           template.id = `${anchor.id}-properties`;
-          anchor.className = "docs-properties-anchor block h-0 overflow-hidden no-underline";
+          anchor.className = docsSnippetStyles.propertiesAnchor;
         }
 
         const header = document.createElement("header");
@@ -497,19 +617,28 @@
         header.className = cardHeaderClass;
         const heading = document.createElement("div");
         heading.setAttribute("data-slot", "card-title");
-        heading.className = "docs-properties-heading flex items-center gap-2 text-xs leading-none font-semibold";
-        heading.innerHTML = `${snippetKindIcon("properties")}<span>Configuration properties</span><strong></strong>`;
-        heading.querySelector("strong").textContent = title.replace(/^Table\s+\d+\.\s*/i, "");
+        heading.className = docsSnippetStyles.propertiesHeading;
+        heading.innerHTML = `${snippetKindIcon("properties")}<span class="docs-properties-heading-title"></span>`;
+        heading.querySelector(".docs-properties-heading-title").textContent = title;
+        const description = document.createElement("div");
+        description.setAttribute("data-slot", "card-description");
+        description.className = docsSnippetStyles.propertiesDescription;
+        description.textContent = "Configuration properties";
         const count = document.createElement("span");
         count.setAttribute("data-slot", "badge");
         count.dataset.variant = "secondary";
-        count.className = "docs-properties-count inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent bg-secondary px-2.5 py-1 text-[0.78rem] font-medium whitespace-nowrap text-secondary-foreground";
+        count.className = docsSnippetStyles.propertiesCount;
         count.textContent = `${rows} ${rows === 1 ? "property" : "properties"}`;
-        header.append(heading, count);
+        const action = document.createElement("div");
+        action.setAttribute("data-slot", "card-action");
+        action.className = cardActionClass;
+        action.append(count);
+        caption.classList.add("sr-only");
+        header.append(heading, description, action);
 
         const scroller = document.createElement("div");
         scroller.setAttribute("data-slot", "card-content");
-        scroller.className = "docs-properties-scroll overflow-x-auto px-0";
+        scroller.className = docsSnippetStyles.propertiesScroll;
         const insertionPoint = anchor || table;
         insertionPoint.parentNode.insertBefore(template, insertionPoint);
         if (anchor) {
@@ -549,6 +678,7 @@
         enhanceCodeSnippets(root);
         enhanceProperties(root);
         enhanceTemplateSnippetControls(root);
+        decorateCodeSurface(root);
       });
     };
 

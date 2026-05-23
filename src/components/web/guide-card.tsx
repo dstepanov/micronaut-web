@@ -18,7 +18,7 @@ export function GuideCard({ guide }: { guide: ProtocolGuide }) {
   const tags = guide.tags.slice(0, 4);
 
   return (
-    <Card className="group h-full transition hover:border-primary/40 hover:shadow-md">
+    <Card className="group h-full transition hover:border-brand/40 hover:shadow-md">
       <CardHeader>
         <Badge variant="secondary" className="w-fit">{primaryCategory}</Badge>
         <CardAction>

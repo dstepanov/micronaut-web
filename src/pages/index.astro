@@ -15,8 +15,8 @@ import { ActionLink } from "@/components/web/action-link";
 import { IconGlyph } from "@/components/web/icon-glyph";
 import { MainCodeShowcase } from "@/components/web/main-code-showcase";
 import SiteFooter from "@/components/web/site-footer.astro";
-import { successStories } from "@/data/main-site-pages";
 import { withBasePath } from "@/lib/base-path";
+import { getSuccessStories } from "@/lib/main-site-content";
 
 const features = [
   {
@@ -82,7 +82,7 @@ const cloudLogos = [
   { label: "MongoDB", icon: "brand:mongodb" }
 ];
 
-const stories = successStories.map((story) => ({
+const stories = (await getSuccessStories()).map((story) => ({
   ...story,
   logo: story.logo ? withBasePath(story.logo) : undefined
 }));
@@ -127,18 +127,18 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
           </div>
           <div class="mt-7 flex flex-wrap gap-3">
             <ActionLink href="/docs/" label="View documentation" size="lg" />
-            <ActionLink href="/launch/" label="Launch a project" size="lg" variant="secondary" />
+            <ActionLink href="/launch/" label="Launch a project" size="lg" className="bg-brand text-brand-foreground hover:bg-brand-hover" />
             <ActionLink href="/guides/" label="Browse guides" size="lg" variant="outline" />
           </div>
-          <a href={withBasePath("/guides/creating-your-first-micronaut-app/")} class="mt-5 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">
+          <a href={withBasePath("/guides/creating-your-first-micronaut-app/")} class="mt-5 inline-flex text-sm font-medium text-brand underline-offset-4 hover:underline">
             New to Micronaut? Start with the quickstart -&gt;
           </a>
         </div>
 
-        <Card className="overflow-hidden border-primary/25 bg-card shadow-lg shadow-primary/5">
+        <Card className="overflow-hidden border-brand-border bg-card shadow-lg shadow-brand/5">
           <CardHeader className="gap-4">
             <div class="grid grid-cols-[48px_minmax(0,1fr)] gap-4">
-              <div class="grid size-11 place-items-center rounded-lg bg-primary/10">
+              <div class="grid size-11 place-items-center rounded-lg bg-brand-soft">
                 <img
                   src={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")}
                   alt=""
@@ -157,23 +157,23 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div class="relative grid gap-4 rounded-lg bg-muted/70 p-5 before:absolute before:bottom-8 before:left-[33px] before:top-8 before:w-px before:bg-primary/25">
+            <div class="relative grid gap-4 rounded-lg bg-muted/70 p-5 before:absolute before:bottom-8 before:left-[33px] before:top-8 before:w-px before:bg-brand/25">
               <div class="relative grid grid-cols-[30px_minmax(0,1fr)] gap-3">
-                <span class="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">1</span>
+                <span class="flex size-7 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground">1</span>
                 <div>
                   <p class="text-sm font-semibold text-foreground">Analyze annotations</p>
                   <p class="mt-1 text-sm leading-6 text-muted-foreground">Resolve dependency and AOP metadata at compilation.</p>
                 </div>
               </div>
               <div class="relative grid grid-cols-[30px_minmax(0,1fr)] gap-3">
-                <span class="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">2</span>
+                <span class="flex size-7 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground">2</span>
                 <div>
                   <p class="text-sm font-semibold text-foreground">Generate metadata</p>
                   <p class="mt-1 text-sm leading-6 text-muted-foreground">Precompute the model instead of discovering it at runtime.</p>
                 </div>
               </div>
               <div class="relative grid grid-cols-[30px_minmax(0,1fr)] gap-3">
-                <span class="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">3</span>
+                <span class="flex size-7 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground">3</span>
                 <div>
                   <p class="text-sm font-semibold text-foreground">Start with less runtime work</p>
                   <p class="mt-1 text-sm leading-6 text-muted-foreground">Keep startup paths lean for services and native images.</p>
@@ -204,7 +204,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
             aria-label={`${feature.title}: ${feature.copy}`}
           >
-            <Card className={`h-full min-h-[174px] bg-card transition group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:bg-accent/30 group-hover:shadow-md ${feature.priority ? "border-primary/25" : ""}`}>
+            <Card className={`h-full min-h-[174px] bg-card transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-accent/30 group-hover:shadow-md ${feature.priority ? "border-brand-border" : ""}`}>
               <CardHeader>
                 <div class="mb-2 grid size-12 place-items-center">
                   <IconGlyph name={feature.icon} className="size-9" />
@@ -213,7 +213,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
                 <CardDescription className="text-[0.92rem]">{feature.copy}</CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto">
-                <span class="pt-1 text-sm font-medium text-primary opacity-80 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span class="pt-1 text-sm font-medium text-brand opacity-80 transition group-hover:opacity-100 group-focus-visible:opacity-100">
                   Learn more -&gt;
                 </span>
               </CardFooter>
@@ -235,7 +235,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
           <div class="mt-6 grid gap-3 text-sm leading-6 text-muted-foreground">
             {codeProofs.map((item) => (
               <div class="flex items-start gap-2">
-                <IconGlyph name="check-circle" className="mt-1 size-4 shrink-0 text-primary" />
+                <IconGlyph name="check-circle" className="mt-1 size-4 shrink-0 text-brand" />
                 <span>{item}</span>
               </div>
             ))}
@@ -260,7 +260,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
 
       <div class="grid gap-4 lg:grid-cols-3">
         {featuredStories.map((story) => (
-          <Card className="h-full min-h-[260px] transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
+          <Card className="h-full min-h-[260px] transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md">
             <CardHeader>
               {story.logo ? (
                 <div class="flex h-16 min-w-0 items-center">
@@ -291,7 +291,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
       <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {secondaryStories.map((story) => (
           <a href={withBasePath(story.href)} class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-            <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:shadow-md">
+            <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
               <CardHeader className="gap-3 px-5">
                 {story.logo ? (
                   <span class="inline-flex h-11 max-w-[10rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
@@ -305,7 +305,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
                 <CardDescription className="col-span-full text-[0.9rem]">{story.summary}</CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto px-5">
-                <span class="text-sm font-medium text-primary">Read story -&gt;</span>
+                <span class="text-sm font-medium text-brand">Read story -&gt;</span>
               </CardFooter>
             </Card>
           </a>
@@ -323,7 +323,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
 
     <section class="border-b bg-muted/35 dark:bg-background">
       <div class="mx-auto grid max-w-[var(--page-max)] gap-6 px-5 py-[var(--section-y)] sm:px-6 lg:grid-cols-[1.08fr_0.96fr_0.96fr] xl:px-0">
-        <Card className="h-full min-h-[420px] border-primary/20 bg-card shadow-md shadow-black/[0.03]">
+        <Card className="h-full min-h-[420px] border-brand-border bg-card shadow-md shadow-black/[0.03]">
           <CardHeader>
             <span class="mb-3 flex size-12 items-center justify-center">
               <IconGlyph name="feature:natively-cloud-native" className="size-9" />
@@ -337,7 +337,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             <div class="grid gap-2 text-sm leading-6 text-muted-foreground">
               {cloudBullets.map((item) => (
                 <div class="flex items-center gap-2">
-                  <IconGlyph name="check-circle" className="size-4 text-primary" />
+                  <IconGlyph name="check-circle" className="size-4 text-brand" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -370,20 +370,20 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             <div class="grid gap-3 rounded-lg bg-muted p-4 text-sm">
               <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
                 <div class="rounded-md bg-card p-3 text-center font-medium">Compile</div>
-                <div class="flex justify-center text-primary">
+                <div class="flex justify-center text-brand">
                   <IconGlyph name="arrow-right" className="size-5" />
                 </div>
                 <div class="rounded-md bg-card p-3 text-center font-medium">Optimize</div>
-                <div class="flex justify-center text-primary">
+                <div class="flex justify-center text-brand">
                   <IconGlyph name="arrow-right" className="size-5" />
                 </div>
-                <div class="rounded-md bg-primary p-3 text-center font-medium text-primary-foreground">Native image</div>
+                <div class="rounded-md bg-brand p-3 text-center font-medium text-brand-foreground">Native image</div>
               </div>
             </div>
             <div class="grid gap-2 text-sm leading-6 text-muted-foreground">
               {graalBullets.map((item) => (
                 <div class="flex items-center gap-2">
-                  <IconGlyph name="check-circle" className="size-4 text-primary" />
+                  <IconGlyph name="check-circle" className="size-4 text-brand" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -412,11 +412,11 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
           <CardContent className="grid gap-4">
             <div class="grid gap-2 rounded-lg bg-muted p-4 text-sm">
               <div class="rounded-md border bg-card p-3 font-medium">Repository interface</div>
-              <div class="flex justify-center text-primary">
+              <div class="flex justify-center text-brand">
                 <IconGlyph name="route" className="size-5" />
               </div>
               <div class="rounded-md border bg-card p-3 font-medium">Compile-time query model</div>
-              <div class="flex justify-center text-primary">
+              <div class="flex justify-center text-brand">
                 <IconGlyph name="route" className="size-5" />
               </div>
               <div class="rounded-md border bg-card p-3 font-medium">Database access</div>
@@ -424,7 +424,7 @@ const codeProofs = ["Same annotations across server and client", "Compile-time m
             <div class="grid gap-2 text-sm leading-6 text-muted-foreground">
               {dataBullets.map((item) => (
                 <div class="flex items-center gap-2">
-                  <IconGlyph name="check-circle" className="size-4 text-primary" />
+                  <IconGlyph name="check-circle" className="size-4 text-brand" />
                   <span>{item}</span>
                 </div>
               ))}

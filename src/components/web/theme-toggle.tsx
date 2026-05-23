@@ -9,16 +9,15 @@ export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("micronaut-web-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const enabled = stored ? stored === "dark" : prefersDark;
-    document.documentElement.classList.toggle("dark", enabled);
+    const enabled = document.documentElement.classList.contains("dark");
+    document.documentElement.style.colorScheme = enabled ? "dark" : "light";
     setDark(enabled);
   }, []);
 
   function toggleTheme() {
     const next = !dark;
     document.documentElement.classList.toggle("dark", next);
+    document.documentElement.style.colorScheme = next ? "dark" : "light";
     localStorage.setItem("micronaut-web-theme", next ? "dark" : "light");
     setDark(next);
   }

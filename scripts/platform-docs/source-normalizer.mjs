@@ -1,0 +1,29 @@
+import { renderConfigurationBlocksInSource } from "./configuration.mjs";
+
+export function normalizeAsciiDocSource(source) {
+  let normalized = renderConfigurationBlocksInSource(source);
+  normalized = normalized.replace(
+    /^([ \t]*(?:include|snippet)::[^\r\n\[]+\[[^\r\n\]]*?\bindent\s*=\s*)(?:"false"|'false'|false)(?=\s*(?:,|\]))/gim,
+    (_, prefix) => `${prefix}0`
+  );
+  normalized = normalized.replace(/(snippet::[^\[]+\[[^\]]*?\bindent\s*=\s*-?\d+)\s+(title\s*=)/gi, "$1, $2");
+  return normalized.replace(/^\s{4,}`([^`\r\n]+)`\s*$/gm, (match, code) => {
+    const value = code.trim();
+    if (!looksLikeJava(value)) {
+      return match;
+    }
+    return `\n[source,java]\n----\n${value}\n----\n`;
+  });
+}
+
+function looksLikeJava(code) {
+  return code.startsWith("@") ||
+    code.includes(" public ") ||
+    code.startsWith("public ") ||
+    code.startsWith("protected ") ||
+    code.startsWith("private ") ||
+    code.startsWith("class ") ||
+    code.startsWith("interface ") ||
+    code.startsWith("enum ") ||
+    code.startsWith("record ");
+}

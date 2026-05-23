@@ -6,6 +6,7 @@ import {
   DocsSnippetCard,
   DocsSnippetCopyButton
 } from "@/components/web/docs-snippet-card";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
 const codeSnippetPlaceholders = [
   "snippetId",
@@ -37,7 +38,7 @@ function CodeSnippetTemplate({ dependency = false }: { dependency?: boolean }) {
       }
       controls={
         <div
-          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
+          className={docsSnippetStyles.tabs}
           role="tablist"
           aria-label="{{optionsLabel}}"
         >

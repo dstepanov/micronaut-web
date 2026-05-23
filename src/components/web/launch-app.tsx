@@ -1088,8 +1088,8 @@ function FeatureCard({
   return (
     <div
       className={cn(
-        "grid gap-2 rounded-lg border bg-card p-3 transition hover:border-primary/60",
-        checked && "border-primary bg-primary/5"
+        "grid gap-2 rounded-lg border bg-card p-3 transition hover:border-brand/60",
+        checked && "border-brand bg-brand-soft"
       )}
     >
       <label className="flex min-h-16 cursor-pointer items-start gap-3" data-testid={`feature-${feature.name}`}>
@@ -1163,8 +1163,8 @@ function CapabilityGroupPanel({
                 <Card
                   key={feature.name}
                   className={cn(
-                    "min-w-0 gap-0 py-0 transition hover:border-primary/60",
-                    checked && "border-primary bg-primary/5"
+                    "min-w-0 gap-0 py-0 transition hover:border-brand/60",
+                    checked && "border-brand bg-brand-soft"
                   )}
                 >
                   <CardHeader className="p-3 pb-2">
@@ -1259,7 +1259,7 @@ function PlatformPinnedFeature({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="grid min-h-24 gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-left transition hover:border-primary/60"
+          className="grid min-h-24 gap-2 rounded-lg border border-brand-border bg-brand-soft p-3 text-left transition hover:border-brand/60"
           data-testid="pinned-platform"
         >
           <span className="flex items-start justify-between gap-2">
@@ -1347,7 +1347,7 @@ function TestingPinnedFeature({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="grid min-h-24 gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-left transition hover:border-primary/60"
+          className="grid min-h-24 gap-2 rounded-lg border border-brand-border bg-brand-soft p-3 text-left transition hover:border-brand/60"
           data-testid="pinned-testing"
         >
           <span className="flex items-start justify-between gap-2">
@@ -1422,8 +1422,8 @@ function CapabilityGroupDialog({
         <button
           type="button"
           className={cn(
-            "grid min-h-24 min-w-0 gap-2 overflow-hidden rounded-lg border bg-background p-3 text-left transition hover:border-primary/60",
-            selectedCount > 0 && "border-primary bg-primary/5"
+            "grid min-h-24 min-w-0 gap-2 overflow-hidden rounded-lg border bg-background p-3 text-left transition hover:border-brand/60",
+            selectedCount > 0 && "border-brand bg-brand-soft"
           )}
           data-testid={`capability-${group.id}`}
         >
@@ -1602,9 +1602,9 @@ function DecisionGroupPanel({
         <button
           type="button"
           className={cn(
-            "grid min-h-24 gap-2 rounded-lg border bg-background p-3 text-left transition hover:border-primary/60",
+            "grid min-h-24 gap-2 rounded-lg border bg-background p-3 text-left transition hover:border-brand/60",
             group.conflicted && "border-destructive/70",
-            customized && !group.conflicted && "border-primary bg-primary/5"
+            customized && !group.conflicted && "border-brand bg-brand-soft"
           )}
           data-testid={`decision-row-${group.id}`}
         >
@@ -1627,7 +1627,7 @@ function DecisionGroupPanel({
           <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
             {activeChoice?.summary ?? group.description}
           </span>
-          <span className="text-xs font-medium text-primary">Change</span>
+          <span className="text-xs font-medium text-brand">Change</span>
         </button>
       </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
@@ -1659,7 +1659,7 @@ function DecisionGroupPanel({
                   key={choice.id}
                   className={cn(
                     "grid gap-3 rounded-lg border bg-card p-4 transition md:grid-cols-[minmax(0,1fr)_auto] md:items-center",
-                    selected && "border-primary bg-primary/5"
+                    selected && "border-brand bg-brand-soft"
                   )}
                 >
                   <label className="flex cursor-pointer items-start gap-3" data-testid={`decision-${group.id}-${choice.id}`}>
@@ -2070,7 +2070,7 @@ function LaunchPanel({
   const readiness = conflictedDecisionGroups.length > 0 ? "Needs review" : "Ready";
 
   return (
-    <Card className="min-h-full border-primary/20">
+    <Card className="min-h-full border-brand-border">
       <CardHeader className="gap-4">
         <div className="grid gap-2">
           <div className="flex flex-wrap items-center justify-between gap-2">

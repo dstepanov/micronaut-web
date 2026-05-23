@@ -27,6 +27,12 @@ import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type SurfaceId = "main" | "docs" | "guides" | "launch";
+type MainSiteSearchPage = {
+  slug: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+};
 
 const primaryLinks: Array<{ href: string; label: string; surface: SurfaceId }> = [
   { href: "/", label: "Main", surface: "main" },
@@ -108,10 +114,12 @@ const mobileGroups = [
 
 export function SiteHeader({
   surface = "main",
-  hideBrand = false
+  hideBrand = false,
+  mainSitePages = []
 }: {
   surface?: SurfaceId;
   hideBrand?: boolean;
+  mainSitePages?: MainSiteSearchPage[];
 }) {
   const desktopPrimaryLinks = primaryLinks.filter((link) => link.surface !== "main" && link.surface !== "launch");
   const desktopMenuGroups = menuGroups.filter((group) => group.label !== "Foundation");
@@ -184,7 +192,7 @@ export function SiteHeader({
           </NavigationMenuList>
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          <SearchDialog className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]" />
+          <SearchDialog className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]" mainSitePages={mainSitePages} />
           <Button variant="outline" size="sm" className="hidden h-9 md:inline-flex" asChild>
             <a href={withBasePath("/launch/")}>Launch</a>
           </Button>

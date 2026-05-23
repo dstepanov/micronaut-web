@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   CopyIcon,
@@ -9,6 +9,7 @@ import {
   DocsSnippetLanguageButton,
   DocsSnippetStaticLanguage
 } from "@/components/web/docs-snippet-card";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 import { withBasePath } from "@/lib/base-path";
 
 export type CodeSnippetLanguage = "java" | "kotlin" | "groovy" | "bash" | "text";
@@ -36,31 +37,25 @@ const languageIcons: Partial<Record<CodeSnippetLanguage, string>> = {
   text: "/micronaut-assets/icons/languages/text.svg"
 };
 
-const highlightedTerms = new Set([
-  "class",
-  "interface",
-  "import",
-  "return",
-  "fun",
-  "void",
-  "def",
-  "expect",
-  "lateinit",
-  "var",
-  "val",
-  "mn"
-]);
+const shikiThemes = {
+  light: "github-light-default",
+  dark: "github-dark-default"
+} as const;
 
-const typeTerms = new Set([
-  "Collections",
-  "HelloClient",
-  "HelloController",
-  "HelloControllerSpec",
-  "HelloControllerTest",
-  "Map",
-  "Specification",
-  "String"
-]);
+const shikiLanguageAliases: Record<string, string> = {
+  bash: "shellscript",
+  console: "shellscript",
+  gradle: "kotlin",
+  maven: "xml",
+  pom: "xml",
+  sh: "shellscript",
+  shell: "shellscript",
+  text: "text",
+  txt: "text",
+  zsh: "shellscript"
+};
+
+const highlightedCodeCache = new Map<string, Promise<string>>();
 
 function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
   const icon = languageIcons[language] || languageIcons.text;
@@ -70,52 +65,77 @@ function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
       src={withBasePath(icon || "/micronaut-assets/icons/languages/text.svg")}
       alt=""
       aria-hidden="true"
-      className="docs-code-language-icon size-3.5 dark:invert"
+      className={docsSnippetStyles.languageImageIcon}
     />
   );
 }
 
-function HighlightedCode({ code }: { code: string }) {
-  const tokenPattern = /(@\w+|".*?"|'.*?'|--[\w-]+|\b[\w.]+\b)/g;
+function shikiLanguage(language: string) {
+  const normalized = language.trim().toLowerCase();
+  return shikiLanguageAliases[normalized] || normalized || "text";
+}
+
+function extractCodeHtml(html: string) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return (template.content.querySelector("code")?.innerHTML || "")
+    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
+}
+
+async function highlightedCodeHtml(code: string, language: string) {
+  const cacheKey = `${language}\0${code}`;
+  const cached = highlightedCodeCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const highlighted = import("shiki")
+    .then(({ codeToHtml }) => codeToHtml(code, {
+      lang: shikiLanguage(language),
+      themes: shikiThemes
+    }))
+    .then(extractCodeHtml);
+  highlightedCodeCache.set(cacheKey, highlighted);
+  return highlighted;
+}
+
+export function ShikiCodeBlock({ code, language }: { code: string; language: string }) {
+  const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setHighlightedHtml(null);
+    highlightedCodeHtml(code, language)
+      .then((html) => {
+        if (active) {
+          setHighlightedHtml(html);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHighlightedHtml(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [code, language]);
 
   return (
-    <>
-      {code.split("\n").map((line, lineIndex) => (
-        <span key={`${line}-${lineIndex}`} className="line block min-h-[1.5em]">
-          {line.split(tokenPattern).map((part, partIndex) => {
-            if (part.startsWith("@") || part.startsWith("--")) {
-              return (
-                <span key={partIndex} className="text-primary">
-                  {part}
-                </span>
-              );
-            }
-            if (part.startsWith("\"") || part.startsWith("'")) {
-              return (
-                <span key={partIndex} className="text-amber-700 dark:text-amber-300">
-                  {part}
-                </span>
-              );
-            }
-            if (highlightedTerms.has(part)) {
-              return (
-                <span key={partIndex} className="text-sky-700 dark:text-sky-300">
-                  {part}
-                </span>
-              );
-            }
-            if (typeTerms.has(part) || /^[A-Z][\w.]*$/.test(part)) {
-              return (
-                <span key={partIndex} className="text-violet-700 dark:text-violet-300">
-                  {part}
-                </span>
-              );
-            }
-            return <span key={partIndex}>{part}</span>;
-          })}
-        </span>
-      ))}
-    </>
+    <pre className={docsSnippetStyles.codePre} tabIndex={0}>
+      {highlightedHtml ? (
+        <code
+          className={`language-${language} ${docsSnippetStyles.codeElement}`}
+          data-lang={language}
+          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+        />
+      ) : (
+        <code className={`language-${language} ${docsSnippetStyles.codeElement}`} data-lang={language}>
+          {code}
+        </code>
+      )}
+    </pre>
   );
 }
 
@@ -183,7 +203,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
       className={className}
       controls={
         hasLanguageOptions ? (
-          <div className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1" role="tablist" aria-label={`${example.label} language`}>
+          <div className={docsSnippetStyles.tabs} role="tablist" aria-label={`${example.label} language`}>
             {example.variants.map((variant, index) => {
               const active = index === activeIndex;
               const tabId = `${example.id}-${variant.language}-tab`;
@@ -214,7 +234,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
                   }}
                 >
                   <LanguageIcon language={variant.language} />
-                  <span className="docs-code-language-text">{variant.label}</span>
+                  <span className={docsSnippetStyles.languageText}>{variant.label}</span>
                 </DocsSnippetLanguageButton>
               );
             })}
@@ -222,7 +242,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
         ) : (
           <DocsSnippetStaticLanguage aria-label={`${activeVariant.label} snippet`}>
             <LanguageIcon language={activeVariant.language} />
-            <span className="docs-code-language-text">{activeVariant.label}</span>
+            <span className={docsSnippetStyles.languageText}>{activeVariant.label}</span>
           </DocsSnippetStaticLanguage>
         )
       }
@@ -249,13 +269,9 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
             aria-labelledby={`${example.id}-${variant.language}-tab`}
             aria-hidden={!active}
             hidden={!active}
-            className="docs-code-content docs-snippet-card-content"
+            className={docsSnippetStyles.panel}
           >
-            <pre className="shiki shiki-themes github-light-default github-dark-default overflow-x-auto px-6 py-4 text-sm leading-6" tabIndex={0}>
-              <code className={`language-${variant.language} shiki-code grid min-w-max font-mono text-[0.85rem] leading-6`} data-lang={variant.language}>
-                <HighlightedCode code={variant.code} />
-              </code>
-            </pre>
+            <ShikiCodeBlock code={variant.code} language={variant.language} />
           </div>
         );
       })}

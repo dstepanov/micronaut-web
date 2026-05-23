@@ -1,7 +1,13 @@
-# Generated Docs Reference Copies
+# Generated Docs Fragments
 
-The HTML files in this directory are copied reference artifacts from:
+The HTML files in this directory are rendered directly from the checked-out
+Micronaut Platform Docs adoc sources with Asciidoctor.js:
 
-`/Users/denisstepanov/micronaut-platform-docs/build/site/platform-assets/documents/`
+```bash
+npm run render:platform-docs -- --slugs core,serde
+```
 
-Do not hand-edit these HTML files in `micronaut-web`. Update the upstream docs generation project, regenerate the platform docs, and copy the generated fragments again.
+By default the renderer reads `/Users/denisstepanov/micronaut-platform-docs`,
+uses `gradle/platform-doc-projects.properties` and each project's
+`src/main/docs/guide/toc.yml`, and writes fragments back into this directory.
+Do not hand-edit the generated HTML files.

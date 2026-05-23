@@ -13,9 +13,15 @@ import {
   CommandSeparator
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { mainSitePages } from "@/data/main-site-pages";
 import { withBasePath } from "@/lib/base-path";
 import { searchItems, type SearchItem } from "@/lib/protocol";
+
+type MainSiteSearchPage = {
+  slug: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+};
 
 function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
   if (kind === "Guide") return <BookOpen />;
@@ -23,13 +29,19 @@ function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
   return <FileText />;
 }
 
-export function SearchDialog({ className }: { className?: string }) {
+export function SearchDialog({
+  className,
+  mainSitePages = []
+}: {
+  className?: string;
+  mainSitePages?: MainSiteSearchPage[];
+}) {
   const [open, setOpen] = useState(false);
   const items = useMemo(() => searchItems(), []);
   const docs = useMemo(() => items.filter((item) => item.href.startsWith("/docs/")).slice(0, 80), [items]);
   const guides = useMemo(() => items.filter((item) => item.href.startsWith("/guides/")).slice(0, 80), [items]);
   const tags = useMemo(() => items.filter((item) => item.kind === "Tag").slice(0, 40), [items]);
-  const pages = useMemo(() => mainSitePages.slice(0, 80), []);
+  const pages = useMemo(() => mainSitePages.slice(0, 80), [mainSitePages]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {

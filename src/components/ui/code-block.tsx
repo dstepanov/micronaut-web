@@ -107,7 +107,7 @@ export function CodeBlock({
   const tokenLines = highlighted?.tokens ?? plainLines.map((line) => [{ content: line || " " }]);
 
   return (
-    <div className={cn("h-full overflow-auto bg-background font-mono text-[13px] leading-6", className)}>
+    <div className={cn("h-full overflow-auto bg-code font-mono text-[13px] leading-6 text-code-foreground", className)}>
       {filename && <div className="sr-only">Previewing {filename}</div>}
       <pre
         className="min-w-max py-2"

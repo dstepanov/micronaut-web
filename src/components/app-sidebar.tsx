@@ -1,18 +1,14 @@
 "use client";
 
 import type * as React from "react";
-import { ChevronRight } from "lucide-react";
 
 import { IconGlyph } from "@/components/web/icon-glyph";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
@@ -26,50 +22,29 @@ import { cn } from "@/lib/utils";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   activeSlug?: string;
+  activeSections?: Array<{
+    id: string;
+    label: string;
+  }>;
 };
 
-export function AppSidebar({ activeSlug, className, ...props }: AppSidebarProps) {
+export function AppSidebar({ activeSlug, activeSections = [], className, ...props }: AppSidebarProps) {
   return (
     <Sidebar
       collapsible="icon"
       className={cn("top-0 h-svh", className)}
       {...props}
     >
-      <SidebarHeader className="relative h-16 border-b border-sidebar-border p-2">
-        <SidebarMenu className="group-data-[collapsible=icon]:hidden">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              tooltip="Micronaut Platform Docs"
-              className="h-12 p-2 pr-10"
-            >
-              <a href={withBasePath("/docs/")} aria-label="Micronaut Platform Docs">
-                <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <img
-                    src={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-5 object-contain"
-                  />
-                </span>
-                <span className="flex min-w-0 flex-col gap-0.5 leading-none">
-                  <span className="truncate font-medium">Micronaut</span>
-                  <span className="truncate text-xs text-sidebar-foreground/70">Platform Docs</span>
-                </span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <div className="absolute right-2 top-4">
-          <SidebarTrigger className="size-8" />
+      <SidebarHeader className="h-11 border-b border-sidebar-border px-2 py-1">
+        <div className="flex h-full items-center justify-between gap-2">
+          <span className="min-w-0 px-2 text-sm font-medium text-sidebar-foreground group-data-[collapsible=icon]:sr-only">
+            Docs
+          </span>
+          <SidebarTrigger className="size-8 shrink-0" />
         </div>
       </SidebarHeader>
-      <SidebarContent className="gap-2 px-2 pb-2 pt-0">
+      <SidebarContent className="gap-2 px-2 pb-2 pt-2">
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="h-8 px-2 py-1 text-[0.72rem] leading-4">
-            Projects
-          </SidebarGroupLabel>
           <SidebarMenu>
             {platformDocsProjects.categories.map((category) => {
               const projects = platformDocsByCategory(category);
@@ -79,39 +54,54 @@ export function AppSidebar({ activeSlug, className, ...props }: AppSidebarProps)
               const hasActiveProject = projects.some((project) => project.slug === activeSlug);
               return (
                 <SidebarMenuItem key={category.slug}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={hasActiveProject}
-                    className="h-auto items-start gap-2 py-2 pr-8 font-normal group-data-[collapsible=icon]:items-center"
-                    tooltip={category.name}
+                  <div
+                    className={cn(
+                      "flex h-7 items-center gap-1.5 px-2 text-[0.72rem] font-medium leading-4 text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden",
+                      hasActiveProject && "text-sidebar-foreground"
+                    )}
                   >
-                    <a href={withBasePath(`/docs/#${category.slug}`)}>
-                      <IconGlyph name={category.icon} className="mt-0.5 size-4 shrink-0 group-data-[collapsible=icon]:mt-0" />
-                      <span className="whitespace-normal break-words leading-5">{category.name}</span>
-                    </a>
-                  </SidebarMenuButton>
-                  <SidebarMenuAction
-                    type="button"
-                    aria-label={`${category.name} sections`}
-                    title={`${category.name} sections`}
-                    className="top-2.5 pointer-events-none group-data-[collapsible=icon]:hidden"
-                  >
-                    <ChevronRight className="size-4 rotate-90" />
-                  </SidebarMenuAction>
-                  <SidebarMenuSub className="mb-2 ml-1 mr-0 mt-0.5 gap-0 px-0 py-0.5">
-                    {projects.map((project) => (
-                      <SidebarMenuSubItem key={project.slug}>
-                        <SidebarMenuSubButton
-                          asChild
-                          isActive={project.slug === activeSlug}
-                          className="my-px ml-[7px] mr-2 h-[31px] w-[calc(100%-15px)] whitespace-normal px-2 py-1.5 text-[0.85rem] leading-[1.19rem]"
-                        >
-                          <a href={withBasePath(project.href)}>
-                            <span className="whitespace-normal break-words">{project.displayName}</span>
-                          </a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    <IconGlyph name={category.icon} className="size-3.5 shrink-0" />
+                    <span className="truncate">{category.name}</span>
+                  </div>
+                  <SidebarMenuSub className="mb-2 ml-1 mr-0 mt-0.5 gap-0 border-l-0 px-0 py-0.5">
+                    {projects.map((project) => {
+                      const isActiveProject = project.slug === activeSlug;
+                      return (
+                        <SidebarMenuSubItem key={project.slug}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isActiveProject}
+                            className="my-px ml-[7px] mr-2 h-[31px] w-[calc(100%-15px)] whitespace-normal px-2 py-1.5 text-[0.85rem] leading-[1.19rem]"
+                          >
+                            <a href={withBasePath(project.href)}>
+                              <span className="whitespace-normal break-words">{project.displayName}</span>
+                            </a>
+                          </SidebarMenuSubButton>
+                          {isActiveProject && activeSections.length > 0 ? (
+                            <SidebarMenuSub className="mb-2 ml-3 mr-0 mt-0.5 gap-0 border-l-0 px-0 py-0.5">
+                              {activeSections.map((section) => {
+                                const [, number, title] = /^(\S+)\s+(.+)$/.exec(section.label) || [];
+                                return (
+                                  <SidebarMenuSubItem key={section.id}>
+                                    <SidebarMenuSubButton
+                                      asChild
+                                      className="my-px ml-[7px] mr-2 h-auto w-[calc(100%-15px)] items-start gap-2 whitespace-normal px-2 py-1.5 text-[0.82rem] leading-[1.18rem]"
+                                    >
+                                      <a href={`#${section.id}`}>
+                                        {number ? (
+                                          <span className="w-4 shrink-0 text-sidebar-foreground/60">{number}</span>
+                                        ) : null}
+                                        <span className="whitespace-normal break-words">{title || section.label}</span>
+                                      </a>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                );
+                              })}
+                            </SidebarMenuSub>
+                          ) : null}
+                        </SidebarMenuSubItem>
+                      );
+                    })}
                   </SidebarMenuSub>
                 </SidebarMenuItem>
               );
