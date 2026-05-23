@@ -329,7 +329,10 @@ function nonStrictEnv() {
   return {
     ...process.env,
     CI: "false",
-    PLATFORM_DOCS_RENDER_STRICT: "false"
+    PLATFORM_DOCS_PROJECT_SLUGS: "",
+    PLATFORM_DOCS_RENDER_ALL: "false",
+    PLATFORM_DOCS_RENDER_STRICT: "false",
+    PLATFORM_DOCS_SYNC_SOURCES: "false"
   };
 }
 
