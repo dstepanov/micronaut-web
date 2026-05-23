@@ -15,6 +15,7 @@ npm run build
 
 `npm run protocol` validates the checked-in protocol file without reading sibling repositories.
 `npm run sync:platform-projects` refreshes the test fixture at `src/data/platform-docs-projects.fixture.json` from the local Micronaut Platform Docs metadata checkout.
+`src/data/platform-docs/platform-doc-projects.properties` is a checked-in copy of the platform docs project manifest so CI can run the docs renderer even when that external checkout is absent.
 `npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web`.
 
 ## Design Tokens

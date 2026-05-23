@@ -39,9 +39,14 @@ export function readIndexed(properties, prefix, count) {
   return values;
 }
 
-export async function readTomlStringVersions(file) {
+export async function readTomlStringVersions(file, required = true) {
   const versions = {};
-  const content = await fs.readFile(file, "utf8");
+  const content = await fs.readFile(file, "utf8").catch((error) => {
+    if (required) {
+      throw error;
+    }
+    return "";
+  });
   let inVersions = false;
 
   for (const rawLine of content.split(/\r?\n/)) {

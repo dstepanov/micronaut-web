@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { copyProjectImageAssets } from "./platform-docs/assets.mjs";
 import { parseArgs, splitList } from "./platform-docs/cli.mjs";
-import { isDirectory } from "./platform-docs/files.mjs";
+import { isDirectory, isRegularFile } from "./platform-docs/files.mjs";
 import {
   readIndexed,
   readProperties,
@@ -25,9 +25,15 @@ const platformDocsDirectory = path.resolve(
 );
 const outputDirectory = path.resolve(options.output || path.join(projectDirectory, "src", "content", "generated-docs"));
 const selectedSlugs = splitList(options.slugs || process.env.PLATFORM_DOCS_PROJECT_SLUGS || "");
+const checkedInPlatformDocsDataDirectory = path.join(projectDirectory, "src", "data", "platform-docs");
 
 const asciidoctor = asciidoctorFactory();
-const projectManifest = await readProperties(path.join(platformDocsDirectory, "gradle", "platform-doc-projects.properties"));
+const externalProjectManifestFile = path.join(platformDocsDirectory, "gradle", "platform-doc-projects.properties");
+const checkedInProjectManifestFile = path.join(checkedInPlatformDocsDataDirectory, "platform-doc-projects.properties");
+const projectManifestFile = await isRegularFile(externalProjectManifestFile)
+  ? externalProjectManifestFile
+  : checkedInProjectManifestFile;
+const projectManifest = await readProperties(projectManifestFile);
 const projects = selectProjects(
   readIndexed(
     projectManifest,
@@ -37,7 +43,8 @@ const projects = selectProjects(
   selectedSlugs
 );
 const platformVersions = await readTomlStringVersions(
-  path.join(platformDocsDirectory, "repos", "micronaut-platform", "gradle", "libs.versions.toml")
+  path.join(platformDocsDirectory, "repos", "micronaut-platform", "gradle", "libs.versions.toml"),
+  false
 );
 
 await cleanGeneratedDocsOutput(outputDirectory, selectedSlugs);

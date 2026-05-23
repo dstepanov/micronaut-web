@@ -37,6 +37,32 @@ test("generated docs fragments and assets are ignored and not tracked source", a
   assert.deepEqual(trackedGeneratedOutput, []);
 });
 
+test("platform docs renderer uses checked-in project metadata when external metadata is absent", async (t) => {
+  const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "micronaut-web-generated-docs-"));
+  t.after(() => fs.rm(temporaryDirectory, { force: true, recursive: true }));
+  const platformDocsDirectory = path.join(temporaryDirectory, "missing-platform-docs-metadata");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+
+  await fs.mkdir(platformDocsDirectory, { recursive: true });
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-platform-docs.mjs",
+      "--platform-docs-dir",
+      platformDocsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "core"
+    ],
+    {
+      cwd: projectDirectory
+    }
+  );
+
+  assert.deepEqual(await fs.readdir(outputDirectory), []);
+});
+
 test("platform docs renderer writes generated HTML and page-relative docs asset links", async (t) => {
   const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "micronaut-web-generated-docs-"));
   t.after(() => fs.rm(temporaryDirectory, { force: true, recursive: true }));
