@@ -15,13 +15,5 @@ src/content/generated-docs/*.html
 src/content/generated-docs/assets/
 public/assets/
 
-# Gradle output and local state
-.gradle/
-build/
-buildSrc/build/
-buildSrc/.gradle/
-buildSrc/.kotlin/
-**/build/
-
 # Local visual review artifacts
 docs-sidebar*.png

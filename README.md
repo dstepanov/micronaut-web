@@ -15,7 +15,7 @@ npm run build
 
 `npm run protocol` validates the checked-in protocol file without reading sibling repositories.
 `npm run sync:platform-projects` refreshes the test fixture at `src/data/platform-docs-projects.fixture.json` from the local Micronaut Platform Docs metadata checkout.
-`npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web` for Java consumers.
+`npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web`.
 
 ## Design Tokens
 
@@ -57,24 +57,12 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 - `guides.categories`: guide category groups discovered from guide metadata
 - `guides.guides`: all guides with tags, variants, authors, dates, and searchable metadata
 
-`src/data/protocol.schema.json` documents the expected contract for future Gradle or CI generators.
+`src/data/protocol.schema.json` documents the expected contract for future generators.
 
-## Java Artifacts
+## Template Artifacts
 
-Gradle packages the static docs and guides surfaces as independent classpath jars:
-
-```bash
-./gradlew -q :micronaut-web-docs:jar :micronaut-web-guides:jar
-```
-
-The packaging tasks run `npm run build` first, then include:
-
-- `META-INF/micronaut-web/templates/*`: plain HTML templates with `{{placeholder}}` slots
-- `META-INF/micronaut-web/assets-manifest.json`: template and asset metadata for the packaged surface
-- `META-INF/micronaut-web/surfaces/docs/**`: rendered docs pages and shared assets in the docs jar
-- `META-INF/micronaut-web/surfaces/guides/**`: rendered guides pages and shared assets in the guides jar
-
-Consumer projects do not need Node, Astro, React, or Tailwind. They can load a packaged template from the classpath, build generated docs/guides body HTML, sidebar HTML, content submenu HTML, and search JSON, then replace the template placeholders. The optional `micronaut-web-template` module provides `HtmlTemplateRenderer` for exact `{{name}}` replacement and unresolved-placeholder checks.
+The static build prepares plain HTML templates with exact `{{placeholder}}` slots,
+plus asset manifests, under `dist/micronaut-web`.
 
 Required placeholders are:
 
@@ -89,26 +77,7 @@ The expected consumer flow is:
 1. Generate the docs or guides content body as HTML.
 2. Generate navigation fragments separately: top navigation, docs sidebar when applicable, and the right-side content submenu for detail pages.
 3. Generate the search index as JSON.
-4. Render one classpath template with exact placeholder values.
-
-```java
-String html = HtmlTemplateRenderer.renderResource(
-    "META-INF/micronaut-web/templates/docs-page.html",
-    Map.of(
-        "pageTitle", HtmlTemplateRenderer.escapeHtml(title),
-        "pageDescription", HtmlTemplateRenderer.escapeHtml(description),
-        "assetBasePath", "/docs-assets",
-        "headAssetsHtml", headAssetsHtml,
-        "themeScriptHtml", themeScriptHtml,
-        "sidebarHtml", sidebarHtml,
-        "topNavigationHtml", topNavigationHtml,
-        "contentHtml", generatedDocumentHtml,
-        "contentSubmenuHtml", generatedSectionMenuHtml,
-        "searchIndexJson", searchIndexJson,
-        "bodyScriptsHtml", bodyScriptsHtml
-    )
-);
-```
+4. Render one template with exact placeholder values.
 
 ## Shared Assets
 
