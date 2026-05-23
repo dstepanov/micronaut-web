@@ -1,0 +1,19 @@
+---
+import { getBlogPosts } from "@/lib/main-site-content";
+
+export async function getStaticPaths() {
+  const posts = await getBlogPosts();
+  return posts.flatMap((post) => post.routeSlugs
+    .filter((routeSlug) => routeSlug.startsWith("blog/") && routeSlug.endsWith(".html"))
+    .map((routeSlug) => ({
+      params: {
+        legacySlug: routeSlug.slice("blog/".length, -".html".length)
+      },
+      props: {
+        destination: post.href
+      }
+    })));
+}
+
+return Astro.redirect(Astro.props.destination, 301);
+---
