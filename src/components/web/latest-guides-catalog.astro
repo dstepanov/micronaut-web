@@ -9,9 +9,10 @@ import { withBasePath } from "@/lib/base-path";
 type Props = {
   guides: GeneratedGuide[];
   activeTag?: string;
+  root?: string;
 };
 
-const { guides, activeTag } = Astro.props;
+const { guides, activeTag, root = "/latest" } = Astro.props;
 const visibleGuides = activeTag ? guides.filter((guide) => guide.tags.includes(activeTag)) : guides;
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
@@ -61,7 +62,7 @@ const recentGuides = latestGuides(visibleGuides, 6);
         <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
       </div>
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {recentGuides.map((guide) => <LatestGuideCard guide={guide} />)}
+        {recentGuides.map((guide) => <LatestGuideCard guide={guide} root={root} />)}
       </div>
     </section>
   )}
@@ -69,7 +70,7 @@ const recentGuides = latestGuides(visibleGuides, 6);
   {tags.length > 0 && (
     <section class="flex flex-wrap gap-2">
       {tags.slice(0, 80).map((tag) => (
-        <a href={withBasePath(guideTagPath(tag))} class="no-underline">
+        <a href={withBasePath(guideTagPath(tag, root))} class="no-underline">
           <Badge variant={tag === activeTag ? "default" : "outline"}>{tag}</Badge>
         </a>
       ))}
@@ -81,7 +82,7 @@ const recentGuides = latestGuides(visibleGuides, 6);
       <div class="grid gap-4">
         <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {categoryGuides.map((guide) => <LatestGuideCard guide={guide} />)}
+          {categoryGuides.map((guide) => <LatestGuideCard guide={guide} root={root} />)}
         </div>
       </div>
     ))}
@@ -97,7 +98,7 @@ const recentGuides = latestGuides(visibleGuides, 6);
       </CardHeader>
       <CardContent>
         <Button asChild>
-          <a href={withBasePath("/latest/index.html")}>Open all guides</a>
+          <a href={withBasePath(`${root}/`)}>Open all guides</a>
         </Button>
       </CardContent>
     </Card>

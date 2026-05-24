@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { guideOverviewPath, guideTagPath, type GeneratedGuide } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 
-export function LatestGuideCard({ guide }: { guide: GeneratedGuide }) {
-  const href = withBasePath(guideOverviewPath(guide));
+export function LatestGuideCard({ guide, root = "/latest" }: { guide: GeneratedGuide; root?: string }) {
+  const href = withBasePath(guideOverviewPath(guide, root));
   return (
     <Card className="h-full">
       <CardHeader>
@@ -22,7 +22,7 @@ export function LatestGuideCard({ guide }: { guide: GeneratedGuide }) {
       <CardContent className="grid gap-4">
         <div className="flex flex-wrap gap-1.5">
           {guide.tags.slice(0, 5).map((tag) => (
-            <a key={tag} href={withBasePath(guideTagPath(tag))} className="no-underline">
+            <a key={tag} href={withBasePath(guideTagPath(tag, root))} className="no-underline">
               <Badge variant="outline">{tag}</Badge>
             </a>
           ))}
