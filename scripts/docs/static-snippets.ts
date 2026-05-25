@@ -50,8 +50,14 @@ async function replaceSnippetMarkers(parent: any, state: any): Promise<any> {
   for (let index = 0; index < children.length; index += 1) {
     const child = children[index];
     if (isElement(child, "micronaut-snippet")) {
-      const nextIndex = nextMeaningfulSiblingIndex(parent, index + 1);
-      const nextSibling = nextIndex >= 0 ? children[nextIndex] : undefined;
+      let nextIndex = nextMeaningfulSiblingIndex(parent, index + 1);
+      let nextSibling = nextIndex >= 0 ? children[nextIndex] : undefined;
+      if (isSnippetCalloutValidationBlock(nextSibling)) {
+        children.splice(nextIndex, 1);
+        nextIndex = nextMeaningfulSiblingIndex(parent, index + 1);
+        nextSibling = nextIndex >= 0 ? children[nextIndex] : undefined;
+      }
+
       const footerHtml = isElementWithClass(nextSibling, "div", "colist")
         ? footerHtmlForNode(nextSibling, state.support.styles)
         : "";
@@ -415,6 +421,14 @@ function isElementWithClass(node: any, tagName: any, className: any): any {
   return (
     isElement(node, tagName) &&
     ` ${attr(node, "class") || ""} `.includes(` ${className} `)
+  );
+}
+
+function isSnippetCalloutValidationBlock(node: any): any {
+  return isElementWithClass(
+    node,
+    "div",
+    "docs-snippet-callout-validation",
   );
 }
 

@@ -14,6 +14,7 @@ import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
 import { readProperties } from "./project-manifest.ts";
 import { normalizeAsciiDocSource } from "./source-normalizer.ts";
 import { renderStaticDocsSnippets } from "./static-snippets.ts";
+import { expandSnippetMacrosForCallouts } from "./snippets.ts";
 import { readGuideToc } from "./toc.ts";
 import { prefixIds, rewriteUrls } from "./urls.ts";
 
@@ -77,6 +78,7 @@ async function renderNode(
   const sourceFile = path.join(context.guideSourceDirectory, node.file);
   let source = await fs.readFile(sourceFile, "utf8");
   source = normalizeAsciiDocSource(source);
+  source = expandSnippetMacrosForCallouts(source, context);
 
   const converted = renderAsciiDoc({
     asciidoctor,

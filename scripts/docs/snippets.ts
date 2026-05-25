@@ -7,11 +7,7 @@ import { macroAttribute } from "./listing.ts";
 import { snippetMarkerHtml } from "./snippet-markers.ts";
 
 export function snippetBlocksHtml(target: any, attrs: any, context: any): any {
-  const samples = [];
-  for (const snippetTarget of splitList(target)) {
-    samples.push(...findSnippetSamplesSync(snippetTarget, attrs, context));
-  }
-  const deduped = dedupeSamples(samples);
+  const deduped = snippetSamples(target, attrs, context);
   if (!deduped.length) {
     return "";
   }
@@ -23,6 +19,160 @@ export function snippetBlocksHtml(target: any, attrs: any, context: any): any {
       source: sample.source,
     })),
   });
+}
+
+export function expandSnippetMacrosForCallouts(source: any, context: any): any {
+  const lines = source.split(/\r?\n/);
+  const output = [];
+  let delimiter: string | undefined;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (delimiter) {
+      output.push(line);
+      if (trimmed === delimiter) {
+        delimiter = undefined;
+      }
+      continue;
+    }
+
+    const delimiterMatch = /^(-{4,}|\.{4,}|\+{4,}|_{4,})$/.exec(trimmed);
+    if (delimiterMatch) {
+      delimiter = delimiterMatch[1];
+      output.push(line);
+      continue;
+    }
+
+    const macroMatch = /^snippet::([^\[]+)\[(.*)]\s*$/.exec(line);
+    if (!macroMatch) {
+      output.push(line);
+      continue;
+    }
+
+    const attrs = parseMacroAttributes(macroMatch[2]);
+    const samples = snippetSamples(macroMatch[1], attrs, context);
+    if (!samples.length) {
+      output.push(line);
+      continue;
+    }
+
+    output.push(
+      [
+        "++++",
+        snippetMarkerHtml("code", {
+          title: macroAttribute(attrs, "title") || "",
+          description: macroAttribute(attrs, "description") || "",
+          samples: samples.map((sample: any): any => ({
+            language: sample.language,
+            source: sample.source,
+          })),
+        }),
+        "++++",
+        snippetCalloutValidationBlock(samples),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+  }
+
+  return output.join("\n");
+}
+
+function snippetSamples(target: any, attrs: any, context: any): any {
+  const samples = [];
+  for (const snippetTarget of splitList(target)) {
+    samples.push(...findSnippetSamplesSync(snippetTarget, attrs, context));
+  }
+  return dedupeSamples(samples);
+}
+
+function snippetCalloutValidationBlock(samples: any): any {
+  const source = samples
+    .map((sample: any): any => sample.source)
+    .filter((sampleSource: any): any => /<\d+>/.test(sampleSource))
+    .join("\n");
+  if (!source) {
+    return "";
+  }
+  const delimiter = sourceBlockDelimiter(source);
+  return [
+    "[.docs-snippet-callout-validation]",
+    delimiter,
+    source,
+    delimiter,
+  ].join("\n");
+}
+
+function sourceBlockDelimiter(source: any): any {
+  const longestHyphenRun = Math.max(
+    3,
+    ...Array.from(source.matchAll(/^-{4,}$/gm)).map(
+      (match: any): any => match[0].length,
+    ),
+  );
+  return "-".repeat(longestHyphenRun + 1);
+}
+
+function parseMacroAttributes(text: any): any {
+  const attrs: any = { text };
+  const positional = [];
+  for (const part of splitAttributeList(text)) {
+    const separator = part.indexOf("=");
+    if (separator < 0) {
+      const value = cleanAttributeValue(part);
+      if (value) {
+        positional.push(value);
+      }
+      continue;
+    }
+    const name = part.slice(0, separator).trim();
+    if (name) {
+      attrs[name] = cleanAttributeValue(part.slice(separator + 1));
+    }
+  }
+  if (positional.length) {
+    attrs.$positional = positional;
+  }
+  return attrs;
+}
+
+function splitAttributeList(text: any): any {
+  const parts = [];
+  let current = "";
+  let quote: string | undefined;
+  for (const char of String(text || "")) {
+    if ((char === '"' || char === "'") && !quote) {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === quote) {
+      quote = undefined;
+      current += char;
+      continue;
+    }
+    if (char === "," && !quote) {
+      parts.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+  return parts;
+}
+
+function cleanAttributeValue(value: any): any {
+  const trimmed = String(value || "").trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
 }
 
 function findSnippetSamplesSync(target: any, attrs: any, context: any): any {
