@@ -2,6 +2,7 @@ import { renderConfigurationBlocksInSource } from "./configuration.mjs";
 
 export function normalizeAsciiDocSource(source) {
   let normalized = renderConfigurationBlocksInSource(source);
+  normalized = removeGeneratedConfigurationPropertyIncludes(normalized);
   normalized = normalized.replace(
     /^([ \t]*(?:include|snippet)::[^\r\n\[]+\[[^\r\n\]]*?\bindent\s*=\s*)(?:"false"|'false'|false)(?=\s*(?:,|\]))/gim,
     (_, prefix) => `${prefix}0`
@@ -14,6 +15,13 @@ export function normalizeAsciiDocSource(source) {
     }
     return `\n[source,java]\n----\n${value}\n----\n`;
   });
+}
+
+function removeGeneratedConfigurationPropertyIncludes(source) {
+  return source.replace(
+    /^include::\{includedir}\/?configurationProperties\/[^\r\n\[]+\[[^\r\n\]]*]\s*$/gm,
+    ""
+  );
 }
 
 function looksLikeJava(code) {

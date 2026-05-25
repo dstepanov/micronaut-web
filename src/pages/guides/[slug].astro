@@ -202,7 +202,10 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
 
 {props.kind === "variant" && (
   <WebLayout title={`${props.guide.title} | ${props.option.label}`} surface="guides">
-    <main class="guide-variant-shell mx-auto grid max-w-[1320px] gap-8 px-4 py-8 md:px-6" data-guide-has-page-index={pageIndexSections.length > 0 ? "true" : "false"}>
+    <main class:list={[
+      "mx-auto grid max-w-[1320px] gap-8 px-4 py-8 md:px-6",
+      pageIndexSections.length > 0 && "min-[1400px]:grid-cols-[minmax(0,1fr)_240px]"
+    ]}>
       <article class="min-w-0">
         <header class="mb-8">
           <Badge variant="secondary">{props.option.label}</Badge>
@@ -232,13 +235,22 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
         )}
       </article>
       {pageIndexSections.length > 0 && (
-        <aside class="guide-page-index" aria-label="In this section" data-guide-page-index>
-          <div class="guide-page-index-inner">
-            <div class="guide-page-index-header">
+        <aside class="hidden min-w-0 min-[1400px]:block" aria-label="In this section" data-guide-page-index>
+          <div
+            class="sticky top-[calc(var(--topbar-height)+24px)] max-h-[calc(100vh-var(--topbar-height)-48px)] overflow-y-auto pb-7 pr-6 font-[var(--shell-font)] [scrollbar-width:thin]"
+            data-guide-page-index-inner
+          >
+            <div class="mb-2 flex items-center justify-between gap-2 text-[0.83rem] font-semibold leading-[1.4] text-foreground">
               <span>In this section</span>
-              <a class="guide-page-index-top" href={`#${pageIndexSections[0].rootId}`} title="Back to top" aria-label="Back to top" data-guide-page-index-top>
+              <a
+                class="inline-grid size-6 flex-none place-items-center rounded-md text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+                href={`#${pageIndexSections[0].rootId}`}
+                title="Back to top"
+                aria-label="Back to top"
+                data-guide-page-index-top
+              >
                 <svg
-                  class="trigger-icon lucide lucide-arrow-up"
+                  class="size-3.5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -256,13 +268,16 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
                 </svg>
               </a>
             </div>
-            <nav class="guide-page-index-nav" aria-label="Current guide sections" data-guide-page-index-nav>
+            <nav class="grid gap-px border-l border-border pl-2.5" aria-label="Current guide sections" data-guide-page-index-nav>
               {pageIndexSections.map((section) => (
                 <a
                   href={`#${section.id}`}
                   class:list={[
-                    "guide-page-index-link",
-                    `guide-page-index-link-level-${section.level}`
+                    "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
+                    section.level === 0 && "pl-2",
+                    section.level === 1 && "pl-3.5",
+                    section.level === 2 && "pl-5",
+                    section.level >= 3 && "pl-[1.625rem]"
                   ]}
                   data-guide-page-index-link
                   data-root-id={section.rootId}
@@ -317,7 +332,7 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
         };
 
         const scrollActiveLinkIntoView = (link) => {
-          const container = link?.closest(".guide-page-index-inner");
+          const container = link?.closest("[data-guide-page-index-inner]");
           if (!container || container.scrollHeight <= container.clientHeight) {
             return;
           }
@@ -415,123 +430,6 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
       })();
     </script>
     <style is:global>
-      .guide-variant-shell {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .guide-page-index {
-        display: none;
-        min-width: 0;
-      }
-
-      .guide-page-index-inner {
-        position: sticky;
-        top: calc(var(--topbar-height) + 24px);
-        max-height: calc(100vh - var(--topbar-height) - 48px);
-        padding: 0 1.5rem 1.75rem 0;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        font-family: var(--shell-font);
-      }
-
-      .guide-page-index-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-        color: var(--foreground);
-        font-size: 0.83rem;
-        font-weight: 600;
-        line-height: 1.4;
-      }
-
-      .guide-page-index-top {
-        display: inline-grid;
-        place-items: center;
-        flex: 0 0 auto;
-        width: 1.5rem;
-        height: 1.5rem;
-        border-radius: 0.375rem;
-        color: var(--muted-foreground);
-        text-decoration: none;
-      }
-
-      .guide-page-index-top:hover,
-      .guide-page-index-top:focus-visible {
-        background: var(--accent);
-        color: var(--accent-foreground);
-      }
-
-      .guide-page-index-top svg {
-        width: 0.875rem;
-        height: 0.875rem;
-      }
-
-      .guide-page-index-nav {
-        display: grid;
-        gap: 1px;
-        padding-left: 10px;
-        border-left: 1px solid var(--border);
-      }
-
-      .guide-page-index-link {
-        position: relative;
-        display: block;
-        min-width: 0;
-        border-radius: 0.375rem;
-        padding: 0.25rem 0.5rem;
-        color: var(--muted-foreground) !important;
-        font-size: 0.78rem;
-        line-height: 1.4;
-        overflow-wrap: break-word;
-        text-decoration: none !important;
-      }
-
-      .guide-page-index-link-level-1 {
-        padding-left: 0.875rem;
-      }
-
-      .guide-page-index-link-level-2 {
-        padding-left: 1.25rem;
-      }
-
-      .guide-page-index-link-level-3 {
-        padding-left: 1.625rem;
-      }
-
-      .guide-page-index-link:hover,
-      .guide-page-index-link:focus-visible {
-        background: var(--accent);
-        color: var(--accent-foreground) !important;
-      }
-
-      .guide-page-index-link.active {
-        color: var(--foreground) !important;
-        font-weight: 500;
-      }
-
-      .guide-page-index-link.active::before {
-        position: absolute;
-        top: 7px;
-        bottom: 7px;
-        left: -11px;
-        width: 2px;
-        border-radius: 999px;
-        background: var(--brand);
-        content: "";
-      }
-
-      @media (min-width: 1400px) {
-        .guide-variant-shell[data-guide-has-page-index="true"] {
-          grid-template-columns: minmax(0, 1fr) 240px;
-        }
-
-        .guide-page-index {
-          display: block;
-        }
-      }
-
       .generated-guides-content {
         min-width: 0;
         color: var(--foreground);

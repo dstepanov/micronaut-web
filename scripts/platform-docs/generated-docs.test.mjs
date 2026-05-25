@@ -160,6 +160,8 @@ test("platform docs renderer writes generated HTML and page-relative docs asset 
     [
       "This generated fixture body should render into the docs page.",
       "",
+      "include::{includedir}configurationProperties/io.micronaut.fixture.GeneratedConfiguration.adoc[]",
+      "",
       "image::diagram.svg[Fixture diagram]"
     ].join("\n"),
     "utf8"
@@ -170,7 +172,7 @@ test("platform docs renderer writes generated HTML and page-relative docs asset 
     "utf8"
   );
 
-  await execFile(
+  const { stderr } = await execFile(
     process.execPath,
     [
       "scripts/render-platform-docs.mjs",
@@ -185,6 +187,7 @@ test("platform docs renderer writes generated HTML and page-relative docs asset 
       cwd: projectDirectory
     }
   );
+  assert.doesNotMatch(stderr, /include file not found|GeneratedConfiguration/i);
 
   const generatedHtml = await fs.readFile(path.join(outputDirectory, "fixture.html"), "utf8");
   const pageRelativeAssetUrl = "../assets/fixture/docs/img/diagram.svg";

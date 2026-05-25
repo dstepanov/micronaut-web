@@ -535,7 +535,8 @@ function normalizeOrphanCalloutLists(lines) {
   const output = [];
   let inListingBlock = false;
   let listingBlockLines = [];
-  let previousListingCanOwnCallouts = false;
+  let listingBlockOutputStart = -1;
+  let previousListing = emptyListingContext();
 
   for (let index = 0; index < lines.length;) {
     const line = lines[index];
@@ -543,10 +544,11 @@ function normalizeOrphanCalloutLists(lines) {
     if (isListingDelimiter(line)) {
       output.push(line);
       if (inListingBlock) {
-        previousListingCanOwnCallouts = listingBlockCanOwnCallouts(listingBlockLines);
+        previousListing = listingCalloutContext(listingBlockLines, listingBlockOutputStart, output.length - 1);
         listingBlockLines = [];
       } else {
-        previousListingCanOwnCallouts = false;
+        previousListing = emptyListingContext();
+        listingBlockOutputStart = output.length;
       }
       inListingBlock = !inListingBlock;
       index += 1;
@@ -561,23 +563,25 @@ function normalizeOrphanCalloutLists(lines) {
     }
 
     if (isCalloutListItem(line)) {
-      if (previousListingCanOwnCallouts) {
-        output.push(line);
-        index += 1;
-        continue;
-      }
       const { items, nextIndex } = collectCalloutList(lines, index);
-      output.push("[.guide-manual-callouts]");
-      output.push(...items.map((item) => `. ${item}`));
-      output.push("");
-      previousListingCanOwnCallouts = false;
+      const { listingItems, manualItems } = splitCalloutItems(items, previousListing, output);
+      output.push(...listingItems.map((item) => item.line));
+      if (manualItems.length) {
+        if (listingItems.length) {
+          output.push("");
+        }
+        output.push("[.guide-manual-callouts]");
+        output.push(...manualItems.map((item) => `. ${item.text}`));
+        output.push("");
+      }
+      previousListing = emptyListingContext();
       index = nextIndex;
       continue;
     }
 
     output.push(line);
     if (line.trim()) {
-      previousListingCanOwnCallouts = false;
+      previousListing = emptyListingContext();
     }
     index += 1;
   }
@@ -593,9 +597,26 @@ function isCalloutListItem(line) {
   return /^<(\.|\d+)>/.test(line);
 }
 
-function listingBlockCanOwnCallouts(lines) {
+function listingCalloutContext(lines, outputStart, outputEnd) {
   const source = lines.join("\n");
-  return /<\d+>|<!--\d+-->/.test(source) || /^include::/m.test(source);
+  if (/^include::/m.test(source)) {
+    return { unknown: true, numbers: new Set(), outputStart, outputEnd };
+  }
+  return {
+    unknown: false,
+    numbers: new Set(Array.from(source.matchAll(/<(\d+)>|<!--(\d+)-->/g), (match) => match[1] || match[2])),
+    outputStart,
+    outputEnd
+  };
+}
+
+function emptyListingContext() {
+  return {
+    unknown: false,
+    numbers: new Set(),
+    outputStart: -1,
+    outputEnd: -1
+  };
 }
 
 function collectCalloutList(lines, startIndex) {
@@ -605,7 +626,11 @@ function collectCalloutList(lines, startIndex) {
     const line = lines[index];
     const match = /^<(\.|\d+)>\s*(.*)$/.exec(line);
     if (match) {
-      items.push(match[2]);
+      items.push({
+        number: match[1],
+        text: match[2],
+        line
+      });
       index += 1;
       continue;
     }
@@ -616,6 +641,79 @@ function collectCalloutList(lines, startIndex) {
     break;
   }
   return { items, nextIndex: index };
+}
+
+function splitCalloutItems(items, listing, output) {
+  if (listing.unknown) {
+    return { listingItems: items, manualItems: [] };
+  }
+  const listingItems = [];
+  const manualItems = [];
+  for (const item of items) {
+    if (listing.numbers.has(item.number)) {
+      listingItems.push(item);
+    } else {
+      manualItems.push(item);
+    }
+  }
+  if (listingItems.length) {
+    manualItems.push(...renumberListingCallouts(listingItems, listing, output));
+  }
+  return { listingItems, manualItems };
+}
+
+function renumberListingCallouts(items, listing, output) {
+  const numberMap = new Map();
+  for (const item of items) {
+    if (!numberMap.has(item.number)) {
+      numberMap.set(item.number, String(numberMap.size + 1));
+    }
+  }
+  if (!canRenumberListing(numberMap, listing.numbers)) {
+    const { listingItems, manualItems } = sequentialPrefix(items);
+    items.splice(0, items.length, ...listingItems);
+    return manualItems;
+  }
+  if ([...numberMap].every(([from, to]) => from === to)) {
+    return [];
+  }
+  for (let index = listing.outputStart; index < listing.outputEnd; index += 1) {
+    output[index] = output[index].replace(/<(\d+)>|<!--(\d+)-->/g, (match, xmlNumber, commentNumber) => {
+      const nextNumber = numberMap.get(xmlNumber || commentNumber);
+      if (!nextNumber) {
+        return match;
+      }
+      return xmlNumber ? `<${nextNumber}>` : `<!--${nextNumber}-->`;
+    });
+  }
+  for (const item of items) {
+    item.line = item.line.replace(/^<(\.|\d+)>/, `<${numberMap.get(item.number) || item.number}>`);
+  }
+  return [];
+}
+
+function canRenumberListing(numberMap, listingNumbers) {
+  for (const [from, to] of numberMap) {
+    if (from !== to && listingNumbers.has(to) && !numberMap.has(to)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function sequentialPrefix(items) {
+  const listingItems = [];
+  const manualItems = [];
+  let expected = 1;
+  for (const item of items) {
+    if (Number.parseInt(item.number, 10) === expected) {
+      listingItems.push(item);
+      expected += 1;
+    } else {
+      manualItems.push(item);
+    }
+  }
+  return { listingItems, manualItems };
 }
 
 function nextNonBlankLineIsCallout(lines, startIndex) {

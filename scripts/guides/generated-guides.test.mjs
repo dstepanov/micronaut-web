@@ -61,6 +61,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
   assert.match(html, /Unmarked source callout/);
+  assert.match(html, /Missing source marker becomes manual/);
   assert.match(html, /guide-manual-callouts/);
   assert.match(html, /<i class="conum" data-value="1"><\/i>/);
   assert.doesNotMatch(html, /__MICRONAUT_CALLOUT_|\uE000|\uE001/);
@@ -171,8 +172,10 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(guidesRoute, /In this section/);
   assert.match(guidesRoute, /buildGuidePageIndexSections/);
   assert.match(guidesRoute, /data-guide-page-index/);
+  assert.match(guidesRoute, /data-guide-page-index-inner/);
   assert.match(guidesRoute, /data-root-id/);
-  assert.match(guidesRoute, /guide-page-index-link\.active/);
+  assert.match(guidesRoute, /\[&\.active\]:before:bg-brand/);
+  assert.doesNotMatch(guidesRoute, /\.guide-page-index/);
   assert.match(guidesRoute, /requestAnimationFrame\(updateActiveSection\)/);
   assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
   assert.match(guidesRoute, /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/);
@@ -256,6 +259,9 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
       "callout:generated-one[]",
       "<2> Manual callout keeps its place.",
       "callout:generated-three[]",
+      "source:PartiallyMarkedController[]",
+      "callout:generated-one[]",
+      "<2> Missing source marker becomes manual.",
       "",
       "[source,java]",
       "----",
@@ -322,6 +328,18 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
       "    }",
       "}",
       "// end::included[]"
+    ].join("\n"),
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, "java", "src", "main", "java", "example", "micronaut", "PartiallyMarkedController.java"),
+    [
+      "package example.micronaut;",
+      "",
+      "final class PartiallyMarkedController {",
+      "    void generated() { // <1>",
+      "    }",
+      "}"
     ].join("\n"),
     "utf8"
   );
