@@ -100,11 +100,12 @@ async function renderNode(
   return htmlContent;
 }
 
-function isFatalDocsDiagnostic(diagnostic: string): boolean {
-  return ![
-    /section title out of sequence: expected level \d+, got level \d+/i,
-    /unterminated listing block/i,
-  ].some((allowedWarning) => allowedWarning.test(diagnostic));
+export function isFatalDocsDiagnostic(diagnostic: string): boolean {
+  return [
+    /include file not found/i,
+    /include file not readable/i,
+    /include file has illegal reference to ancestor/i,
+  ].some((fatalWarning) => fatalWarning.test(diagnostic));
 }
 
 function sectionHeading(project: any, node: any): any {

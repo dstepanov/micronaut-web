@@ -13,6 +13,7 @@ import {
   buildDocsSearchIndex,
   extractGeneratedDocSearchItems,
 } from "./search-index.ts";
+import { isFatalDocsDiagnostic } from "./renderer.ts";
 
 const execFile = promisify(execFileCallback);
 const projectDirectory = path.resolve(
@@ -491,6 +492,30 @@ test("strict docs renderer allows known upstream source-shape warnings", async (
   assert.match(stderr, /section title out of sequence/i);
   assert.match(stderr, /unterminated listing block/i);
   assert.match(generatedHtml, /Out-of-sequence heading/);
+});
+
+test("docs strict diagnostic filter only fails render-stopping diagnostics", (): any => {
+  const allowedWarnings = [
+    "asciidoctor: WARN: <stdin>:5: no callout found for <1>",
+    "asciidoctor: WARN: <stdin>:27: callout list item index: expected 2, got 1",
+    "asciidoctor: WARN: <stdin>:5: list item index: expected 2, got 1",
+    "asciidoctor: WARN: <stdin>:80: detected unclosed tag 'clazz' starting at line 31 of include file: ResourcesFactory.java",
+    "asciidoctor: WARN: <stdin>:27: unterminated example block",
+    "asciidoctor: WARN: <stdin>:11: unterminated listing block",
+    "asciidoctor: WARN: <stdin>:3: section title out of sequence: expected level 1, got level 2",
+  ];
+  for (const warning of allowedWarnings) {
+    assert.equal(isFatalDocsDiagnostic(warning), false, warning);
+  }
+
+  const fatalWarnings = [
+    "asciidoctor: WARN: <stdin>:1: include file not found: missing.adoc",
+    "asciidoctor: WARN: <stdin>:1: include file not readable: missing.adoc",
+    "asciidoctor: WARN: <stdin>:1: include file has illegal reference to ancestor of jail",
+  ];
+  for (const warning of fatalWarnings) {
+    assert.equal(isFatalDocsDiagnostic(warning), true, warning);
+  }
 });
 
 test("strict docs renderer still fails on fatal Asciidoctor diagnostics", async (t: any): Promise<any> => {
