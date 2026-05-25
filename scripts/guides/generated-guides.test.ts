@@ -34,7 +34,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   const { stderr } = await execFile(
     process.execPath,
     [
-      "scripts/render-guides.mjs",
+      "scripts/render-guides.ts",
       "--guides-dir",
       guidesDirectory,
       "--output",
@@ -95,7 +95,7 @@ test("guide renderer can render all guides in strict pipeline mode", async (t) =
   await execFile(
     process.execPath,
     [
-      "scripts/render-guides.mjs",
+      "scripts/render-guides.ts",
       "--guides-dir",
       guidesDirectory,
       "--output",
@@ -124,7 +124,7 @@ test("strict guide renderer fails when Asciidoctor reports diagnostics", async (
     execFile(
       process.execPath,
       [
-        "scripts/render-guides.mjs",
+        "scripts/render-guides.ts",
         "--guides-dir",
         guidesDirectory,
         "--output",
@@ -148,7 +148,7 @@ test("strict guide renderer fails when Asciidoctor reports diagnostics", async (
 test("latest guide replacement routes and parallel generated-content preparation are wired", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"));
   const workflow = await fs.readFile(path.join(projectDirectory, ".github", "workflows", "deploy-web.yml"), "utf8");
-  const prepareScript = await fs.readFile(path.join(projectDirectory, "scripts", "prepare-generated-content.mjs"), "utf8");
+  const prepareScript = await fs.readFile(path.join(projectDirectory, "scripts", "prepare-generated-content.ts"), "utf8");
   const latestRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "latest", "[page].astro"), "utf8");
   const legacyRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "latest", "[page].html.ts"), "utf8");
   const zipRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "latest", "[download].zip.ts"), "utf8");
@@ -160,11 +160,11 @@ test("latest guide replacement routes and parallel generated-content preparation
   const guideCatalog = await fs.readFile(path.join(projectDirectory, "src", "components", "web", "latest-guides-catalog.astro"), "utf8");
   const guideCard = await fs.readFile(path.join(projectDirectory, "src", "components", "web", "latest-guide-card.tsx"), "utf8");
 
-  assert.equal(packageJson.scripts["render:guides"], "node scripts/render-guides.mjs");
-  assert.equal(packageJson.scripts["test:guides"], "node --test scripts/guides/*.test.mjs");
+  assert.equal(packageJson.scripts["render:guides"], "node scripts/render-guides.ts");
+  assert.equal(packageJson.scripts["test:guides"], "node --test scripts/guides/*.test.ts");
   assert.match(prepareScript, /Promise\.all/);
-  assert.match(prepareScript, /render-platform-docs\.mjs/);
-  assert.match(prepareScript, /render-guides\.mjs/);
+  assert.match(prepareScript, /render-platform-docs\.ts/);
+  assert.match(prepareScript, /render-guides\.ts/);
   assert.match(workflow, /github\.com\/micronaut-projects\/micronaut-guides\.git/);
   assert.match(workflow, /GUIDES_RENDER_ALL:\s*"true"/);
   assert.match(workflow, /GUIDES_RENDER_STRICT:\s*"true"/);

@@ -5,17 +5,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { copyProjectImageAssets } from "./platform-docs/assets.mjs";
-import { parseArgs, splitList } from "./platform-docs/cli.mjs";
-import { isDirectory, isRegularFile } from "./platform-docs/files.mjs";
+import { copyProjectImageAssets } from "./platform-docs/assets.ts";
+import { parseArgs, splitList } from "./platform-docs/cli.ts";
+import { isDirectory, isRegularFile } from "./platform-docs/files.ts";
 import {
   readIndexed,
   readPlatformCatalogProjects,
   readProperties,
   readTomlStringVersions,
   selectProjects
-} from "./platform-docs/project-manifest.mjs";
-import { renderProject } from "./platform-docs/renderer.mjs";
+} from "./platform-docs/project-manifest.ts";
+import { renderProject } from "./platform-docs/renderer.ts";
 
 const DEFAULT_PLATFORM_DOCS_PROJECT_SLUGS = ["core", "data", "serde"];
 const execFile = promisify(execFileCallback);

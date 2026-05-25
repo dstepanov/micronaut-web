@@ -1,5 +1,5 @@
-import { macroAttribute } from "./listing.mjs";
-import { snippetMarkerHtml } from "./snippet-markers.mjs";
+import { macroAttribute } from "./listing.ts";
+import { snippetMarkerHtml } from "./snippet-markers.ts";
 
 export function dependencyBlocksHtml(target, attrs, context) {
   const dependency = dependencyForTargetAndAttributes(target.trim(), attrs, context);

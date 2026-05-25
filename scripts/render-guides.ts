@@ -3,9 +3,9 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseArgs, splitList } from "./platform-docs/cli.mjs";
-import { DEFAULT_GUIDE_SLUGS, defaultGuideOption, guideOptions, readGuides, selectGuides } from "./guides/model.mjs";
-import { copyGuideAssets, guideManifest, renderGuideOption } from "./guides/renderer.mjs";
+import { parseArgs, splitList } from "./platform-docs/cli.ts";
+import { DEFAULT_GUIDE_SLUGS, defaultGuideOption, guideOptions, readGuides, selectGuides } from "./guides/model.ts";
+import { copyGuideAssets, guideManifest, renderGuideOption } from "./guides/renderer.ts";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const options = parseArgs(process.argv.slice(2));

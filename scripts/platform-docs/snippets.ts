@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-import { splitList } from "./cli.mjs";
-import { macroAttribute } from "./listing.mjs";
-import { snippetMarkerHtml } from "./snippet-markers.mjs";
+import { splitList } from "./cli.ts";
+import { macroAttribute } from "./listing.ts";
+import { snippetMarkerHtml } from "./snippet-markers.ts";
 
 export function snippetBlocksHtml(target, attrs, context) {
   const samples = [];

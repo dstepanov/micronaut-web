@@ -23,22 +23,22 @@ AsciiDoc macros do not emit finished snippet cards directly. They emit semantic
 `<micronaut-snippet>` marker tags whose `data-payload` contains base64url JSON
 describing the snippet kind, title, description, and code samples.
 
-After Asciidoctor.js produces HTML, `scripts/platform-docs/static-snippets.mjs`
+After Asciidoctor.js produces HTML, `scripts/platform-docs/static-snippets.ts`
 parses the fragment, replaces each marker with static HTML, and wraps generated
 configuration property tables in the shared properties card. The static snippet
 markup comes from `src/components/web/docs-snippet-templates.tsx`; the renderer
 loads that support through `renderDocsSnippetStaticSupport()` so the generated
 HTML and browser enhancement use the same templates.
 
-The `[configuration]` preprocessor in `scripts/platform-docs/configuration.mjs`
-also emits snippet markers. `configuration-samples.mjs` parses the source YAML
+The `[configuration]` preprocessor in `scripts/platform-docs/configuration.ts`
+also emits snippet markers. `configuration-samples.ts` parses the source YAML
 with `js-yaml`, formats TOML with `smol-toml`, and keeps the small remaining
 format adapters for Properties, Groovy config, and HOCON source text. Those
 adapters only generate source strings; Shiki still performs all syntax
 highlighting in the static snippet pipeline.
 
 Shiki highlighting stays in the build/server-side rendering path. Static snippet
-panels are highlighted by `static-snippets.mjs`, and ordinary listing blocks are
+panels are highlighted by `static-snippets.ts`, and ordinary listing blocks are
 highlighted by the platform docs renderer. React is used only to render static
 markup for these generated fragments; snippets are not hydrated React islands.
 

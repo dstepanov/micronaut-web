@@ -1,8 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { highlightListingBlocks, optimizeGeneratedGuideHtml, shikiStyle } from "./shared-rendering.mjs";
-import { preprocessGuideSource } from "./preprocessor.mjs";
+import { highlightListingBlocks, optimizeGeneratedGuideHtml, shikiStyle } from "./shared-rendering.ts";
+import { preprocessGuideSource } from "./preprocessor.ts";
 
 export async function renderGuideOption(asciidoctor, guidesDirectory, guide, option, renderOptions = {}) {
   const source = await preprocessGuideSource({ guidesDirectory, guide, option });

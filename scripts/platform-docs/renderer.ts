@@ -1,15 +1,15 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { platformDocsExtensionRegistry } from "./extensions.mjs";
-import { highlightListingBlocks, shikiStyle, unwrapBlockParagraphs } from "./highlight.mjs";
-import { attribute, html } from "./html.mjs";
-import { renderAttributes, sourceDocsEditUrl } from "./project-meta.mjs";
-import { readProperties } from "./project-manifest.mjs";
-import { normalizeAsciiDocSource } from "./source-normalizer.mjs";
-import { renderStaticDocsSnippets } from "./static-snippets.mjs";
-import { readGuideToc } from "./toc.mjs";
-import { optimizeImages, prefixIds, rewriteUrls } from "./urls.mjs";
+import { platformDocsExtensionRegistry } from "./extensions.ts";
+import { highlightListingBlocks, shikiStyle, unwrapBlockParagraphs } from "./highlight.ts";
+import { attribute, html } from "./html.ts";
+import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
+import { readProperties } from "./project-manifest.ts";
+import { normalizeAsciiDocSource } from "./source-normalizer.ts";
+import { renderStaticDocsSnippets } from "./static-snippets.ts";
+import { readGuideToc } from "./toc.ts";
+import { optimizeImages, prefixIds, rewriteUrls } from "./urls.ts";
 
 export async function renderProject(asciidoctor, platformDocsDirectory, project, platformVersion) {
   const submoduleDirectory = path.join(platformDocsDirectory, project.submodulePath);

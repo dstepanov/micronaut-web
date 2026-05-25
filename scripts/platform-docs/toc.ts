@@ -2,7 +2,7 @@ import yaml from "js-yaml";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { isRegularFile } from "./files.mjs";
+import { isRegularFile } from "./files.ts";
 
 export async function readGuideToc(guideSourceDirectory) {
   const tocFile = path.join(guideSourceDirectory, "toc.yml");

@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { isDirectory, isRegularFile } from "../platform-docs/files.mjs";
+import { isDirectory, isRegularFile } from "../platform-docs/files.ts";
 
 export const DEFAULT_GUIDE_SLUGS = [
   "creating-your-first-micronaut-app",

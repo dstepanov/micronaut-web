@@ -1,6 +1,6 @@
-import { parseAttributeList } from "./adoc-attributes.mjs";
-import { configurationSamples } from "./configuration-samples.mjs";
-import { snippetMarkerHtml } from "./snippet-markers.mjs";
+import { parseAttributeList } from "./adoc-attributes.ts";
+import { configurationSamples } from "./configuration-samples.ts";
+import { snippetMarkerHtml } from "./snippet-markers.ts";
 
 export function renderConfigurationBlocksInSource(source) {
   return source.replace(

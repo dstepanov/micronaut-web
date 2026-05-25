@@ -1,8 +1,8 @@
 export {
   highlightListingBlocks,
   shikiStyle
-} from "../platform-docs/highlight.mjs";
+} from "../platform-docs/highlight.ts";
 
 export {
   optimizeImages as optimizeGeneratedGuideHtml
-} from "../platform-docs/urls.mjs";
+} from "../platform-docs/urls.ts";

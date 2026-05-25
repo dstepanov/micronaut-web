@@ -1,7 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 
-import { buildDocsSearchIndex } from "../../../scripts/platform-docs/search-index.mjs";
+import { buildDocsSearchIndex } from "../../../scripts/platform-docs/search-index.ts";
 import { platformDocsProjects, projectBySlug } from "@/lib/protocol";
 
 const generatedDocsDirectory = join(process.cwd(), "src", "content", "generated-docs");

@@ -1,4 +1,4 @@
-import { attribute } from "./html.mjs";
+import { attribute } from "./html.ts";
 
 export function snippetMarkerHtml(kind, payload) {
   return `<micronaut-snippet data-kind="${attribute(kind)}" data-payload="${attribute(encodePayload({

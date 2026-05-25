@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { attribute } from "./html.mjs";
+import { attribute } from "./html.ts";
 
 export function prefixIds(input, slug) {
   const prefix = `${slug}-`;

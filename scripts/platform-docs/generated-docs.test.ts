@@ -7,9 +7,9 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { highlightListingBlocks, shikiLanguage } from "./highlight.mjs";
-import { readPlatformCatalogProjects } from "./project-manifest.mjs";
-import { buildDocsSearchIndex, extractGeneratedDocSearchItems } from "./search-index.mjs";
+import { highlightListingBlocks, shikiLanguage } from "./highlight.ts";
+import { readPlatformCatalogProjects } from "./project-manifest.ts";
+import { buildDocsSearchIndex, extractGeneratedDocSearchItems } from "./search-index.ts";
 
 const execFile = promisify(execFileCallback);
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -18,7 +18,7 @@ test("generated docs are prepared before Astro dev and build", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"));
 
   assert.equal(packageJson.scripts["prepare:generated-docs"], "npm run render:platform-docs");
-  assert.equal(packageJson.scripts["prepare:generated-content"], "node scripts/prepare-generated-content.mjs");
+  assert.equal(packageJson.scripts["prepare:generated-content"], "node scripts/prepare-generated-content.ts");
   assertScriptOrder(packageJson.scripts.dev, "npm run prepare:generated-content", "astro dev");
   assertScriptOrder(packageJson.scripts.build, "npm run prepare:generated-content", "astro build");
 });
@@ -48,14 +48,14 @@ test("generated docs tooling uses Micronaut Platform catalog instead of the old 
     "README.md",
     "src/content/generated-docs/README.md",
     "src/data/platform-docs-projects.fixture.json",
-    "scripts/render-platform-docs.mjs",
-    "scripts/sync-platform-docs-fixture.mjs"
+    "scripts/render-platform-docs.ts",
+    "scripts/sync-platform-docs-fixture.ts"
   ];
   const fileContents = await Promise.all(
     checkedFiles.map(async (file) => [file, await fs.readFile(path.join(projectDirectory, file), "utf8")])
   );
   const workflow = fileContents.find(([file]) => file === ".github/workflows/deploy-web.yml")[1];
-  const syncScript = fileContents.find(([file]) => file === "scripts/sync-platform-docs-fixture.mjs")[1];
+  const syncScript = fileContents.find(([file]) => file === "scripts/sync-platform-docs-fixture.ts")[1];
 
   assert.match(workflow, /github\.com\/micronaut-projects\/micronaut-platform\.git/);
   assert.match(workflow, /PLATFORM_DOCS_RENDER_ALL:\s*"true"/);
@@ -78,7 +78,7 @@ test("platform docs renderer uses checked-in project metadata when external meta
   await execFile(
     process.execPath,
     [
-      "scripts/render-platform-docs.mjs",
+      "scripts/render-platform-docs.ts",
       "--platform-docs-dir",
       platformDocsDirectory,
       "--output",
@@ -105,7 +105,7 @@ test("platform docs renderer defaults to a small project subset", async (t) => {
   const { stderr } = await execFile(
     process.execPath,
     [
-      "scripts/render-platform-docs.mjs",
+      "scripts/render-platform-docs.ts",
       "--platform-docs-dir",
       platformDocsDirectory,
       "--output",
@@ -176,7 +176,7 @@ test("platform docs renderer writes generated HTML and page-relative docs asset 
   const { stderr } = await execFile(
     process.execPath,
     [
-      "scripts/render-platform-docs.mjs",
+      "scripts/render-platform-docs.ts",
       "--platform-docs-dir",
       platformDocsDirectory,
       "--output",
@@ -272,7 +272,7 @@ test("platform docs renderer turns code, dependency, configuration, and properti
   await execFile(
     process.execPath,
     [
-      "scripts/render-platform-docs.mjs",
+      "scripts/render-platform-docs.ts",
       "--platform-docs-dir",
       platformDocsDirectory,
       "--output",
@@ -392,7 +392,7 @@ test("platform docs renderer can render every project in a manifest", async (t) 
   await execFile(
     process.execPath,
     [
-      "scripts/render-platform-docs.mjs",
+      "scripts/render-platform-docs.ts",
       "--platform-docs-dir",
       platformDocsDirectory,
       "--output",

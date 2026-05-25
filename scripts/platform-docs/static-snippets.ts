@@ -9,10 +9,10 @@ import { build } from "esbuild";
 import * as parse5 from "parse5";
 import { codeToHtml } from "shiki";
 
-import { attribute, html } from "./html.mjs";
-import { normalizeStandaloneCalloutLines, shikiLanguage } from "./highlight.mjs";
-import { inlineTitleHtml } from "./listing.mjs";
-import { decodeSnippetMarkerPayload } from "./snippet-markers.mjs";
+import { attribute, html } from "./html.ts";
+import { normalizeStandaloneCalloutLines, shikiLanguage } from "./highlight.ts";
+import { inlineTitleHtml } from "./listing.ts";
+import { decodeSnippetMarkerPayload } from "./snippet-markers.ts";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const shikiThemes = {

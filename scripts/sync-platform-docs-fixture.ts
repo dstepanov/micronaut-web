@@ -6,7 +6,7 @@ import {
   readPlatformCatalogProjects,
   readProperties,
   readTomlStringVersions
-} from "./platform-docs/project-manifest.mjs";
+} from "./platform-docs/project-manifest.ts";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const platformProjectPath =

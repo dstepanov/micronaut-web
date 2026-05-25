@@ -1,14 +1,14 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
-import { extractTaggedSource } from "../platform-docs/snippets.mjs";
+import { extractTaggedSource } from "../platform-docs/snippets.ts";
 import {
   appFeatures,
   cliCommandForApp,
   featuresWords,
   languageExtension,
   languageSourceDirectory
-} from "./model.mjs";
+} from "./model.ts";
 
 const MACRO_LINE = /^([A-Za-z][A-Za-z0-9_-]*):([^\[]*)\[(.*)]\s*$/;
 const DEFAULT_MIN_JDK = 21;

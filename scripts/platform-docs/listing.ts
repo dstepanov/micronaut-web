@@ -1,4 +1,4 @@
-import { attribute, escapeRegExp, html } from "./html.mjs";
+import { attribute, escapeRegExp, html } from "./html.ts";
 
 export function listingBlockHtml(source, language, title, classes, highlighterLanguage = language, description = "") {
   const className = `listingblock${classes ? ` ${classes}` : ""}`;

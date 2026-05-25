@@ -1,4 +1,4 @@
-import { macroAttribute, macroText } from "./listing.mjs";
+import { macroAttribute, macroText } from "./listing.ts";
 
 export function apiLink(context, kind, target, attrs) {
   const parsed = parseApiTarget(target);

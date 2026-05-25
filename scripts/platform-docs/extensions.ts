@@ -1,6 +1,6 @@
-import { apiLink, packageLink } from "./api-links.mjs";
-import { dependencyBlocksHtml } from "./dependencies.mjs";
-import { snippetBlocksHtml } from "./snippets.mjs";
+import { apiLink, packageLink } from "./api-links.ts";
+import { dependencyBlocksHtml } from "./dependencies.ts";
+import { snippetBlocksHtml } from "./snippets.ts";
 
 export function platformDocsExtensionRegistry(asciidoctor, context) {
   const registry = asciidoctor.Extensions.create();

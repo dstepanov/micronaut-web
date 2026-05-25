@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sharedStylesPath = "src/components/web/docs-snippet-styles.ts";
 const removedRuntimeCssPaths = [
-  "scripts/generate-docs-snippet-css.mjs",
+  "scripts/generate-docs-snippet-css.ts",
   "src/styles/docs-snippet-runtime.source.css",
   "src/styles/generated/docs-snippet-runtime.css"
 ];

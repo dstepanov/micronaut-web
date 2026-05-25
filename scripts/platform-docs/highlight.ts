@@ -1,6 +1,6 @@
 import { codeToHtml } from "shiki";
 
-import { attribute, decodeHtml, escapeRegExp } from "./html.mjs";
+import { attribute, decodeHtml, escapeRegExp } from "./html.ts";
 
 const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
 const CALLOUT_MARKER_SUFFIX = "__";

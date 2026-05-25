@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const tasks = [
-  ["platform docs", process.execPath, ["scripts/render-platform-docs.mjs"]],
-  ["guides", process.execPath, ["scripts/render-guides.mjs"]]
+  ["platform docs", process.execPath, ["scripts/render-platform-docs.ts"]],
+  ["guides", process.execPath, ["scripts/render-guides.ts"]]
 ];
 
 await Promise.all(tasks.map(([label, command, args]) => run(label, command, args)));

@@ -18,6 +18,10 @@ npm run build
 `src/data/platform-docs/platform-doc-projects.properties` is checked-in platform docs project metadata so CI can run the docs renderer without an external metadata checkout.
 `npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web`.
 
+## Script Development
+
+All repository scripts under `scripts/` must be TypeScript files. Add new scripts as `.ts`, import other local script modules with `.ts` extensions, and invoke them from `package.json` with `node scripts/...ts` or `node --test scripts/...test.ts`. Node 24 or newer is assumed for direct TypeScript script execution, matching CI.
+
 ## Design Tokens
 
 The shared palette intentionally follows the classic micronaut.io direction:

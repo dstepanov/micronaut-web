@@ -1,4 +1,4 @@
-import { renderConfigurationBlocksInSource } from "./configuration.mjs";
+import { renderConfigurationBlocksInSource } from "./configuration.ts";
 
 export function normalizeAsciiDocSource(source) {
   let normalized = renderConfigurationBlocksInSource(source);
