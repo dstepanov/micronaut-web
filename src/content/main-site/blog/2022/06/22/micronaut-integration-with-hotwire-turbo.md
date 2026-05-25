@@ -23,7 +23,9 @@ Micronaut Views adds integration with [Turbo](https://turbo.hotwired.dev/), the 
 
 > Turbo is a set of complementary techniques for accelerating page changes and form submissions, dividing complex pages into components, and streaming partial page updates over WebSocket.
 
-[Micronaut Views supports easy generation of Turbo Frames and Turbo Streams](https://micronaut-projects.github.io/micronaut-views/latest/guide/#turbo) with a fluid API and annotations.https:
+[Micronaut Views supports easy generation of Turbo Frames and Turbo Streams](https://micronaut-projects.github.io/micronaut-views/latest/guide/#turbo) with a fluid API and annotations.
+
+[Watch the video](https://www.youtube.com/watch?v=KIh6AIKata4)
 
 We also wrote a [Micronaut Guide featuring the code shown in the previous screencast](https://guides.micronaut.io/latest/hotwire-turbo-micronaut-chat.html).
 
@@ -41,9 +43,13 @@ We wrote a [Micronaut Guide to show you how to write the Turbo Native Demo with 
 
 We recorded a screencast that shows how to run the [Turbo Native iOS](http://github.com/hotwired/turbo-ios) demo application and point it to the Micronaut application.
 
+[Watch the video](https://www.youtube.com/watch?v=w04V-WmsJ6Y)
+
 ## Turbo Native Android
 
 We also recorded a screencast that shows how to run the [Turbo Native Android](http://github.com/hotwired/turbo-android) demo application and point it to the Micronaut application.
+
+[Watch the video](https://www.youtube.com/watch?v=OB-nnVqhjMk)
 
 ## Hotwire
 

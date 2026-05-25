@@ -26,6 +26,6 @@ Till next time!
 
 — Jen Wiese
 
-[Slides](https://objectcomputing.com/download_file/5451)
+[Slides](/micronaut-assets/main-site/objectcomputing/download-file/5451-Slide_Deck_2022_Q1_2GM_Town_Hall.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=EE5flg8Hj_E)

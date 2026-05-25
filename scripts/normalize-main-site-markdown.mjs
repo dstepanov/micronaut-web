@@ -10,6 +10,21 @@ const contentDirs = [
   join(rootDir, "src", "content", "main-site", "pages")
 ];
 
+const objectComputingDownloadFiles = {
+  5087: "/micronaut-assets/main-site/objectcomputing/download-file/5087-Micronaut_Brand_Guidelines.pdf",
+  5205: "/micronaut-assets/main-site/objectcomputing/download-file/5205-sally_micronaut_mascot.png",
+  5206: "/micronaut-assets/main-site/objectcomputing/download-file/5206-micronaut_horizontal_black.png",
+  5207: "/micronaut-assets/main-site/objectcomputing/download-file/5207-micronaut_horizontal_white.png",
+  5208: "/micronaut-assets/main-site/objectcomputing/download-file/5208-micronaut_stacked_black.png",
+  5209: "/micronaut-assets/main-site/objectcomputing/download-file/5209-micronaut_stacked_white.png",
+  5210: "/micronaut-assets/main-site/objectcomputing/download-file/5210-micronaut_horizontal_black.svg",
+  5211: "/micronaut-assets/main-site/objectcomputing/download-file/5211-micronaut_horizontal_white.svg",
+  5212: "/micronaut-assets/main-site/objectcomputing/download-file/5212-micronaut_stacked_black.svg",
+  5213: "/micronaut-assets/main-site/objectcomputing/download-file/5213-micronaut_stacked_white.svg",
+  5214: "/micronaut-assets/main-site/objectcomputing/download-file/5214-sally_micronaut_mascot.svg",
+  5451: "/micronaut-assets/main-site/objectcomputing/download-file/5451-Slide_Deck_2022_Q1_2GM_Town_Hall.pdf"
+};
+
 function decodeHtml(value) {
   return String(value ?? "")
     .replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
@@ -95,7 +110,8 @@ function normalizeBody(body, { blogPost }) {
       .replace(/\]\(([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\)/g, "](mailto:$1)")
       .replace(/\[Micronaut WebSocket Support\]\(https:\/\/docs\.micronaut\.io\/latest\/guide\/#websocket\)(?:\(https:\/\/docs\.micronaut\.io\/latest\/guide\/#websocket\))+/g, "[Micronaut WebSocket Support](https://docs.micronaut.io/latest/guide/#websocket)")
       .replace(/\[Micronaut WebSocket Support\](?!\()/g, "[Micronaut WebSocket Support](https://docs.micronaut.io/latest/guide/#websocket)")
-      .replace(/\[Embedded content\]\(https:\/\/www\.youtube\.com\/embed\/([A-Za-z0-9_-]+)\)/g, "[Watch the video](https://www.youtube.com/watch?v=$1)")
+      .replace(/\[Embedded content\]\(https:\/\/www\.youtube\.com\/embed\/([A-Za-z0-9_-]+)(?:\?[^)]*)?\)/g, "[Watch the video](https://www.youtube.com/watch?v=$1)")
+      .replace(/\]\(https:\/\/objectcomputing\.com\/download_file\/(\d+)\)/g, (match, id) => objectComputingDownloadFiles[id] ? `](${objectComputingDownloadFiles[id]})` : match)
       .replace(/\[simpay_payment_receipt\]/g, "Payment confirmation appears after a foundation or sponsorship payment flow completes.")
       .replace(/\]\((https:\/\/micronaut-projects\.github\.io\/micronaut-serialization\/latest\/api\/io\/micronaut\/serde\/ObjectMapper\.html#cloneWithConfiguration\([^)\s]+%29)\)/g, "](<$1>)")
       .replace(/\[([^\]\n]+?),\]\(([^)\n]+)\)/g, "[$1]($2),")

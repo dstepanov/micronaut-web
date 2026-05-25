@@ -2,6 +2,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 
 import { withBasePath } from "@/lib/base-path";
 import { routeSlugsForPost } from "@/lib/blog-redirects";
+import { extractFaqItemsFromHtml, type MainSiteFaqItem } from "@/lib/main-site-faq";
 import { renderMainSiteCodeSnippets } from "@/lib/main-site-code-snippets";
 
 export type MainSitePageEntry = CollectionEntry<"mainSitePages">;
@@ -61,6 +62,8 @@ export type SuccessStory = {
   logo?: string;
   logoClass?: string;
 };
+
+export type { MainSiteFaqItem };
 
 function slugFromEntry(entry: { id: string }) {
   return entry.id.replace(/\.md$/, "").replace(/\/index$/, "");
@@ -220,6 +223,10 @@ export async function renderMarkdownHtml(entry: MainSitePageEntry | BlogPostEntr
   await render(entry);
   const html = stripGeneratedPermalinkParagraphs(rewriteRootRelativeHtml(entry.rendered?.html ?? ""));
   return renderMainSiteCodeSnippets(html);
+}
+
+export async function renderFaqItems(entry: MainSitePageEntry | BlogPostEntry): Promise<MainSiteFaqItem[]> {
+  return extractFaqItemsFromHtml(await renderMarkdownHtml(entry));
 }
 
 function rewriteRootRelativeHtml(html: string) {

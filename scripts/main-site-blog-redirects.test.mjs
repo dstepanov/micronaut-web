@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { promises as fs } from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -73,6 +72,46 @@ test("legacy redirect destinations are base-path aware", async () => {
   );
 });
 
+test("base path helper does not double-prefix already-prefixed paths", async () => {
+  const { withBasePathForBase } = await importBasePath();
+
+  assert.equal(withBasePathForBase("/docs/", "/micronaut-web/"), "/micronaut-web/docs/");
+  assert.equal(withBasePathForBase("/micronaut-web/docs/", "/micronaut-web/"), "/micronaut-web/docs/");
+  assert.equal(withBasePathForBase("https://micronaut.io/docs/", "/micronaut-web/"), "https://micronaut.io/docs/");
+  assert.equal(withBasePathForBase("#section", "/micronaut-web/"), "#section");
+  assert.equal(withBasePathForBase("relative/path", "/micronaut-web/"), "relative/path");
+});
+
+test("FAQ accordion items are extracted from rendered markdown HTML", async () => {
+  const { extractFaqItemsFromHtml } = await importFaqParser();
+  const items = extractFaqItemsFromHtml(`
+    <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+    <ul>
+      <li>
+        <h3 id="question-one"><a href="#question-one">Question one?</a></h3>
+        <p>Answer with <a href="/docs/">docs</a>.</p>
+      </li>
+      <li>
+        <h3 id="question-two">Question two?</h3>
+        <p>Another answer.</p>
+      </li>
+    </ul>
+  `);
+
+  assert.deepEqual(items, [
+    {
+      id: "question-one",
+      question: "Question one?",
+      answerHtml: '<p>Answer with <a href="/docs/">docs</a>.</p>'
+    },
+    {
+      id: "question-two",
+      question: "Question two?",
+      answerHtml: "<p>Another answer.</p>"
+    }
+  ]);
+});
+
 test("non-dated posts only get legacy redirects when aliased", async () => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const slug = "micronaut-success-stories/agorapulse-micronaut-journey";
@@ -108,7 +147,18 @@ test("both legacy blog route modules use shared base-path redirects", async () =
 });
 
 async function importBlogRedirects() {
-  const sourceFile = path.join(projectDirectory, "src", "lib", "blog-redirects.ts");
+  return importTypeScriptModule(path.join(projectDirectory, "src", "lib", "blog-redirects.ts"), "blog-redirects.mjs");
+}
+
+async function importBasePath() {
+  return importTypeScriptModule(path.join(projectDirectory, "src", "lib", "base-path.ts"), "base-path.mjs");
+}
+
+async function importFaqParser() {
+  return importTypeScriptModule(path.join(projectDirectory, "src", "lib", "main-site-faq.ts"), "main-site-faq.mjs");
+}
+
+async function importTypeScriptModule(sourceFile, moduleName) {
   const source = await fs.readFile(sourceFile, "utf8");
   const result = ts.transpileModule(source, {
     compilerOptions: {
@@ -121,8 +171,12 @@ async function importBlogRedirects() {
   const errors = result.diagnostics?.filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error) ?? [];
   assert.deepEqual(errors.map((diagnostic) => diagnostic.messageText), []);
 
-  const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "micronaut-web-blog-redirects-"));
-  const moduleFile = path.join(temporaryDirectory, "blog-redirects.mjs");
+  const temporaryDirectory = await fs.mkdtemp(path.join(projectDirectory, ".tmp-tests-"));
+  const moduleFile = path.join(temporaryDirectory, moduleName);
   await fs.writeFile(moduleFile, result.outputText, "utf8");
-  return import(pathToFileURL(moduleFile));
+  try {
+    return await import(pathToFileURL(moduleFile));
+  } finally {
+    await fs.rm(temporaryDirectory, { force: true, recursive: true });
+  }
 }

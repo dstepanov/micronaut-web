@@ -14,4 +14,4 @@ tags: []
 href: /2024/09/19/micronaut-graalpy-python-package/
 ---
 
-
+[Watch the video](https://www.youtube.com/watch?v=N6FoR-b5QCI)

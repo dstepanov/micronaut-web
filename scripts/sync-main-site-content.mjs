@@ -155,6 +155,11 @@ function inlineChildren(nodes) {
   return normalizeInline(nodes.map(inlineMarkdown).join(""));
 }
 
+function iframeMarkdown(node) {
+  const src = attr(node, "src");
+  return src ? `[Embedded content](${markdownUrl(src)})` : "";
+}
+
 function normalizeInline(value) {
   return value
     .replace(/[ \t\n]+/g, " ")
@@ -204,6 +209,9 @@ function inlineMarkdown(node) {
       return "";
     }
     return `![${escapeInlineText(attr(node, "alt") ?? "")}](${markdownUrl(src)})`;
+  }
+  if (tag === "iframe") {
+    return iframeMarkdown(node);
   }
   if (tag === "sub" || tag === "sup" || tag === "span" || tag === "small") {
     return inlineChildren(children);
@@ -338,8 +346,7 @@ function blockMarkdown(node) {
     return "---";
   }
   if (tag === "iframe") {
-    const src = attr(node, "src");
-    return src ? `[Embedded content](${markdownUrl(src)})` : "";
+    return iframeMarkdown(node);
   }
   if (tag === "img") {
     return inlineMarkdown(node);

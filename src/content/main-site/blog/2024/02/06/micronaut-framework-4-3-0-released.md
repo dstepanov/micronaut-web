@@ -29,6 +29,8 @@ This minor release updates to [Kotlin 1.9.22](https://github.com/JetBrains/kotli
 
 [Micronaut Chatbots](https://micronaut-projects.github.io/micronaut-chatbots/snapshot/guide/#telegram) eases the creation of ChatBots (in this first release, with support for [Telegram](https://core.telegram.org/bots/api) and [Basecamp](https://github.com/basecamp/bc3-api/blob/master/sections/chatbots.md)).
 
+[Watch the video](https://www.youtube.com/watch?v=ZpViY2ym24U)
+
 ### Micronaut EclipseStore
 
 [Micronaut EclipseStore](https://micronaut-projects.github.io/micronaut-eclipsestore/snapshot/guide/) is a new module which adds integration with [EclipseStore](https://eclipsestore.io/). Eclipse Store is the successor of the [MicroStream](https://github.com/microstream-one/microstream) project., Technically this project is identical to MicroStream 8, which was the last stable version of MicroStream itself.

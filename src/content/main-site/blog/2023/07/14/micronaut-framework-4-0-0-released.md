@@ -96,13 +96,19 @@ Please refer to this recording [about the new HTTP Clien](https://www.youtube.co
 
 Both [Gradle](https://micronaut-projects.github.io/micronaut-gradle-plugin/latest/#_openapi_code_generation) and [Maven](https://micronaut-projects.github.io/micronaut-maven-plugin/latest/examples/openapi.html) plugins support the generation of code for an HTTP client or server given an OpenAPI Specification file.
 
+[Watch the video](https://www.youtube.com/watch?v=k5DK6SwcYFY)
+
 ### YAML Configuration
 
 [Micronaut framework 4.0 no longer exposes SnakeYAML as a transitive dependency](https://micronaut.io/2023/02/19/micronaut-framework-4-0-and-snakeyaml-transitive-dependency/).
 
+[Watch the video](https://www.youtube.com/watch?v=MbmQvyJ-tDI)
+
 ### JSON Serialisation
 
 [Micronaut framework 4.0 does not expose Micronaut Jackson Databind as a transitive dependency](https://micronaut.io/2023/02/27/micronaut-framework-4-0-and-micronaut-jackson-databind-transitive-dependency/). You have to choose whether you want to use Micronaut Serialization or Micronaut Jackson databind.
+
+[Watch the video](https://www.youtube.com/watch?v=A0O1WckQeew)
 
 ### Jakarta Transition
 
@@ -116,9 +122,13 @@ Micronaut framework 4 compilation time annotation metadata has been extended to 
 
 This support enables the ability to support Bean Validation 3 and declarations such as: `List<@NotBlank String> names`
 
+[Watch the video](https://www.youtube.com/watch?v=lBSVRp5YbRc)
+
 ### Improved Modularity
 
 The built-in [Validation](https://micronaut-projects.github.io/micronaut-validation/snapshot/guide/), [Retry](https://docs.micronaut.io/latest/guide/#retry), [Service Discovery](https://micronaut-projects.github.io/micronaut-discovery-client/latest/guide/), [HTTP Session](https://micronaut-projects.github.io/micronaut-session/snapshot/guide/) and [WebSocket](https://docs.micronaut.io/latest/guide/#websocket) features have been split into separate modules allowing removal of this functionality if not needed.
+
+[Watch the video](https://www.youtube.com/watch?v=z6wxWBDgpUI)
 
 In addition, the compiler has been rewritten allowing the split of compilation only types into a separate core-processor module that is no longer on the user compilation and runtime classpath. This allows for the removal of repackaged versions of ASM and Caffeine.
 
@@ -172,6 +182,8 @@ Micronaut MQTT adds [an implementation based on the HiveMQ MQTT Client](https://
 
 [Object Storage adds Local Storage](https://micronaut-projects.github.io/micronaut-object-storage/latest/guide/#local) to ease local development and testing.
 
+[Watch the video](https://www.youtube.com/watch?v=IBvvGtY1CeA)
+
 ### GraphQL
 
 The GraphQL module now supports the modern graphql-ws protocol for GraphQL subscriptions over WebSockets.
@@ -212,6 +224,8 @@ Additionally, a new module `io.micronaut.aws:micronaut-aws-lambda-events-serde` 
 ## How to Upgrade to Micronaut Framework 4?
 
 We have published an [upgrade to Micronaut framework 4](https://micronaut.io/2023/05/09/upgrade-to-micronaut-framework-4-0-0/) guide to help you upgrade your Micronaut applications, we also provide an [OpenRewrite integration for Gradle](https://micronaut.io/2023/07/14/upgrade-to-micronaut-framework-4-with-openrewrite-and-gradle/) and [Maven](https://micronaut.io/2023/07/14/upgrade-to-micronaut-framework-4-with-openrewrite-and-maven/).
+
+[Watch the video](https://www.youtube.com/watch?v=nPk_uCckbxM)
 
 ## Next Steps
 

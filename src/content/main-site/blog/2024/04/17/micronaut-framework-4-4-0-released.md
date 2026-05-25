@@ -21,6 +21,8 @@ href: /2024/04/17/micronaut-framework-4-4-0-released/
 
 In addition, since Micronaut framework 4.4.0, any Project Reactor blocking operations throw an exception when they are done on an event loop thread. This new behaviour will help you identify the controller’s methods, which you must [annotate with @ExecuteOn](https://docs.micronaut.io/4.3.14/guide/#reactiveServer) to avoid performance loss or dead locks in the event loop.
 
+[Watch the video](https://www.youtube.com/watch?v=W6iztOuulVU)
+
 ## Kotlin 1.9.23
 
 This minor release updates to [Kotlin 1.9.23](https://github.com/JetBrains/kotlin/releases/tag/v1.9.23) and KSP 1.9.23-1.0.20.
@@ -31,11 +33,15 @@ This minor release updates to [Kotlin 1.9.23](https://github.com/JetBrains/kotli
 
 [Micronaut OpenSearch](https://micronaut-projects.github.io/micronaut-opensearch/1.0.0/guide/) simplifies integration with [OpenSearch](https://opensearch.org/).
 
+[Watch the video](https://www.youtube.com/watch?v=chEGOssVWgg)
+
 ## New Features
 
 ### Micronaut Views
 
 Micronaut Views adds the ability to render [Thymeleaf fragments](https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html#fragments). Moreover, it adds [support for HTMX](https://micronaut-projects.github.io/micronaut-views/5.2.0/guide/#htmx).
+
+[Watch the video](https://www.youtube.com/watch?v=SiAx06bIoFQ)
 
 ### Micronaut Data
 

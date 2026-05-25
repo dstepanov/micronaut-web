@@ -19,6 +19,8 @@ The Micronaut team has assembled a new set of [OpenRewrite recipes](https://gith
 
 These recipes automate as much as possible from our previous [“Upgrade To Micronaut Framework 4”](https://micronaut.io/2023/05/09/upgrade-to-micronaut-framework-4-0-0/) post. The recipes will be continually updated whenever we discover new upgrade steps.
 
+[Watch the video](https://www.youtube.com/watch?v=nPk_uCckbxM)
+
 ### Upgrading a Gradle Application to Micronaut Framework 4
 
 If you use Gradle to build your Micronaut applications, it is easy to update from Micronaut Framework 3 to Micronaut Framework 4 with the [OpenRewrite Gradle plugin](https://github.com/openrewrite/rewrite-gradle-plugin). You need to apply the recipes from the [`rewrite-micronaut`](https://github.com/openrewrite/rewrite-micronaut) module. There are two approaches:

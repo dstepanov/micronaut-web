@@ -11,6 +11,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { IconGlyph } from "@/components/web/icon-glyph";
+import { FaqAccordion } from "@/components/web/faq-accordion";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
 import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
@@ -23,6 +24,7 @@ import {
   getMainSitePages,
   getSuccessStories,
   cleanExcerptText,
+  renderFaqItems,
   renderMarkdownHtml
 } from "@/lib/main-site-content";
 
@@ -75,6 +77,7 @@ const isBlogArchiveRoute = routeSlug === "blog"
   || routeSlug.startsWith("blog/page/")
   || routeSlug.startsWith("tag/")
   || routeSlug.startsWith("category/");
+const isFaqPage = routeSlug === "faq";
 const isCanonicalPageContent = String(pageData.contentSource ?? "").startsWith("micronaut-public");
 const archivePosts = await getBlogPostsForArchive(routeSlug);
 const regularBlogPostCount = routeSlug === "blog"
@@ -82,7 +85,8 @@ const regularBlogPostCount = routeSlug === "blog"
   : 0;
 const blogArchivePage = archive?.page ?? (routeSlug === "blog" ? 1 : undefined);
 const blogArchiveTotalPages = archive?.totalPages ?? (routeSlug === "blog" ? Math.ceil(regularBlogPostCount / 24) : undefined);
-const contentHtml = entry && !isBlogArchiveRoute ? await renderMarkdownHtml(entry) : "";
+const faqItems = entry && isFaqPage ? await renderFaqItems(entry) : [];
+const contentHtml = entry && !isBlogArchiveRoute && !isFaqPage ? await renderMarkdownHtml(entry) : "";
 const successStories = await getSuccessStories();
 const postDateFormatter = new Intl.DateTimeFormat("en", {
   day: "numeric",
@@ -270,8 +274,27 @@ const outcomeGroups = [
           </header>
         )}
 
-        <MainSiteMarkdown html={contentHtml} />
-        {contentHtml && <GeneratedDocsEnhancer />}
+        {isFaqPage && faqItems.length > 0 ? (
+          <section class="grid gap-8">
+            <header class="max-w-3xl">
+              <Badge variant="secondary">{pageData.eyebrow}</Badge>
+              <h1 class="mt-5 text-3xl font-bold leading-tight text-foreground md:text-5xl">
+                {pageData.title}
+              </h1>
+              {intro && (
+                <p class="mt-5 text-base leading-8 text-muted-foreground md:text-[1.05rem]">
+                  {intro}
+                </p>
+              )}
+            </header>
+            <FaqAccordion items={faqItems} client:load />
+          </section>
+        ) : (
+          <>
+            <MainSiteMarkdown html={contentHtml} />
+            {contentHtml && <GeneratedDocsEnhancer />}
+          </>
+        )}
 
         {archivePosts.length > 0 && (
           <section class:list={[

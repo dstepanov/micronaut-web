@@ -30,30 +30,30 @@ No third party, whether a Community or Commercial User, may alter or modify Micr
 
 ![horizontal Micronaut logo](https://micronaut.io/wp-content/uploads/2021/06/micronaut-horizontal-white-1024x323.png)
 
-[Download Black PNG](https://objectcomputing.com/download_file/5206)
+[Download Black PNG](/micronaut-assets/main-site/objectcomputing/download-file/5206-micronaut_horizontal_black.png)
 
-[Download Black SVG](https://objectcomputing.com/download_file/5210)
+[Download Black SVG](/micronaut-assets/main-site/objectcomputing/download-file/5210-micronaut_horizontal_black.svg)
 
-[Download White PNG](https://objectcomputing.com/download_file/5207)
+[Download White PNG](/micronaut-assets/main-site/objectcomputing/download-file/5207-micronaut_horizontal_white.png)
 
-[Download White SVG](https://objectcomputing.com/download_file/5211)
+[Download White SVG](/micronaut-assets/main-site/objectcomputing/download-file/5211-micronaut_horizontal_white.svg)
 
 ## Stacked
 
 ![stacked Micronaut logo](https://micronaut.io/wp-content/uploads/2021/06/micronaut-stacked-white.png)
 
-[Download Black PNG](https://objectcomputing.com/download_file/5208)
+[Download Black PNG](/micronaut-assets/main-site/objectcomputing/download-file/5208-micronaut_stacked_black.png)
 
-[Download Black SVG](https://objectcomputing.com/download_file/5212)
+[Download Black SVG](/micronaut-assets/main-site/objectcomputing/download-file/5212-micronaut_stacked_black.svg)
 
-[Download White](https://objectcomputing.com/download_file/5209)
+[Download White](/micronaut-assets/main-site/objectcomputing/download-file/5209-micronaut_stacked_white.png)
 
-[Download White SVG](https://objectcomputing.com/download_file/5213)
+[Download White SVG](/micronaut-assets/main-site/objectcomputing/download-file/5213-micronaut_stacked_white.svg)
 
 ## Sally
 
 ![](https://micronaut.io/wp-content/uploads/2021/06/sally-black.png)
 
-[Download PNG](https://objectcomputing.com/download_file/5205)
+[Download PNG](/micronaut-assets/main-site/objectcomputing/download-file/5205-sally_micronaut_mascot.png)
 
-[Download SVG](https://objectcomputing.com/download_file/5214)
+[Download SVG](/micronaut-assets/main-site/objectcomputing/download-file/5214-sally_micronaut_mascot.svg)
