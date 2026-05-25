@@ -3,6 +3,7 @@ type RenderAsciiDocOptions = {
   source: string;
   convertOptions: Record<string, any>;
   diagnosticsLabel?: string;
+  fatalDiagnostic?: (diagnostic: string) => boolean;
   strict?: boolean;
 };
 
@@ -11,6 +12,7 @@ export function renderAsciiDoc({
   source,
   convertOptions,
   diagnosticsLabel = "AsciiDoc source",
+  fatalDiagnostic,
   strict = false,
 }: RenderAsciiDocOptions): string {
   const logger = asciidoctor.MemoryLogger.create();
@@ -32,9 +34,14 @@ export function renderAsciiDoc({
   const diagnostics = logger.getMessages().map(formatAsciidoctorDiagnostic);
   if (diagnostics.length) {
     if (strict) {
-      throw new Error(
-        `Asciidoctor diagnostics for ${diagnosticsLabel}: ${diagnostics.join("; ")}`,
-      );
+      const fatalDiagnostics = fatalDiagnostic
+        ? diagnostics.filter(fatalDiagnostic)
+        : diagnostics;
+      if (fatalDiagnostics.length) {
+        throw new Error(
+          `Asciidoctor diagnostics for ${diagnosticsLabel}: ${fatalDiagnostics.join("; ")}`,
+        );
+      }
     }
     for (const diagnostic of diagnostics) {
       console.warn(diagnostic);

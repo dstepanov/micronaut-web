@@ -90,6 +90,7 @@ async function renderNode(
       base_dir: context.submoduleDirectory,
       extension_registry: docsExtensionRegistry(asciidoctor, context),
     },
+    fatalDiagnostic: isFatalDocsDiagnostic,
   });
 
   let htmlContent = `${sectionHeading(context.project, node)}\n${converted}\n`;
@@ -97,6 +98,13 @@ async function renderNode(
     htmlContent += await renderNode(asciidoctor, context, child);
   }
   return htmlContent;
+}
+
+function isFatalDocsDiagnostic(diagnostic: string): boolean {
+  return ![
+    /section title out of sequence: expected level \d+, got level \d+/i,
+    /unterminated listing block/i,
+  ].some((allowedWarning) => allowedWarning.test(diagnostic));
 }
 
 function sectionHeading(project: any, node: any): any {

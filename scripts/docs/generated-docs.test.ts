@@ -440,6 +440,104 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedText, /2 properties/);
 });
 
+test("strict docs renderer allows known upstream source-shape warnings", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-docs-source-warnings-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Fixture Docs",
+    [
+      "== Parent heading",
+      "",
+      "==== Out-of-sequence heading",
+      "",
+      "This source still renders when synced upstream docs contain heading-level gaps.",
+      "",
+      "----",
+      "unterminated listing content",
+    ].join("\n"),
+  );
+
+  const { stderr } = await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+      "--strict",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  assert.match(stderr, /section title out of sequence/i);
+  assert.match(stderr, /unterminated listing block/i);
+  assert.match(generatedHtml, /Out-of-sequence heading/);
+});
+
+test("strict docs renderer still fails on fatal Asciidoctor diagnostics", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-docs-fatal-diagnostics-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Fixture Docs",
+    "include::missing.adoc[]",
+  );
+
+  await assert.rejects(
+    execFile(
+      process.execPath,
+      [
+        "scripts/render-docs.ts",
+        "--docs-dir",
+        docsDirectory,
+        "--output",
+        outputDirectory,
+        "--slugs",
+        "fixture",
+        "--strict",
+      ],
+      {
+        cwd: projectDirectory,
+      },
+    ),
+    (error: any): any => {
+      const childError = error as { stdout?: string; stderr?: string };
+      const output = `${childError.stdout ?? ""}\n${childError.stderr ?? ""}`;
+      assert.match(output, /Asciidoctor diagnostics/);
+      assert.match(output, /include file not found|include file not readable/i);
+      return true;
+    },
+  );
+});
+
 test("docs search index includes generated headings, properties, classes, projects, and repos", (): any => {
   const project = {
     slug: "fixture",
@@ -770,6 +868,29 @@ function nonStrictEnv(): any {
     DOCS_RENDER_STRICT: "false",
     DOCS_SYNC_SOURCES: "false",
   };
+}
+
+async function writeDocsProjectManifest(
+  docsDirectory: any,
+  slug = "fixture",
+  repositoryName = "micronaut-fixture",
+): Promise<any> {
+  await fs.mkdir(path.join(docsDirectory, "gradle"), {
+    recursive: true,
+  });
+  await fs.writeFile(
+    path.join(docsDirectory, "gradle", "docs-projects.properties"),
+    [
+      "project.count=1",
+      `project.0.slug=${slug}`,
+      "project.0.displayName=Micronaut Fixture",
+      `project.0.submodulePath=repos/${repositoryName}`,
+      `project.0.repositoryUrl=https://github.com/micronaut-projects/${repositoryName}.git`,
+      "project.0.branch=master",
+      "project.0.platformVersionKey=micronaut",
+    ].join("\n"),
+    "utf8",
+  );
 }
 
 async function writeGuide(
