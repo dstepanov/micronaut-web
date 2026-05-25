@@ -321,7 +321,7 @@ test("docs routes render generated fragments and serve generated assets", async 
 
 function assertScriptOrder(script, producer, consumer) {
   assert.equal(typeof script, "string");
-  const producerIndex = script.indexOf(producer);
+  const producerIndex = script.indexOf(producer );
   const consumerIndex = script.indexOf(consumer);
   assert.notEqual(producerIndex, -1, `${script} should include '${producer}'`);
   assert.notEqual(consumerIndex, -1, `${script} should include '${consumer}'`);

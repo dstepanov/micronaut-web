@@ -31,7 +31,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   await writeGuideFixture(guidesDirectory, "micronaut-http-client", "HTTP Client");
   await writeGuideFixture(guidesDirectory, "not-default-guide", "Ignored Guide");
 
-  await execFile(
+  const { stderr } = await execFile(
     process.execPath,
     [
       "scripts/render-guides.mjs",
@@ -45,6 +45,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
       env: nonStrictEnv()
     }
   );
+  assert.doesNotMatch(stderr, /no callout found|callout list item index|include file not found/i);
 
   const manifest = JSON.parse(await fs.readFile(path.join(outputDirectory, "manifest.json"), "utf8"));
   assert.deepEqual(manifest.guides.map((guide) => guide.slug), ["micronaut-http-client"]);
@@ -55,6 +56,14 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /ExampleController/);
   assert.match(html, /message[\s\S]*=Hello/);
   assert.match(html, /implementation[\s\S]*io\.micronaut:micronaut-http-client/);
+  assert.match(html, /Adds HTTP client dependency/);
+  assert.match(html, /Manual callout keeps its place/);
+  assert.match(html, /Raw include callout/);
+  assert.match(html, /Kubernetes include callout/);
+  assert.match(html, /Unmarked source callout/);
+  assert.match(html, /guide-manual-callouts/);
+  assert.match(html, /<i class="conum" data-value="1"><\/i>/);
+  assert.doesNotMatch(html, /__MICRONAUT_CALLOUT_|\uE000|\uE001/);
   assert.match(html, /https:\/\/micronaut\.io\/launch\?/);
   assert.match(html, /href="\.\.\/another-guide\.html"/);
   assert.match(html, /href="\.\.\/legacy-guide\.html"/);
@@ -91,6 +100,39 @@ test("guide renderer can render all guides in strict pipeline mode", async (t) =
   assert.deepEqual(manifest.guides.map((guide) => guide.slug).sort(), ["micronaut-http-client", "not-default-guide"]);
 });
 
+test("strict guide renderer fails when Asciidoctor reports diagnostics", async (t) => {
+  const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "micronaut-web-guides-strict-"));
+  t.after(() => fs.rm(temporaryDirectory, { force: true, recursive: true }));
+  const guidesDirectory = path.join(temporaryDirectory, "micronaut-guides");
+  const outputDirectory = path.join(temporaryDirectory, "generated-guides");
+
+  await writeBrokenGuideFixture(guidesDirectory, "broken-guide");
+
+  await assert.rejects(
+    execFile(
+      process.execPath,
+      [
+        "scripts/render-guides.mjs",
+        "--guides-dir",
+        guidesDirectory,
+        "--output",
+        outputDirectory,
+        "--slugs",
+        "broken-guide",
+        "--strict"
+      ],
+      {
+        cwd: projectDirectory
+      }
+    ),
+    (error) => {
+      assert.match(`${error.stdout}\n${error.stderr}`, /Asciidoctor diagnostics/);
+      assert.match(`${error.stdout}\n${error.stderr}`, /include file not found|include file not readable/i);
+      return true;
+    }
+  );
+});
+
 test("latest guide replacement routes and parallel generated-content preparation are wired", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"));
   const workflow = await fs.readFile(path.join(projectDirectory, ".github", "workflows", "deploy-web.yml"), "utf8");
@@ -102,6 +144,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   const guidesRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "guides", "[slug].astro"), "utf8");
   const guidesLegacyRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "guides", "[slug].html.ts"), "utf8");
   const guidesZipRoute = await fs.readFile(path.join(projectDirectory, "src", "pages", "guides", "[download].zip.ts"), "utf8");
+  const generatedDocsEnhancer = await fs.readFile(path.join(projectDirectory, "src", "components", "web", "generated-docs-enhancer.astro"), "utf8");
   const guideCatalog = await fs.readFile(path.join(projectDirectory, "src", "components", "web", "latest-guides-catalog.astro"), "utf8");
   const guideCard = await fs.readFile(path.join(projectDirectory, "src", "components", "web", "latest-guide-card.tsx"), "utf8");
 
@@ -126,12 +169,20 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesIndexRoute, /GuidesCatalogTabs|GuidesFilterPanel|micronautProtocol\.guides\.guides/);
   assert.match(guidesRoute, /readGeneratedGuideFragment/);
   assert.match(guidesRoute, /In this section/);
+  assert.match(guidesRoute, /buildGuidePageIndexSections/);
+  assert.match(guidesRoute, /data-guide-page-index/);
+  assert.match(guidesRoute, /data-root-id/);
+  assert.match(guidesRoute, /guide-page-index-link\.active/);
+  assert.match(guidesRoute, /requestAnimationFrame\(updateActiveSection\)/);
   assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
   assert.match(guidesRoute, /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/);
   assert.match(guidesLegacyRoute, /guideOverviewPath\(guide, guidesRoot\)/);
   assert.match(guidesLegacyRoute, /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/);
   assert.match(guidesLegacyRoute, /guides\.micronaut\.io\/latest/);
   assert.match(guidesZipRoute, /guides\.micronaut\.io\/latest\/\$\{option\.zipUrl\}/);
+  assert.match(generatedDocsEnhancer, /attachCalloutFooter/);
+  assert.match(generatedDocsEnhancer, /isCalloutFooter/);
+  assert.match(generatedDocsEnhancer, /cardFooterClass/);
   assert.match(guideCatalog, /root = "\/latest"/);
   assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
@@ -142,6 +193,7 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
   await fs.mkdir(path.join(guidesDirectory, "src", "docs", "common", "callouts"), { recursive: true });
   await fs.mkdir(path.join(guideDirectory, "java", "src", "main", "java", "example", "micronaut"), { recursive: true });
   await fs.mkdir(path.join(guideDirectory, "src", "main", "resources"), { recursive: true });
+  await fs.mkdir(path.join(guideDirectory, "deployment"), { recursive: true });
   await fs.writeFile(path.join(guidesDirectory, "version.txt"), "4.9.0\n", "utf8");
   await fs.writeFile(
     path.join(guidesDirectory, "src", "docs", "common", "snippets", "common-template.adoc"),
@@ -151,6 +203,16 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
   await fs.writeFile(
     path.join(guidesDirectory, "src", "docs", "common", "callouts", "callout-fixture.adoc"),
     "Injected value: {0}\n",
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guidesDirectory, "src", "docs", "common", "callouts", "callout-generated-one.adoc"),
+    "<.> Generated callout one.\n",
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guidesDirectory, "src", "docs", "common", "callouts", "callout-generated-three.adoc"),
+    "<.> Generated callout three.\n",
     "utf8"
   );
   await fs.writeFile(
@@ -182,16 +244,46 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
       "https://guides.micronaut.io/latest/legacy-guide.html[Legacy Guide]",
       "link:@sourceDir@.zip[Download]",
       "diffLink:[]",
-      "dependency:micronaut-http-client[groupId=io.micronaut]",
-      "source:ExampleController[tag=hello]",
-      "resource:application.properties[tag=config]"
+      ":dependencies:",
+      "dependency:micronaut-http-client[groupId=io.micronaut,callout=1]",
+      "dependency:micronaut-validation[groupId=io.micronaut.validation,callout=2]",
+      ":dependencies:",
+      "<1> Adds HTTP client dependency.",
+      "<2> Adds validation dependency.",
+      "source:ExampleController[tags=package|hello]",
+      "resource:application.properties[tag=config]",
+      "source:MarkedController[]",
+      "callout:generated-one[]",
+      "<2> Manual callout keeps its place.",
+      "callout:generated-three[]",
+      "",
+      "[source,java]",
+      "----",
+      `include::{sourceDir}/${slug}/@sourceDir@/src/main/@lang@/example/micronaut/IncludedController.@languageextension@[tag=included]`,
+      "----",
+      "<1> Raw include callout.",
+      "",
+      "[source,yaml]",
+      "----",
+      `include::{sourceDir}/${slug}/@sourceDir@/deployment/k8s.yml[]`,
+      "----",
+      "<1> Kubernetes include callout.",
+      "",
+      "[source,java]",
+      "----",
+      "final class UnmarkedController {",
+      "}",
+      "----",
+      "<1> Unmarked source callout."
     ].join("\n"),
     "utf8"
   );
   await fs.writeFile(
     path.join(guideDirectory, "java", "src", "main", "java", "example", "micronaut", "ExampleController.java"),
     [
+      "// tag::package[]",
       "package example.micronaut;",
+      "// end::package[]",
       "",
       "// tag::hello[]",
       "final class ExampleController {",
@@ -201,11 +293,82 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
     "utf8"
   );
   await fs.writeFile(
+    path.join(guideDirectory, "java", "src", "main", "java", "example", "micronaut", "MarkedController.java"),
+    [
+      "package example.micronaut;",
+      "",
+      "final class MarkedController {",
+      "    void generated() { // <1>",
+      "    }",
+      "",
+      "    void manual() { // <2>",
+      "    }",
+      "",
+      "    void generatedAgain() { // <3>",
+      "    }",
+      "}"
+    ].join("\n"),
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, "java", "src", "main", "java", "example", "micronaut", "IncludedController.java"),
+    [
+      "package example.micronaut;",
+      "",
+      "// tag::included[]",
+      "final class IncludedController {",
+      "    String value() { // <1>",
+      "        return \"included\";",
+      "    }",
+      "}",
+      "// end::included[]"
+    ].join("\n"),
+    "utf8"
+  );
+  await fs.writeFile(
     path.join(guideDirectory, "src", "main", "resources", "application.properties"),
     [
       "# tag::config[]",
       "message=Hello",
       "# end::config[]"
+    ].join("\n"),
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, "deployment", "k8s.yml"),
+    [
+      "apiVersion: v1",
+      "kind: Service # <1>",
+      "metadata:",
+      "  name: fixture"
+    ].join("\n"),
+    "utf8"
+  );
+}
+
+async function writeBrokenGuideFixture(guidesDirectory, slug) {
+  const guideDirectory = path.join(guidesDirectory, "guides", slug);
+  await fs.mkdir(guideDirectory, { recursive: true });
+  await fs.writeFile(path.join(guidesDirectory, "version.txt"), "4.9.0\n", "utf8");
+  await fs.writeFile(
+    path.join(guideDirectory, "metadata.json"),
+    JSON.stringify({
+      title: "Broken Guide",
+      intro: "Fixture intro.",
+      authors: ["Micronaut"],
+      tags: ["test"],
+      categories: ["Test"],
+      publicationDate: "2026-01-01",
+      languages: ["java"],
+      buildTools: ["gradle"],
+      apps: [{ name: "default", features: [] }]
+    }, null, 2),
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, `${slug}.adoc`),
+    [
+      "include::definitely-missing.adoc[]"
     ].join("\n"),
     "utf8"
   );

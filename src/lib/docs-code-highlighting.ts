@@ -17,6 +17,8 @@ const shikiThemes = {
   light: "github-light-default",
   dark: "github-dark-default"
 } as const;
+const calloutMarkerPrefix = "__MICRONAUT_CALLOUT_";
+const calloutMarkerSuffix = "__";
 
 const shikiLanguageAliases: Record<string, string> = {
   bash: "shellscript",
@@ -40,20 +42,22 @@ const shikiLanguageAliases: Record<string, string> = {
 
 export async function highlightCodeSnippetHtml(code: string, language: string) {
   let highlighted: string;
+  const markedCode = encodeCalloutMarkers(code.trimEnd());
   try {
-    highlighted = await codeToHtml(code.trimEnd(), {
+    highlighted = await codeToHtml(markedCode, {
       lang: shikiLanguage(language),
       themes: shikiThemes
     });
   } catch {
-    highlighted = await codeToHtml(code.trimEnd(), {
+    highlighted = await codeToHtml(markedCode, {
       lang: "text",
       themes: shikiThemes
     });
   }
 
   return extractCodeHtml(highlighted)
-    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
+    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
+    .replace(new RegExp(`${calloutMarkerPrefix}(\\d+)${calloutMarkerSuffix}`, "g"), '<i class="conum" data-value="$1"></i>');
 }
 
 export async function highlightCodeSnippetVariants<T extends HighlightableVariant>(variants: T[]) {
@@ -91,6 +95,10 @@ function extractCodeHtml(source: string) {
     return "";
   }
   return code.childNodes.map((child) => serializeNode(child)).join("");
+}
+
+function encodeCalloutMarkers(source: string) {
+  return source.replace(/<(\d+)>/g, `${calloutMarkerPrefix}$1${calloutMarkerSuffix}`);
 }
 
 function firstDescendant<T extends DefaultTreeAdapterMap["node"]>(

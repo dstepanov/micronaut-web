@@ -1,4 +1,4 @@
-import { promises as fs } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
 import { extractTaggedSource } from "../platform-docs/snippets.mjs";
@@ -24,7 +24,9 @@ export async function preprocessGuideSource({ guidesDirectory, guide, option }) 
     option,
     version: await readVersion(guidesDirectory)
   };
-  const expanded = await expandLines(source.split(/\r?\n/), context, new Set());
+  const expanded = normalizeOrphanCalloutLists(normalizeCalloutListNumbers(
+    await expandLines(source.split(/\r?\n/), context, new Set())
+  ));
   return replacePlaceholders(expanded.join("\n"), context);
 }
 
@@ -157,7 +159,11 @@ async function includeCallout(target, attributes, context, includeStack) {
     context,
     includeStack
   );
-  return lines.map((line) => replaceTemplateArguments(line, attributes));
+  const explicitNumber = calloutNumber(attributes);
+  return lines.map((line) => {
+    const replaced = replaceTemplateArguments(line, attributes);
+    return explicitNumber ? replaced.replace(/^<\.>/, `<${explicitNumber}>`) : replaced;
+  });
 }
 
 async function includeTemplate(file, attributes, context, includeStack) {
@@ -193,7 +199,8 @@ async function sourceBlock(target, attributes, context, kind) {
   }
 
   let source = await fs.readFile(file, "utf8");
-  source = extractTaggedSource(source, attributes.tags || attributes.tag || "");
+  source = extractTaggedSource(source, tagSelection(attributes));
+  source = normalizeSourceCalloutMarkers(source);
   if (!attributes.tags && !attributes.tag) {
     source = stripLicenseHeader(source);
   }
@@ -209,7 +216,8 @@ async function resourceBlock(target, attributes, context, sourceSet) {
   }
 
   let source = await fs.readFile(file, "utf8");
-  source = extractTaggedSource(source, attributes.tags || attributes.tag || "");
+  source = extractTaggedSource(source, tagSelection(attributes));
+  source = normalizeSourceCalloutMarkers(source);
   source = normalizeIndent(source, attributes.indent);
   const title = path.relative(context.guide.directory, file).replaceAll(path.sep, "/");
   return sourceBlockLines(languageForFile(file), title, source);
@@ -221,7 +229,8 @@ async function zipIncludeBlock(target, attributes, context) {
     return [`NOTE: Missing zip include \`${target.trim()}\`.`];
   }
   let source = await fs.readFile(file, "utf8");
-  source = extractTaggedSource(source, attributes.tags || attributes.tag || "");
+  source = extractTaggedSource(source, tagSelection(attributes));
+  source = normalizeSourceCalloutMarkers(source);
   source = normalizeIndent(source, attributes.indent);
   return sourceBlockLines(languageForFile(file), target.trim(), source);
 }
@@ -240,10 +249,11 @@ function dependencyLines(lines, context) {
 
   if (context.option.buildTool === "maven") {
     const xml = dependencies.map(({ artifactId, attributes }) => {
-      const groupId = attributes.groupId || "io.micronaut";
+      const groupId = attributes.groupId || attributes.groupdId || "io.micronaut";
       const scope = attributes.scope ? `\n    <scope>${attributes.scope}</scope>` : "";
       const version = attributes.version ? `\n    <version>${attributes.version}</version>` : "";
-      return `<dependency>
+      const marker = dependencyCalloutMarker(attributes, "xml");
+      return `<dependency>${marker}
     <groupId>${groupId}</groupId>
     <artifactId>${artifactId}</artifactId>${version}${scope}
 </dependency>`;
@@ -260,10 +270,10 @@ function dependencyLines(lines, context) {
     annotationProcessor: "annotationProcessor"
   };
   const gradle = dependencies.map(({ artifactId, attributes }) => {
-    const groupId = attributes.groupId || "io.micronaut";
+    const groupId = attributes.groupId || attributes.groupdId || "io.micronaut";
     const scope = gradleScope[attributes.scope] || attributes.scope || "implementation";
     const version = attributes.version ? `:${attributes.version}` : "";
-    return `${scope}("${groupId}:${artifactId}${version}")`;
+    return `${scope}("${groupId}:${artifactId}${version}")${dependencyCalloutMarker(attributes, "gradle")}`;
   }).join("\n");
   return sourceBlockLines("groovy", "Dependency", gradle);
 }
@@ -293,21 +303,37 @@ async function findSourceFile(target, attributes, context, kind) {
   const className = kind === "test" && target.endsWith("Test")
     ? `${target.slice(0, -"Test".length)}${context.option.testFramework === "spock" ? "Spec" : "Test"}`
     : target;
-  const relativePath = path.join(app, sourceDirectory, "example", "micronaut", `${className}.${extension}`);
+  const sourcePath = path.join(sourceDirectory, "example", "micronaut", `${className}.${extension}`);
+  const relativePath = path.join(app, sourcePath);
   return findExisting(context, [
     path.join(context.guide.directory, relativePath),
-    ...guideSourceRoots(context).map((root) => path.join(root, relativePath))
-  ], `${className}.${extension}`, sourceSet);
+    path.join(context.guide.directory, app, context.option.language, sourcePath),
+    path.join(context.guide.directory, context.option.language, sourcePath),
+    ...guideSourceRoots(context).flatMap((root) => [
+      path.join(root, relativePath),
+      path.join(root, app, context.option.language, sourcePath),
+      path.join(root, context.option.language, sourcePath)
+    ])
+  ], path.basename(`${className}.${extension}`), sourceSet);
 }
 
 async function findResourceFile(target, attributes, context, sourceSet) {
   const app = attributes.app || "";
+  const resourcePathWithoutApp = target.startsWith("../")
+    ? path.join(`src/${sourceSet}`, target.slice("../".length))
+    : path.join(`src/${sourceSet}`, "resources", target);
   const resourcePath = target.startsWith("../")
     ? path.join(app, `src/${sourceSet}`, target.slice("../".length))
     : path.join(app, `src/${sourceSet}`, "resources", target);
   return findExisting(context, [
     path.join(context.guide.directory, resourcePath),
-    ...guideSourceRoots(context).map((root) => path.join(root, resourcePath))
+    path.join(context.guide.directory, app, context.option.language, resourcePathWithoutApp),
+    path.join(context.guide.directory, context.option.language, resourcePathWithoutApp),
+    ...guideSourceRoots(context).flatMap((root) => [
+      path.join(root, resourcePath),
+      path.join(root, app, context.option.language, resourcePathWithoutApp),
+      path.join(root, context.option.language, resourcePathWithoutApp)
+    ])
   ], path.basename(target), `src/${sourceSet}/resources`);
 }
 
@@ -376,12 +402,7 @@ function guideSourceRoots(context) {
 }
 
 function replacePlaceholders(source, context) {
-  const sourceIncludePattern = new RegExp(
-    `include::\\{sourceDir\\}/${escapeRegExp(context.guide.slug)}/@sourceDir@/(src/[^\\[]+)\\[`,
-    "g"
-  );
-  let text = source.replace(sourceIncludePattern, "include::$1[");
-  text = text
+  let text = source
     .replaceAll("{githubSlug}", context.guide.slug)
     .replaceAll("@guideTitle@", context.guide.title)
     .replaceAll("@guideIntro@", context.guide.intro)
@@ -398,6 +419,7 @@ function replacePlaceholders(source, context) {
     .replaceAll("@minJdk@", String(context.guide.minimumJavaVersion || DEFAULT_MIN_JDK))
     .replaceAll("@api@", "https://docs.micronaut.io/latest/api");
 
+  text = rewriteIncludeTargets(text, context);
   text = text.replace(/@([\w-]*):?cli-command@/g, (_, appName) =>
     cliCommandForApp(findApp(context.guide, appName || "default"))
   );
@@ -436,9 +458,11 @@ function diffLink(_target, attributes, context) {
 
 function parseAttributes(source) {
   const attributes = {};
+  const positional = [];
   for (const part of splitAttributes(source)) {
     const separator = part.indexOf("=");
     if (separator < 0) {
+      positional.push(part);
       continue;
     }
     const key = part.slice(0, separator).trim();
@@ -447,7 +471,221 @@ function parseAttributes(source) {
       attributes[key] = value;
     }
   }
+  if (positional.length) {
+    attributes._positional = positional;
+  }
   return attributes;
+}
+
+function calloutNumber(attributes) {
+  const number = attributes.number || attributes.callout || attributes._positional?.[0] || "";
+  return /^\d+$/.test(number) ? number : "";
+}
+
+function tagSelection(attributes) {
+  return (attributes.tags || attributes.tag || "").replaceAll("|", ",");
+}
+
+function normalizeSourceCalloutMarkers(source) {
+  return source.replace(/([ \t](?:\/\/|#|;)[ \t]*)(\d+)>$/gm, "$1<$2>");
+}
+
+function dependencyCalloutMarker(attributes, language) {
+  const number = calloutNumber(attributes);
+  if (!number) {
+    return "";
+  }
+  return language === "xml" ? ` <!--${number}-->` : ` // <${number}>`;
+}
+
+function normalizeCalloutListNumbers(lines) {
+  const output = [];
+  let nextCallout = 1;
+  let inCalloutList = false;
+  let blankAfterCallout = false;
+  for (const line of lines) {
+    const match = /^<(\.|\d+)>/.exec(line);
+    if (match) {
+      const number = match[1] === "." ? nextCallout : Number.parseInt(match[1], 10);
+      output.push(line.replace(/^<(\.|\d+)>/, `<${number}>`));
+      nextCallout = number + 1;
+      inCalloutList = true;
+      blankAfterCallout = false;
+      continue;
+    }
+    output.push(line);
+    if (!line.trim()) {
+      if (inCalloutList) {
+        blankAfterCallout = true;
+      } else {
+        nextCallout = 1;
+      }
+      continue;
+    }
+    if (inCalloutList && blankAfterCallout) {
+      inCalloutList = false;
+      nextCallout = 1;
+      blankAfterCallout = false;
+    }
+  }
+  return output;
+}
+
+function normalizeOrphanCalloutLists(lines) {
+  const output = [];
+  let inListingBlock = false;
+  let listingBlockLines = [];
+  let previousListingCanOwnCallouts = false;
+
+  for (let index = 0; index < lines.length;) {
+    const line = lines[index];
+
+    if (isListingDelimiter(line)) {
+      output.push(line);
+      if (inListingBlock) {
+        previousListingCanOwnCallouts = listingBlockCanOwnCallouts(listingBlockLines);
+        listingBlockLines = [];
+      } else {
+        previousListingCanOwnCallouts = false;
+      }
+      inListingBlock = !inListingBlock;
+      index += 1;
+      continue;
+    }
+
+    if (inListingBlock) {
+      listingBlockLines.push(line);
+      output.push(line);
+      index += 1;
+      continue;
+    }
+
+    if (isCalloutListItem(line)) {
+      if (previousListingCanOwnCallouts) {
+        output.push(line);
+        index += 1;
+        continue;
+      }
+      const { items, nextIndex } = collectCalloutList(lines, index);
+      output.push("[.guide-manual-callouts]");
+      output.push(...items.map((item) => `. ${item}`));
+      output.push("");
+      previousListingCanOwnCallouts = false;
+      index = nextIndex;
+      continue;
+    }
+
+    output.push(line);
+    if (line.trim()) {
+      previousListingCanOwnCallouts = false;
+    }
+    index += 1;
+  }
+
+  return output;
+}
+
+function isListingDelimiter(line) {
+  return line.trim() === "----";
+}
+
+function isCalloutListItem(line) {
+  return /^<(\.|\d+)>/.test(line);
+}
+
+function listingBlockCanOwnCallouts(lines) {
+  const source = lines.join("\n");
+  return /<\d+>|<!--\d+-->/.test(source) || /^include::/m.test(source);
+}
+
+function collectCalloutList(lines, startIndex) {
+  const items = [];
+  let index = startIndex;
+  while (index < lines.length) {
+    const line = lines[index];
+    const match = /^<(\.|\d+)>\s*(.*)$/.exec(line);
+    if (match) {
+      items.push(match[2]);
+      index += 1;
+      continue;
+    }
+    if (!line.trim() && nextNonBlankLineIsCallout(lines, index + 1)) {
+      index += 1;
+      continue;
+    }
+    break;
+  }
+  return { items, nextIndex: index };
+}
+
+function nextNonBlankLineIsCallout(lines, startIndex) {
+  for (let index = startIndex; index < lines.length; index += 1) {
+    if (!lines[index].trim()) {
+      continue;
+    }
+    return isCalloutListItem(lines[index]);
+  }
+  return false;
+}
+
+function rewriteIncludeTargets(source, context) {
+  return source.replace(/^include::([^\[]+)\[([^\]]*)]/gm, (match, target, attributes) => {
+    const resolved = resolveGuideIncludeTarget(target, context);
+    return resolved ? `include::${resolved}[${attributes}]` : match;
+  });
+}
+
+function resolveGuideIncludeTarget(target, context) {
+  const normalized = target
+    .replaceAll("\\", "/")
+    .replaceAll("@sourceDir@", context.option.sourceDir)
+    .replaceAll("@lang@", context.option.language)
+    .replaceAll("@languageextension@", languageExtension(context.option.language));
+  const candidates = includeTargetCandidates(normalized, context);
+  for (const candidate of candidates) {
+    const found = findExistingIncludeTarget(candidate, context);
+    if (found) {
+      return found;
+    }
+  }
+  return "";
+}
+
+function includeTargetCandidates(target, context) {
+  const candidates = [target];
+  const withoutAttributeRoot = target.replace(/^\{sourceDir}\//, "");
+  candidates.push(withoutAttributeRoot);
+
+  const prefixedOption = `${context.guide.slug}/${context.option.sourceDir}/`;
+  if (withoutAttributeRoot.startsWith(prefixedOption)) {
+    candidates.push(withoutAttributeRoot.slice(prefixedOption.length));
+  }
+
+  const prefixedSlug = `${context.guide.slug}/`;
+  if (withoutAttributeRoot.startsWith(prefixedSlug)) {
+    candidates.push(withoutAttributeRoot.slice(prefixedSlug.length));
+  }
+
+  for (const candidate of [...candidates]) {
+    if (candidate.startsWith("src/")) {
+      candidates.push(`${context.option.language}/${candidate}`);
+    }
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function findExistingIncludeTarget(candidate, context) {
+  if (path.isAbsolute(candidate) && existsSync(candidate)) {
+    return candidate.replaceAll(path.sep, "/");
+  }
+  for (const root of [context.guide.directory, ...guideSourceRoots(context)]) {
+    const file = path.join(root, candidate);
+    if (existsSync(file)) {
+      return path.relative(context.guide.directory, file).replaceAll(path.sep, "/");
+    }
+  }
+  return "";
 }
 
 function splitAttributes(source) {

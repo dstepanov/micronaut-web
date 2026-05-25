@@ -50,7 +50,7 @@ for (const guide of guides) {
     }
     await fs.mkdir(fragmentsDirectory, { recursive: true });
     for (const option of optionsToRender) {
-      const html = await renderGuideOption(asciidoctor, guidesDirectory, guide, option);
+      const html = await renderGuideOption(asciidoctor, guidesDirectory, guide, option, { strict });
       await fs.writeFile(path.join(fragmentsDirectory, option.file), `${html}\n`, "utf8");
       renderedOptions.push(option);
       rendered += 1;

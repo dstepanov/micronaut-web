@@ -84,9 +84,11 @@ if (props.kind === "external") {
 
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
+let pageIndexSections: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
 if (props.kind === "variant") {
   fragmentHtml = await readGeneratedGuideFragment(props.option);
   sections = fragmentHtml ? extractSections(fragmentHtml) : [];
+  pageIndexSections = buildGuidePageIndexSections(sections);
 }
 
 function extractSections(html: string) {
@@ -110,6 +112,20 @@ function extractSections(html: string) {
     }
   }
   return found;
+}
+
+function buildGuidePageIndexSections(sections: Array<{ id: string; label: string; depth: number }>) {
+  let currentRoot: { id: string; label: string; depth: number } | undefined;
+  return sections.map((section) => {
+    if (!currentRoot || section.depth <= 2) {
+      currentRoot = section;
+    }
+    return {
+      ...section,
+      rootId: currentRoot.id,
+      level: Math.min(3, Math.max(0, section.depth - currentRoot.depth))
+    };
+  });
 }
 ---
 
@@ -186,7 +202,7 @@ function extractSections(html: string) {
 
 {props.kind === "variant" && (
   <WebLayout title={`${props.guide.title} | ${props.option.label}`} surface="guides">
-    <main class="mx-auto grid max-w-[1280px] gap-8 px-4 py-8 md:px-6 xl:grid-cols-[minmax(0,1fr)_260px]">
+    <main class="guide-variant-shell mx-auto grid max-w-[1320px] gap-8 px-4 py-8 md:px-6" data-guide-has-page-index={pageIndexSections.length > 0 ? "true" : "false"}>
       <article class="min-w-0">
         <header class="mb-8">
           <Badge variant="secondary">{props.option.label}</Badge>
@@ -215,23 +231,307 @@ function extractSections(html: string) {
           </Card>
         )}
       </article>
-      <aside class="hidden xl:block">
-        <div class="sticky top-24 grid gap-1.5 text-[0.82rem]">
-          <h2 class="font-medium">In this section</h2>
-          <Separator className="opacity-70" />
-          <a href={withBasePath(guideOverviewPath(props.guide, guidesRoot))} class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground">Variants</a>
-          {sections.slice(0, 30).map((section) => (
-            <a href={`#${section.id}`} class:list={[
-              "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
-              section.depth > 2 && "pl-5 text-xs"
-            ]}>
-              {section.label}
-            </a>
-          ))}
-        </div>
-      </aside>
+      {pageIndexSections.length > 0 && (
+        <aside class="guide-page-index" aria-label="In this section" data-guide-page-index>
+          <div class="guide-page-index-inner">
+            <div class="guide-page-index-header">
+              <span>In this section</span>
+              <a class="guide-page-index-top" href={`#${pageIndexSections[0].rootId}`} title="Back to top" aria-label="Back to top" data-guide-page-index-top>
+                <svg
+                  class="trigger-icon lucide lucide-arrow-up"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="m5 12 7-7 7 7"></path>
+                  <path d="M12 19V5"></path>
+                </svg>
+              </a>
+            </div>
+            <nav class="guide-page-index-nav" aria-label="Current guide sections" data-guide-page-index-nav>
+              {pageIndexSections.map((section) => (
+                <a
+                  href={`#${section.id}`}
+                  class:list={[
+                    "guide-page-index-link",
+                    `guide-page-index-link-level-${section.level}`
+                  ]}
+                  data-guide-page-index-link
+                  data-root-id={section.rootId}
+                  data-section-id={section.id}
+                >
+                  {section.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      )}
     </main>
+    <script is:inline>
+      (() => {
+        const pageIndex = document.querySelector("[data-guide-page-index]");
+        const pageIndexNav = pageIndex?.querySelector("[data-guide-page-index-nav]");
+        const pageIndexTop = pageIndex?.querySelector("[data-guide-page-index-top]");
+        if (!pageIndex || !pageIndexNav) {
+          return;
+        }
+
+        const links = Array.from(pageIndexNav.querySelectorAll("[data-guide-page-index-link]"));
+        const linksById = new Map(links.map((link) => [link.dataset.sectionId, link]));
+        const headings = links
+          .map((link) => document.getElementById(link.dataset.sectionId || ""))
+          .filter(Boolean);
+        let activeRootId = "";
+        let activeLink;
+        let updateFrame = 0;
+
+        const scrollOffset = () => {
+          const scrollPaddingTop = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+          const fixedOffset = (Number.isFinite(scrollPaddingTop) ? scrollPaddingTop : 80) + 16;
+          return Math.max(fixedOffset, window.innerHeight * 0.25);
+        };
+
+        const activeHeadingFromScroll = () => {
+          if (!headings.length) {
+            return undefined;
+          }
+          const offset = scrollOffset();
+          let activeHeading = headings[0];
+          for (const heading of headings) {
+            if (heading.getBoundingClientRect().top <= offset) {
+              activeHeading = heading;
+            } else {
+              break;
+            }
+          }
+          return activeHeading;
+        };
+
+        const scrollActiveLinkIntoView = (link) => {
+          const container = link?.closest(".guide-page-index-inner");
+          if (!container || container.scrollHeight <= container.clientHeight) {
+            return;
+          }
+          const containerRect = container.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          const margin = 20;
+          if (linkRect.top < containerRect.top + margin) {
+            container.scrollTop -= containerRect.top + margin - linkRect.top;
+          } else if (linkRect.bottom > containerRect.bottom - margin) {
+            container.scrollTop += linkRect.bottom - containerRect.bottom + margin;
+          }
+        };
+
+        const setActiveSection = (sectionId) => {
+          const nextLink = linksById.get(sectionId) || links[0];
+          const nextRootId = nextLink?.dataset.rootId || "";
+          if (nextRootId && nextRootId !== activeRootId) {
+            activeRootId = nextRootId;
+            const rootLink = linksById.get(activeRootId);
+            if (pageIndexTop) {
+              const rootLabel = rootLink?.textContent?.trim() || "section";
+              pageIndexTop.href = `#${activeRootId}`;
+              pageIndexTop.setAttribute("aria-label", `Back to ${rootLabel}`);
+              pageIndexTop.setAttribute("title", `Back to ${rootLabel}`);
+            }
+            for (const link of links) {
+              link.hidden = link.dataset.rootId !== activeRootId;
+            }
+          }
+
+          if (activeLink && activeLink !== nextLink) {
+            activeLink.classList.remove("active");
+            activeLink.removeAttribute("aria-current");
+          }
+          if (nextLink) {
+            nextLink.classList.add("active");
+            nextLink.setAttribute("aria-current", "location");
+            activeLink = nextLink;
+            scrollActiveLinkIntoView(nextLink);
+          }
+        };
+
+        const setActiveSectionFromHash = () => {
+          if (!window.location.hash) {
+            return false;
+          }
+          let sectionId = "";
+          try {
+            sectionId = decodeURIComponent(window.location.hash.slice(1));
+          } catch {
+            sectionId = window.location.hash.slice(1);
+          }
+          if (!linksById.has(sectionId)) {
+            return false;
+          }
+          setActiveSection(sectionId);
+          return true;
+        };
+
+        const updateActiveSection = () => {
+          updateFrame = 0;
+          const activeHeading = activeHeadingFromScroll();
+          if (activeHeading) {
+            setActiveSection(activeHeading.id);
+          }
+        };
+
+        const queueActiveSectionUpdate = () => {
+          if (updateFrame) {
+            return;
+          }
+          updateFrame = window.requestAnimationFrame(updateActiveSection);
+        };
+
+        window.addEventListener("scroll", queueActiveSectionUpdate, { passive: true });
+        window.addEventListener("resize", queueActiveSectionUpdate);
+        const queueHashSectionUpdate = () => {
+          window.setTimeout(() => {
+            if (!setActiveSectionFromHash()) {
+              queueActiveSectionUpdate();
+            }
+          }, 0);
+          window.setTimeout(() => {
+            if (!setActiveSectionFromHash()) {
+              queueActiveSectionUpdate();
+            }
+          }, 150);
+        };
+
+        window.addEventListener("hashchange", queueHashSectionUpdate);
+        if (!setActiveSectionFromHash()) {
+          updateActiveSection();
+        }
+        queueHashSectionUpdate();
+      })();
+    </script>
     <style is:global>
+      .guide-variant-shell {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .guide-page-index {
+        display: none;
+        min-width: 0;
+      }
+
+      .guide-page-index-inner {
+        position: sticky;
+        top: calc(var(--topbar-height) + 24px);
+        max-height: calc(100vh - var(--topbar-height) - 48px);
+        padding: 0 1.5rem 1.75rem 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        font-family: var(--shell-font);
+      }
+
+      .guide-page-index-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--foreground);
+        font-size: 0.83rem;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .guide-page-index-top {
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 0.375rem;
+        color: var(--muted-foreground);
+        text-decoration: none;
+      }
+
+      .guide-page-index-top:hover,
+      .guide-page-index-top:focus-visible {
+        background: var(--accent);
+        color: var(--accent-foreground);
+      }
+
+      .guide-page-index-top svg {
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+
+      .guide-page-index-nav {
+        display: grid;
+        gap: 1px;
+        padding-left: 10px;
+        border-left: 1px solid var(--border);
+      }
+
+      .guide-page-index-link {
+        position: relative;
+        display: block;
+        min-width: 0;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        color: var(--muted-foreground) !important;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        overflow-wrap: break-word;
+        text-decoration: none !important;
+      }
+
+      .guide-page-index-link-level-1 {
+        padding-left: 0.875rem;
+      }
+
+      .guide-page-index-link-level-2 {
+        padding-left: 1.25rem;
+      }
+
+      .guide-page-index-link-level-3 {
+        padding-left: 1.625rem;
+      }
+
+      .guide-page-index-link:hover,
+      .guide-page-index-link:focus-visible {
+        background: var(--accent);
+        color: var(--accent-foreground) !important;
+      }
+
+      .guide-page-index-link.active {
+        color: var(--foreground) !important;
+        font-weight: 500;
+      }
+
+      .guide-page-index-link.active::before {
+        position: absolute;
+        top: 7px;
+        bottom: 7px;
+        left: -11px;
+        width: 2px;
+        border-radius: 999px;
+        background: var(--brand);
+        content: "";
+      }
+
+      @media (min-width: 1400px) {
+        .guide-variant-shell[data-guide-has-page-index="true"] {
+          grid-template-columns: minmax(0, 1fr) 240px;
+        }
+
+        .guide-page-index {
+          display: block;
+        }
+      }
+
       .generated-guides-content {
         min-width: 0;
         color: var(--foreground);

@@ -257,6 +257,20 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
 
     const isDependencyBlock = (element) => element.classList.contains("docs-code-dependency-snippet");
 
+    const isCalloutFooter = (element) =>
+      element?.classList?.contains("colist") || element?.classList?.contains("guide-manual-callouts");
+
+    const attachCalloutFooter = (block, footer) => {
+      if (!isCalloutFooter(footer) || footer.closest(".docs-code-block")) {
+        return false;
+      }
+      footer.setAttribute("data-slot", "card-footer");
+      footer.className = cardFooterClass;
+      addClassName(block, docsSnippetStyles.cardWithFooter);
+      block.append(footer);
+      return true;
+    };
+
     const canGroup = (first, candidate) => {
       if (!candidate?.classList?.contains("docs-code-block")) {
         return false;
@@ -494,6 +508,7 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
         }
         const copyButton = ensureCodeBlockCopy(block);
         if (block.classList.contains("multi-language-sample") || block.querySelector(":scope > [data-slot='card-header']")) {
+          attachCalloutFooter(block, nextElement(block));
           return;
         }
         const { titleHtml, descriptionHtml } = takeSnippetHeader([block]);
@@ -519,6 +534,7 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
         title.querySelector(docsSnippetStyles.languageTextSelector).textContent = formatLanguage(block.dataset.lang);
         header.append(title, action);
         block.insertBefore(header, content || block.firstChild);
+        attachCalloutFooter(block, nextElement(block));
       });
     };
 
@@ -529,6 +545,7 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
 
       for (const block of blocks) {
         if (processed.has(block) || block.closest(".docs-snippet-template") || !block.classList.contains("multi-language-sample")) {
+          attachCalloutFooter(block, nextElement(block));
           continue;
         }
 
@@ -577,7 +594,7 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
         const dependency = isDependencyBlock(block);
         const { titleHtml, descriptionHtml } = takeSnippetHeader(group);
         const afterGroup = nextElement(cursor);
-        const hasCallouts = afterGroup?.classList?.contains("colist");
+        const hasCallouts = isCalloutFooter(afterGroup);
         if (hasCallouts) {
           afterGroup.setAttribute("data-slot", "card-footer");
           afterGroup.className = cardFooterClass;

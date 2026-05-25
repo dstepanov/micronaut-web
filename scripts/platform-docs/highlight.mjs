@@ -2,6 +2,9 @@ import { codeToHtml } from "shiki";
 
 import { attribute, decodeHtml, escapeRegExp } from "./html.mjs";
 
+const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
+const CALLOUT_MARKER_SUFFIX = "__";
+
 export function unwrapBlockParagraphs(input) {
   const startPattern = /<div class="paragraph">\s*<p>/gi;
   let result = "";
@@ -92,9 +95,12 @@ async function highlightListingBlocksOnce(input) {
       continue;
     }
     const language = codeLanguage(codeAttributes);
-    const source = decodeHtml(
-      match[6].replace(/<b class="conum">\((\d+)\)<\/b>/g, "&lt;$1&gt;").replace(/<[^>]+>/g, "")
-    );
+    const source = encodeCalloutMarkers(decodeHtml(
+      match[6]
+        .replace(/<i\b[^>]*class="conum"[^>]*data-value="(\d+)"[^>]*><\/i>\s*<b>\(\d+\)<\/b>/g, "&lt;$1&gt;")
+        .replace(/<b class="conum"[^>]*>\((\d+)\)<\/b>/g, "&lt;$1&gt;")
+        .replace(/<[^>]+>/g, "")
+    ));
     let highlighted = await codeToHtml(source, {
       lang: shikiLanguage(language),
       themes: {
@@ -105,11 +111,20 @@ async function highlightListingBlocksOnce(input) {
     highlighted = highlighted
       .replace("<code>", `<code class="language-${attribute(language)} shiki-code" data-lang="${attribute(language)}">`)
       .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
+    highlighted = decodeCalloutMarkers(highlighted);
     result += `<div class="listingblock${classes ? ` ${classes}` : ""}"${divAttributes} data-lang="${attribute(language)}">\n${title}<div class="content">\n${highlighted}\n</div>\n</div>`;
     position = match.index + match[0].length;
   }
   result += input.slice(position);
   return result;
+}
+
+function encodeCalloutMarkers(source) {
+  return source.replace(/<(\d+)>/g, `${CALLOUT_MARKER_PREFIX}$1${CALLOUT_MARKER_SUFFIX}`);
+}
+
+function decodeCalloutMarkers(source) {
+  return source.replace(new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"), '<i class="conum" data-value="$1"></i>');
 }
 
 function removeHtmlAttribute(attributes, name) {

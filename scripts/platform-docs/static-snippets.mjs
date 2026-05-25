@@ -19,6 +19,8 @@ const shikiThemes = {
   light: "github-light-default",
   dark: "github-dark-default"
 };
+const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
+const CALLOUT_MARKER_SUFFIX = "__";
 
 let snippetSupportPromise;
 
@@ -144,14 +146,15 @@ ${highlighted}
 }
 
 async function highlightedCodeHtml(source, highlighterLanguage, displayLanguage, styles) {
+  const markedSource = encodeCalloutMarkers(source.trimEnd());
   let highlighted;
   try {
-    highlighted = await codeToHtml(source.trimEnd(), {
+    highlighted = await codeToHtml(markedSource, {
       lang: shikiLanguage(highlighterLanguage),
       themes: shikiThemes
     });
   } catch {
-    highlighted = await codeToHtml(source.trimEnd(), {
+    highlighted = await codeToHtml(markedSource, {
       lang: "text",
       themes: shikiThemes
     });
@@ -160,7 +163,12 @@ async function highlightedCodeHtml(source, highlighterLanguage, displayLanguage,
   return highlighted
     .replace(/<pre class="[^"]*"/, `<pre class="${attribute(styles.codePre)}"`)
     .replace("<code>", `<code class="language-${attribute(displayLanguage)} ${attribute(styles.codeElement)}" data-lang="${attribute(displayLanguage)}">`)
-    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
+    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
+    .replace(new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"), '<i class="conum" data-value="$1"></i>');
+}
+
+function encodeCalloutMarkers(source) {
+  return source.replace(/<(\d+)>/g, `${CALLOUT_MARKER_PREFIX}$1${CALLOUT_MARKER_SUFFIX}`);
 }
 
 function externalSnippetIntroHtml({ description, forceHeader, styles, title }) {

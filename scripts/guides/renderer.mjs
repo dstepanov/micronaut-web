@@ -4,25 +4,52 @@ import path from "node:path";
 import { highlightListingBlocks, optimizeGeneratedGuideHtml, shikiStyle } from "./shared-rendering.mjs";
 import { preprocessGuideSource } from "./preprocessor.mjs";
 
-export async function renderGuideOption(asciidoctor, guidesDirectory, guide, option) {
+export async function renderGuideOption(asciidoctor, guidesDirectory, guide, option, renderOptions = {}) {
   const source = await preprocessGuideSource({ guidesDirectory, guide, option });
-  let html = String(asciidoctor.convert(source, {
-    attributes: {
-      icons: "font",
-      idprefix: "",
-      idseparator: "-",
-      sourceDir: option.sourceDir,
-      sourcedir: guide.directory
-    },
-    base_dir: guide.directory,
-    header_footer: false,
-    safe: "unsafe"
-  }));
+  const logger = asciidoctor.MemoryLogger.create();
+  const previousLogger = asciidoctor.LoggerManager.getLogger();
+  let html;
+  try {
+    asciidoctor.LoggerManager.setLogger(logger);
+    html = String(asciidoctor.convert(source, {
+      attributes: {
+        icons: "font",
+        idprefix: "",
+        idseparator: "-",
+        sourceDir: option.sourceDir,
+        sourcedir: guide.directory
+      },
+      base_dir: guide.directory,
+      header_footer: false,
+      safe: "unsafe"
+    }));
+  } finally {
+    asciidoctor.LoggerManager.setLogger(previousLogger);
+  }
+
+  const diagnostics = logger.getMessages().map(formatAsciidoctorDiagnostic);
+  if (diagnostics.length) {
+    if (renderOptions.strict) {
+      throw new Error(`Asciidoctor diagnostics for ${option.id}: ${diagnostics.join("; ")}`);
+    }
+    for (const diagnostic of diagnostics) {
+      console.warn(diagnostic);
+    }
+  }
 
   html = await highlightListingBlocks(html);
   html = rewriteGuideUrls(html, guide.slug);
   html = optimizeGeneratedGuideHtml(html);
   return `${shikiStyle()}\n${html.trim()}`;
+}
+
+function formatAsciidoctorDiagnostic(message) {
+  const severity = message.getSeverity();
+  const location = message.getSourceLocation?.();
+  const pathName = location?.getPath?.();
+  const lineNumber = location?.getLineNumber?.();
+  const source = pathName ? `${pathName}${lineNumber ? `:${lineNumber}` : ""}: ` : "";
+  return `asciidoctor: ${severity}: ${source}${message.getText()}`;
 }
 
 export async function copyGuideAssets(guidesDirectory, guide, outputDirectory, options = []) {
