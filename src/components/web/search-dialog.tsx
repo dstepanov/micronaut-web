@@ -60,11 +60,13 @@ function matchesSearchItem(item: SearchItem, query: string) {
 export function SearchDialog({
   className,
   mainSitePages = [],
-  mode = "site"
+  mode = "site",
+  buttonLabel
 }: {
   className?: string;
   mainSitePages?: MainSiteSearchPage[];
   mode?: "site" | "docs";
+  buttonLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,6 +129,7 @@ export function SearchDialog({
   const placeholder = mode === "docs"
     ? "Search projects, classes, properties, docs..."
     : "Search projects, guides, sections, and tags...";
+  const resolvedButtonLabel = buttonLabel || "Search docs...";
 
   return (
     <>
@@ -138,8 +141,11 @@ export function SearchDialog({
         onClick={() => setOpen(true)}
       >
         <Search />
-        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">Search docs...</span>
-        <kbd className="ml-auto hidden rounded border bg-muted px-1.5 py-0.5 text-[0.7rem] text-muted-foreground md:inline">
+        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">{resolvedButtonLabel}</span>
+        <kbd className={cn(
+          "ml-auto hidden rounded border px-1.5 py-0.5 text-[0.7rem] text-muted-foreground md:inline",
+          buttonLabel ? "border-mn-border bg-mn-surface-raised" : "bg-muted"
+        )}>
           ⌘K
         </kbd>
       </Button>
