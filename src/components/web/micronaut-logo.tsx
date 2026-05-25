@@ -7,11 +7,15 @@ export function MicronautLogo({ className }: { className?: string }) {
       <img
         className="block h-full w-auto object-contain dark:hidden"
         src={withBasePath("/micronaut-assets/logos/micronaut-horizontal-black.svg")}
+        width={305}
+        height={96}
         alt=""
       />
       <img
         className="hidden h-full w-auto object-contain dark:block"
         src={withBasePath("/micronaut-assets/logos/micronaut-horizontal-white.svg")}
+        width={305}
+        height={96}
         alt=""
       />
     </span>

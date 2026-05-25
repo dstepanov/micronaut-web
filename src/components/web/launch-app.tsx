@@ -2339,6 +2339,7 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
   const sanitizedPackage = packageName(state.basePackage);
   const appNameAdjusted = sanitizedAppName !== state.appName.trim();
   const packageAdjusted = sanitizedPackage !== state.basePackage.trim();
+  const selectionSummary = `${customizedDecisionCount} configured decision${customizedDecisionCount === 1 ? "" : "s"}, ${optionalSelectedFeatures.length} optional feature${optionalSelectedFeatures.length === 1 ? "" : "s"} selected`;
   useEffect(() => {
     if (shareHydrated || typeof window === "undefined") {
       return;
@@ -2431,8 +2432,9 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                         onChange={(event) => update({ appName: event.target.value })}
                         data-testid="app-name"
                         aria-invalid={appNameAdjusted}
+                        aria-describedby="launch-name-result"
                       />
-                      <p className={cn("text-xs text-muted-foreground", appNameAdjusted && "text-destructive")}>
+                      <p id="launch-name-result" className={cn("text-xs text-muted-foreground", appNameAdjusted && "text-destructive")} aria-live="polite">
                         Generated artifact: {sanitizedAppName}
                       </p>
                     </div>
@@ -2444,8 +2446,9 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
                         onChange={(event) => update({ basePackage: event.target.value })}
                         data-testid="base-package"
                         aria-invalid={packageAdjusted}
+                        aria-describedby="launch-package-result"
                       />
-                      <p className={cn("text-xs text-muted-foreground", packageAdjusted && "text-destructive")}>
+                      <p id="launch-package-result" className={cn("text-xs text-muted-foreground", packageAdjusted && "text-destructive")} aria-live="polite">
                         Generated package: {sanitizedPackage}
                       </p>
                     </div>
@@ -2526,6 +2529,7 @@ export function LaunchApp({ initialData }: LaunchAppProps) {
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                   <CardDescription>Search groups or features, then open any box to change configuration or add backend starter capabilities.</CardDescription>
+                  <p className="mt-2 text-sm font-medium text-foreground" aria-live="polite">{selectionSummary}</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={() => update({ features: state.features.filter((name) => decisionFeatureNames.has(name)) })} disabled={optionalSelectedFeatures.length === 0}>
                   <X className="size-4" />

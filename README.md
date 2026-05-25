@@ -64,6 +64,12 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 `src/data/protocol.schema.json` documents the expected contract for future generators.
 
+## Deployment and Compatibility
+
+The site supports an all-in-one GitHub Pages preview with `ASTRO_BASE=/micronaut-web/` and separate production surfaces at `https://micronaut.io/`, `https://docs.micronaut.io/`, and `https://guides.micronaut.io/latest/index.html`.
+
+Legacy route behavior, production host mapping, canonical URL rules, PageSpeed baselines, and the manual QA checklist are documented in [`docs/website-ux-and-compatibility.md`](docs/website-ux-and-compatibility.md). Route aliases and redirects should be added through `src/lib/route-compatibility.ts` so compatibility remains centralized.
+
 ## Template Artifacts
 
 The static build prepares plain HTML templates with exact `{{placeholder}}` slots,

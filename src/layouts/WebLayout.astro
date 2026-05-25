@@ -41,7 +41,7 @@ const mainSitePages = await getMainSitePageSummaries();
   </head>
   <body>
     <div class="min-h-screen bg-background text-foreground">
-      {!hideHeader && <SiteHeader surface={surface} mainSitePages={mainSitePages} client:load />}
+      {!hideHeader && <SiteHeader surface={surface} mainSitePages={mainSitePages} client:idle />}
       <slot />
     </div>
   </body>

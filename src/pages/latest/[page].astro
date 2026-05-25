@@ -137,7 +137,7 @@ function extractSections(html: string) {
                       <td class="px-4 py-3">{option.buildToolLabel}</td>
                       <td class="px-4 py-3">
                         <Button asChild variant="ghost" size="sm">
-                          <a href={withBasePath(guideOptionPath(option))}>Read</a>
+                          <a href={withBasePath(guideOptionPath(option))} aria-label={`Read ${props.guide.title} for ${option.label}`}>Read</a>
                         </Button>
                       </td>
                     </tr>

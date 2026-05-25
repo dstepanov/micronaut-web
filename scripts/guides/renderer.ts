@@ -6,6 +6,7 @@ import { optimizeImages as optimizeGeneratedGuideHtml } from "../shared/generate
 import { highlightListingBlocks, shikiStyle } from "../shared/highlight.ts";
 import { preprocessGuideSource } from "./preprocessor.ts";
 import type { Guide, GuideOption } from "./model.ts";
+import { productionUrl } from "../../src/lib/route-compatibility.ts";
 
 export async function renderGuideOption(
   asciidoctor: any,
@@ -125,7 +126,7 @@ function rewriteGuideUrls(input: string, slug: string): string {
         .replace(/^(\.\.\/)+/, "")
         .replace(/^\.\//, "");
       if (normalized.endsWith(".zip")) {
-        return `${attributeName}="https://guides.micronaut.io/latest/${normalized}${suffix}"`;
+        return `${attributeName}="${productionUrl("guides", normalized)}${suffix}"`;
       }
       if (normalized.endsWith(".html")) {
         return `${attributeName}="../${normalized}${suffix}"`;

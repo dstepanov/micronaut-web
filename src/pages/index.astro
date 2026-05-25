@@ -84,20 +84,32 @@ const cloudLogos = [
   { label: "MongoDB", icon: "brand:mongodb" }
 ];
 
+const assetDimensions: Record<string, { width: number; height: number }> = {
+  "/micronaut-assets/home/agorapulse-logo-white-bg.png": { width: 1204, height: 251 },
+  "/micronaut-assets/home/minecraft.png": { width: 429, height: 185 },
+  "/micronaut-assets/home/mojang.png": { width: 387, height: 185 },
+  "/micronaut-assets/home/samsung-smart-things.png": { width: 429, height: 185 },
+  "/micronaut-assets/home/sonar-black-and-grey.svg": { width: 224, height: 86 },
+  "/micronaut-assets/home/target.png": { width: 142, height: 185 }
+};
+
+const dimensionsForAsset = (assetPath?: string) => assetPath ? assetDimensions[assetPath] : undefined;
+
 const stories = (await getSuccessStories()).map((story) => ({
   ...story,
-  logo: story.logo ? withBasePath(story.logo) : undefined
+  logo: story.logo ? withBasePath(story.logo) : undefined,
+  logoDimensions: dimensionsForAsset(story.logo)
 }));
 const featuredStories = stories.slice(0, 3);
 const secondaryStories = stories.slice(3);
 
 const customerLogos = [
-  { name: "Samsung SmartThings", image: withBasePath("/micronaut-assets/home/samsung-smart-things.png"), className: "h-12" },
-  { name: "Target", image: withBasePath("/micronaut-assets/home/target.png"), className: "h-16" },
-  { name: "Minecraft", image: withBasePath("/micronaut-assets/home/minecraft.png"), className: "h-12" },
-  { name: "Mojang", image: withBasePath("/micronaut-assets/home/mojang.png"), className: "h-12" },
-  { name: "AgoraPulse", image: withBasePath("/micronaut-assets/home/agorapulse-logo-white-bg.png"), className: "h-8" },
-  { name: "Sonar", image: withBasePath("/micronaut-assets/home/sonar-black-and-grey.svg"), className: "h-10" }
+  { name: "Samsung SmartThings", image: withBasePath("/micronaut-assets/home/samsung-smart-things.png"), className: "h-12", width: 429, height: 185 },
+  { name: "Target", image: withBasePath("/micronaut-assets/home/target.png"), className: "h-16", width: 142, height: 185 },
+  { name: "Minecraft", image: withBasePath("/micronaut-assets/home/minecraft.png"), className: "h-12", width: 429, height: 185 },
+  { name: "Mojang", image: withBasePath("/micronaut-assets/home/mojang.png"), className: "h-12", width: 387, height: 185 },
+  { name: "AgoraPulse", image: withBasePath("/micronaut-assets/home/agorapulse-logo-white-bg.png"), className: "h-8", width: 1204, height: 251 },
+  { name: "Sonar", image: withBasePath("/micronaut-assets/home/sonar-black-and-grey.svg"), className: "h-10", width: 224, height: 86 }
 ];
 
 const graalBullets = ["Ahead-of-time friendly", "Reduced reflection reliance", "Native-image deployment path"];
@@ -144,6 +156,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               <div class="grid size-11 place-items-center rounded-lg bg-brand-soft">
                 <img
                   src={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")}
+                  width="750"
+                  height="750"
                   alt=""
                   aria-hidden="true"
                   class="size-8 object-contain"
@@ -216,7 +230,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
                 <CardDescription className="text-[0.92rem]">{feature.copy}</CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto">
-                <span class="pt-1 text-sm font-medium text-brand opacity-80 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span class="pt-1 text-sm font-medium text-brand transition group-hover:text-brand-hover group-focus-visible:text-brand-hover">
                   Learn more -&gt;
                 </span>
               </CardFooter>
@@ -268,7 +282,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               {story.logo ? (
                 <div class="flex h-16 min-w-0 items-center">
                   <span class="inline-flex h-14 max-w-[12rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" />
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
                   </span>
                 </div>
               ) : null}
@@ -298,7 +312,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               <CardHeader className="gap-3 px-5">
                 {story.logo ? (
                   <span class="inline-flex h-11 max-w-[10rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" />
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
                   </span>
                 ) : null}
                 <CardAction className="row-span-1">
@@ -317,7 +331,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {customerLogos.map((customer) => (
           <div class="flex h-24 items-center justify-center rounded-md border bg-white px-5 shadow-sm dark:bg-white">
-            <img src={customer.image} alt={`${customer.name} logo`} class:list={["max-h-full max-w-full object-contain", customer.className]} loading="lazy" />
+            <img src={customer.image} alt={`${customer.name} logo`} class:list={["max-h-full max-w-full object-contain", customer.className]} loading="lazy" width={customer.width} height={customer.height} />
           </div>
         ))}
       </div>

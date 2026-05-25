@@ -19,6 +19,7 @@ import {
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 import { micronautProtocol } from "@/lib/protocol";
+import { productionUrl } from "@/lib/route-compatibility";
 
 const guidesRoot = "/guides";
 
@@ -45,7 +46,7 @@ type ExternalProps = {
 };
 
 export async function getStaticPaths() {
-  const legacyGuidesBase = "https://guides.micronaut.io/latest/";
+  const legacyGuidesBase = productionUrl("guides");
   const manifest = await readGeneratedGuidesManifest();
   const paths: Array<{ params: { slug: string }; props: TagProps | OverviewProps | VariantProps | ExternalProps }> = [];
   const pages = new Set<string>();
@@ -174,7 +175,7 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
                       <td class="px-4 py-3">{option.buildToolLabel}</td>
                       <td class="px-4 py-3">
                         <Button asChild variant="ghost" size="sm">
-                          <a href={withBasePath(guideOptionPath(option, guidesRoot))}>Read</a>
+                          <a href={withBasePath(guideOptionPath(option, guidesRoot))} aria-label={`Read ${props.guide.title} for ${option.label}`}>Read</a>
                         </Button>
                       </td>
                     </tr>

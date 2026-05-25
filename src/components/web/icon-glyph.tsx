@@ -118,6 +118,8 @@ export function IconGlyph({
       <img
         src={withBasePath(`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`)}
         className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
+        width={24}
+        height={24}
         alt=""
         aria-hidden="true"
       />
@@ -128,6 +130,8 @@ export function IconGlyph({
       <img
         src={withBasePath(`/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`)}
         className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
+        width={60}
+        height={60}
         alt=""
         aria-hidden="true"
       />
@@ -138,6 +142,8 @@ export function IconGlyph({
       <img
         src={withBasePath(`/micronaut-assets/icons/${name.slice("image:".length)}`)}
         className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
+        width={150}
+        height={150}
         alt=""
         aria-hidden="true"
       />

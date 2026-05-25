@@ -17,6 +17,7 @@ import { DocsShell } from "@/components/web/docs-shell";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
+import { enhanceGeneratedContentHtml, generatedHtmlLabel } from "@/lib/generated-docs-html";
 import { micronautProtocol, projectBySlug } from "@/lib/protocol";
 
 export function getStaticPaths() {
@@ -33,7 +34,7 @@ if (!project) {
 let generatedDocHtml: string | undefined;
 try {
   generatedDocHtml = await readFile(join(process.cwd(), "src", "content", "generated-docs", `${project.slug}.html`), "utf8");
-  generatedDocHtml = generatedDocHtml.replaceAll("visually-hidden", "sr-only");
+  generatedDocHtml = enhanceGeneratedContentHtml(generatedDocHtml);
 } catch {
   generatedDocHtml = undefined;
 }
@@ -49,19 +50,11 @@ const sidebarSections = contentSections.filter((section) => section.depth === 1)
 
 function extractGeneratedDocSections(html: string) {
   const sections: Array<{ id: string; label: string; depth: number; parentId?: string }> = [];
-  const headingPattern = /<div class="guide-section-heading">\s*<h([12]) id="([^"]+)"><a class="anchor" href="#[^"]+"><\/a>([\s\S]*?)<\/h\1>/g;
+  const headingPattern = /<div class="guide-section-heading">\s*<h([12]) id="([^"]+)"><a class="anchor" href="#[^"]+"[^>]*><\/a>([\s\S]*?)<\/h\1>/g;
   let activeTopLevelId: string | undefined;
   for (const match of html.matchAll(headingPattern)) {
     const depth = Number(match[1]);
-    const label = match[3]
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, "\"")
-      .replace(/&#39;/g, "'")
-      .replace(/\s+/g, " ")
-      .trim();
+    const label = generatedHtmlLabel(match[3]);
     if (label) {
       if (depth === 1) {
         activeTopLevelId = match[2];
@@ -82,7 +75,7 @@ function extractGeneratedDocSections(html: string) {
 ---
 
 <WebLayout title={`${project.displayName} Docs`} surface="docs" hideHeader>
-  <DocsShell activeSlug={project.slug} activeSections={sidebarSections} client:load>
+  <DocsShell activeSlug={project.slug} activeSections={sidebarSections} client:idle>
     <article class:list={[
       "grid w-full grid-cols-1 py-6",
       generatedDocHtml ? "px-4 md:px-12 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-8" : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0"

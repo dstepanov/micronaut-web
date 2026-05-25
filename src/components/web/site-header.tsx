@@ -128,7 +128,7 @@ export function SiteHeader({
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
         {!hideBrand ? (
-          <a href={withBasePath("/")} className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
+          <a href={withBasePath("/")} aria-label="Micronaut home" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
             <MicronautLogo className="h-11 w-[192px]" />
           </a>
         ) : null}

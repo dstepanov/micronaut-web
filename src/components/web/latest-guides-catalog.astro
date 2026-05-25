@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
-import { guideTagPath, latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
+import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 
 type Props = {
@@ -12,18 +12,108 @@ type Props = {
   root?: string;
 };
 
+type SortMode = "latest" | "title" | "duration";
+
 const { guides, activeTag, root = "/latest" } = Astro.props;
-const visibleGuides = activeTag ? guides.filter((guide) => guide.tags.includes(activeTag)) : guides;
+const searchParams = Astro.url.searchParams;
+const query = (searchParams.get("q") || "").trim();
+const selectedCategory = (searchParams.get("category") || "").trim();
+const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
+const sortParam = (searchParams.get("sort") || "latest").trim();
+const sortMode: SortMode = sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
+const rootPath = `${root.replace(/\/+$/, "")}/`;
+const categories = Array.from(new Set(guides.flatMap((guide) => guide.categories))).sort((left, right) => left.localeCompare(right));
+const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort((left, right) => left.localeCompare(right));
+const visibleGuides = sortGuides(
+  guides.filter((guide) =>
+    matchesQuery(guide, query) &&
+    matchesCategory(guide, selectedCategory) &&
+    matchesTag(guide, selectedTag)
+  ),
+  sortMode
+);
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
   const category = guide.categories[0] || "Guides";
   categoryGroups.set(category, [...(categoryGroups.get(category) || []), guide]);
 }
-const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort();
-const recentGuides = latestGuides(visibleGuides, 6);
+const hasFilters = Boolean(query || selectedCategory || selectedTag || sortMode !== "latest");
+const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
+const categoryLabel = categories.find((category) => categorySlug(category) === selectedCategory) || selectedCategory;
+const tagLabel = selectedTag;
+
+function categorySlug(category: string) {
+  return category
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function matchesCategory(guide: GeneratedGuide, category: string) {
+  if (!category) {
+    return true;
+  }
+  return guide.categories.some((guideCategory) => guideCategory === category || categorySlug(guideCategory) === category);
+}
+
+function matchesTag(guide: GeneratedGuide, tag: string) {
+  if (!tag) {
+    return true;
+  }
+  return guide.tags.includes(tag);
+}
+
+function matchesQuery(guide: GeneratedGuide, value: string) {
+  if (!value) {
+    return true;
+  }
+  const normalized = value.toLowerCase();
+  return [
+    guide.title,
+    guide.intro,
+    guide.authors.join(" "),
+    guide.categories.join(" "),
+    guide.tags.join(" ")
+  ].join(" ").toLowerCase().includes(normalized);
+}
+
+function sortGuides(items: GeneratedGuide[], mode: SortMode) {
+  return [...items].sort((left, right) => {
+    if (mode === "title") {
+      return left.title.localeCompare(right.title);
+    }
+    if (mode === "duration") {
+      return left.estimatedMinutes - right.estimatedMinutes || left.title.localeCompare(right.title);
+    }
+    return right.publicationDate.localeCompare(left.publicationDate) || left.title.localeCompare(right.title);
+  });
+}
+
+function filterHref(next: Partial<{ q: string; category: string; tag: string; sort: SortMode }>) {
+  const params = new URLSearchParams();
+  const nextQuery = next.q ?? query;
+  const nextCategory = next.category ?? selectedCategory;
+  const nextTag = next.tag ?? selectedTag;
+  const nextSort = next.sort ?? sortMode;
+  if (nextQuery) {
+    params.set("q", nextQuery);
+  }
+  if (nextCategory) {
+    params.set("category", nextCategory);
+  }
+  if (nextTag) {
+    params.set("tag", nextTag);
+  }
+  if (nextSort !== "latest") {
+    params.set("sort", nextSort);
+  }
+  const suffix = params.toString();
+  return withBasePath(`${rootPath}${suffix ? `?${suffix}` : ""}`);
+}
 ---
 
-<main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10">
+<main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guides-catalog data-active-tag={activeTag || ""}>
   <header class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
     <div class="max-w-3xl">
       <Badge variant="secondary">{activeTag ? "Tag" : "Guides"}</Badge>
@@ -34,7 +124,7 @@ const recentGuides = latestGuides(visibleGuides, 6);
         Learn how to build Micronaut applications with focused tutorials, runnable examples, and language/build variants.
       </p>
     </div>
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Catalog</CardTitle>
         <CardDescription>Published guide replacement for the legacy latest guide index.</CardDescription>
@@ -56,8 +146,78 @@ const recentGuides = latestGuides(visibleGuides, 6);
     </Card>
   </header>
 
+  <Card>
+    <CardHeader>
+      <CardTitle>Find Guides</CardTitle>
+      <CardDescription data-guides-summary data-total={guides.length}>
+        {visibleGuides.length} of {guides.length} guides{query ? ` matching "${query}"` : ""}{categoryLabel ? ` in ${categoryLabel}` : ""}{tagLabel ? ` tagged ${tagLabel}` : ""}.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <form action={withBasePath(rootPath)} method="get" class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_180px_auto] lg:items-end" data-guides-filter-form>
+        <div class="grid gap-2">
+          <label for="guide-search" class="text-sm font-medium">Search</label>
+          <input
+            id="guide-search"
+            type="search"
+            name="q"
+            value={query}
+            placeholder="HTTP client, security, AWS..."
+            class="h-10 rounded-md border bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          />
+        </div>
+        <div class="grid gap-2">
+          <label for="guide-category" class="text-sm font-medium">Topic</label>
+          <select
+            id="guide-category"
+            name="category"
+            class="h-10 rounded-md border bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <option value="">All topics</option>
+            {categories.map((category) => (
+              <option value={categorySlug(category)} selected={selectedCategory === categorySlug(category) || selectedCategory === category}>{category}</option>
+            ))}
+          </select>
+        </div>
+        <div class="grid gap-2">
+          <label for="guide-tag" class="text-sm font-medium">Tag</label>
+          <select
+            id="guide-tag"
+            name="tag"
+            class="h-10 rounded-md border bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <option value="">All tags</option>
+            {tags.map((tag) => (
+              <option value={tag} selected={selectedTag === tag}>{tag}</option>
+            ))}
+          </select>
+        </div>
+        <div class="grid gap-2">
+          <label for="guide-sort" class="text-sm font-medium">Sort</label>
+          <select
+            id="guide-sort"
+            name="sort"
+            class="h-10 rounded-md border bg-background px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <option value="latest" selected={sortMode === "latest"}>Latest</option>
+            <option value="title" selected={sortMode === "title"}>Title</option>
+            <option value="duration" selected={sortMode === "duration"}>Duration</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <Button type="submit">Apply</Button>
+          {hasFilters && (
+            <Button asChild variant="outline">
+              <a href={withBasePath(rootPath)}>Reset</a>
+            </Button>
+          )}
+        </div>
+      </form>
+    </CardContent>
+  </Card>
+
   {!activeTag && recentGuides.length > 0 && (
-    <section class="grid gap-4">
+    <section class="grid gap-4" data-guides-latest-section>
       <div class="flex items-center justify-between gap-4">
         <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
       </div>
@@ -70,8 +230,8 @@ const recentGuides = latestGuides(visibleGuides, 6);
   {tags.length > 0 && (
     <section class="flex flex-wrap gap-2">
       {tags.slice(0, 80).map((tag) => (
-        <a href={withBasePath(guideTagPath(tag, root))} class="no-underline">
-          <Badge variant={tag === activeTag ? "default" : "outline"}>{tag}</Badge>
+        <a href={filterHref({ tag })} class="no-underline" aria-label={`Filter guides tagged ${tag}`}>
+          <Badge variant={tag === selectedTag ? "default" : "outline"}>{tag}</Badge>
         </a>
       ))}
     </section>
@@ -79,18 +239,28 @@ const recentGuides = latestGuides(visibleGuides, 6);
 
   <section class="grid gap-7">
     {Array.from(categoryGroups.entries()).map(([category, categoryGuides]) => (
-      <div class="grid gap-4">
+      <div class="grid gap-4" data-guide-category-group>
         <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {categoryGuides.map((guide) => <LatestGuideCard guide={guide} root={root} />)}
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-guide-card-grid>
+          {categoryGuides.map((guide) => (
+            <div
+              data-guide-card
+              data-title={guide.title}
+              data-search={[guide.title, guide.intro, guide.authors.join(" "), guide.categories.join(" "), guide.tags.join(" ")].join(" ").toLowerCase()}
+              data-categories={guide.categories.map(categorySlug).join("|")}
+              data-tags={guide.tags.join("|")}
+              data-date={guide.publicationDate}
+              data-minutes={guide.estimatedMinutes}
+            >
+              <LatestGuideCard guide={guide} root={root} />
+            </div>
+          ))}
         </div>
       </div>
     ))}
   </section>
-</main>
 
-{visibleGuides.length === 0 && (
-  <main class="mx-auto max-w-[960px] px-4 py-12 md:px-6">
+  <div data-guides-empty hidden={visibleGuides.length > 0}>
     <Card>
       <CardHeader>
         <CardTitle>No guides found</CardTitle>
@@ -102,5 +272,131 @@ const recentGuides = latestGuides(visibleGuides, 6);
         </Button>
       </CardContent>
     </Card>
-  </main>
-)}
+  </div>
+</main>
+
+<script is:inline>
+  (() => {
+    const catalog = document.querySelector("[data-guides-catalog]");
+    const form = catalog?.querySelector("[data-guides-filter-form]");
+    const summary = catalog?.querySelector("[data-guides-summary]");
+    const latestSection = catalog?.querySelector("[data-guides-latest-section]");
+    const emptyState = catalog?.querySelector("[data-guides-empty]");
+    const cards = Array.from(catalog?.querySelectorAll("[data-guide-card]") || []);
+    const groups = Array.from(catalog?.querySelectorAll("[data-guide-category-group]") || []);
+    if (!catalog || !form || !summary || cards.length === 0) {
+      return;
+    }
+
+    const readState = () => {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        q: (params.get("q") || "").trim(),
+        category: (params.get("category") || "").trim(),
+        tag: (params.get("tag") || catalog.dataset.activeTag || "").trim(),
+        sort: ["latest", "title", "duration"].includes(params.get("sort") || "") ? params.get("sort") : "latest"
+      };
+    };
+
+    const formState = () => ({
+      q: form.querySelector("[name='q']")?.value.trim() || "",
+      category: form.querySelector("[name='category']")?.value.trim() || "",
+      tag: form.querySelector("[name='tag']")?.value.trim() || "",
+      sort: form.querySelector("[name='sort']")?.value || "latest"
+    });
+
+    const writeForm = (state) => {
+      const q = form.querySelector("[name='q']");
+      const category = form.querySelector("[name='category']");
+      const tag = form.querySelector("[name='tag']");
+      const sort = form.querySelector("[name='sort']");
+      if (q) q.value = state.q;
+      if (category) category.value = state.category;
+      if (tag) tag.value = state.tag;
+      if (sort) sort.value = state.sort;
+    };
+
+    const updateUrl = (state) => {
+      const url = new URL(window.location.href);
+      url.search = "";
+      if (state.q) url.searchParams.set("q", state.q);
+      if (state.category) url.searchParams.set("category", state.category);
+      if (state.tag) url.searchParams.set("tag", state.tag);
+      if (state.sort && state.sort !== "latest") url.searchParams.set("sort", state.sort);
+      window.history.pushState(null, "", url);
+    };
+
+    const matches = (card, state) => {
+      const search = card.dataset.search || "";
+      const categories = (card.dataset.categories || "").split("|").filter(Boolean);
+      const tags = (card.dataset.tags || "").split("|").filter(Boolean);
+      return (!state.q || search.includes(state.q.toLowerCase())) &&
+        (!state.category || categories.includes(state.category)) &&
+        (!state.tag || tags.includes(state.tag));
+    };
+
+    const sortCards = (items, state) => {
+      return [...items].sort((left, right) => {
+        if (state.sort === "title") {
+          return (left.dataset.title || "").localeCompare(right.dataset.title || "");
+        }
+        if (state.sort === "duration") {
+          return Number(left.dataset.minutes || 0) - Number(right.dataset.minutes || 0) ||
+            (left.dataset.title || "").localeCompare(right.dataset.title || "");
+        }
+        return (right.dataset.date || "").localeCompare(left.dataset.date || "") ||
+          (left.dataset.title || "").localeCompare(right.dataset.title || "");
+      });
+    };
+
+    const summaryText = (visibleCount, state) => {
+      const total = summary.dataset.total || cards.length;
+      const parts = [`${visibleCount} of ${total} guides`];
+      if (state.q) parts.push(`matching "${state.q}"`);
+      if (state.category) {
+        const categoryLabel = form.querySelector(`[name='category'] option[value="${CSS.escape(state.category)}"]`)?.textContent?.trim();
+        if (categoryLabel) parts.push(`in ${categoryLabel}`);
+      }
+      if (state.tag) parts.push(`tagged ${state.tag}`);
+      return `${parts.join(" ")}.`;
+    };
+
+    const apply = (state = readState()) => {
+      writeForm(state);
+      let visibleCount = 0;
+      for (const card of cards) {
+        const visible = matches(card, state);
+        card.hidden = !visible;
+        if (visible) visibleCount += 1;
+      }
+      for (const group of groups) {
+        const grid = group.querySelector("[data-guide-card-grid]");
+        const groupCards = cards.filter((card) => card.closest("[data-guide-category-group]") === group);
+        for (const card of sortCards(groupCards, state)) {
+          grid?.append(card);
+        }
+        group.hidden = groupCards.every((card) => card.hidden);
+      }
+      const hasFilters = Boolean(state.q || state.category || state.tag || state.sort !== "latest");
+      if (latestSection) latestSection.hidden = hasFilters;
+      if (emptyState) emptyState.hidden = visibleCount > 0;
+      summary.textContent = summaryText(visibleCount, state);
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const state = formState();
+      updateUrl(state);
+      apply(state);
+    });
+    form.querySelectorAll("select").forEach((select) => {
+      select.addEventListener("change", () => {
+        const state = formState();
+        updateUrl(state);
+        apply(state);
+      });
+    });
+    window.addEventListener("popstate", () => apply());
+    apply();
+  })();
+</script>

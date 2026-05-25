@@ -10,9 +10,10 @@ import {
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 import { micronautProtocol } from "@/lib/protocol";
+import { appendRequestSearch, productionUrl } from "@/lib/route-compatibility";
 
 const guidesRoot = "/guides";
-const legacyGuidesBase = "https://guides.micronaut.io/latest/";
+const legacyGuidesBase = productionUrl("guides");
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const manifest = await readGeneratedGuidesManifest();
@@ -53,6 +54,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return paths;
 };
 
-export const GET: APIRoute<{ destination: string; external?: boolean }> = ({ props, redirect }) => {
-  return redirect(props.external ? props.destination : withBasePath(props.destination), props.external ? 302 : 301);
+export const GET: APIRoute<{ destination: string; external?: boolean }> = ({ props, redirect, url }) => {
+  return redirect(
+    appendRequestSearch(props.external ? props.destination : withBasePath(props.destination), url),
+    props.external ? 302 : 301
+  );
 };

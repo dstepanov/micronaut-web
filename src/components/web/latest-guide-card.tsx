@@ -22,7 +22,7 @@ export function LatestGuideCard({ guide, root = "/latest" }: { guide: GeneratedG
       <CardContent className="grid gap-4">
         <div className="flex flex-wrap gap-1.5">
           {guide.tags.slice(0, 5).map((tag) => (
-            <a key={tag} href={withBasePath(guideTagPath(tag, root))} className="no-underline">
+            <a key={tag} href={withBasePath(guideTagPath(tag, root))} className="no-underline" aria-label={`Open guides tagged ${tag}`}>
               <Badge variant="outline">{tag}</Badge>
             </a>
           ))}
@@ -30,7 +30,7 @@ export function LatestGuideCard({ guide, root = "/latest" }: { guide: GeneratedG
         <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
           <span>{guide.estimatedMinutes} min</span>
           <Button asChild variant="ghost" size="sm">
-            <a href={href}>Read</a>
+            <a href={href} aria-label={`Read ${guide.title}`}>Read</a>
           </Button>
         </div>
       </CardContent>

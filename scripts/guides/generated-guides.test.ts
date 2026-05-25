@@ -312,12 +312,12 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(latestRoute, /option\.file\.replace/);
   assert.match(latestRoute, /readGeneratedGuideFragment/);
   assert.match(legacyRoute, /micronautProtocol\.guides\.guides/);
-  assert.match(legacyRoute, /guides\.micronaut\.io\/latest/);
+  assert.match(legacyRoute, /productionUrl\("guides"\)/);
   assert.match(
     legacyRoute,
-    /redirect\(props\.external \? props\.destination : withBasePath\(props\.destination\), props\.external \? 302 : 301\)/,
+    /appendRequestSearch\(props\.external \? props\.destination : withBasePath\(props\.destination\), url\)/,
   );
-  assert.match(zipRoute, /guides\.micronaut\.io\/latest\/\$\{option\.zipUrl\}/);
+  assert.match(zipRoute, /productionUrl\("guides", option\.zipUrl\)/);
   assert.match(zipRoute, /redirect\(props\.zipUrl, 302\)/);
   assert.match(guidesIndexRoute, /readGeneratedGuidesManifest/);
   assert.match(guidesIndexRoute, /root="\/guides"/);
@@ -341,11 +341,8 @@ test("latest guide replacement routes and parallel generated-content preparation
     guidesLegacyRoute,
     /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/,
   );
-  assert.match(guidesLegacyRoute, /guides\.micronaut\.io\/latest/);
-  assert.match(
-    guidesZipRoute,
-    /guides\.micronaut\.io\/latest\/\$\{option\.zipUrl\}/,
-  );
+  assert.match(guidesLegacyRoute, /productionUrl\("guides"\)/);
+  assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
   assert.match(generatedDocsEnhancer, /attachCalloutFooter/);
   assert.match(generatedDocsEnhancer, /isCalloutFooter/);
   assert.match(generatedDocsEnhancer, /cardFooterClass/);

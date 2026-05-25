@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import { enhanceGeneratedContentHtml } from "@/lib/generated-docs-html";
 import { micronautProtocol } from "@/lib/protocol";
 
 export type GeneratedGuideOption = {
@@ -51,7 +52,7 @@ export async function readGeneratedGuidesManifest(): Promise<GeneratedGuidesMani
 
 export async function readGeneratedGuideFragment(option: GeneratedGuideOption): Promise<string | undefined> {
   try {
-    return (await readFile(join(generatedGuidesDirectory, option.fragment), "utf8")).replaceAll("visually-hidden", "sr-only");
+    return enhanceGeneratedContentHtml(await readFile(join(generatedGuidesDirectory, option.fragment), "utf8"));
   } catch {
     return undefined;
   }

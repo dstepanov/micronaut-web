@@ -746,12 +746,31 @@ const docsSnippetTemplates = renderDocsSnippetTemplates();
       });
     };
 
+    const stabilizeGeneratedImages = (root) => {
+      root.querySelectorAll("img").forEach((image) => {
+        image.loading = image.loading || "lazy";
+        image.decoding = image.decoding || "async";
+        const applyDimensions = () => {
+          if (image.naturalWidth > 0 && image.naturalHeight > 0) {
+            image.width = image.width || image.naturalWidth;
+            image.height = image.height || image.naturalHeight;
+          }
+        };
+        if (image.complete) {
+          applyDimensions();
+        } else {
+          image.addEventListener("load", applyDimensions, { once: true });
+        }
+      });
+    };
+
     const init = () => {
       document.querySelectorAll("[data-generated-docs]").forEach((root) => {
         if (root.dataset.generatedDocsEnhanced === "true") {
           return;
         }
         root.dataset.generatedDocsEnhanced = "true";
+        stabilizeGeneratedImages(root);
         enhanceStandaloneCodeBlocks(root);
         enhanceCodeSnippets(root);
         enhanceProperties(root);
