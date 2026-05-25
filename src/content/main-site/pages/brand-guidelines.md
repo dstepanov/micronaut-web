@@ -22,9 +22,9 @@ contentSource: micronaut-public-markdown
 
 Micronaut® word marks, logos, and design marks are proprietary trademarks and assets owned by Object Computing.
 
-While the Micronaut framework is available under an open source software license, that license does not include the right or license to use Micronaut® trademarks, except for the limited purposes described in our [**Trademark Policy**](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Trademark_Policy.pdf).
+While the Micronaut framework is available under an open source software license, that license does not include the right or license to use Micronaut® trademarks, except for the limited purposes described in our [**Trademark Policy**](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Trademark_Policy.pdf).
 
-Our Trademark Policy describes trademark uses that are allowed without advance permission from us. [**Download our Brand Guidelines**](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Brand_Guidelines.pdf) for detailed guidelines regarding how you may use Micronaut logos and design marks in print and digital assets.
+Our Trademark Policy describes trademark uses that are allowed without advance permission from us. [**Download our Brand Guidelines**](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Brand_Guidelines.pdf) for detailed guidelines regarding how you may use Micronaut logos and design marks in print and digital assets.
 
 Micronaut trademarks may be used only in accordance with these directives. All other use is prohibited.
 

@@ -20,15 +20,15 @@ contentSource: micronaut-public-markdown
 
 # Micronaut Logos
 
-Community Users may use Micronaut logos without prior written consent, so long as such use complies with the **[Micronaut Trademark Policy](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Trademark_Policy.pdf)** and both these statements are true: (1) the users are not acting on behalf or under the direction of a Commercial User, and (2) the logos are not being published on any medium (e.g., website, other publication) that is owned or controlled by a Commercial User.
+Community Users may use Micronaut logos without prior written consent, so long as such use complies with the **[Micronaut Trademark Policy](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Trademark_Policy.pdf)** and both these statements are true: (1) the users are not acting on behalf or under the direction of a Commercial User, and (2) the logos are not being published on any medium (e.g., website, other publication) that is owned or controlled by a Commercial User.
 
 Use of Micronaut logos by Commercial Users is prohibited without the prior written consent and express license of the Micronaut brand team. Commercial Users must [**complete and submit this form**](https://micronaut.io/brand-guidelines/micronaut-trademark-policy/#request) to request a license to use Micronaut logo(s) or mark(s).
 
-No third party, whether a Community or Commercial User, may alter or modify Micronaut trademarks, except as expressly outlined in the [**Micronaut Brand Guidelines**](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Brand_Guidelines.pdf).
+No third party, whether a Community or Commercial User, may alter or modify Micronaut trademarks, except as expressly outlined in the [**Micronaut Brand Guidelines**](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Brand_Guidelines.pdf).
 
 ## Horizontal
 
-![horizontal Micronaut logo](https://micronaut.io/wp-content/uploads/2021/06/micronaut-horizontal-white-1024x323.png)
+![horizontal Micronaut logo](/micronaut-assets/main-site/wp-content/uploads/2021/06/micronaut-horizontal-white-1024x323.png)
 
 [Download Black PNG](/micronaut-assets/main-site/objectcomputing/download-file/5206-micronaut_horizontal_black.png)
 
@@ -40,7 +40,7 @@ No third party, whether a Community or Commercial User, may alter or modify Micr
 
 ## Stacked
 
-![stacked Micronaut logo](https://micronaut.io/wp-content/uploads/2021/06/micronaut-stacked-white.png)
+![stacked Micronaut logo](/micronaut-assets/main-site/wp-content/uploads/2021/06/micronaut-stacked-white.png)
 
 [Download Black PNG](/micronaut-assets/main-site/objectcomputing/download-file/5208-micronaut_stacked_black.png)
 
@@ -52,7 +52,7 @@ No third party, whether a Community or Commercial User, may alter or modify Micr
 
 ## Sally
 
-![](https://micronaut.io/wp-content/uploads/2021/06/sally-black.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/06/sally-black.png)
 
 [Download PNG](/micronaut-assets/main-site/objectcomputing/download-file/5205-sally_micronaut_mascot.png)
 

@@ -2,12 +2,6 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
-const linkSchema = z.object({
-  label: z.string(),
-  href: z.string(),
-  external: z.boolean().optional()
-});
-
 const mainSitePages = defineCollection({
   loader: glob({
     base: "./src/content/main-site/pages",
@@ -28,19 +22,22 @@ const mainSitePages = defineCollection({
       title: z.string(),
       body: z.string(),
       icon: z.string()
-    })).default([])
-  })
-});
-
-const mainSiteFooterGroups = defineCollection({
-  loader: glob({
-    base: "./src/content/main-site/footer",
-    pattern: "*.md"
-  }),
-  schema: z.object({
-    order: z.number(),
-    title: z.string(),
-    links: z.array(linkSchema)
+    })).default([]),
+    storyOrder: z.number().optional(),
+    redirectFrom: z.array(z.string()).default([]),
+    organization: z.string().optional(),
+    label: z.string().optional(),
+    summary: z.string().optional(),
+    detail: z.string().optional(),
+    proofs: z.array(z.string()).default([]),
+    scenario: z.string().optional(),
+    challenge: z.string().optional(),
+    micronautUse: z.string().optional(),
+    outcome: z.string().optional(),
+    technologies: z.array(z.string()).default([]),
+    logo: z.string().optional(),
+    logoClass: z.string().optional(),
+    logoInvertOnDark: z.boolean().default(false)
   })
 });
 
@@ -88,13 +85,13 @@ const blogPosts = defineCollection({
     technologies: z.array(z.string()).default([]),
     href: z.string().optional(),
     logo: z.string().optional(),
-    logoClass: z.string().optional()
+    logoClass: z.string().optional(),
+    logoInvertOnDark: z.boolean().default(false)
   })
 });
 
 export const collections = {
   codeExamples,
   mainSitePages,
-  mainSiteFooterGroups,
   blogPosts
 };

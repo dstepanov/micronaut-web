@@ -35,6 +35,6 @@ Join Oracle Developer Advocate, Todd Sharp, in this 60-minute, complimentary web
 
 Todd also discusses schema migration, testing, and how you can deploy a Micronaut app to the Oracle Cloud absolutely free!
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/slide_deck_cloud-native_application_on_oracle_cloud_webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/slide_deck_cloud-native_application_on_oracle_cloud_webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=PXmTUy5Mqgc)

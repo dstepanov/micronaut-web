@@ -40,9 +40,9 @@ The above decisions influence the type of Micronaut application you choose.
 
 To deploy a Micronaut function to AWS Lambda, choose an [AWS Lambda Runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). For Micronaut functions, select a Java (8 or 11) or custom runtime. To deploy your Micronaut function as a [GraalVM Native Image](https://www.graalvm.org/reference-manual/native-image/), select a custom runtime.
 
-![Select Java 11 Corretto Runtime](https://micronaut.io/wp-content/uploads/2021/02/2020-08-31-aws-lambda-runtime-java11.png)
+![Select Java 11 Corretto Runtime](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-08-31-aws-lambda-runtime-java11.png)
 
-![Select Custom Runtime](https://micronaut.io/wp-content/uploads/2021/02/2020-08-31-aws-lambda-runtime-custom.png)
+![Select Custom Runtime](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-08-31-aws-lambda-runtime-custom.png)
 
 ## Application Type, Runtime, and Dependencies
 

@@ -113,11 +113,11 @@ For a full list of options and features, please see the [Micronaut Maven Plugin 
 
 First, select the options and features that you would like for your new Micronaut project. Now, when you select “Generate Project”, pick the “Push to GitHub” option:
 
-![Push to GitHub menu option](https://micronaut.io/wp-content/uploads/2021/02/2020-11-19-push-to-gh.png)
+![Push to GitHub menu option](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-11-19-push-to-gh.png)
 
 After authenticating with GitHub, your new project will be available to you as a brand new repository:
 
-![Push to GitHub result](https://micronaut.io/wp-content/uploads/2021/02/2020-11-19-push-to-gh2.png)
+![Push to GitHub result](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-11-19-push-to-gh2.png)
 
 Congratulations! Now you can `git clone...` and go!
 

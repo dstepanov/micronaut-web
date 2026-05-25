@@ -53,7 +53,7 @@ Due to the Micronaut framework’s compile-time, reflection-free approach to DI 
 
 Check out this little animation demonstrating the feature in action:
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2018-09-30-img01.gif)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2018-09-30-img01.gif)
 
 With a GraalVM native image, the Micronaut framework’s startup time drops from around 1 second to around 20ms, while memory consumption drops from around 60mb (most of which is occupied by the JVM) to around 20mb for the native process.
 

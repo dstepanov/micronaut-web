@@ -27,6 +27,6 @@ Till next time!
 
 — Jen Wiese
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/04/MicronautTown-HallDeck.2023.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/04/MicronautTown-HallDeck.2023.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=dupceQtQrhA)

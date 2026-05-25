@@ -41,6 +41,6 @@ The following topics are covered in this webinar:
 
 This webinar is a great learning opportunity for JVM developers interested in learning to leverage Micronaut’s wide range of capabilities and build secure microservices and serverless apps with the framework.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Slide_Deck_Micronaut_Security_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Slide_Deck_Micronaut_Security_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=heEIQ7eWpSc)

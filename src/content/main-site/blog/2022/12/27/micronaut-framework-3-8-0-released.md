@@ -52,7 +52,7 @@ The following core transitive dependencies are updated:
 
 Micronaut CLI offers a new command. Type `mn create-aws-lambda`, and an interactive prompt will guide you through creating a Micronaut AWS Lambda project.
 
-![Micronaut CLI create-aws-lambda command](https://micronaut.io/wp-content/uploads/2022/12/create-aws-lambda.gif)
+![Micronaut CLI create-aws-lambda command](/micronaut-assets/main-site/wp-content/uploads/2022/12/create-aws-lambda.gif)
 
 ## Micronaut Launch
 

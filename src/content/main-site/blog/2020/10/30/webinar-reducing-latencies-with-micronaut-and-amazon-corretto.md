@@ -33,6 +33,6 @@ Topics covered in this webinar include:
 
 No particular expertise with Micronaut or Corretto is required; however, you will benefit if you are already familiar with both technologies.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Corretto_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Corretto_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=0pDgMhawuJE)

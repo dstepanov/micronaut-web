@@ -38,7 +38,7 @@ You can deploy a Micronaut application as a FAT jar to the [AWS Lambda Java runt
 
 The following diagram shows cold starts improvements for a Hello World application. In this article, we will compare closer to a production scenario.
 
-![](https://micronaut.io/wp-content/uploads/2022/11/Screenshot-2022-11-29-at-11.10.51-1024x448.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/Screenshot-2022-11-29-at-11.10.51-1024x448.png)
 
 ## Sample application
 
@@ -52,7 +52,7 @@ We will show a comparison with an application closer to a production scenario, r
 
 The application’s architecture features an [Amazon API Gateway](https://aws.amazon.com/api-gateway/) proxying to a Lambda function which reads and writes to a [DynamoDB](https://aws.amazon.com/dynamodb/) table.
 
-![](https://micronaut.io/wp-content/uploads/2022/11/B7CA7D3E-41E4-4259-B3DA-456F55D01905_4_5005_c-1024x256.jpeg)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/B7CA7D3E-41E4-4259-B3DA-456F55D01905_4_5005_c-1024x256.jpeg)
 
 ### Dependencies
 
@@ -69,7 +69,7 @@ The application exposes a JSON API and renders server-side HTML to present forms
 
 The Micronaut framework is built agnostic. You can build Micronaut functions with Maven or Gradle and deploy them to AWS Lambda. For the sample application in this article, we used Gradle. It is a multi-module build. Each of the deployments shares the same code.
 
-![](https://micronaut.io/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.52.33-PM-1024x443.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.52.33-PM-1024x443.png)
 
 ### Infrastructure as Code
 
@@ -92,7 +92,7 @@ The following diagram compares the max cold startup during the load test for fou
 - Java application deployed to Java Runtime plus SnapStart plus Priming (Performance Tuning).
 - Native executable built with GraalVM deployed to a custom Runtime
 
-![](https://micronaut.io/wp-content/uploads/2022/11/Screenshot-2022-11-29-at-11.13.30-1024x520.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/Screenshot-2022-11-29-at-11.13.30-1024x520.png)
 
 Using the Java runtime and SnapStart offers them dramatic cold starts improvements.
 
@@ -100,7 +100,7 @@ Using the Java runtime and SnapStart offers them dramatic cold starts improvemen
 
 Cold starts are a rare occurrence. You can see this reflected in the following diagram below. The load test shows 99.9% of requests are served in less than 83ms.
 
-![](https://micronaut.io/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.51.53-PM-1024x390.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.51.53-PM-1024x390.png)
 
 The max cold start is calculated by running a [Cloud Watch Log Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html) query. For functions with SnapStart enabled:
 
@@ -235,7 +235,7 @@ For function-native, I run the `./gradlew function-java:buildNativeLambda.`
 
 The generation of a native executable with GraalVM is slower than a FAT JAR.
 
-![](https://micronaut.io/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.53.33-PM-1024x584.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2022/11/Screen-Shot-2022-11-23-at-2.53.33-PM-1024x584.png)
 
 The above image shows build times which will change depending on your hardware.
 

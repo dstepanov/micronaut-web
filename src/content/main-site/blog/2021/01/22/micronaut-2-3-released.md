@@ -65,4 +65,4 @@ Many improvements have been made to our introspection functionality to add suppo
 
 A Micronaut banner will now greet you by default for applications using Micronaut 2.3. It can be customized and turned off. See the [documentation](https://docs.micronaut.io/latest/guide/index.html#_micronaut_banner) for more information.
 
-![The new Micronaut banner](https://micronaut.io/wp-content/uploads/2021/02/2021-01-22-micronaut-banner.png)
+![The new Micronaut banner](/micronaut-assets/main-site/wp-content/uploads/2021/02/2021-01-22-micronaut-banner.png)

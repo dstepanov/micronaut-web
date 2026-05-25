@@ -20,12 +20,16 @@ export type MainSitePageSummary = {
   description: string;
 };
 
+export type GeneratedMainSitePage = MainSitePageSummary & {
+  intro: string;
+  contentSource: string;
+};
+
 export type MainSiteFooterGroup = {
   title: string;
   links: Array<{
     label: string;
     href: string;
-    external?: boolean;
   }>;
 };
 
@@ -61,15 +65,27 @@ export type SuccessStory = {
   sourceUrl?: string;
   logo?: string;
   logoClass?: string;
+  logoInvertOnDark: boolean;
 };
 
 export type { MainSiteFaqItem };
+
+export const generatedMainSitePages: GeneratedMainSitePage[] = [
+  {
+    slug: "micronaut-success-stories",
+    title: "Micronaut Success Stories",
+    eyebrow: "Resources",
+    description: "Real teams use Micronaut for serverless APIs, Grails migrations, workflow orchestration, IoT microservices, event platforms, legacy tool upgrades, and SaaS backends.",
+    intro: "The success stories index is generated from the metadata on each success-story page.",
+    contentSource: "generated-success-stories"
+  }
+];
 
 function slugFromEntry(entry: { id: string }) {
   return entry.id.replace(/\.md$/, "").replace(/\/index$/, "");
 }
 
-function normalizeRouteSlug(slug: string) {
+export function normalizeRouteSlug(slug: string) {
   return slug.replace(/^\/+|\/+$/g, "");
 }
 
@@ -95,6 +111,40 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
   return rightDate - leftDate || byOrderThenTitle(left, right);
 }
 
+const footerPageGroups = [
+  {
+    title: "Start",
+    slugs: ["learn", "download", "resources", "micronaut-success-stories"]
+  },
+  {
+    title: "Learn",
+    slugs: ["learn", "professional-training", "category/microcast", "category/webinar", "category/case-studies"]
+  },
+  {
+    title: "Resources",
+    slugs: [
+      "resources",
+      "upcoming-events",
+      "blog",
+      "category/release-announcements",
+      "micronaut-roadmap",
+      "category/security-announcements",
+      "support",
+      "resources/community-support",
+      "faq",
+      "contact"
+    ]
+  },
+  {
+    title: "Foundation",
+    slugs: ["foundation", "foundation/corporate-sponsorship", "foundation/community-sponsorship", "foundation/sponsors", "meeting-minutes"]
+  },
+  {
+    title: "Legal",
+    slugs: ["brand-guidelines", "brand-guidelines/micronaut-logos", "brand-guidelines/micronaut-trademark-policy", "community-guidelines", "privacy-policy"]
+  }
+];
+
 export async function getMainSitePages(): Promise<MainSitePageModel[]> {
   const entries = await getCollection("mainSitePages");
   return entries
@@ -107,22 +157,29 @@ export async function getMainSitePages(): Promise<MainSitePageModel[]> {
 
 export async function getMainSitePageSummaries(): Promise<MainSitePageSummary[]> {
   const pages = await getMainSitePages();
-  return pages.map(({ slug, entry }) => ({
+  return [...generatedMainSitePages, ...pages.map(({ slug, entry }) => ({
     slug,
     title: entry.data.title,
     eyebrow: entry.data.eyebrow,
     description: cleanExcerptText(entry.data.description)
-  }));
+  }))];
 }
 
 export async function getMainSiteFooterGroups(): Promise<MainSiteFooterGroup[]> {
-  const entries = await getCollection("mainSiteFooterGroups");
-  return entries
-    .sort((left, right) => left.data.order - right.data.order)
-    .map((entry) => ({
-      title: entry.data.title,
-      links: entry.data.links
-    }));
+  const pagesBySlug = new Map((await getMainSitePageSummaries()).map((page) => [page.slug, page.title]));
+  return footerPageGroups.map((group) => ({
+    title: group.title,
+    links: group.slugs.map((slug) => {
+      const label = pagesBySlug.get(slug);
+      if (!label) {
+        throw new Error(`Footer page slug "${slug}" does not exist in main-site pages.`);
+      }
+      return {
+        label,
+        href: `/${slug}/`
+      };
+    })
+  }));
 }
 
 export async function getBlogPosts(): Promise<BlogPostModel[]> {
@@ -196,14 +253,18 @@ export async function getBlogArchiveRoutes(): Promise<BlogArchiveModel[]> {
 }
 
 export async function getSuccessStories(): Promise<SuccessStory[]> {
-  const posts = await getBlogPosts();
-  return posts
-    .filter((post) => post.entry.data.category === "success-story")
-    .sort(byOrderThenTitle)
-    .map(({ entry, href }) => ({
+  const pages = await getMainSitePages();
+  return pages
+    .filter((page) => page.slug.startsWith("micronaut-success-stories/"))
+    .sort((left, right) => {
+      const leftOrder = left.entry.data.storyOrder ?? left.entry.data.order ?? Number.MAX_SAFE_INTEGER;
+      const rightOrder = right.entry.data.storyOrder ?? right.entry.data.order ?? Number.MAX_SAFE_INTEGER;
+      return leftOrder - rightOrder || left.entry.data.title.localeCompare(right.entry.data.title);
+    })
+    .map(({ slug, entry }) => ({
       title: entry.data.title,
       organization: entry.data.organization ?? entry.data.title,
-      tag: entry.data.label ?? entry.data.category ?? "Story",
+      tag: entry.data.label ?? "Story",
       summary: entry.data.summary ?? entry.data.description,
       detail: entry.data.detail ?? entry.data.description,
       proofs: entry.data.proofs,
@@ -212,10 +273,11 @@ export async function getSuccessStories(): Promise<SuccessStory[]> {
       micronautUse: entry.data.micronautUse ?? entry.data.description,
       outcome: entry.data.outcome ?? entry.data.description,
       technologies: entry.data.technologies,
-      href,
+      href: `/${slug}/`,
       sourceUrl: entry.data.sourceUrl,
       logo: entry.data.logo,
-      logoClass: entry.data.logoClass
+      logoClass: entry.data.logoClass,
+      logoInvertOnDark: entry.data.logoInvertOnDark
     }));
 }
 

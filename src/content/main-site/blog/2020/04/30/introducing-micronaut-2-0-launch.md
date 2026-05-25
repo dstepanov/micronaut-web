@@ -44,11 +44,11 @@ The `micronaut-cli` module uses [GraalVM Native Image](https://www.graalvm.org/r
 
 Using the new CLI, you can create Micronaut applications offline or in areas of limited connectivity using a distribution that suits your platform, and thanks to GraalVM Native Image, it is lightning fast.
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img01.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img01.png)
 
 The new CLI features more or less the same commands as Micronaut’s old CLI, but is much more optimized and fully operable offline. We have also added a few new features, with one of the coolest being the ability to display a diff of the changes required to add a new feature to an existing application:
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img02.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img02.png)
 
 ## The Micronaut Launch API
 
@@ -70,13 +70,13 @@ Using GraalVM Native Image, we were able to achieve average response times for a
 
 The API is also accessible via CURL using [https://launch.micronaut.io](https://launch.micronaut.io)
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img03.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img03.png)
 
 ## The Micronaut Launch UI
 
 The Micronaut Launch UI is written in React and demonstrates the power of the Micronaut community. Our thanks go out to [Francisco Javier Delgado Vallano](https://twitter.com/franvallano), and [Miguel Ángel Quintanilla](https://twitter.com/maq_dev) from [Profile](https://profile.es) in Spain, who built the first version of the UI based on the [OpenAPI specification](https://launch.micronaut.io/swagger/views/swagger-ui/index.html) we provided:
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img04.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img04.png)
 
 The Micronaut Launch UI includes some awesome features such as:
 
@@ -85,9 +85,9 @@ The Micronaut Launch UI includes some awesome features such as:
 - The ability to show a diff for a given feature to see what changes are made to an application when a feature is applied
 - And of course, Dark Mode!
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img05.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img05.png)
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-30-img06.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-30-img06.png)
 
 ## Summary
 

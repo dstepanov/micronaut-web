@@ -39,7 +39,7 @@ The idea was to create a CI pipeline with the following objectives in mind:
 
 After experimenting with a few different approaches in [a new repository](https://gitlab.com/micronaut-projects/micronaut-graal-tests), we were able to get a passing build using this [CI pipeline](https://gitlab.com/micronaut-projects/micronaut-graal-tests/-/pipelines/43802345):
 
-![First CI pipeline](https://micronaut.io/wp-content/uploads/2021/02/2020-10-12-first-ci-pipeline.png)
+![First CI pipeline](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-12-first-ci-pipeline.png)
 
 It has four stages that we still use:
 
@@ -56,7 +56,7 @@ Since our original pipeline, a lot of things have changed. Our two initial appli
 
 Also, the number of jobs has been multiplied by four because we now test GraalVM for JDK 8 and JDK 11, and we also test against two Micronaut versions (currently `2.0.x` and `2.1.x`). This is how the CI pipeline looks today:
 
-![CI pipeline today](https://micronaut.io/wp-content/uploads/2021/02/2020-10-12-ci-pipeline-today.png)
+![CI pipeline today](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-12-ci-pipeline-today.png)
 
 Very long and beautiful list, right? 😉
 
@@ -80,7 +80,7 @@ You may wonder why using a huge instance like `c5.24xlarge` takes almost three t
 
 With those numbers, it felt right to choose `c5.xlarge` because the time difference with `c5.2xlarge` was minimal, and the former maximized the CPU usage and costs by half of the latter.
 
-![EC2 instances auto-scaling](https://micronaut.io/wp-content/uploads/2021/02/2020-10-12-auto-scaling.png)
+![EC2 instances auto-scaling](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-12-auto-scaling.png)
 
 Eventually, I moved some other jobs to run on our AWS runners because of the native image build time. The AWS runners are so fast compared to the shared runners that they can build almost three native images in the time the shared runners build one. With the current mix of shared and dedicated runners, the build takes around 35-40 minutes to finish.
 
@@ -94,7 +94,7 @@ Here are some of the time improvements we witnessed:
 
 Configuring a job to run on our own runner is pretty simple with Gitlab. It’s a matter of tagging it with `aws`, `memory`, or `speed`. I use tag combinations like `aws`+ `memory`, or `aws`+ `speed` as a way to document why a specific job is running on our own runners.
 
-![Runners tags](https://micronaut.io/wp-content/uploads/2021/02/2020-10-12-runners-tag.png)
+![Runners tags](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-12-runners-tag.png)
 
 ## Test dev-release Versions
 
@@ -108,7 +108,7 @@ What started as a small thing has evolved a lot in the past 21 months. Time has 
 
 Speaking about reporting issues, we have been working together with GraalVM to improve the GraalVM support in Micronaut, and I’ve reported a lot of issues to make GraalVM better.
 
-![Tweet Thomas Wuerthinger](https://micronaut.io/wp-content/uploads/2021/02/2020-10-12-tweet-thomas.png)
+![Tweet Thomas Wuerthinger](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-12-tweet-thomas.png)
 
 We, [the Micronaut team at Object Computing](https://objectcomputing.com/products/2gm-team), will continue to improve our GraalVM integration in every Micronaut release. We will also do everything we can to make integrating your Micronaut applications with GraalVM as easy as possible.
 

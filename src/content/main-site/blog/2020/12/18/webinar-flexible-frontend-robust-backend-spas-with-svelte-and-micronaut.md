@@ -41,6 +41,6 @@ Backend topics include:
 
 Although the UI application is built with Svelte, the same concepts apply if you use another frontend technology, such as Vue or React. No Svelte or Micronaut experience is required to gain valuable insight from this demonstration.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Slide_Deck_Micronaut_Svelte_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Slide_Deck_Micronaut_Svelte_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=QBRcKUgFUjw)

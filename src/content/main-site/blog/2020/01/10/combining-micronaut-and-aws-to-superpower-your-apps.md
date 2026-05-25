@@ -36,6 +36,6 @@ Stefano Buliani works in the Serverless organization at Amazon Web Services help
 
 Stefano joins Sergio as a guest presenter to help answer questions and provide expert advice from an Amazon perspective throughout the presentation.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/slide_deck_Micronaut_and_AWS_webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/slide_deck_Micronaut_and_AWS_webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=dFW15Ewpylo)

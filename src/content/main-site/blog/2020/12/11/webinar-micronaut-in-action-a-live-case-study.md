@@ -27,6 +27,6 @@ After taking a close look at the application’s metrics in production, they pre
 
 Check out the recording now!
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_in_Action.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_in_Action.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=JAlQYT_hMLM)

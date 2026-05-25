@@ -26,6 +26,6 @@ Till next time!
 
 — Jen Wiese
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Slide_Deck_2021_Q2_2GM_Town_Hall_Meeting.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Slide_Deck_2021_Q2_2GM_Town_Hall_Meeting.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=1DHtH9XMuiI)

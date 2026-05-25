@@ -72,7 +72,7 @@ The Micronaut Foundation is truly appreciative of the tremendous support it rece
 
 The Foundation’s Board Of Managers may be reached by emailing [foundation@micronaut.io](mailto:foundation@micronaut.io).
 
-![Micronaut Foundation Logo](https://micronaut.io/wp-content/uploads/2022/01/MIcronaut_Foundation_stacked_white.svg)
+![Micronaut Foundation Logo](/micronaut-assets/main-site/wp-content/uploads/2022/01/MIcronaut_Foundation_stacked_white.svg)
 
 #### Technical Advisory Board
 

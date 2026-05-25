@@ -27,6 +27,6 @@ Zak covers the following topics in this webinar:
 - Multi-tenancy
 - Token propagation
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/SPAs_for_Microservices_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/SPAs_for_Microservices_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=wU5CHBtOTwo)

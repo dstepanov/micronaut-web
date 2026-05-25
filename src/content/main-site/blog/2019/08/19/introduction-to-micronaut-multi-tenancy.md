@@ -28,6 +28,6 @@ The following topics are covered.
 - How to test multi-tenancy apps
 - How to integrate GORM multi-tenancy capabilities with the Micronaut framework’s multi-tenancy offering
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/slide_deck_Micronaut_Multitenancy.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/slide_deck_Micronaut_Multitenancy.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=jOm4sKXEQdY)

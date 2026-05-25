@@ -28,6 +28,6 @@ Watch this 60-minute webinar to discover how easy it is to keep everything organ
 
 **Check out the [example code](https://github.com/ilopmar/micronaut-testing-best-practices) to view a sample application containing everything Iván covers in this webinar and follow along commit by commit.**
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/slide_deck_Micronaut_Testing_Best_Practices_webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/slide_deck_Micronaut_Testing_Best_Practices_webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=wC-FvKb5iyY)

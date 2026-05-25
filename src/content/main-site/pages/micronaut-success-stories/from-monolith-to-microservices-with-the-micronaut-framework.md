@@ -2,7 +2,7 @@
 order: 35
 title: From Monolith to Microservices with the Micronaut® Framework
 eyebrow: Success story
-description: Home » Micronaut Success Stories » From Monolith to Microservices with the Micronaut® Framework From Monolith to Microservices with the Micronaut® Framework The Micronaut framework dramatically reduces application startup time and minimizes memory footprint. A large, consumer-facing IoT device network that relied upon a monolithic architecture found that the network struggled to keep pace with...
+description: Samsung SmartThings moved from a legacy monolith toward a lightweight Micronaut microservices system.
 sourceUrl: https://micronaut.io/micronaut-success-stories/from-monolith-to-microservices-with-the-micronaut-framework/
 intro: A public success story about moving from a monolith to microservices with the Micronaut framework.
 sections:
@@ -16,9 +16,29 @@ sections:
     body: Use success stories for confidence, then continue into docs, guides, and Launch.
     icon: rocket
 contentSource: micronaut-public-markdown
+storyOrder: 4
+organization: Samsung SmartThings
+label: IoT microservices
+summary: Samsung SmartThings moved from a legacy monolith toward a lightweight Micronaut microservices system.
+detail: >-
+  The story covers smart-home IoT scale, hundreds of services, sub-second operation goals, faster testing, and improved
+  cloud efficiency.
+proofs:
+  - Smart-home IoT scale
+  - Sub-second goals
+scenario: IoT monolith modernization
+challenge: Move smart-home services away from a legacy monolith while preserving responsiveness at connected-device scale.
+micronautUse: Micronaut supports lightweight microservices, faster tests, and cloud-efficient runtime behavior.
+outcome: A microservices direction for hundreds of services with sub-second operation goals and better delivery ergonomics.
+technologies:
+  - IoT
+  - Microservices
+  - Testing
+  - Cloud
+logo: /micronaut-assets/home/samsung-smart-things.png
+logoClass: h-12 w-auto
+logoInvertOnDark: true
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » From Monolith to Microservices with the Micronaut® Framework
 
 # From Monolith to Microservices with the Micronaut® Framework
 
@@ -48,7 +68,7 @@ Next, any new feature implemented needed to be extensible into the distant futur
 
 Finally, the new system had to be scalable to both accommodate the growing number of potential users and to address load during peak use times.
 
-![SmartThings architecture Monolith](https://micronaut.io/wp-content/uploads/2023/05/monolithapplication.png)
+![SmartThings architecture Monolith](/micronaut-assets/main-site/wp-content/uploads/2023/05/monolithapplication.png)
 
 > “We initially selected Ratpack to transition our monolith application to a microservices architecture, but we found that the learning curve was too steep, and we were not as productive with Ratpack as we were with Micronaut.”
 
@@ -77,4 +97,4 @@ By leveraging the Micronaut framework’s cloud-native features and unique sensi
 - Shorter development cycles
 - Reduced and better-controlled costs
 
-![SmartThings Microservices architecture](https://micronaut.io/wp-content/uploads/2023/05/micronautsmartthingsmicroservices.png)
+![SmartThings Microservices architecture](/micronaut-assets/main-site/wp-content/uploads/2023/05/micronautsmartthingsmicroservices.png)

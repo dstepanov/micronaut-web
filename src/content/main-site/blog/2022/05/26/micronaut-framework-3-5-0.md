@@ -112,7 +112,7 @@ We have new CLI command:
 
 An interactive prompt that will guide you through the options while creating a Micronaut application.
 
-![Micronaut CLI mn create command](https://micronaut.io/wp-content/uploads/2022/05/mn-create-1.gif)
+![Micronaut CLI mn create command](/micronaut-assets/main-site/wp-content/uploads/2022/05/mn-create-1.gif)
 
 ### Micronaut Serialization
 

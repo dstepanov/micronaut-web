@@ -60,7 +60,7 @@ For every event loop, there is a carrier thread. The event loop itself runs on a
 
 When a request comes in, a virtual thread is created on the same carrier thread, so we don’t need to context switch. We can even go a step further with *immediate run*: Inside an event loop `read` event handler, we can submit the request processing task, `yield` the event loop thread, run the request handler virtual thread, and then return to the event loop. The response is available before the event loop even finishes with its `read` handler. When this works out, the performance advantage can be significant, in particular when the same read event contains multiple requests that can have their responses batched–something we could only achieve with async code before. When it doesn’t work out and the controller has to block, we don’t get this benefit, but the event loop doesn’t come crashing to a halt either. The best of both worlds.
 
-![](https://micronaut.io/wp-content/uploads/2025/06/loom-carrier-figure-1-1024x421.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2025/06/loom-carrier-figure-1-1024x421.png)
 
 **Figure 1**: Simple ‘Hello World’ style benchmark latency histogram. At low request rates, latency and CPU usage of the custom loom scheduler is between that of async and loom with FJP. Maximum request rate (not shown) also lies between async (best) and FJP.
 
@@ -74,7 +74,7 @@ The difficulty with this optimization is that it necessarily requires specialize
 
 The Micronaut HTTP client has had this feature since 4.8, and further improved in 4.9, but only async code could benefit from affinity before. When the controller runs on a virtual thread on the FJP, there is little point in the client sharing the event loop with the server, because the response returned by the client will have to pass through the virtual thread on the FJP before making it back to the event loop anyway. With the event loop carrier however, this optimization finally becomes feasible with virtual threads.
 
-![](https://micronaut.io/wp-content/uploads/2025/06/loom-carrier-figure-2-1024x416.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2025/06/loom-carrier-figure-2-1024x416.png)
 
 **Figure 2**: HTTP client call inside a controller, latency histogram. Latency and CPU usage of the custom loom scheduler is close to async and far better than loom with FJP. Maximum request rate (not shown) is similar to that of async and better than FJP, though CPU usage exceeds async at high request rates.
 
@@ -94,7 +94,7 @@ The best we can do for now is try to make JDK IO *no worse* than with FJP. When 
 
 Measuring this with a realistic example is surprisingly difficult. The Micronaut HTTP client uses Netty, so it doesn’t work as an example. The new JDK `HttpClient` has its own event loop architecture using a separate platform thread and doesn’t use the pollers either. The test case I settled on instead is a JDBC PostgreSQL connection using the Hikari connection pool. A fairly common setup, though Hikari and the JDBC driver have their own performance issues that interfere with the benchmark a bit.
 
-![](https://micronaut.io/wp-content/uploads/2025/06/loom-carrier-figure-3-1024x425.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2025/06/loom-carrier-figure-3-1024x425.png)
 
 **Figure 3**: PostgreSQL/HikariCP database operation. Latency and CPU usage is almost identical between the custom loom scheduler and FJP. However, the custom scheduler reaches a lower maximum request rate (not shown). No async benchmark here, since JDBC is a synchronous API.
 

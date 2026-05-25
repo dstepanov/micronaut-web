@@ -32,6 +32,6 @@ The following topics are covered:
 - How to convert existing Micronaut applications to GraalVM and troubleshoot problems
 - How to test Micronaut and GraalVM integration
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_and_GraalVM_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_and_GraalVM_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=jQCKK59TOzE)

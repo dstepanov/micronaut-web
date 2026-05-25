@@ -25,7 +25,7 @@ So to ensure there is more accurate information out there, and also to show user
 
 Before getting started, we acknowledged that this cannot help but be a somewhat biased analysis, given that Object Computing is the home of Micronaut. To mitigate this bias, we attempted to make the comparison as transparent as possible by performing tests that users can replicate at home, and to conduct them live in a completely unedited screencast. You can watch that screencast here:
 
-[![Micronaut vs Quarkus vs Spring Boot Performance on JDK 14](https://micronaut.io/wp-content/uploads/2021/02/2020-04-07-img01.gif)](https://youtu.be/rJFgdFIs_k8)
+[![Micronaut vs Quarkus vs Spring Boot Performance on JDK 14](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-07-img01.gif)](https://youtu.be/rJFgdFIs_k8)
 
 For reference, the source code for the examples built during the recording of this screencast can be [found on Github](https://github.com/graemerocher/framework-comparison-2020).
 
@@ -33,7 +33,7 @@ For reference, the source code for the examples built during the recording of th
 
 Following are the stats that were produced during the recording of this screencast for the different metrics we tested (winner in red), taking the averages over 10 runs:
 
-![Summary of Results](https://micronaut.io/wp-content/uploads/2021/02/2020-04-07-img02.jpeg)
+![Summary of Results](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-07-img02.jpeg)
 
 
 ### UPDATE

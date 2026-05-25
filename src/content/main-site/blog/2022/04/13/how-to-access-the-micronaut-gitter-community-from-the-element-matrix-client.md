@@ -25,10 +25,10 @@ You’ve always been able to access the Micronaut Gitter Community via the Gitte
 
 The following screenshots show how to access the Micronaut Gitter Community public rooms from the Element MacOS client:
 
-![Element Join public Room](https://micronaut.io/wp-content/uploads/2022/04/matrix-joinpublicroom.png)
+![Element Join public Room](/micronaut-assets/main-site/wp-content/uploads/2022/04/matrix-joinpublicroom.png)
 
-![Element Matrix Enable Gitter](https://micronaut.io/wp-content/uploads/2022/04/matrix-explorerooms-matrix-1024x648.png)
+![Element Matrix Enable Gitter](/micronaut-assets/main-site/wp-content/uploads/2022/04/matrix-explorerooms-matrix-1024x648.png)
 
-![Element Explore Micronaut Rooms](https://micronaut.io/wp-content/uploads/2022/04/matrix-explorerooms-micronaut-1024x566.png)
+![Element Explore Micronaut Rooms](/micronaut-assets/main-site/wp-content/uploads/2022/04/matrix-explorerooms-micronaut-1024x566.png)
 
 We hope this makes participation in the Micronaut community and ecosystem even more appealing and accessible! See you on Gitter!

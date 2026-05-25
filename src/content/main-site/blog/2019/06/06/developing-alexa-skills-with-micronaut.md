@@ -33,6 +33,6 @@ The following topics are covered in this webinar:
 - Walk through Hello World examples
 - Advanced Demo: Star Wars Quiz Skill
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Developing_Alexa_Skills_with_Micronaut_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Developing_Alexa_Skills_with_Micronaut_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=fG8I9SQRCU8)

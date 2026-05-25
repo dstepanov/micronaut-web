@@ -2,7 +2,7 @@
 order: 39
 title: Micronaut framework at Kestra
 eyebrow: Success story
-description: Home » Micronaut Success Stories » Micronaut framework at Kestra Micronaut framework at Kestra Micronaut framework’s lightweight, reactive foundation lets us focus on what matters—building a robust, scalable orchestration platform that developers trust. “At the time, Micronaut framework was relatively new, but it showed immense promise. Unlike legacy frameworks that relied heavily on runtime reflection...
+description: Kestra uses Micronaut for REST APIs, HTTP clients, OpenAPI generation, cloud readiness, and reactive workloads.
 sourceUrl: https://micronaut.io/micronaut-success-stories/micronaut-framework-at-kestra/
 intro: Kestra's public Micronaut success story for workflow orchestration services.
 sections:
@@ -16,15 +16,39 @@ sections:
     body: Use the success-story index for the broader set of public production references.
     icon: book-open
 contentSource: micronaut-public-markdown
+storyOrder: 3
+organization: Kestra
+label: Workflow orchestration
+summary: Kestra uses Micronaut for REST APIs, HTTP clients, OpenAPI generation, cloud readiness, and reactive workloads.
+detail: >-
+  The article covers Kubernetes probes, environment-specific configuration, observability, modularity, SSE log
+  streaming, and a plugin system with hundreds of plugins.
+proofs:
+  - OpenAPI generation
+  - Kubernetes readiness
+scenario: Workflow orchestration platform
+challenge: >-
+  Build a modular orchestration service with REST APIs, generated contracts, observability, streaming logs, and plugin
+  extension points.
+micronautUse: >-
+  Micronaut powers APIs, HTTP clients, OpenAPI generation, probes, configuration, reactive workloads, and SSE log
+  streaming.
+outcome: A cloud-ready orchestration platform with modular services and a large plugin ecosystem.
+technologies:
+  - REST APIs
+  - OpenAPI
+  - Kubernetes
+  - SSE
+logo: /micronaut-assets/main-site/wp-content/uploads/2025/01/Kestra.full_.logo_.dark_.svg
+logoClass: h-8 w-auto
+logoInvertOnDark: true
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » Micronaut framework at Kestra
 
 # Micronaut framework at Kestra
 
 Micronaut framework’s lightweight, reactive foundation lets us focus on what matters—building a robust, scalable orchestration platform that developers trust.
 
-[![Kestra](https://micronaut.io/wp-content/uploads/2025/01/Kestra.full_.logo_.dark_.svg)](http://kestra.io)
+[![Kestra](/micronaut-assets/main-site/wp-content/uploads/2025/01/Kestra.full_.logo_.dark_.svg)](http://kestra.io)
 
 > “At the time, Micronaut framework was relatively new, but it showed immense promise. Unlike legacy frameworks that relied heavily on runtime reflection (a performance bottleneck), Micronaut framework generated the necessary metadata at compile time, ensuring better efficiency. This was crucial for Kestra, where every CPU cycle matters when orchestrating large-scale tasks.”
 

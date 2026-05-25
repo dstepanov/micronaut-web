@@ -27,7 +27,7 @@ Thanks go out to our panel of experts:
 
 We were particularly excited to celebrate the Grails framework’s 13th birthday and introduce the new Grails mascot!
 
-![New Mascot: The Grails Knight](https://micronaut.io/wp-content/uploads/2021/02/Grails-Mascot-187x300.png)
+![New Mascot: The Grails Knight](/micronaut-assets/main-site/wp-content/uploads/2021/02/Grails-Mascot-187x300.png)
 
 The Grails mascot doesn’t have a name yet, and it’s up to our community to come up with one! [Complete this form](https://objectcomputing.typeform.com/to/B56M2u9X) to provide your best suggestion for a chance to win a one-of-a-kind Grails swag bag (and bragging rights, of course).
 
@@ -37,6 +37,6 @@ Watch the video below to see the whole meeting, and stay tuned for details about
 
 2GM Product Evangelist
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/slide_deck_2021_Q1_2GM_Town_Hall.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/slide_deck_2021_Q1_2GM_Town_Hall.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=3XTYaO3rOAU)

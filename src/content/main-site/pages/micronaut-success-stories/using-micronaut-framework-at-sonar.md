@@ -1,24 +1,37 @@
 ---
-order: 1
-slug: using-micronaut-framework-at-sonar
+order: 41
 title: Using Micronaut Framework at Sonar
-description: Home » Micronaut Success Stories » Using Micronaut Framework at Sonar Using Micronaut Framework at Sonar “In Sonar’s journey towards building a robust, efficient and scalable microservices architecture, Micronaut has played an important role. Micronaut achieves this through its dedicated CraC module, which offers developers a straightforward way to incorporate state capture at a specific...
+eyebrow: Success story
+description: >-
+  Sonar uses Micronaut with AWS Lambda SnapStart and CRaC lifecycle support to improve API performance and keep
+  serverless services responsive.
 sourceUrl: https://micronaut.io/using-micronaut-framework-at-sonar/
-category: success-story
-tags:
-  - AWS Lambda
-  - SnapStart
-  - CRaC
-  - SonarQube
+intro: Sonar's public story about using the Micronaut framework.
+sections:
+  - title: Production reference
+    body: This story is kept reachable as part of the main website content.
+    icon: check-circle
+  - title: Developer tooling
+    body: It provides another public example of Micronaut in a developer-focused organization.
+    icon: code
+  - title: Canonical story
+    body: Open the original story for full media, detail, and source copy.
+    icon: logs
+contentSource: micronaut-public-markdown
+storyOrder: 1
 organization: Sonar
 label: API performance
 summary: Sonar uses Micronaut with AWS Lambda SnapStart and CRaC-oriented lifecycle support.
-detail: The story focuses on serverless readiness, application snapshotting, and SonarQube analysis for Micronaut code quality.
+detail: >-
+  The story focuses on serverless readiness, application snapshotting, and SonarQube analysis for Micronaut code
+  quality.
 proofs:
   - AWS Lambda SnapStart
   - CRaC lifecycle support
 scenario: Serverless API performance
-challenge: Keep Lambda-based services responsive while coordinating startup work, static analysis, and production lifecycle behavior.
+challenge: >-
+  Keep Lambda-based services responsive while coordinating startup work, static analysis, and production lifecycle
+  behavior.
 micronautUse: Micronaut provides the HTTP/API foundation and works with SnapStart and CRaC-oriented lifecycle hooks.
 outcome: A production story around serverless readiness, snapshotting, and Micronaut code-quality analysis.
 technologies:
@@ -26,19 +39,16 @@ technologies:
   - SnapStart
   - CRaC
   - SonarQube
-href: /using-micronaut-framework-at-sonar/
 logo: /micronaut-assets/home/sonar-black-and-grey.svg
 logoClass: h-10 w-auto
-contentSource: micronaut-public-markdown
-categories:
-  - case-studies
+logoInvertOnDark: true
+redirectFrom:
+  - /using-micronaut-framework-at-sonar/
 ---
 
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » Using Micronaut Framework at Sonar
+# Using Micronaut Framework at Sonar
 
-## Using Micronaut Framework at Sonar
-
-[![Sonar](https://micronaut.io/wp-content/uploads/2025/02/Sonar_Logo_Light-Backgrounds.svg)](https://aws.amazon.com/blogs/opensource/improving-api-performance-at-sonar-with-lambda-snapstart-and-micronaut/)
+[![Sonar](/micronaut-assets/main-site/wp-content/uploads/2025/02/Sonar_Logo_Light-Backgrounds.svg)](https://aws.amazon.com/blogs/opensource/improving-api-performance-at-sonar-with-lambda-snapstart-and-micronaut/)
 
 > “In Sonar’s journey towards building a robust, efficient and scalable microservices architecture, Micronaut has played an important role. Micronaut achieves this through its dedicated CraC module, which offers developers a straightforward way to incorporate state capture at a specific point in time. This advantage aligns well with the principles of open source development by promoting efficiency.”
 
@@ -52,9 +62,9 @@ categories:
 
 > The Micronaut framework was the preferred choice of Sonar engineers due to its strong integration with AWS Lambda and AWS Cloud Development Kit (AWS CDK), as well as its life cycle management features that support application snapshotting.
 
-## Using SonarQube to develop Micronaut Framework
+# Using SonarQube to develop Micronaut Framework
 
-[![SonarQube](https://micronaut.io/wp-content/uploads/2025/02/SonarQube_Logo_Light-Backgrounds.svg)](https://www.sonarsource.com/solutions/commitment-to-open-source/)
+[![SonarQube](/micronaut-assets/main-site/wp-content/uploads/2025/02/SonarQube_Logo_Light-Backgrounds.svg)](https://www.sonarsource.com/solutions/commitment-to-open-source/)
 
 > “We leverage the [open-source offering of SonarQube](https://www.sonarsource.com/solutions/commitment-to-open-source/). We run SonarQube analysis in every pull request to ensure framework code quality is up to a high standard.”
 

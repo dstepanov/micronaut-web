@@ -2,7 +2,9 @@
 order: 36
 title: Responding to Unexpected Disruption with Agility and Speed
 eyebrow: Success story
-description: Home » Micronaut Success Stories » Responding to Unexpected Disruption with Agility and Speed Responding to Unexpected Disruption with Agility and Speed Event-management software company nimbly expands offerings and finds a new audience in response to global pandemic. In early 2020, drastic measures became necessary across the globe to prevent further spread of the COVID-19...
+description: >-
+  Event-management software company Conference Scheduling Solutions expanded its offerings with a secure virtual
+  conference platform built with Micronaut on AWS.
 sourceUrl: https://micronaut.io/responding-to-unexpected-disruption-with-agility-and-speed/
 intro: A public Micronaut story about responding to disruption with faster application delivery.
 sections:
@@ -16,9 +18,30 @@ sections:
     body: Continue with docs and guides to evaluate the same capabilities hands-on.
     icon: route
 contentSource: micronaut-public-markdown
+storyOrder: 5
+organization: Conference Scheduling Solutions
+label: Virtual events
+summary: CSS and Object Computing built a secure virtual conference platform on AWS with Micronaut in four weeks.
+detail: >-
+  The article covers the pandemic shift from in-person events, matchmaking workflows, virtual conference delivery, and a
+  compressed delivery schedule.
+proofs:
+  - AWS delivery
+  - Four-week build
+scenario: Rapid virtual-event platform
+challenge: >-
+  Replace in-person conference workflows with secure virtual matchmaking and conference delivery under a compressed
+  deadline.
+micronautUse: Micronaut backed a fast AWS delivery path for event workflows and application services.
+outcome: A secure virtual conference platform delivered in four weeks.
+technologies:
+  - AWS
+  - Virtual Events
+  - Security
+  - Matchmaking
+redirectFrom:
+  - /responding-to-unexpected-disruption-with-agility-and-speed/
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » Responding to Unexpected Disruption with Agility and Speed
 
 # Responding to Unexpected Disruption with Agility and Speed
 

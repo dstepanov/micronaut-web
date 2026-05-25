@@ -25,6 +25,6 @@ Even if your application is less “pure microservice” and more of a hybrid ap
 
 By clearly breaking the process down to core components, Todd helps you get started implementing messaging in your applications using popular open source tools, including Apache Kafka and RabbitMQ. He also demonstrates a managed Oracle-Cloud-based option that can be plugged into your service with very little setup and configuration.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Slide_Deck_Message_Driven_Microservices__Monoliths_with_Micronaut.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Slide_Deck_Message_Driven_Microservices__Monoliths_with_Micronaut.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=XHlWg_0u_pU)

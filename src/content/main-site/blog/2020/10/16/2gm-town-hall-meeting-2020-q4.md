@@ -33,6 +33,6 @@ Stay tuned for details about our next 2GM Town Hall meeting, where Object Comput
 
 2GM Product Evangelist
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/2GM_Town_Hall_Deck.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/2GM_Town_Hall_Deck.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=EgR-Yx0utOQ)

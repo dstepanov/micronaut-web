@@ -41,6 +41,6 @@ This is a great learning opportunity for Micronaut developers interested in maxi
 
 No particular expertise with the Micronaut framework is required to follow the content in this webinar; however you will benefit if you’re already familiar with Micronaut, Java, and how web applications work in general.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Testing_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Testing_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=KBtEgBLuHFQ)

@@ -57,7 +57,7 @@ public interface EngineConfig {
 
 Even the default values for the properties and the javadoc comments are displayed.
 
-![configuration auto-completion](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img01.png)
+![configuration auto-completion](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img01.png)
 
 ## 2. Endpoints Discovery
 
@@ -67,7 +67,7 @@ There are a few configuration options to display exactly what you would like to 
 
 Additionally, if you double-click on an endpoint, the controller method is opened in the editor.
 
-![Endpoints Discovery](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img02.png)
+![Endpoints Discovery](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img02.png)
 
 ## 3. Controllers and HTTP Requests
 
@@ -75,11 +75,11 @@ When interacting with our Micronaut applications, sometimes we use tools like `c
 
 Let’s imagine we have an encryption-service that receives some text and encrypts it. To make things simple, the encryption logic in the `EncryptionService` just reverses the string:
 
-![Controllers and HTTP Requests](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img03.png)
+![Controllers and HTTP Requests](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img03.png)
 
 If we click on the icon in the gutter, IntelliJ IDEA automatically generates an “http-requests” file with the endpoint set and ready to send a test request:
 
-![HTTP Requests File](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img04.png)
+![HTTP Requests File](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img04.png)
 
 Take a look at the examples to see how to customize the requests, define authentication, and other useful tasks.
 
@@ -91,9 +91,9 @@ Not anymore!
 
 Clicking on this new icon in the gutter navigates to the listener:
 
-![Event Publishing and Listeners Image 1](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img05.png)
+![Event Publishing and Listeners Image 1](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img05.png)
 
-![Event Publishing and Listeners Image 2](https://micronaut.io/wp-content/uploads/2021/02/2020-04-16-img06.png)
+![Event Publishing and Listeners Image 2](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-16-img06.png)
 
 ## 5. Miscellaneous
 

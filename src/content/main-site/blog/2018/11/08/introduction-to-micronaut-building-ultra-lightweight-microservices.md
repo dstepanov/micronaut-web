@@ -23,6 +23,6 @@ The Micronaut framework’s cloud support is built right in, including support f
 
 In this talk, Graeme introduces the framework and demonstrates how you can take your microservices to the next level with the Micronaut framework’s ahead-of-time (AOT) compilation and Oracle’s GraalVM to achieve instant startup with an astonishingly lean memory footprint.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/18-11-14-Intro-Micronaut-Webinar-slide-deck.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/18-11-14-Intro-Micronaut-Webinar-slide-deck.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=BL9SsY5orkA)

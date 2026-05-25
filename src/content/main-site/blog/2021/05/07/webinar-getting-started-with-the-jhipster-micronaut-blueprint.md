@@ -25,6 +25,6 @@ From stand-alone monoliths with a packaged React or Angular user interface to th
 
 • What is JHipster? • What is a blueprint? • What is JDL? • What is the Micronaut framework? • Example monolith application walkthrough (command line) • Example microservice application walkthrough (JDL) • What’s next? • How to contribute • Q & A
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Getting_Started_with_JHipster_Micronaut_Blueprint.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Getting_Started_with_JHipster_Micronaut_Blueprint.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=1g-p8XqXWYU)

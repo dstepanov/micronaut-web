@@ -2,7 +2,7 @@
 order: 37
 title: A Power Packed Combination Optimizes Productivity and Performance
 eyebrow: Success story
-description: Home » Micronaut Success Stories »Caribou Success Story A Power Packed Combination Optimizes Productivity and Performance Caribou, a SaaS Startup, was able to effectively enhance productivity and performance by combining the Micronaut framework with GraalVM and AWS Lambda JVM developers overcome cold-startup challenges on AWS Lambda by building their SaaS application with the Micronaut framework...
+description: Caribou combined Micronaut, GraalVM, Kotlin, and AWS Lambda to reduce cold-start pressure for a SaaS backend.
 sourceUrl: https://micronaut.io/micronaut-success-stories/caribou-success-story/
 intro: Caribou's public story about combining Micronaut, GraalVM, Kotlin, and AWS Lambda for a SaaS backend.
 sections:
@@ -16,9 +16,26 @@ sections:
     body: Use stories as proof, then move into documentation, guides, and generated starters.
     icon: rocket
 contentSource: micronaut-public-markdown
+storyOrder: 7
+organization: Caribou
+label: Serverless SaaS
+summary: Caribou combined Micronaut, GraalVM, Kotlin, and AWS Lambda to reduce cold-start pressure for a SaaS backend.
+detail: >-
+  The article covers a REST API, GitHub integration, Lambda cold starts, GraalVM native images, fast tests, Swagger
+  support, and developer productivity.
+proofs:
+  - GraalVM native images
+  - AWS Lambda cold starts
+scenario: Serverless SaaS backend
+challenge: Keep a SaaS REST API productive while reducing Lambda cold-start pressure and supporting GitHub integration.
+micronautUse: Micronaut combines Kotlin, fast testing, Swagger/OpenAPI support, and GraalVM native images for the backend.
+outcome: A productive serverless SaaS architecture built around Micronaut, GraalVM, Kotlin, and AWS Lambda.
+technologies:
+  - GraalVM
+  - Kotlin
+  - AWS Lambda
+  - Swagger
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) »Caribou Success Story
 
 # A Power Packed Combination Optimizes Productivity and Performance
 

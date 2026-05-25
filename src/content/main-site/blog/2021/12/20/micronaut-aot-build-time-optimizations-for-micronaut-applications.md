@@ -22,7 +22,7 @@ Micronaut AOT benefits regular Micronaut applications and GraalVM Native Images 
 
 Micronaut AOT is a leap forward for Micronaut applications’ startup. When I applied the [Micronaut AOT Gradle plugin](https://micronaut-projects.github.io/micronaut-gradle-plugin/snapshot/#_micronaut_aot_plugin) and the optimizations to the [Newsletter application](https://github.com/micronaut-advocacy/micronaut-live-newsletter), which I develop every Tuesday and Thursday at [Micronaut Live](https://twitch.tv/micronautfw), I got the following startup improvements:
 
-![](https://micronaut.io/wp-content/uploads/2021/12/application-startup-regular-vs-optimized.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/12/application-startup-regular-vs-optimized.png)
 
 That it is 26% faster startup time for a FAT jar and 46% for GraalVM Native Image.
 

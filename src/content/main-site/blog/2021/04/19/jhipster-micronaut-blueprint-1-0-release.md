@@ -89,7 +89,7 @@ $ mhipster
 
 At this point, you should be greeted with the following:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img01.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img01.png)
 
 3. Now, you can build a basic application. Using the provided prompts, select “Monolithic application” and provide a base name (HelloMhipster) and default package (hello.mhipster).
 
@@ -99,7 +99,7 @@ At this point, you should be greeted with the following:
 
 Here is a screenshot of my choices:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img02.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img02.png)
 
 Once you hit enter, you’ll observe a number of things happening. The generator is creating your project. It’s initializing a Git repo for you, generating necessary source code and configuration files, and if you are installing a client, it will also run `npm install` on your behalf.
 
@@ -109,11 +109,11 @@ Once you hit enter, you’ll observe a number of things happening. The generator
 $ mhipster entity Fish
 ```
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img03.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img03.png)
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img04.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img04.png)
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img05.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img05.png)
 
  After you define the fields and relationships, you will be asked a few more questions, like whether you want to generate a service for this entity or have the REST controller use the repository directly. I’m going to generate a service without a DTO. It’s not read-only, and I do not want pagination.
 
@@ -125,11 +125,11 @@ While the generator is creating the classes required for this entity, it may run
 $ mhipster entity School
 ```
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img06.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img06.png)
 
 After you create the name field, you can create a one-to-many relationship with the Fish entity.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img07.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img07.png)
 
 8. Now that you have set up the School entity to contain multiple Fish, add a relationship from Fish back to their School
 
@@ -143,19 +143,19 @@ You’ll first be prompted to add more fields. We aren’t adding fields, so res
 
 This side of the relationship is many-to-one. One question will ask which field from this entity you want to display on the client, and it will default to `id`. Change this to `name` so that when the client displays the school for a fish, we see its name instead of the identifier.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img08.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img08.png)
 
 9. Congratulations! You’ve created a non-trivial application with JHipster and the Micronaut framework! Let’s take a stroll around your new project.
 
 The first item I’d like to direct your attention to is your entity classes. If you followed the base package above, they are located in `src/main/java/hello/mhipster/domain`. A quick review of Fish.java and School.java illustrates the relationships that we have configured between these two entities, as well as the validation rules and field types we declared:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img09.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img09.png)
 
 Next, let’s take a look at the REST controllers. You’ll find them in `src/main/java/hello/mhipster/web/rest/`.
 
 As you can see, for each entity we created, we also received a REST controller with basic CRUD operations already configured:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img10.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img10.png)
 
 As you explore the codebase, you’ll also notice that classes to support user management have been added, as well as configuration files for different environments, Liquibase migrations, a React UI, and unit and integration tests!
 
@@ -167,21 +167,21 @@ $ ./gradlew
 
 By default, running Gradle with no task will build and run the application with the `dev` environment. If everything goes well, when you navigate to `localhost:8080`, you should see your React UI and Harper (the Micronaut JHipster 🙂 )
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img11.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img11.png)
 
 Now, let’s log in to the application as an admin and select “Entities -> School” from the navigation bar.
 
 You’ll see that a number of “Schools” have already been created for you. This data was created as part of the Liquibase migrations and uses Faker.js. You can disable this behavior by removing the faker profile from Liquibase. Let’s add a new one:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img12.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img12.png)
 
 Now, let’s navigate to the Fish page and create a new Fish for our school:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img13.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img13.png)
 
 Once you save your new fish, it will show up in your list with a link to the School!
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img14.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img14.png)
 
 This, of course, isn’t likely what your production app will look like, but it gives you a solid starting place to build out the screens and make the changes needed for your application.
 
@@ -238,7 +238,7 @@ paginate Fish, School with pagination
 
 The above JDL is visualized like this:
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img15.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img15.png)
 
 For options that are not explicitly defined (e.g., devDatabase) a default value will be used. For a full list of available options, have a look at the official JDL documentation.
 
@@ -259,11 +259,11 @@ $ ./mvnw
 
 Go to `localhost:8080` in your favorite browser and click the sign in link.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img16.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img16.png)
 
 You will be redirected to Keycloak to login. Use `admin/admin` to log in as an administrator.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img17.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img17.png)
 
 You should see the exact same user interface (but powered by Angular instead of React) as when creating it manually but have a much smoother experience. You can even change your entities or application configuration and regenerate the whole application using the `import-jdl` command again.
 
@@ -291,7 +291,7 @@ security:
 
 Right now, we have used the application in development mode. This means everything is optimized for the developer. For example, hot reloading for both back- and frontend is enabled, a H2 database is used, and the frontend is not optimized. In particular, this means the whole javascript bundle is 3.1 MB in size when gzipped. This leads to a quite bad performance rating when using [lighthouse](https://developers.google.com/web/tools/lighthouse/) to audit the application.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img18.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img18.png)
 
 You can start the application in production mode via
 
@@ -302,7 +302,7 @@ $ ./mvnw -Pprod
 
 Now the frontend is only 275KB, which results in a much better performance score and smaller loading times for your users. Instead of a H2 database, PostgreSQL is used.
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img19.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img19.png)
 
 You are now ready to deploy your application to [Heroku](https://www.heroku.com/)!
 
@@ -322,9 +322,9 @@ When the deployment process finishes, open your favorite browser to the URL in y
 
 You can use lighthouse again to check the performance score. Visit [https://securityheaders.com/](https://securityheaders.com/) to test for common security headers. It will score an A!
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img20.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img20.png)
 
-![](https://micronaut.io/wp-content/uploads/2021/04/2021-04-19-img21.png)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/04/2021-04-19-img21.png)
 
 ## What’s Next?
 

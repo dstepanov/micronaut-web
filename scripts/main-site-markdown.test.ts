@@ -154,6 +154,26 @@ test("main-site Markdown snippets infer Gradle and XML when fences have no langu
   assert.match(html, /<code class="language-xml [^"]*shiki-code/);
 });
 
+test("main-site Markdown uses local copies of micronaut.io upload resources", async (): Promise<any> => {
+  const contentDirectory = path.join(
+    projectDirectory,
+    "src",
+    "content",
+    "main-site",
+  );
+  const files = await listMarkdownFiles(contentDirectory);
+  const failures = [];
+
+  for (const file of files) {
+    const source = await fs.readFile(file, "utf8");
+    if (/https?:\/\/micronaut\.io\/wp-content\//.test(source)) {
+      failures.push(path.relative(projectDirectory, file));
+    }
+  }
+
+  assert.deepEqual(failures, []);
+});
+
 async function importSnippetModules(): Promise<any> {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-main-site-markdown-"),
@@ -191,6 +211,20 @@ export { renderMainSiteCodeSnippets } from "${path.join(projectDirectory, "src",
   });
 
   return require(outputFile);
+}
+
+async function listMarkdownFiles(directory: string): Promise<string[]> {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry): Promise<string[]> => {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return listMarkdownFiles(file);
+      }
+      return entry.isFile() && entry.name.endsWith(".md") ? [file] : [];
+    }),
+  );
+  return files.flat().sort();
 }
 
 function resolveProjectAlias(specifier: any): any {

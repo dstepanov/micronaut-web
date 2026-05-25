@@ -29,4 +29,4 @@ Discover how the Micronaut framework can be part of your IoT projects, learn how
 
 [Reserve your spot](https://us02web.zoom.us/webinar/register/3116464359474/WN_DfgVRyfLT06MwiYIYVmBew)
 
-[![](https://micronaut.io/wp-content/uploads/2022/03/Sally-Pi-Day.png)](https://us02web.zoom.us/webinar/register/3116464359474/WN_DfgVRyfLT06MwiYIYVmBew)
+[![](/micronaut-assets/main-site/wp-content/uploads/2022/03/Sally-Pi-Day.png)](https://us02web.zoom.us/webinar/register/3116464359474/WN_DfgVRyfLT06MwiYIYVmBew)

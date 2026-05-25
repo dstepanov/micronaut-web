@@ -159,7 +159,7 @@ Micronaut Framework supports multiple configuration formats YAML, properties, TO
 
 We have updated our documentation to show configuration snippets in the different formats support properties files, YAML, TOML, etc.
 
-![Micronaut Configuration Tabs](https://micronaut.io/wp-content/uploads/2023/04/micronaut-configuration-tabs-1024x248.png)
+![Micronaut Configuration Tabs](/micronaut-assets/main-site/wp-content/uploads/2023/04/micronaut-configuration-tabs-1024x248.png)
 
 ## Community Feedback
 

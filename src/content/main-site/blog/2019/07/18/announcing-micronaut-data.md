@@ -89,19 +89,19 @@ Take a look at the difference in Stack Trace size when using Micronaut Data comp
 
 #### Micronaut Data JDBC
 
-![Micronaut Data JDBC](https://micronaut.io/wp-content/uploads/2021/02/2019-07-18-img01.png)
+![Micronaut Data JDBC](/micronaut-assets/main-site/wp-content/uploads/2021/02/2019-07-18-img01.png)
 
 #### Micronaut Data JPA
 
-![Micronaut Data JPA](https://micronaut.io/wp-content/uploads/2021/02/2019-07-18-img02.png)
+![Micronaut Data JPA](/micronaut-assets/main-site/wp-content/uploads/2021/02/2019-07-18-img02.png)
 
 #### Spring Data JPA
 
-![Spring Data JPA](https://micronaut.io/wp-content/uploads/2021/02/2019-07-18-img03.png)
+![Spring Data JPA](/micronaut-assets/main-site/wp-content/uploads/2021/02/2019-07-18-img03.png)
 
 #### GORM
 
-![GORM](https://micronaut.io/wp-content/uploads/2021/02/2019-07-18-img04.png)
+![GORM](/micronaut-assets/main-site/wp-content/uploads/2021/02/2019-07-18-img04.png)
 
 Micronaut Data JDBC produces only 15 stack frames until your query is actually executed, while Micronaut Data JPA produces 30 (mainly Hibernate frames), compared to 50+ stack frames for Spring Data or GORM, all thanks to Micronaut’s reflection-free AOP layer.
 

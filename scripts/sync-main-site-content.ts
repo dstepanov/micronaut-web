@@ -587,38 +587,6 @@ async function syncWordPressPosts(): Promise<any> {
   return posts.length;
 }
 
-async function syncSuccessStoryPostsFromPages(): Promise<any> {
-  const files = await listMarkdownFiles(blogDir);
-  let synced = 0;
-  for (const file of files) {
-    const current = splitFrontmatter(await readFile(file, "utf8"), file);
-    if (current.data.category !== "success-story" || !current.data.sourceUrl) {
-      continue;
-    }
-    const html = await fetchText(current.data.sourceUrl);
-    const bodyHtml = extractMainHtml(html);
-    const body = htmlToMarkdown(bodyHtml);
-    const title = extractFirstHeading(bodyHtml) ?? current.data.title;
-    await writeFile(
-      file,
-      stringifyMarkdown(
-        {
-          ...current.data,
-          title,
-          description: extractMetaDescription(html) ?? current.data.description,
-          contentSource: "micronaut-public-markdown",
-          categories: Array.from(
-            new Set([...(current.data.categories ?? []), "case-studies"]),
-          ),
-        },
-        body,
-      ),
-    );
-    synced += 1;
-  }
-  return synced;
-}
-
 async function validateGeneratedMarkdown(): Promise<any> {
   const files = [
     ...(await listMarkdownFiles(pageDir)),
@@ -645,7 +613,6 @@ async function validateGeneratedMarkdown(): Promise<any> {
 
 const syncPagesReport = await syncMainSitePages();
 const postCount = await syncWordPressPosts();
-const successStoryCount = await syncSuccessStoryPostsFromPages();
 const markdownValidationFailures = await validateGeneratedMarkdown();
 
 console.log(
@@ -654,7 +621,6 @@ console.log(
       syncedAt: now,
       pages: syncPagesReport,
       wordpressPosts: postCount,
-      successStoryPagesAsPosts: successStoryCount,
       markdownValidationFailures,
     },
     null,

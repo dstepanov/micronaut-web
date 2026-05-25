@@ -85,7 +85,8 @@ const cloudLogos = [
 ];
 
 const assetDimensions: Record<string, { width: number; height: number }> = {
-  "/micronaut-assets/home/agorapulse-logo-white-bg.png": { width: 1204, height: 251 },
+  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Agorapulse-logo-blue.svg": { width: 1204, height: 251 },
+  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Kestra.full_.logo_.dark_.svg": { width: 889, height: 203 },
   "/micronaut-assets/home/minecraft.png": { width: 429, height: 185 },
   "/micronaut-assets/home/mojang.png": { width: 387, height: 185 },
   "/micronaut-assets/home/samsung-smart-things.png": { width: 429, height: 185 },
@@ -103,14 +104,25 @@ const stories = (await getSuccessStories()).map((story) => ({
 const featuredStories = stories.slice(0, 3);
 const secondaryStories = stories.slice(3);
 
-const customerLogos = [
-  { name: "Samsung SmartThings", image: withBasePath("/micronaut-assets/home/samsung-smart-things.png"), className: "h-12", width: 429, height: 185 },
-  { name: "Target", image: withBasePath("/micronaut-assets/home/target.png"), className: "h-16", width: 142, height: 185 },
-  { name: "Minecraft", image: withBasePath("/micronaut-assets/home/minecraft.png"), className: "h-12", width: 429, height: 185 },
-  { name: "Mojang", image: withBasePath("/micronaut-assets/home/mojang.png"), className: "h-12", width: 387, height: 185 },
-  { name: "AgoraPulse", image: withBasePath("/micronaut-assets/home/agorapulse-logo-white-bg.png"), className: "h-8", width: 1204, height: 251 },
-  { name: "Sonar", image: withBasePath("/micronaut-assets/home/sonar-black-and-grey.svg"), className: "h-10", width: 224, height: 86 }
+const storyLogoItems = stories
+  .filter((story) => story.logo)
+  .map((story) => ({
+    name: story.organization,
+    href: withBasePath(story.href),
+    image: story.logo ?? "",
+    className: story.logoClass,
+    width: story.logoDimensions?.width,
+    height: story.logoDimensions?.height,
+    logoInvertOnDark: story.logoInvertOnDark
+  }));
+
+const previousCustomerLogos = [
+  { name: "Minecraft", href: "https://www.minecraft.net/", image: withBasePath("/micronaut-assets/home/minecraft.png"), className: "h-12", width: 429, height: 185, logoInvertOnDark: false },
+  { name: "Mojang", href: "https://en.wikipedia.org/wiki/Mojang_Studios", image: withBasePath("/micronaut-assets/home/mojang.png"), className: "h-12", width: 387, height: 185, logoInvertOnDark: false },
+  { name: "Target", href: "https://www.target.com", image: withBasePath("/micronaut-assets/home/target.png"), className: "h-16", width: 142, height: 185, logoInvertOnDark: false }
 ];
+const whoUsesLogoItems = [...storyLogoItems, ...previousCustomerLogos];
+const rotatingLogoItems = [...whoUsesLogoItems, ...whoUsesLogoItems];
 
 const graalBullets = ["Ahead-of-time friendly", "Reduced reflection reliance", "Native-image deployment path"];
 const dataBullets = ["Repository APIs", "Compile-time query model", "Reduced runtime overhead"];
@@ -267,9 +279,9 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <Badge variant="outline">Who uses Micronaut?</Badge>
-          <h2 class="mt-4 text-3xl font-bold md:text-4xl">Production teams build with Micronaut</h2>
+          <h2 class="mt-4 text-3xl font-bold md:text-4xl">Who&rsquo;s using The Micronaut Framework?</h2>
           <p class="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-            Micronaut is used by teams building production JVM services, cloud platforms, and data-intensive applications.
+            See how Micronaut users are achieving results with the Micronaut framework across serverless APIs, migrations, workflow platforms, and cloud services.
           </p>
         </div>
         <ActionLink href="/micronaut-success-stories/" label="View all success stories" variant="outline" />
@@ -281,8 +293,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
             <CardHeader>
               {story.logo ? (
                 <div class="flex h-16 min-w-0 items-center">
-                  <span class="inline-flex h-14 max-w-[12rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
+                  <span class="inline-flex h-14 max-w-[12rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card">
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoInvertOnDark && "dark:brightness-0 dark:invert"]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
                   </span>
                 </div>
               ) : null}
@@ -311,8 +323,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
             <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
               <CardHeader className="gap-3 px-5">
                 {story.logo ? (
-                  <span class="inline-flex h-11 max-w-[10rem] items-center rounded-md bg-white px-3 py-2 shadow-sm ring-1 ring-border/60 dark:bg-white">
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
+                  <span class="inline-flex h-11 max-w-[10rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card">
+                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoInvertOnDark && "dark:brightness-0 dark:invert"]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
                   </span>
                 ) : null}
                 <CardAction className="row-span-1">
@@ -328,12 +340,33 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
           </a>
         ))}
       </div>
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        {customerLogos.map((customer) => (
-          <div class="flex h-24 items-center justify-center rounded-md border bg-white px-5 shadow-sm dark:bg-white">
-            <img src={customer.image} alt={`${customer.name} logo`} class:list={["max-h-full max-w-full object-contain", customer.className]} loading="lazy" width={customer.width} height={customer.height} />
-          </div>
-        ))}
+      <div class="customer-logo-marquee relative -mx-5 overflow-hidden border-y bg-background py-6 shadow-inner shadow-black/[0.02] dark:bg-card sm:-mx-6 xl:mx-0 xl:rounded-lg xl:border">
+        <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-background to-transparent dark:from-card sm:w-24"></div>
+        <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-linear-to-l from-background to-transparent dark:from-card sm:w-24"></div>
+        <div class="customer-logo-track flex w-max gap-3 px-3">
+          {rotatingLogoItems.map((customer, index) => (
+            <a
+              href={customer.href}
+              class="group flex h-20 w-[12.5rem] shrink-0 items-center justify-center rounded-md border border-border/70 bg-card px-5 shadow-sm transition hover:border-brand/50 hover:shadow-md dark:border-white/10 dark:bg-background"
+              aria-label={`${customer.name}${index >= whoUsesLogoItems.length ? " duplicate" : ""}`}
+              aria-hidden={index >= whoUsesLogoItems.length ? "true" : undefined}
+              tabindex={index >= whoUsesLogoItems.length ? "-1" : undefined}
+            >
+              <img
+                src={customer.image}
+                alt={`${customer.name} logo`}
+                class:list={[
+                  "max-h-full max-w-full object-contain transition group-hover:opacity-100",
+                  customer.className,
+                  customer.logoInvertOnDark && "dark:brightness-0 dark:invert"
+                ]}
+                loading="lazy"
+                width={customer.width}
+                height={customer.height}
+              />
+            </a>
+          ))}
+        </div>
       </div>
       </div>
     </section>
@@ -473,3 +506,33 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
   </main>
   <SiteFooter />
 </WebLayout>
+
+<style>
+  .customer-logo-track {
+    animation: customer-logo-scroll 38s linear infinite;
+  }
+
+  .customer-logo-marquee:hover .customer-logo-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes customer-logo-scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .customer-logo-track {
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: none;
+      transform: none;
+    }
+  }
+</style>

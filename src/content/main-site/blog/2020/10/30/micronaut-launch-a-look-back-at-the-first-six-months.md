@@ -23,27 +23,27 @@ So, to begin, a total of 21,367 apps have been created using Micronaut Launch si
 
 Currently, Micronaut supports JDK 8 through JDK 15. As you can see, a vast majority of you are building your Micronaut applications with JDK 11, which is the default option in the launch website.
 
-![JDKs](https://micronaut.io/wp-content/uploads/2021/02/2020-10-30-img01.png)
+![JDKs](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-30-img01.png)
 
 Micronaut Launch provides maximum flexibility to run your own version of Launch for internal teams and choose the platform (serverless or not) that best suits your needs. As a testament to Micronaut 2.0’s flexibility, you can take the same application and run it across a variety of serverless platforms ([AWS Lambda](https://aws.amazon.com/lambda/), [Google Cloud Functions](https://cloud.google.com/functions), [Microsoft Azure Functions](https://azure.microsoft.com/en-us/services/functions/), and [Oracle Cloud Functions](https://www.oracle.com/cloud-native/functions/)). You can also build a regular [Netty](https://github.com/micronaut-projects/micronaut-starter/tree/master/starter-web-netty) or Servlet application from the same codebase.
 
 Below you can see which cloud deployment platforms are configured most often. AWS Lambda is the hands-down favorite.
 
-![Cloud Providers](https://micronaut.io/wp-content/uploads/2021/02/2020-10-30-img02.png)
+![Cloud Providers](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-30-img02.png)
 
 The Micronaut Launch UI also includes support for a ton of popular features. Of all the features available, the two selected most often are [Micronaut Data](https://micronaut-projects.github.io/micronaut-data/latest/guide/) and [Micronaut Security](https://micronaut-projects.github.io/micronaut-security/latest/guide/).
 
 Of the build tools available through Micronaut Launch, Gradle shows 2:1 more popular than Maven. Gradle is the default build tool on the launch website.
 
-![Build Tools](https://micronaut.io/wp-content/uploads/2021/02/2020-10-30-img03.png)
+![Build Tools](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-30-img03.png)
 
 As for test frameworks, JUnit is preferred by more than three quarters of users.
 
-![Test Frameworks](https://micronaut.io/wp-content/uploads/2021/02/2020-10-30-img04.png)
+![Test Frameworks](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-30-img04.png)
 
 Finally, Micronaut apps can currently be built using Java, Kotlin, and Groovy (with Scala on the roadmap!). More than half of you prefer Java. Both Java and JUnit are the default options in the launch website.
 
-![Languages](https://micronaut.io/wp-content/uploads/2021/02/2020-10-30-img05.png)
+![Languages](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-10-30-img05.png)
 
 Micronaut Launch is a fantastic example of modern application development using Micronaut. The launch application itself is a [GraalVM Native Image](https://www.graalvm.org/reference-manual/native-image/) deployed as a serverless function. The new CLI build pipeline creates GraalVM native images for Linux, macOS, and Windows. The native images are then published to SDKMAN and other package managers to make installation easy. GraalVM has changed the JVM landscape for the better, and we are happy to benefit from and contribute to its success.
 

@@ -48,7 +48,6 @@ const menuGroups = [
     links: [
       { href: "/learn/", label: "Learning overview", description: "All learning paths from the main site." },
       { href: "/download/", label: "Download", description: "Launch, CLI, and build-tool starter options." },
-      { href: "/quick-start/", label: "Quick Start", description: "Start quickly with Launch and guides." },
       { href: "/professional-training/", label: "Professional Training", description: "Structured training material for teams." },
       { href: "/category/microcast/", label: "Microcasts", description: "Short framework videos and episodes." },
       { href: "/category/webinar/", label: "Webinars", description: "Longer talks, demos, and framework sessions." }
@@ -76,7 +75,6 @@ const menuGroups = [
     description: "Governance, sponsorship, brand, and community policy.",
     links: [
       { href: "/foundation/", label: "Foundation overview", description: "Project support, community, and governance." },
-      { href: "/our-team/", label: "Our Team", description: "People and groups behind the framework." },
       { href: "/foundation/corporate-sponsorship/", label: "Corporate Sponsorship", description: "Organization support for project sustainability." },
       { href: "/foundation/community-sponsorship/", label: "Community Sponsorship", description: "Community support routes for the foundation." },
       { href: "/foundation/sponsors/", label: "Sponsors", description: "Organizations supporting the project." },

@@ -39,6 +39,6 @@ Anyone interested in getting a peek under the hood of a self-driving car will fi
 
 Software developers who have been following the evolution of Micronaut will get a chance to see a fun, outside-of-the-box use case for the technology, and those who work with JVM microservice frameworks, hardware, and machine learning may be inspired to try their hands at building their own autonomous vehicles!
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/18-08-10-galecinocar-webinar-slides.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/18-08-10-galecinocar-webinar-slides.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=9odEvHN3AJM)

@@ -27,7 +27,7 @@ We have always supported building with Maven by using `mn create-app myapp --bui
 
 With the Micronaut Maven plugin, you can run your Micronaut application and have changes instantaneously reloaded:
 
-![](https://micronaut.io/wp-content/uploads/2021/02/2020-04-02-img01.jpg)
+![](/micronaut-assets/main-site/wp-content/uploads/2021/02/2020-04-02-img01.jpg)
 
 In addition to this awesomeness, a new `micronaut-parent` POM is published that users can include as a parent to any `pom.xml` file. This will automatically configure the Micronaut Maven plugin.
 

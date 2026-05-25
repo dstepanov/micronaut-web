@@ -42,6 +42,6 @@ Topics covered include:
 
 No particular expertise with Micronaut or Azure is required; however, you will benefit if you are already familiar with both technologies.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Azure_Functions_webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Azure_Functions_webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=wlFBhiqJNA8)

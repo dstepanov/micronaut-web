@@ -2,7 +2,7 @@
 order: 40
 title: AgoraPulse Micronaut Journey
 eyebrow: Success story
-description: Home » Micronaut Success Stories » AgoraPulse Micronaut Journey AgoraPulse Micronaut Journey “Our journey with Micronaut started in 2018 when it was the only framework lightweight enough to run in AWS Lambda serverless environment. We trusted the team behind the framework as they already created the Grails framework we were using to build our applications....
+description: Agorapulse moved a large Grails codebase toward Micronaut while running serverless functions and backend applications.
 sourceUrl: https://micronaut.io/micronaut-success-stories/agorapulse-micronaut-journey/
 intro: Agorapulse's public story about a production application journey with Micronaut.
 sections:
@@ -16,13 +16,34 @@ sections:
     body: Follow a guide or launch a starter project after reviewing the story.
     icon: rocket
 contentSource: micronaut-public-markdown
+storyOrder: 2
+organization: Agorapulse
+label: Grails migration
+summary: Agorapulse moved a large Grails codebase toward Micronaut while running serverless functions and backend applications.
+detail: >-
+  The article highlights AWS Lambda, more than 100 serverless functions, more than 50 server applications, and
+  open-source Micronaut libraries.
+proofs:
+  - 100+ serverless functions
+  - 50+ server applications
+scenario: Grails-to-Micronaut migration
+challenge: Modernize a mature Grails estate without stopping active serverless and backend application development.
+micronautUse: Micronaut supports the migration path across Lambda functions, backend services, and shared open-source libraries.
+outcome: >-
+  A mixed estate with more than 100 serverless functions, more than 50 server applications, and reusable Micronaut
+  libraries.
+technologies:
+  - Grails
+  - AWS Lambda
+  - Serverless
+  - Micronaut Libraries
+logo: /micronaut-assets/main-site/wp-content/uploads/2025/01/Agorapulse-logo-blue.svg
+logoClass: h-8 w-auto
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » AgoraPulse Micronaut Journey
 
 # AgoraPulse Micronaut Journey
 
-[![AgoraPulse](https://micronaut.io/wp-content/uploads/2025/01/Agorapulse-logo-blue.svg)](https://www.agorapulse.com)
+[![AgoraPulse](/micronaut-assets/main-site/wp-content/uploads/2025/01/Agorapulse-logo-blue.svg)](https://www.agorapulse.com)
 
 > “Our journey with Micronaut started in 2018 when it was the only framework lightweight enough to run in AWS Lambda serverless environment. We trusted the team behind the framework as they already created the Grails framework we were using to build our applications. We expected they would provide the same amazing developer experience and they would be able to build the same open and friendly community that Grails have.”
 

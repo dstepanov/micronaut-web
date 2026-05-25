@@ -32,6 +32,6 @@ The following topics are covered:
 - The Micronaut framework’s tracing annotations
 - Demo application using Jaeger
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_Distributed_Tracing_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Distributed_Tracing_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=qw2ZT1F8AHc)

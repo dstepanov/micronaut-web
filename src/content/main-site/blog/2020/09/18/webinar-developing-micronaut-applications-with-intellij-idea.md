@@ -32,6 +32,6 @@ Topics to be covered include:
 
 This webinar is presented in partnership with [JetBrains](https://www.jetbrains.com/).
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Developing_Micronaut_Applications_With_IntelliJ_IDEA.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Developing_Micronaut_Applications_With_IntelliJ_IDEA.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=KIp9PlyJOjg)

@@ -23,6 +23,6 @@ Whether you’re new to the Micronaut framework or you’ve been following the f
 
 On August 21, 2020, Micronaut co-founder, Jeff Scott Brown, and Product Development Lead, James Kleeh, hosted a relaxed, virtual Q&A session in which attendees become acquainted with all that Micronaut 2 has to offer and had an opportunity to learn first-hand how to make the most of the framework.
 
-[Slides](https://micronaut.io/wp-content/uploads/2023/06/Micronaut_2.0_Webinar.pdf)
+[Slides](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_2.0_Webinar.pdf)
 
 [Watch the video](https://www.youtube.com/watch?v=DpbrySaV3hk)

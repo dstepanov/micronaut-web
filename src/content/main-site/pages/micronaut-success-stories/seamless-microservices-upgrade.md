@@ -2,9 +2,13 @@
 order: 38
 title: A Seamless Upgrade to Microservices in 4 Weeks
 eyebrow: Success story
-description: Home » Micronaut Success Stories » Seamless Microservices Upgrade A Seamless Upgrade to Microservices in 4 Weeks Open source Micronaut framework enables manufacturing giant to upgrade legacy system to microservice architecture in only 4 weeks “Micronaut was a key enabler in successfully creating and deploying a web based engineering analysis tool for my company. Its...
+description: >-
+  A manufacturing organization replaced an obsolete legacy tool with a Micronaut-backed microservice solution in four
+  weeks.
 sourceUrl: https://micronaut.io/micronaut-success-stories/seamless-microservices-upgrade/
-intro: A public success story about replacing an obsolete legacy tool with a Micronaut-backed microservice solution in four weeks.
+intro: >-
+  A public success story about replacing an obsolete legacy tool with a Micronaut-backed microservice solution in four
+  weeks.
 sections:
   - title: Upgrade path
     body: The story supports evaluation of Micronaut for service modernization and framework upgrades.
@@ -16,9 +20,28 @@ sections:
     body: Open the original page for the full story content and media.
     icon: logs
 contentSource: micronaut-public-markdown
+storyOrder: 6
+organization: Multinational manufacturer
+label: Microservices upgrade
+summary: >-
+  A manufacturing organization replaced an obsolete legacy tool with a Micronaut-backed microservice solution in four
+  weeks.
+detail: >-
+  The story highlights a Netty-backed Micronaut server, a lean SPA, JSON communication, sub-second interactions, and
+  very short deployment downtime.
+proofs:
+  - Four-week upgrade
+  - Sub-second interactions
+scenario: Legacy tool replacement
+challenge: Replace an obsolete engineering tool with a modern service while keeping downtime low and interactions fast.
+micronautUse: A Netty-backed Micronaut server handled JSON communication for a lean SPA.
+outcome: A microservice upgrade delivered in four weeks with sub-second interactions and short deployment downtime.
+technologies:
+  - Netty
+  - JSON
+  - SPA
+  - Microservices
 ---
-
-[Home](https://micronaut.io/) » [Micronaut Success Stories](https://micronaut.io/micronaut-success-stories/) » Seamless Microservices Upgrade
 
 # A Seamless Upgrade to Microservices in 4 Weeks
 
