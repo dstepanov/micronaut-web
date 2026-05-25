@@ -35,7 +35,6 @@ Following are the stats that were produced during the recording of this screenca
 
 ![Summary of Results](https://micronaut.io/wp-content/uploads/2021/02/2020-04-07-img02.jpeg)
 
----
 
 ### UPDATE
 
@@ -43,7 +42,6 @@ The response from the Spring team was to use [wrk](https://github.com/wg/wrk) or
 
 ### END UPDATE
 
----
 
 As you can see, as of today, if you are looking at performance, Quarkus is marginally ahead on time to first response (around 70ms), while the only metric Spring Boot wins is compilation time due to not doing any compilation-time processing.
 

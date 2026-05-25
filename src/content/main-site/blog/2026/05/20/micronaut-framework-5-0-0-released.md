@@ -60,7 +60,6 @@ The framework APIs now embrace [nullability annotations](https://docs.micronaut.
 
 In addition to the existing annotation-driven model documented in [Retry Advice](https://docs.micronaut.io/snapshot/guide/#retry), Micronaut 5 offers [programmatic retry](https://docs.micronaut.io/snapshot/guide/#_programmatic_retry) and [circuit breaker APIs](https://docs.micronaut.io/snapshot/guide/#_programmatic_circuit_breaker). These changes enable defining typed retry and circuit breaker policies in code and reusing them for synchronous, reactive, and asynchronous flows.
 
----
 
 ## Configuration
 
@@ -82,7 +81,6 @@ This module relies on the capability introduced in Micronaut 5 to generate JSON 
 
 Micronaut Logging updates to Log4j [`2.25.4`](https://logging.apache.org/log4j/2.x/release-notes.html#release-notes-2-25-4)
 
----
 
 ## Dev & Test
 
@@ -112,7 +110,6 @@ Micronaut Logging updates to Log4j [`2.25.4`](https://logging.apache.org/log4j/2
 
 [Micronaut Test Resources](https://micronaut-projects.github.io/micronaut-test-resources/snapshot/guide/) updates to `4.0.0`, with a binary protocol between client and server, shared containers across multiple databases, and new providers for Infinispan, Hazelcast, Pulsar, MinIO, SeaweedFS, Azurite, Couchbase, and WireMock. The platform also manages [Testcontainers](https://testcontainers.com/) `2.0.5`.
 
----
 
 ## Serialization
 
@@ -130,7 +127,6 @@ Micronaut Logging updates to Log4j [`2.25.4`](https://logging.apache.org/log4j/2
 
 With the release of Micronaut 5, [Micronaut Jackson Databind updates to Jackson 3](https://micronaut.io/2026/05/01/micronaut-framework-5-with-jackson-3/) (`3.1.3` in the platform BOM).
 
----
 
 ## Server
 
@@ -146,7 +142,6 @@ Micronaut Servlet updates the following server runtime dependencies:
 - [Apache Tomcat](https://tomcat.apache.org/) to `11.0.21`
 - [Eclipse Jetty](https://jetty.org/) to `12.1.8`
 
----
 
 ## Persistence
 
@@ -197,7 +192,6 @@ The module updates EclipseStore from `1.4.0` to [`4.0.1`](https://github.com/ecl
 
 [Micronaut Neo4J](https://micronaut-projects.github.io/micronaut-neo4j/snapshot/guide/) updates the [Neo4j Java driver](https://github.com/neo4j/neo4j-java-driver) to `6.1.0`.
 
----
 
 ## Database Migration
 
@@ -209,7 +203,6 @@ The module updates EclipseStore from `1.4.0` to [`4.0.1`](https://github.com/ecl
 
 [Micronaut Flyway](https://micronaut-projects.github.io/micronaut-flyway/snapshot/guide/) updates to Flyway `12.6.1`.
 
----
 
 ## Cloud
 
@@ -243,7 +236,6 @@ The Kubernetes module also gains support for [Configuration Import via Kubernete
 
 [Micronaut Oracle Cloud](https://micronaut-projects.github.io/micronaut-oracle-cloud/snapshot/guide/) updates to OCI SDK `3.86.1`.
 
----
 
 ## AI
 
@@ -255,13 +247,11 @@ The Kubernetes module also gains support for [Configuration Import via Kubernete
 
 [Micronaut Langchain4j](https://micronaut-projects.github.io/micronaut-langchain4j/snapshot/guide/) updates to [Langchain4j](https://github.com/langchain4j/langchain4j) `1.15.0`.
 
----
 
 ## Validation
 
 [Micronaut Hibernate Validator](https://micronaut-projects.github.io/micronaut-hibernate-validator/snapshot/guide/) updates [Hibernate Validator](https://hibernate.org/validator/) to `9.1.0.Final` and registers custom `ValueExtractor` beans in `ValidatorFactoryProvider`.
 
----
 
 ## Security
 
@@ -271,7 +261,6 @@ The JSR 250 annotation mappers have been moved to a new module `io.micronaut.sec
 
 New security context API/SPI was added: [SecurityContext](https://micronaut-projects.github.io/micronaut-security/snapshot/api/io/micronaut/security/context/SecurityContext.html), [SecurityContextHolder](https://micronaut-projects.github.io/micronaut-security/snapshot/api/io/micronaut/security/context/SecurityContextHolder.html), and [SecurityContextSupplier](https://micronaut-projects.github.io/micronaut-security/snapshot/api/io/micronaut/security/context/SecurityContextSupplier.html), with request-backed behavior wired through the SecurityFilter. The module also adds OAuth2/OIDC `prompt=create` support for user registration.
 
----
 
 ## Reactive Libraries
 
@@ -283,7 +272,6 @@ New security context API/SPI was added: [SecurityContext](https://micronaut-proj
 
 Micronaut 5 no longer supports RxJava 2. Micronaut 5 users willing to use RxJava should use [Micronaut RxJava 3](https://micronaut-projects.github.io/micronaut-rxjava3/snapshot/guide/).
 
----
 
 ## Analytics
 
@@ -307,7 +295,6 @@ Micronaut 5 no longer supports RxJava 2. Micronaut 5 users willing to use RxJava
 
 Micronaut Micrometer also adds streaming Prometheus scrape responses.
 
----
 
 ## API
 
@@ -341,7 +328,6 @@ It also adds configurable gRPC server executor support.
 - Spring Boot `4.0.6`.
 - Spring `7.0.7`.
 
----
 
 ## Messaging
 
@@ -375,7 +361,6 @@ The Kafka module receives a number of enhancements including per-class consumer 
 
 [Micronaut Pulsar](https://micronaut-projects.github.io/micronaut-pulsar/nats/guide/) updates [Apache Pulsar](https://github.com/apache/pulsar) Java Client to `4.2.1`.
 
----
 
 ## Views
 
@@ -389,7 +374,6 @@ The Kafka module receives a number of enhancements including per-class consumer 
 
 [Turbo](https://micronaut-projects.github.io/micronaut-views/snapshot/guide/#turbo) has moved to its own dependency `io.micronaut.views:micronaut-views-turbo`. Micronaut Views also adds HTMX integration.
 
----
 
 ## Miscellaneous
 
@@ -414,7 +398,6 @@ It updates:
 - [Hazelcast](https://hazelcast.com/developers/clients/java/) to `5.6.0`.
 - [Infinispan](https://infinispan.org/) to `16.1.4`.
 
----
 
 ## HOW TO UPGRADE TO MICRONAUT FRAMEWORK 5?
 

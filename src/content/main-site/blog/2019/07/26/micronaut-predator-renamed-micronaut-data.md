@@ -17,7 +17,6 @@ href: /2019/07/26/micronaut-predator-renamed-micronaut-data/
 
 *Micronaut co-founder, Jeff Scott Brown, today issued a statement in response to community concern about the word Predator. [Object Computing, Inc.](https://objectcomputing.com/) is committed to building inclusive environments that value and respect the individual and group differences within our open source communities. We stand behind this statement, and we hope that you will join us in our mission to innovate courageously through open source software!*
 
----
 
 The Object Computing team is very proud of our [recently announced data access toolkit](/blog/2019-07-18-unleashing-predator-precomputed-data-repositories.html). The innovations included in the technology are game changers and represent our commitment to open source technology and helping folks be successful with their technology.
 

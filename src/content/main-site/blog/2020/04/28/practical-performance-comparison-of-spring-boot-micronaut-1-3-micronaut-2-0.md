@@ -48,7 +48,6 @@ We are, of course, a bit biased towards our framework, so we would like to invit
 
 ## Performance Measurements
 
----
 
 ### UPDATE 05/29/2020
 
@@ -62,7 +61,6 @@ Thank you for your feedback Christian!
 
 ### END UPDATE
 
----
 
 For this comparison, we investigated application start-up time, time to first response, and throughput and memory consumption of an application under load.
 

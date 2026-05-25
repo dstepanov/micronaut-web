@@ -67,7 +67,6 @@ Yes, you read that right. With Micronaut Data JDBC, you can expect nearly 4X the
 
 If you go with Micronaut Data JPA, even then, you can expect more than 2X the performance of GORM and up to 40% better performance than Spring Data JPA.
 
----
 
 ### UPDATE SEPTEMBER 2, 2019
 
@@ -83,7 +82,6 @@ Since this post was written both Micronaut Data and Spring Data have been furthe
 
 ### END UPDATE
 
----
 
 Micronaut Data is able to achieve such a significant performance jump for a variety of reasons, from the elimination of reflection to the much thinner runtime component. One reason, however, is pretty simple to identify: Stack Traces.
 
