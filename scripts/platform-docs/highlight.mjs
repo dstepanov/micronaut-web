@@ -95,12 +95,13 @@ async function highlightListingBlocksOnce(input) {
       continue;
     }
     const language = codeLanguage(codeAttributes);
-    const source = encodeCalloutMarkers(decodeHtml(
+    const decodedSource = decodeHtml(
       match[6]
         .replace(/<i\b[^>]*class="conum"[^>]*data-value="(\d+)"[^>]*><\/i>\s*<b>\(\d+\)<\/b>/g, "&lt;$1&gt;")
         .replace(/<b class="conum"[^>]*>\((\d+)\)<\/b>/g, "&lt;$1&gt;")
         .replace(/<[^>]+>/g, "")
-    ));
+    );
+    const source = encodeCalloutMarkers(normalizeStandaloneCalloutLines(decodedSource, language));
     let highlighted = await codeToHtml(source, {
       lang: shikiLanguage(language),
       themes: {
@@ -125,6 +126,43 @@ function encodeCalloutMarkers(source) {
 
 function decodeCalloutMarkers(source) {
   return source.replace(new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"), '<i class="conum" data-value="$1"></i>');
+}
+
+export function normalizeStandaloneCalloutLines(source, language) {
+  if (!standaloneCalloutLanguage(language)) {
+    return source;
+  }
+  const lines = source.split(/\r?\n/);
+  const output = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const marker = /^[ \t]*(?:[#;][ \t]*)?<(\.|\d+)>[ \t]*$/.exec(line)?.[1];
+    const targetIndex = marker ? nextCalloutTargetLineIndex(lines, index + 1) : -1;
+    if (marker && targetIndex >= 0) {
+      lines[targetIndex] = `${lines[targetIndex].replace(/[ \t]+$/, "")} <${marker}>`;
+      continue;
+    }
+    output.push(line);
+  }
+  return output.join("\n");
+}
+
+function standaloneCalloutLanguage(language) {
+  return new Set(["conf", "hocon", "properties", "props"]).has(normalizeCodeLanguage(language));
+}
+
+function nextCalloutTargetLineIndex(lines, startIndex) {
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const trimmed = lines[index].trim();
+    if (!trimmed) {
+      continue;
+    }
+    if (/^[#;]/.test(trimmed) || /^<(\.|\d+)>$/.test(trimmed)) {
+      return -1;
+    }
+    return index;
+  }
+  return -1;
 }
 
 function removeHtmlAttribute(attributes, name) {

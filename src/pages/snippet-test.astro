@@ -50,11 +50,20 @@ const generatedDocsFixture = `
     </div>
   </div>
   <div class="colist arabic">
-    <ol>
-      <li><p>The <code>@Controller</code> annotation defines the class as a controller mapped to the path <code>/hello</code></p></li>
-      <li><p>The <code>@Get</code> annotation maps the index method to all requests that use an HTTP GET</p></li>
-      <li><p>A String <code>"Hello World"</code> is returned as the response</p></li>
-    </ol>
+    <table>
+      <tr>
+        <td><i class="conum" data-value="1"></i><b>1</b></td>
+        <td>The <code>@Controller</code> annotation defines the class as a controller mapped to the path <code>/hello</code></td>
+      </tr>
+      <tr>
+        <td><i class="conum" data-value="2"></i><b>2</b></td>
+        <td>The <code>@Get</code> annotation maps the index method to all requests that use an HTTP GET</td>
+      </tr>
+      <tr>
+        <td><i class="conum" data-value="3"></i><b>3</b></td>
+        <td>A String <code>"Hello World"</code> is returned as the response</td>
+      </tr>
+    </table>
   </div>
 </div>
 
@@ -200,7 +209,8 @@ const generatedDocsFixture = `
       const componentCopy = componentCard?.querySelector(".docs-code-copy");
       const generatedCopy = generatedCard?.querySelector(".docs-code-copy");
       const generatedFooter = generatedCard?.querySelector(".docs-code-callouts");
-      const generatedFooterItem = generatedFooter?.querySelector("li");
+      const generatedTableCallout = generatedFooter?.querySelector("td:first-child .conum");
+      const generatedTableCalloutFallback = generatedFooter?.querySelector("td:first-child .conum + b");
       const componentDependencyHeader = document.querySelector("[data-snippet-fixture='component-dependency'] .docs-snippet-external-header");
       const componentDependency = document.querySelector("[data-snippet-fixture='component-dependency'] .docs-dependency-template");
       const componentDependencyGradleIcon = componentDependency?.querySelector(".docs-code-language-icon-gradle");
@@ -230,7 +240,9 @@ const generatedDocsFixture = `
       compareStyle(results, "copy button color matches", componentCopy, generatedCopy, "color");
       pushResult(results, isLight(readStyle(generatedPre, "backgroundColor")), "generated code panel is light", readStyle(generatedPre, "backgroundColor"));
       pushResult(results, isLight(readStyle(generatedHeader, "backgroundColor")), "generated toolbar is light", readStyle(generatedHeader, "backgroundColor"));
-      pushResult(results, readPseudoStyle(generatedFooterItem, "::before", "color") === readStyle(generatedPre, "backgroundColor"), "callout badge keeps white number on dark badge");
+      pushResult(results, readPseudoStyle(generatedTableCallout, "::before", "content") === "\"1\"", "table callout badge renders data-value");
+      pushResult(results, readStyle(generatedTableCalloutFallback, "display") === "none", "table callout fallback number is hidden");
+      pushResult(results, readStyle(generatedTableCallout, "color") === readStyle(generatedPre, "backgroundColor"), "table callout badge keeps white number on dark badge");
 
       renderResults(results);
     };

@@ -10,7 +10,7 @@ import * as parse5 from "parse5";
 import { codeToHtml } from "shiki";
 
 import { attribute, html } from "./html.mjs";
-import { shikiLanguage } from "./highlight.mjs";
+import { normalizeStandaloneCalloutLines, shikiLanguage } from "./highlight.mjs";
 import { inlineTitleHtml } from "./listing.mjs";
 import { decodeSnippetMarkerPayload } from "./snippet-markers.mjs";
 
@@ -146,7 +146,7 @@ ${highlighted}
 }
 
 async function highlightedCodeHtml(source, highlighterLanguage, displayLanguage, styles) {
-  const markedSource = encodeCalloutMarkers(source.trimEnd());
+  const markedSource = encodeCalloutMarkers(normalizeStandaloneCalloutLines(source.trimEnd(), displayLanguage));
   let highlighted;
   try {
     highlighted = await codeToHtml(markedSource, {

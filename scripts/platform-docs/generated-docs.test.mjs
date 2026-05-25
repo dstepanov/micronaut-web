@@ -7,7 +7,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { shikiLanguage } from "./highlight.mjs";
+import { highlightListingBlocks, shikiLanguage } from "./highlight.mjs";
 import { readPlatformCatalogProjects } from "./project-manifest.mjs";
 import { buildDocsSearchIndex, extractGeneratedDocSearchItems } from "./search-index.mjs";
 
@@ -295,6 +295,8 @@ test("platform docs renderer turns code, dependency, configuration, and properti
   assert.match(generatedHtml, /docs-properties-template/);
   assert.match(generatedHtml, /docs-code-callouts/);
   assert.match(generatedHtml, /<i class="conum" data-value="1"><\/i>/);
+  assert.ok(generatedHtml.includes("[&amp;_td:first-child_.conum::before]:content-[attr(data-value)]"));
+  assert.ok(generatedHtml.includes("[&amp;_td:first-child_.conum+b]:hidden"));
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
   assert.match(generatedText, /Snippet callout follows the generated card/);
@@ -462,6 +464,39 @@ test("platform docs commandline source blocks use shell highlighting", () => {
   assert.equal(shikiLanguage("commandline"), "shellscript");
   assert.equal(shikiLanguage("graphqls"), "graphql");
   assert.equal(shikiLanguage("mysql"), "sql");
+});
+
+test("properties listings attach standalone callout markers to the next property line", async () => {
+  const html = await highlightListingBlocks([
+    '<div class="listingblock">',
+    '<div class="content">',
+    '<pre><code class="language-properties">micronaut.mcp.server.info.name=Weather',
+    '&lt;1&gt;',
+    'micronaut.mcp.server.transport=HTTP</code></pre>',
+    '</div>',
+    '</div>'
+  ].join("\n"));
+
+  const transportLine = /<span class="line">[^\n]*micronaut\.mcp\.server\.transport[^\n]*<\/span>/.exec(html)?.[0] || "";
+  assert.match(transportLine, /<i class="conum" data-value="1"><\/i>/);
+  assert.doesNotMatch(html, /<span class="line"><span[^>]*><i class="conum" data-value="1"><\/i><\/span><\/span>\s*<span class="line">[^\n]*micronaut\.mcp\.server\.transport/);
+});
+
+test("properties listings attach comment-only callout markers to the next property line", async () => {
+  const html = await highlightListingBlocks([
+    '<div class="listingblock">',
+    '<div class="content">',
+    '<pre><code class="language-properties">micronaut.mcp.server.info.name=Weather',
+    'micronaut.mcp.server.info.version=0.0.1',
+    '# &lt;1&gt;',
+    'micronaut.mcp.server.transport=HTTP</code></pre>',
+    '</div>',
+    '</div>'
+  ].join("\n"));
+
+  const transportLine = /<span class="line">[^\n]*micronaut\.mcp\.server\.transport[^\n]*<\/span>/.exec(html)?.[0] || "";
+  assert.match(transportLine, /HTTP <i class="conum" data-value="1"><\/i>/);
+  assert.doesNotMatch(html, />#[^<]*<i class="conum" data-value="1"><\/i>/);
 });
 
 test("docs routes render generated fragments and serve generated assets", async () => {

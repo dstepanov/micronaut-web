@@ -55,6 +55,10 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Injected value: World/);
   assert.match(html, /ExampleController/);
   assert.match(html, /message[\s\S]*=Hello/);
+  const transportLine = /<span class="line">[^\n]*fixture\.marker\.transport[^\n]*<\/span>/.exec(html)?.[0] || "";
+  assert.match(transportLine, /<i class="conum" data-value="1"><\/i>/);
+  assert.doesNotMatch(html, /<span class="line"><span[^>]*><i class="conum" data-value="1"><\/i><\/span><\/span>\s*<span class="line">[^\n]*fixture\.marker\.transport/);
+  assert.match(html, /Properties comment callout attaches to the property line/);
   assert.match(html, /implementation[\s\S]*io\.micronaut:micronaut-http-client/);
   assert.match(html, /Adds HTTP client dependency/);
   assert.match(html, /Manual callout keeps its place/);
@@ -70,6 +74,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /guide-manual-callouts/);
   assert.match(html, /<i class="conum" data-value="1"><\/i>/);
   assert.match(html, /<i class="conum" data-value="4"><\/i>/);
+  assert.match(html, /<td>\s*<i class="conum" data-value="1"><\/i><b>1<\/b>\s*<\/td>/);
   assert.doesNotMatch(html, /__MICRONAUT_CALLOUT_|\uE000|\uE001/);
   assert.match(html, /https:\/\/micronaut\.io\/launch\?/);
   assert.match(html, /href="\.\.\/another-guide\.html"/);
@@ -261,6 +266,7 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
       "<2> Adds validation dependency.",
       "source:ExampleController[tags=package|hello]",
       "resource:application.properties[tag=config]",
+      "<1> Properties comment callout attaches to the property line.",
       "source:MarkedController[]",
       "callout:generated-one[]",
       "<2> Manual callout keeps its place.",
@@ -381,6 +387,8 @@ async function writeGuideFixture(guidesDirectory, slug, title) {
     [
       "# tag::config[]",
       "message=Hello",
+      "# <1>",
+      "fixture.marker.transport=HTTP",
       "# end::config[]"
     ].join("\n"),
     "utf8"
