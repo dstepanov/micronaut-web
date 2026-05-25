@@ -90,11 +90,12 @@ export type ProtocolGuide = {
 };
 
 export type SearchItem = {
-  kind: "Project" | "Guide" | "Section" | "Tag";
+  kind: "Project" | "Guide" | "Section" | "Tag" | "Docs" | "Property" | "Class" | "Repo";
   title: string;
   description: string;
   href: string;
   terms: string;
+  scope?: "Projects" | "Docs" | "Properties" | "Classes" | "Repos";
 };
 
 export type PlatformDocsProjectFixture = {
@@ -228,6 +229,50 @@ export function searchItems(): SearchItem[] {
       terms: tag
     }));
   return [...projectItems, ...sectionItems, ...guideItems, ...tagItems];
+}
+
+export function docsSearchItems(): SearchItem[] {
+  return platformDocsProjects.projects.flatMap((project) => {
+    const protocolProject = projectBySlug(project.slug);
+    const href = protocolProject?.href || `/docs/${project.slug}/`;
+    const sections = protocolProject?.sections || [];
+    const projectTerms = [
+      project.displayName,
+      project.shortName,
+      project.projectKey,
+      project.module,
+      project.repositoryName,
+      protocolProject?.shortDescription,
+      protocolProject?.longDescription,
+      ...(protocolProject?.searchTerms || [])
+    ].filter(Boolean).join(" ");
+    return [
+      {
+        kind: "Project" as const,
+        title: project.displayName,
+        description: protocolProject?.shortDescription || project.module,
+        href,
+        terms: projectTerms,
+        scope: "Projects" as const
+      },
+      ...sections.map((section) => ({
+        kind: "Docs" as const,
+        title: `${project.displayName}: ${section.title}`,
+        description: section.summary,
+        href: `${href}#${section.id}`,
+        terms: [project.displayName, section.number, section.title, section.summary].join(" "),
+        scope: "Docs" as const
+      })),
+      {
+        kind: "Repo" as const,
+        title: project.repositoryName,
+        description: `Source repository for ${project.displayName}.`,
+        href: project.repositoryUrl,
+        terms: [project.displayName, project.repositoryName, project.repositoryUrl, project.module].join(" "),
+        scope: "Repos" as const
+      }
+    ];
+  });
 }
 
 function guideTagSlug(tag: string) {

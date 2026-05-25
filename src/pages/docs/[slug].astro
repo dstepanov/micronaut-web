@@ -15,7 +15,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { DocsShell } from "@/components/web/docs-shell";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
-import { IconGlyph } from "@/components/web/icon-glyph";
+import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
 import { micronautProtocol, projectBySlug } from "@/lib/protocol";
 
@@ -42,14 +42,17 @@ const generatedDocSections = generatedDocHtml ? extractGeneratedDocSections(gene
 const contentSections = generatedDocSections.length ? generatedDocSections : project.sections.map((section) => ({
   id: section.id,
   label: `${section.number}. ${section.title}`,
-  depth: 2
+  depth: 1,
+  parentId: undefined
 }));
-const sidebarSections = generatedDocHtml ? contentSections.filter((section) => section.depth === 1) : [];
+const sidebarSections = contentSections.filter((section) => section.depth === 1);
 
 function extractGeneratedDocSections(html: string) {
-  const sections: Array<{ id: string; label: string; depth: number }> = [];
+  const sections: Array<{ id: string; label: string; depth: number; parentId?: string }> = [];
   const headingPattern = /<div class="guide-section-heading">\s*<h([12]) id="([^"]+)"><a class="anchor" href="#[^"]+"><\/a>([\s\S]*?)<\/h\1>/g;
+  let activeTopLevelId: string | undefined;
   for (const match of html.matchAll(headingPattern)) {
+    const depth = Number(match[1]);
     const label = match[3]
       .replace(/<[^>]+>/g, "")
       .replace(/&amp;/g, "&")
@@ -60,10 +63,14 @@ function extractGeneratedDocSections(html: string) {
       .replace(/\s+/g, " ")
       .trim();
     if (label) {
+      if (depth === 1) {
+        activeTopLevelId = match[2];
+      }
       sections.push({
         id: match[2],
         label,
-        depth: Number(match[1])
+        depth,
+        parentId: depth === 1 ? undefined : activeTopLevelId
       });
     }
     if (sections.length >= 600) {
@@ -78,15 +85,13 @@ function extractGeneratedDocSections(html: string) {
   <DocsShell activeSlug={project.slug} activeSections={sidebarSections} client:load>
     <article class:list={[
       "grid w-full grid-cols-1 py-6",
-      generatedDocHtml ? "px-4 md:px-12" : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0"
+      generatedDocHtml ? "px-4 md:px-12 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-8" : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0"
     ]}>
       <div class:list={["min-w-0", !generatedDocHtml && "xl:px-14"]}>
         {!generatedDocHtml && (
           <header class="mb-7">
             <div class="mb-4 flex items-center gap-3">
-              <span class="flex size-10 items-center justify-center rounded-lg bg-secondary">
-                <IconGlyph name={project.icon} className="size-5" />
-              </span>
+              <IconBadge name={project.icon} size="lg" />
               <Badge variant="secondary">{project.primaryCategory}</Badge>
             </div>
             <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.displayName}</h1>
@@ -127,14 +132,14 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
           </div>
         )}
       </div>
-      {!generatedDocHtml && (
-        <aside class="hidden xl:block">
+      {contentSections.length > 0 && (
+        <aside class="hidden xl:block" aria-label="In this section">
           <div class="sticky top-24 grid gap-1.5 pl-2.5 pr-6 text-[0.82rem]">
             <h2 class="font-medium">In this section</h2>
             <Separator className="opacity-70" />
             {contentSections.map((section) => (
-              <a href={`#${section.id}`} class:list={[
-                "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
+              <a href={`#${section.id}`} data-docs-scroll-link data-docs-section-depth={section.depth} data-docs-section-parent={section.parentId || ""} class:list={[
+                "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
                 section.depth > 1 && "pl-5 text-xs"
               ]}>
                 {section.label}

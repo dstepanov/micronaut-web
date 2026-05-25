@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 
 import { shikiLanguage } from "./highlight.mjs";
 import { readPlatformCatalogProjects } from "./project-manifest.mjs";
+import { buildDocsSearchIndex, extractGeneratedDocSearchItems } from "./search-index.mjs";
 
 const execFile = promisify(execFileCallback);
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -306,6 +307,57 @@ test("platform docs renderer turns code, dependency, configuration, and properti
   assert.match(generatedText, /2 properties/);
 });
 
+test("platform docs search index includes generated headings, properties, classes, projects, and repos", () => {
+  const project = {
+    slug: "fixture",
+    displayName: "Micronaut Fixture",
+    shortName: "Fixture",
+    projectKey: "fixture",
+    module: "io.micronaut.fixture:micronaut-fixture-bom",
+    repositoryName: "micronaut-fixture",
+    repositoryUrl: "https://github.com/micronaut-projects/micronaut-fixture.git",
+    href: "/docs/fixture/",
+    shortDescription: "Fixture integration",
+    longDescription: "Fixture generated docs test project.",
+    searchTerms: ["fixture"],
+    sections: [
+      {
+        id: "fixture-overview",
+        number: "1",
+        title: "Overview",
+        summary: "Fixture overview fallback."
+      }
+    ]
+  };
+  const html = [
+    '<div class="guide-section-heading">',
+    '  <h1 id="fixture-introduction"><a class="anchor" href="#fixture-introduction"></a>1 Introduction</h1>',
+    "</div>",
+    '<div class="guide-section-heading">',
+    '  <h2 id="fixture-client"><a class="anchor" href="#fixture-client"></a>1.1 HTTP Client</h2>',
+    "</div>",
+    '<div class="docs-properties-template">',
+    "  <table>",
+    "    <tbody>",
+    "      <tr><td><p><code>micronaut.fixture.enabled</code></p></td><td><p>Boolean</p></td><td><p>Enables the fixture.</p></td></tr>",
+    "    </tbody>",
+    "  </table>",
+    "</div>",
+    '<p>Use <a href="../assets/fixture/docs/api/io/micronaut/fixture/FixtureClient.html">FixtureClient</a>.</p>'
+  ].join("\n");
+
+  const generatedItems = extractGeneratedDocSearchItems(project, html);
+  assert.ok(generatedItems.some((item) => item.scope === "Docs" && item.title.includes("HTTP Client")));
+  assert.ok(generatedItems.some((item) => item.scope === "Properties" && item.title === "micronaut.fixture.enabled"));
+  assert.ok(generatedItems.some((item) => item.scope === "Classes" && item.title === "FixtureClient"));
+
+  const index = buildDocsSearchIndex([project], { fixture: html });
+  assert.ok(index.some((item) => item.scope === "Projects" && item.href === "/docs/fixture/"));
+  assert.ok(index.some((item) => item.scope === "Repos" && item.href === project.repositoryUrl));
+  assert.ok(index.some((item) => item.scope === "Docs" && item.href === "/docs/fixture/#fixture-overview"));
+  assert.ok(index.some((item) => item.scope === "Classes" && item.href === "/docs/assets/fixture/docs/api/io/micronaut/fixture/FixtureClient.html"));
+});
+
 test("platform docs renderer can render every project in a manifest", async (t) => {
   const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "micronaut-web-generated-docs-"));
   t.after(() => fs.rm(temporaryDirectory, { force: true, recursive: true }));
@@ -415,12 +467,15 @@ test("platform docs commandline source blocks use shell highlighting", () => {
 test("docs routes render generated fragments and serve generated assets", async () => {
   const docsPageSource = await fs.readFile(path.join(projectDirectory, "src", "pages", "docs", "[slug].astro"), "utf8");
   const assetsRouteSource = await fs.readFile(path.join(projectDirectory, "src", "pages", "docs", "assets", "[...path].ts"), "utf8");
+  const searchIndexRouteSource = await fs.readFile(path.join(projectDirectory, "src", "pages", "docs", "search-index.json.ts"), "utf8");
 
   assert.match(docsPageSource, /readFile\(join\(process\.cwd\(\),[\s\S]*"generated-docs"[\s\S]*`\$\{project\.slug\}\.html`/);
   assert.match(docsPageSource, /data-generated-docs/);
   assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
   assert.match(assetsRouteSource, /"src", "content", "generated-docs", "assets"/);
   assert.match(assetsRouteSource, /fs\.readFile\(path\.join\(generatedAssetsDirectory/);
+  assert.match(searchIndexRouteSource, /buildDocsSearchIndex/);
+  assert.match(searchIndexRouteSource, /"generated-docs"/);
 });
 
 function assertScriptOrder(script, producer, consumer) {

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { IconGlyph } from "@/components/web/icon-glyph";
+import { IconBadge } from "@/components/web/icon-badge";
 import { withBasePath } from "@/lib/base-path";
 import type { ProtocolProject } from "@/lib/protocol";
 
@@ -16,9 +16,7 @@ export function ProjectCard({ project }: { project: ProtocolProject }) {
   return (
     <Card className="group relative grid h-full min-h-[252px] w-full grid-rows-[auto_minmax(84px,1fr)_auto] gap-2.5 rounded-lg p-3.5 py-3.5 transition hover:border-foreground/30 hover:shadow-md">
       <CardHeader className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-1 px-4">
-        <span className="flex size-8 items-center justify-center rounded-lg border bg-secondary text-secondary-foreground">
-          <IconGlyph name={project.icon} className="size-[18px]" />
-        </span>
+        <IconBadge name={project.icon} size="sm" />
         <div className="min-w-0">
           <CardTitle className="text-[0.96rem] leading-snug">
             <a href={withBasePath(project.href)} className="text-foreground no-underline hover:underline">

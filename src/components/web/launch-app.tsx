@@ -88,7 +88,7 @@ import {
   type ResolvedDecisionChoice,
   type ResolvedDecisionGroup
 } from "@/lib/launch-decisions";
-import { IconGlyph } from "@/components/web/icon-glyph";
+import { IconBadge } from "@/components/web/icon-badge";
 import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 import launchProjectConfig from "@/data/launch-project-config.json";
@@ -238,6 +238,10 @@ type FeatureGroupResult = {
   features: LaunchFeature[];
   matchedFeatures: LaunchFeature[];
 };
+
+function LaunchIconBadge({ name }: { name: string }) {
+  return <IconBadge name={name} size="md" className="mt-0.5" />;
+}
 
 type CloudProviderId = "all" | "oracle" | "google" | "aws" | "azure" | "local" | "other";
 
@@ -1137,12 +1141,7 @@ function CapabilityGroupPanel({
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-2">
             {group.icon && (
-              <span className={cn(
-                "mt-0.5 flex shrink-0 items-center justify-center",
-                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
-              )}>
-                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
-              </span>
+              <LaunchIconBadge name={group.icon} />
             )}
             <div className="min-w-0">
               <CardTitle className="text-sm leading-5">{group.title}</CardTitle>
@@ -1264,9 +1263,7 @@ function PlatformPinnedFeature({
         >
           <span className="flex items-start justify-between gap-2">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="flex size-9 shrink-0 items-center justify-center">
-                <IconGlyph name="feature:polyglot-framework" className="size-7" />
-              </span>
+              <LaunchIconBadge name="feature:polyglot-framework" />
               <span className="text-sm font-semibold leading-5">Platform</span>
             </span>
             <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
@@ -1352,9 +1349,7 @@ function TestingPinnedFeature({
         >
           <span className="flex items-start justify-between gap-2">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="flex size-9 shrink-0 items-center justify-center">
-                <IconGlyph name="feature:fast-easy-testing" className="size-7" />
-              </span>
+              <LaunchIconBadge name="feature:fast-easy-testing" />
               <span className="text-sm font-semibold leading-5">Dev & Test</span>
             </span>
             <Badge variant="secondary" className="shrink-0 text-[0.68rem]">Pinned</Badge>
@@ -1370,9 +1365,7 @@ function TestingPinnedFeature({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="flex size-9 shrink-0 items-center justify-center">
-              <IconGlyph name="feature:fast-easy-testing" className="size-7" />
-            </span>
+            <LaunchIconBadge name="feature:fast-easy-testing" />
             Dev & Test
           </DialogTitle>
           <DialogDescription>
@@ -1429,12 +1422,7 @@ function CapabilityGroupDialog({
         >
           <span className="flex min-w-0 items-center gap-2">
             {group.icon && (
-              <span className={cn(
-                "flex shrink-0 items-center justify-center",
-                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
-              )}>
-                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
-              </span>
+              <LaunchIconBadge name={group.icon} />
             )}
             <span className="min-w-0 break-words text-sm font-semibold leading-5">{group.title}</span>
           </span>
@@ -1462,12 +1450,7 @@ function CapabilityGroupDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {group.icon && (
-              <span className={cn(
-                "flex shrink-0 items-center justify-center",
-                group.icon.startsWith("feature:") ? "size-9" : "size-7 rounded-md bg-muted text-muted-foreground"
-              )}>
-                <IconGlyph name={group.icon} className={group.icon.startsWith("feature:") ? "size-7" : "size-4"} />
-              </span>
+              <LaunchIconBadge name={group.icon} />
             )}
             {group.title}
           </DialogTitle>
@@ -1610,9 +1593,7 @@ function DecisionGroupPanel({
         >
           <span className="flex items-start justify-between gap-2">
             <span className="flex min-w-0 items-start gap-2">
-              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center">
-                <IconGlyph name="feature:smooth-learning-curve" className="size-7" />
-              </span>
+              <LaunchIconBadge name="feature:smooth-learning-curve" />
               <span className="min-w-0">
                 <span className="block text-sm font-semibold leading-5">{group.title}</span>
                 <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
@@ -1633,9 +1614,7 @@ function DecisionGroupPanel({
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <span className="flex size-9 shrink-0 items-center justify-center">
-                  <IconGlyph name="feature:smooth-learning-curve" className="size-7" />
-                </span>
+                <LaunchIconBadge name="feature:smooth-learning-curve" />
                 {group.title}
               </DialogTitle>
               <DialogDescription>{group.description}</DialogDescription>

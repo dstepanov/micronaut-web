@@ -192,7 +192,11 @@ export function SiteHeader({
           </NavigationMenuList>
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          <SearchDialog className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]" mainSitePages={mainSitePages} />
+          <SearchDialog
+            className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]"
+            mainSitePages={mainSitePages}
+            mode={surface === "docs" ? "docs" : "site"}
+          />
           <Button variant="outline" size="sm" className="hidden h-9 md:inline-flex" asChild>
             <a href={withBasePath("/launch/")}>Launch</a>
           </Button>

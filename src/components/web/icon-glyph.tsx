@@ -40,6 +40,8 @@ import {
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
 
+export type IconThemeTreatment = "auto" | "inverted" | "preserve";
+
 const icons: Record<string, LucideIcon> = {
   "arrow-right": ArrowRight,
   archive: Boxes,
@@ -89,12 +91,33 @@ function normalizeLucideName(name: string) {
   return name;
 }
 
-export function IconGlyph({ name, className }: { name: string; className?: string }) {
+function assetThemeClass(name: string, themeTreatment: IconThemeTreatment) {
+  if (themeTreatment === "preserve") {
+    return undefined;
+  }
+  if (themeTreatment === "inverted") {
+    return "brightness-0 invert";
+  }
+  if (name.startsWith("feature:")) {
+    return undefined;
+  }
+  return "dark:brightness-0 dark:invert";
+}
+
+export function IconGlyph({
+  name,
+  className,
+  themeTreatment = "auto"
+}: {
+  name: string;
+  className?: string;
+  themeTreatment?: IconThemeTreatment;
+}) {
   if (name.startsWith("brand:")) {
     return (
       <img
         src={withBasePath(`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`)}
-        className={cn("object-contain", className)}
+        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
         alt=""
         aria-hidden="true"
       />
@@ -104,7 +127,7 @@ export function IconGlyph({ name, className }: { name: string; className?: strin
     return (
       <img
         src={withBasePath(`/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`)}
-        className={cn("object-contain", className)}
+        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
         alt=""
         aria-hidden="true"
       />
@@ -114,7 +137,7 @@ export function IconGlyph({ name, className }: { name: string; className?: strin
     return (
       <img
         src={withBasePath(`/micronaut-assets/icons/${name.slice("image:".length)}`)}
-        className={cn("object-contain dark:invert", className)}
+        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
         alt=""
         aria-hidden="true"
       />
