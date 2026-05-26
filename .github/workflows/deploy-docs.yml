@@ -27,9 +27,8 @@ on:
         required: false
         default: micronaut-projects/micronaut-platform
       platform_ref:
-        description: Platform branch, tag, or SHA to build from
+        description: Optional platform branch, tag, or SHA. Defaults to docs_version, with v-prefixed tag fallback.
         required: false
-        default: main
 
 permissions:
   contents: write
@@ -66,24 +65,27 @@ jobs:
 
       - name: Check out platform project
         env:
+          DOCS_VERSION: ${{ inputs.docs_version }}
           PLATFORM_REPOSITORY: ${{ inputs.platform_repository }}
           PLATFORM_REF: ${{ inputs.platform_ref }}
         run: |
           set -euo pipefail
           target="external/docs/repos/micronaut-platform"
           repo_url="https://github.com/${PLATFORM_REPOSITORY}.git"
+          effective_ref="${PLATFORM_REF:-$DOCS_VERSION}"
           mkdir -p "$(dirname "$target")"
-          git init "$target"
+          git init --initial-branch=checkout "$target"
           git -C "$target" remote add origin "$repo_url"
+          echo "Resolving $PLATFORM_REPOSITORY ref '$effective_ref'."
 
-          if git -C "$target" ls-remote --exit-code --heads origin "$PLATFORM_REF" >/dev/null; then
-            git -C "$target" fetch --depth=1 origin "refs/heads/${PLATFORM_REF}:refs/remotes/origin/${PLATFORM_REF}"
-            git -C "$target" checkout --detach "refs/remotes/origin/${PLATFORM_REF}"
+          if git -C "$target" ls-remote --exit-code --heads origin "$effective_ref" >/dev/null; then
+            git -C "$target" fetch --depth=1 origin "refs/heads/${effective_ref}:refs/remotes/origin/${effective_ref}"
+            git -C "$target" checkout --detach "refs/remotes/origin/${effective_ref}"
           else
-            resolved_tag="$PLATFORM_REF"
+            resolved_tag="$effective_ref"
             if ! git -C "$target" ls-remote --exit-code --tags origin "$resolved_tag" >/dev/null; then
-              if [ "${PLATFORM_REF#v}" = "$PLATFORM_REF" ] && git -C "$target" ls-remote --exit-code --tags origin "v$PLATFORM_REF" >/dev/null; then
-                resolved_tag="v$PLATFORM_REF"
+              if [ "${effective_ref#v}" = "$effective_ref" ] && git -C "$target" ls-remote --exit-code --tags origin "v$effective_ref" >/dev/null; then
+                resolved_tag="v$effective_ref"
               fi
             fi
 
@@ -91,7 +93,10 @@ jobs:
               git -C "$target" fetch --depth=1 origin "refs/tags/${resolved_tag}:refs/tags/${resolved_tag}"
               git -C "$target" checkout --detach "refs/tags/${resolved_tag}"
             else
-              git -C "$target" fetch --depth=1 origin "$PLATFORM_REF"
+              if ! git -C "$target" fetch --depth=1 origin "$effective_ref"; then
+                echo "::error::Could not resolve $PLATFORM_REPOSITORY ref '$effective_ref' as a branch, tag, v-prefixed tag, raw ref, or SHA."
+                exit 1
+              fi
               git -C "$target" checkout --detach FETCH_HEAD
             fi
           fi

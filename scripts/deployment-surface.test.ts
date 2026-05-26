@@ -409,28 +409,35 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
     "utf8",
   );
 
+  assert.match(workflow, /DOCS_VERSION:\s*\$\{\{ inputs\.docs_version \}\}/);
   assert.match(workflow, /PLATFORM_REF:\s*\$\{\{ inputs\.platform_ref \}\}/);
+  assert.match(workflow, /effective_ref="\$\{PLATFORM_REF:-\$DOCS_VERSION\}"/);
   assert.match(
     workflow,
-    /ls-remote --exit-code --heads origin "\$PLATFORM_REF"/,
+    /ls-remote --exit-code --heads origin "\$effective_ref"/,
   );
   assert.match(
     workflow,
-    /refs\/heads\/\$\{PLATFORM_REF\}:refs\/remotes\/origin\/\$\{PLATFORM_REF\}/,
+    /refs\/heads\/\$\{effective_ref\}:refs\/remotes\/origin\/\$\{effective_ref\}/,
   );
   assert.match(
     workflow,
     /ls-remote --exit-code --tags origin "\$resolved_tag"/,
   );
-  assert.match(workflow, /resolved_tag="v\$PLATFORM_REF"/);
+  assert.match(workflow, /resolved_tag="v\$effective_ref"/);
   assert.match(
     workflow,
     /refs\/tags\/\$\{resolved_tag\}:refs\/tags\/\$\{resolved_tag\}/,
   );
   assert.match(
     workflow,
-    /git -C "\$target" fetch --depth=1 origin "\$PLATFORM_REF"/,
+    /git -C "\$target" fetch --depth=1 origin "\$effective_ref"/,
   );
+  assert.match(
+    workflow,
+    /Could not resolve \$PLATFORM_REPOSITORY ref '\$effective_ref'/,
+  );
+  assert.doesNotMatch(workflow, /default:\s*main/);
   assert.doesNotMatch(workflow, /ref:\s*\$\{\{ inputs\.platform_ref \}\}/);
 });
 
