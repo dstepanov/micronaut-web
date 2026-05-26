@@ -37,7 +37,6 @@ type MainSiteSearchPage = {
 };
 
 const primaryLinks: Array<{ href: string; label: string; surface: SurfaceId }> = [
-  { href: "/", label: "Main", surface: "main" },
   { href: "/docs/", label: "Docs", surface: "docs" },
   { href: "/guides/", label: "Guides", surface: "guides" },
   { href: "/launch/", label: "Launch", surface: "launch" }
@@ -96,7 +95,6 @@ const mobileGroups = [
   {
     label: "Primary",
     links: [
-      { href: "/", label: "Main" },
       { href: "/docs/", label: "Docs" },
       { href: "/guides/", label: "Guides" },
       { href: "/launch/", label: "Launch" }
@@ -300,18 +298,6 @@ export function SiteHeader({
           ) : null}
           <NavigationMenu viewport={false} className="hidden lg:flex">
             <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href={withSurfacePath("main", "/")}
-                  active={surface === "main"}
-                  className={cn(
-                    "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                    surface === "main" && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  Main
-                </NavigationMenuLink>
-              </NavigationMenuItem>
               {desktopPrimaryLinks.map((link) => (
                 <NavigationMenuItem key={link.href}>
                   <NavigationMenuLink
