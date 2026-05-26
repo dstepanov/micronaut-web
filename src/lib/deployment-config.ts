@@ -6,6 +6,34 @@ import {
 
 export type DeploySurface = "all" | "main" | "docs" | "guides";
 export type SurfaceTarget = "main" | "docs" | "guides" | "launch";
+type DeploymentImportMeta = ImportMeta & {
+  readonly env?: {
+    readonly DEFAULT_GITHUB_PAGES_ORIGIN?: string;
+    readonly MICRONAUT_DEPLOY_SURFACE?: DeploySurface;
+    readonly MICRONAUT_DOCS_ROOT?: string;
+    readonly MICRONAUT_DOCS_LATEST_ROOT?: string;
+    readonly MICRONAUT_GUIDES_ROOT?: string;
+    readonly MICRONAUT_GUIDES_LATEST_ROOT?: string;
+    readonly MICRONAUT_GITHUB_PAGES_ORIGIN?: string;
+    readonly MICRONAUT_MAIN_SITE_URL?: string;
+    readonly MICRONAUT_DOCS_SITE_URL?: string;
+    readonly MICRONAUT_GUIDES_SITE_URL?: string;
+  };
+};
+
+const metaEnv = (import.meta as DeploymentImportMeta).env;
+const importMetaEnvValues = {
+  DEFAULT_GITHUB_PAGES_ORIGIN: metaEnv?.DEFAULT_GITHUB_PAGES_ORIGIN,
+  MICRONAUT_DEPLOY_SURFACE: metaEnv?.MICRONAUT_DEPLOY_SURFACE,
+  MICRONAUT_DOCS_ROOT: metaEnv?.MICRONAUT_DOCS_ROOT,
+  MICRONAUT_DOCS_LATEST_ROOT: metaEnv?.MICRONAUT_DOCS_LATEST_ROOT,
+  MICRONAUT_GUIDES_ROOT: metaEnv?.MICRONAUT_GUIDES_ROOT,
+  MICRONAUT_GUIDES_LATEST_ROOT: metaEnv?.MICRONAUT_GUIDES_LATEST_ROOT,
+  MICRONAUT_GITHUB_PAGES_ORIGIN: metaEnv?.MICRONAUT_GITHUB_PAGES_ORIGIN,
+  MICRONAUT_MAIN_SITE_URL: metaEnv?.MICRONAUT_MAIN_SITE_URL,
+  MICRONAUT_DOCS_SITE_URL: metaEnv?.MICRONAUT_DOCS_SITE_URL,
+  MICRONAUT_GUIDES_SITE_URL: metaEnv?.MICRONAUT_GUIDES_SITE_URL,
+} as const;
 
 export const deploySurface = envValue("MICRONAUT_DEPLOY_SURFACE", "all") as DeploySurface;
 export const docsRoot = normalizedRoot(
@@ -252,10 +280,7 @@ function hasSchemeOrProtocolRelativeUrl(path: string) {
 }
 
 function envValue(name: string, fallback: string) {
-  const meta = import.meta as ImportMeta & {
-    env?: Record<string, string | undefined>;
-  };
-  const metaValue = meta.env?.[name];
+  const metaValue = importMetaEnvValues[name as keyof typeof importMetaEnvValues];
   if (typeof metaValue === "string" && metaValue) {
     return metaValue;
   }

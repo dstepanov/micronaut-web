@@ -353,6 +353,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     /GuidesCatalogTabs|GuidesFilterPanel|micronautProtocol\.guides\.guides/,
   );
   assert.match(guidesRoute, /readGeneratedGuideFragment/);
+  assert.match(guidesRoute, /On this guide/);
   assert.match(guidesRoute, /In this section/);
   assert.match(guidesRoute, /buildGuidePageIndexSections/);
   assert.match(guidesRoute, /data-guide-page-index/);

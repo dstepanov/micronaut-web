@@ -1,7 +1,15 @@
 type DeploySurface = "all" | "main" | "docs" | "guides";
 type SurfaceTarget = "main" | "docs" | "guides" | "launch";
+type BasePathImportMeta = ImportMeta & {
+  readonly env?: {
+    readonly BASE_URL?: string;
+    readonly DEFAULT_GITHUB_PAGES_ORIGIN?: string;
+    readonly MICRONAUT_GITHUB_PAGES_ORIGIN?: string;
+  };
+};
 
-const basePath = import.meta.env?.BASE_URL || "/";
+const metaEnv = (import.meta as BasePathImportMeta).env;
+const basePath = metaEnv?.BASE_URL || "/";
 const deployment = typeof __MICRONAUT_DEPLOYMENT__ === "undefined" ? undefined : __MICRONAUT_DEPLOYMENT__;
 const deploySurface = (deployment?.deploySurface || "all") as DeploySurface;
 const docsRoot = normalizedRoot(deployment?.docsRoot || (deploySurface === "docs" ? "/latest" : "/docs"));
@@ -10,8 +18,8 @@ const guidesRoot = normalizedRoot(deployment?.guidesRoot || (deploySurface === "
 const guidesLatestRoot = normalizedRoot(deployment?.guidesLatestRoot || "/latest");
 const githubPagesOrigin = normalizedExternalOrigin(
   deployment?.githubPagesOrigin ||
-    import.meta.env?.MICRONAUT_GITHUB_PAGES_ORIGIN ||
-    import.meta.env?.DEFAULT_GITHUB_PAGES_ORIGIN ||
+    metaEnv?.MICRONAUT_GITHUB_PAGES_ORIGIN ||
+    metaEnv?.DEFAULT_GITHUB_PAGES_ORIGIN ||
     "/"
 );
 const externalSurfaceUrls = {
