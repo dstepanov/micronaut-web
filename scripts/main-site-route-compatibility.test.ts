@@ -102,7 +102,7 @@ test("new route files use the compatibility manifest", async (): Promise<any> =>
 
 test("compatibility documentation covers production hosts and legacy matrix", async (): Promise<any> => {
   const doc = await fs.readFile(
-    path.join(projectDirectory, "docs", "website-ux-and-compatibility.md"),
+    path.join(projectDirectory, "README.md"),
     "utf8",
   );
 

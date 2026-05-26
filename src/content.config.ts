@@ -5,7 +5,7 @@ import { z } from "astro/zod";
 const mainSitePages = defineCollection({
   loader: glob({
     base: "./src/content/main-site/pages",
-    pattern: "**/*.md"
+    pattern: ["**/*.md", "!code-examples/*.md"]
   }),
   schema: z.object({
     order: z.number(),
@@ -43,7 +43,7 @@ const mainSitePages = defineCollection({
 
 const codeExamples = defineCollection({
   loader: glob({
-    base: "./src/content/code-examples",
+    base: "./src/content/main-site/pages/code-examples",
     pattern: "*.md"
   }),
   schema: z.object({

@@ -34,8 +34,8 @@ export const coreDocsPreviewPath = "/docs/core/";
  * Route compatibility is intentionally centralized here. When a legacy URL,
  * production host mapping, or preview alias is added, update this manifest and
  * the matching route module instead of scattering redirect knowledge through
- * individual pages. The docs at docs/website-ux-and-compatibility.md describe
- * the schema and the representative URL matrix expected to stay stable.
+ * individual pages. README.md describes the schema and the representative URL
+ * matrix expected to stay stable.
  */
 export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
   {

@@ -247,6 +247,8 @@ async function readCodeExampleEntries(): Promise<any> {
     projectDirectory,
     "src",
     "content",
+    "main-site",
+    "pages",
     "code-examples",
   );
   const fileNames = (await fs.readdir(directory)).filter((fileName: any): any =>
