@@ -8,10 +8,10 @@ Observed baselines before this pass:
 
 | Surface | URL | Form factor | Performance | Accessibility | Best Practices | SEO | Notes |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| Homepage | `https://dstepanov.github.io/micronaut-web/` | Desktop | 100 | 93 | 100 | 100 | Main issues were shared link naming and low-contrast brand opacity patterns. |
-| Homepage | `https://dstepanov.github.io/micronaut-web/` | Mobile | 96 | 93 | 100 | 100 | Cache lifetime is partly hosting-controlled. |
-| Docs index | `https://dstepanov.github.io/micronaut-web/docs/` | Mobile | 93 | 95 | 100 | 100 | Main issues were unnamed generated anchors, image dimensions, and unused hydrated JS. |
-| Core docs | `https://dstepanov.github.io/micronaut-web/docs/core/` | Desktop | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Core is the heaviest generated page and the main DOM-size/performance risk. |
+| Homepage | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/` | Desktop | 100 | 93 | 100 | 100 | Main issues were shared link naming and low-contrast brand opacity patterns. |
+| Homepage | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/` | Mobile | 96 | 93 | 100 | 100 | Cache lifetime is partly hosting-controlled. |
+| Docs index | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/` | Mobile | 93 | 95 | 100 | 100 | Main issues were unnamed generated anchors, image dimensions, and unused hydrated JS. |
+| Core docs | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/core/` | Desktop | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Core is the heaviest generated page and the main DOM-size/performance risk. |
 
 Known Core docs findings:
 
@@ -33,7 +33,15 @@ Known Core docs findings:
 
 ## Production Hosts
 
-The preview build keeps GitHub Pages support through `ASTRO_BASE=/micronaut-web/`.
+The preview build keeps GitHub Pages support through `ASTRO_BASE=/micronaut-web/`. Set `MICRONAUT_GITHUB_PAGES_ORIGIN` to change the account or organization host used for temporary split-surface links.
+
+Temporary split deployment mapping:
+
+| Surface | Temporary GitHub Pages base | Build command |
+| --- | --- | --- |
+| Main site and Launch | `/micronaut-web/` | `npm run build:main` |
+| Docs | `/micronaut-docs/latest/` plus version folders | `npm run build:docs` |
+| Guides | `/micronaut-guides/latest/` | `npm run build:guides` |
 
 Production mapping:
 
@@ -91,6 +99,8 @@ When a legacy route is added, update the manifest and add or update one route mo
 - Docs canonical catalog pages use `https://docs.micronaut.io/`; Core legacy docs paths continue to resolve.
 - Guides canonical generated guide URLs use `https://guides.micronaut.io/latest/`.
 - GitHub Pages preview URLs must always be generated with `ASTRO_BASE`, not hard-coded as production links.
+- Split GitHub Pages deployments must use the repo-name bases until custom domains are enabled: `/micronaut-web/`, `/micronaut-docs/`, and `/micronaut-guides/`.
+- Docs version publishing updates the selector from the Pages branch and preserves shared root assets so older versions do not duplicate the same asset trees.
 - Legacy URLs should prefer permanent redirects unless the destination points to another production host for generated artifacts, where temporary redirects are safer.
 - Main-host `/core/` compatibility is intentionally deferred for now; add it through `src/lib/route-compatibility.ts` when route work resumes.
 

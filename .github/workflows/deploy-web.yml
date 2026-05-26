@@ -40,7 +40,9 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Configure Astro base path
+      - name: Configure GitHub Pages paths
+        env:
+          CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
         run: |
           repo_name="${GITHUB_REPOSITORY#*/}"
           if [ "$repo_name" = "${GITHUB_REPOSITORY_OWNER}.github.io" ]; then
@@ -48,6 +50,10 @@ jobs:
           else
             echo "ASTRO_BASE=/$repo_name/" >> "$GITHUB_ENV"
           fi
+          default_github_pages_origin="https://${GITHUB_REPOSITORY_OWNER}.github.io"
+          github_pages_origin="${CONFIGURED_GITHUB_PAGES_ORIGIN:-$default_github_pages_origin}"
+          echo "DEFAULT_GITHUB_PAGES_ORIGIN=$default_github_pages_origin" >> "$GITHUB_ENV"
+          echo "MICRONAUT_GITHUB_PAGES_ORIGIN=$github_pages_origin" >> "$GITHUB_ENV"
 
       - name: Build web
         env:
@@ -58,7 +64,8 @@ jobs:
           MICRONAUT_GUIDES_DIR: ${{ runner.temp }}/micronaut-guides
           GUIDES_RENDER_ALL: "true"
           GUIDES_RENDER_STRICT: "true"
-        run: npm run build
+          MICRONAUT_DEPLOY_SURFACE: main
+        run: npm run build:main
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6

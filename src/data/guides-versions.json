@@ -1,0 +1,13 @@
+{
+  "versions": [
+    {
+      "label": "Latest",
+      "href": "/latest/",
+      "current": true
+    },
+    {
+      "label": "Classic latest",
+      "href": "https://guides.micronaut.io/latest/index.html"
+    }
+  ]
+}

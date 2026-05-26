@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
 import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
+import guidesVersions from "@/data/guides-versions.json";
 
 type Props = {
   guides: GeneratedGuide[];
@@ -76,6 +77,10 @@ for (const guide of visibleGuides) {
 }
 const hasFilters = Boolean(query || selectedCategory || selectedTag || sortMode !== "latest");
 const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
+const guideVersionOptions = guidesVersions.versions.map((version) => ({
+  ...version,
+  href: version.href.startsWith("http") ? version.href : withBasePath(version.href)
+}));
 
 function categorySlug(category: string) {
   return category
@@ -192,6 +197,20 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
       <p class="mt-4 text-lg leading-8 text-muted-foreground">
         Learn how to build Micronaut applications with focused tutorials, runnable examples, and language/build variants.
       </p>
+      {guideVersionOptions.length > 1 && (
+        <label class="mt-5 inline-grid gap-1 text-xs font-medium text-muted-foreground">
+          <span>Guides version</span>
+          <select
+            class="h-9 min-w-44 rounded-md border bg-background px-2 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            aria-label="Guides version"
+            data-guides-version-selector
+          >
+            {guideVersionOptions.map((version) => (
+              <option value={version.href} selected={version.current}>{version.label}</option>
+            ))}
+          </select>
+        </label>
+      )}
     </div>
   </header>
 
@@ -294,3 +313,15 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
     </Card>
   </div>
 </main>
+
+<script is:inline>
+  (() => {
+    const selector = document.querySelector("[data-guides-version-selector]");
+    selector?.addEventListener("change", (event) => {
+      const select = event.currentTarget;
+      if (select instanceof HTMLSelectElement && select.value) {
+        window.location.href = select.value;
+      }
+    });
+  })();
+</script>

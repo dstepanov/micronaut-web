@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { Collapsible } from "radix-ui";
 
 import { IconGlyph } from "@/components/web/icon-glyph";
+import { VersionSelector } from "@/components/web/version-selector";
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +27,7 @@ import {
   docsCatalogProjectsByCategory,
   docsProjectCatalog,
 } from "@/lib/protocol";
+import docsVersions from "@/data/docs-versions.json";
 import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +74,14 @@ export function AppSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-2 px-2 pb-2 pt-2">
+        <div className="group-data-[collapsible=icon]:hidden">
+          <VersionSelector
+            label="Docs version"
+            options={docsVersions.versions}
+            surface="docs"
+            className="rounded-md border border-sidebar-border bg-sidebar-accent/35 p-2"
+          />
+        </div>
         {docsProjectCatalog.categories.map((category) => {
           const projects = docsCatalogProjectsByCategory(category);
           if (!projects.length) {

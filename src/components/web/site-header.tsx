@@ -25,7 +25,7 @@ import { MicronautLogo } from "@/components/web/micronaut-logo";
 import { SearchDialog } from "@/components/web/search-dialog";
 import { ThemeToggle } from "@/components/web/theme-toggle";
 import { EXPERIENCE_THEME_STORAGE_KEY, RUNTIME_EXPERIENCE_ENABLED, type ExperienceTheme } from "@/lib/experience-theme";
-import { withBasePath } from "@/lib/base-path";
+import { withBasePath, withSurfacePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type SurfaceId = "main" | "docs" | "guides" | "launch";
@@ -294,7 +294,7 @@ export function SiteHeader({
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
           {!hideBrand ? (
-            <a href={withBasePath("/")} aria-label="Micronaut home" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
+            <a href={withSurfacePath("main", "/")} aria-label="Micronaut home" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
               <MicronautLogo className="h-11 w-[192px]" />
             </a>
           ) : null}
@@ -302,7 +302,7 @@ export function SiteHeader({
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuLink
-                  href={withBasePath("/")}
+                  href={withSurfacePath("main", "/")}
                   active={surface === "main"}
                   className={cn(
                     "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -315,7 +315,7 @@ export function SiteHeader({
               {desktopPrimaryLinks.map((link) => (
                 <NavigationMenuItem key={link.href}>
                   <NavigationMenuLink
-                    href={withBasePath(link.href)}
+                    href={withSurfacePath(link.surface, link.href)}
                     active={surface === link.surface}
                     className={cn(
                       "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -365,7 +365,7 @@ export function SiteHeader({
               mode={surface === "docs" ? "docs" : "site"}
             />
             <Button variant="outline" size="sm" className="hidden h-9 md:inline-flex" asChild>
-              <a href={withBasePath("/launch/")}>Launch</a>
+              <a href={withSurfacePath("launch", "/launch/")}>Launch</a>
             </Button>
             <ThemeToggle className="hidden sm:inline-flex" />
             <Sheet>
@@ -388,7 +388,7 @@ export function SiteHeader({
                       {group.links.map((link) => (
                         <SheetClose asChild key={link.href}>
                           <a
-                            href={withBasePath(link.href)}
+                            href={withSurfacePath(primaryLinks.find((primaryLink) => primaryLink.href === link.href)?.surface || "main", link.href)}
                             className={cn(
                               "rounded-md px-3 py-2 text-[0.92rem] font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
                               primaryLinks.some((primaryLink) => primaryLink.href === link.href && primaryLink.surface === surface) && "bg-accent"
@@ -415,7 +415,7 @@ export function SiteHeader({
     <header className="sticky top-0 z-40 border-b border-mn-border/70 bg-mn-surface/85 shadow-sm shadow-slate-950/[0.03] backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
         {!hideBrand ? (
-          <a href={withBasePath("/")} aria-label="Micronaut home" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
+          <a href={withSurfacePath("main", "/")} aria-label="Micronaut home" className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline">
             <MicronautLogo className="h-11 w-[192px]" />
           </a>
         ) : null}
@@ -424,7 +424,7 @@ export function SiteHeader({
             {desktopPrimaryLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
-                  href={withBasePath(link.href)}
+                  href={withSurfacePath(link.surface, link.href)}
                   active={surface === link.surface}
                   className={cn(
                     "h-9 rounded-full px-3.5 py-2 text-[0.88rem] text-mn-muted transition-colors hover:bg-mn-surface-raised hover:text-mn-text focus:bg-mn-surface-raised focus:text-mn-text",
@@ -475,7 +475,7 @@ export function SiteHeader({
             buttonLabel="Command search..."
           />
           <Button variant="outline" size="sm" className="hidden h-9 rounded-full border-mn-red/30 bg-mn-red text-mn-bg shadow-sm shadow-mn-red/20 hover:bg-mn-red/90 hover:text-mn-bg md:inline-flex" asChild>
-            <a href={withBasePath("/launch/")}>Launch</a>
+            <a href={withSurfacePath("launch", "/launch/")}>Launch</a>
           </Button>
           <ThemeToggle variant="runtime" className="hidden sm:inline-flex" />
           <Sheet>
@@ -498,7 +498,7 @@ export function SiteHeader({
                     {group.links.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <a
-                          href={withBasePath(link.href)}
+                          href={withSurfacePath(primaryLinks.find((primaryLink) => primaryLink.href === link.href)?.surface || "main", link.href)}
                           className={cn(
                             "rounded-md px-3 py-2 text-[0.92rem] font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
                             primaryLinks.some((primaryLink) => primaryLink.href === link.href && primaryLink.surface === surface) && "bg-accent"

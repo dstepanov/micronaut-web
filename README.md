@@ -11,6 +11,9 @@ All surfaces share the same protocol file, design tokens, and React components. 
 ```bash
 npm run dev
 npm run build
+npm run build:main
+npm run build:docs
+npm run build:guides
 ```
 
 `npm run protocol` validates the checked-in protocol file without reading sibling repositories.
@@ -66,7 +69,106 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 ## Deployment and Compatibility
 
-The site supports an all-in-one GitHub Pages preview with `ASTRO_BASE=/micronaut-web/` and separate production surfaces at `https://micronaut.io/`, `https://docs.micronaut.io/`, and `https://guides.micronaut.io/latest/index.html`.
+This repository is the only source implementation for the three web surfaces. A normal Astro build can render the all-in-one preview, then `scripts/prune-surface.ts` rewrites that full `dist` output into the artifact shape needed by one deploy target.
+
+Production-compatible hosts are:
+
+- `main`: `https://micronaut.io/`
+- `docs`: `https://docs.micronaut.io/`
+- `guides`: `https://guides.micronaut.io/latest/index.html`
+
+Temporary GitHub Pages hosts keep the repository names in the path:
+
+- `micronaut-web`: main site and Launch at `/micronaut-web/`
+- `micronaut-docs`: docs selector at `/micronaut-docs/`, latest docs at `/micronaut-docs/latest/`, and version folders such as `/micronaut-docs/4.10.14/`
+- `micronaut-guides`: guides at `/micronaut-guides/latest/`
+
+### Surface Split
+
+Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `scripts/build-surface.ts` sets a matching default `ASTRO_BASE`, runs the full static build, then prunes the artifact:
+
+- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, and shared branding assets. It removes generated docs, guides, latest-route trees, and template artifacts from the uploaded Pages artifact.
+- `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It removes unrelated main and guides route trees.
+- `npm run build:guides` keeps the latest guides tree, root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It removes unrelated main and docs route trees.
+
+The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main` and uses GitHub Pages artifact deployment for this repository. The docs and guides workflows are manual publish jobs in this repository:
+
+- `.github/workflows/deploy-docs.yml` publishes to `dstepanov/micronaut-docs` by default.
+- `.github/workflows/deploy-guides.yml` publishes to `dstepanov/micronaut-guides` by default.
+- Both target repositories use branch-based GitHub Pages deployment from `gh-pages`.
+- Both workflows expose `target_repository` and `target_branch`, defaulting to the target repo and `gh-pages`.
+
+Cross-repository docs and guides publishes require a `PAGES_TOKEN` secret with push access to the target Pages repository. The workflows fall back to `github.token` only when publishing back to the same repository.
+
+### Routing Inputs
+
+The build reads these deployment inputs:
+
+- `ASTRO_BASE`: GitHub Pages project base, such as `/micronaut-web/`, `/micronaut-docs/`, or `/micronaut-guides/`.
+- `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
+- `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
+- `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
+- `MICRONAUT_GUIDES_ROOT`: guides root in the current artifact. It is `/guides` for all-in-one preview and `/latest` for standalone guides.
+- `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
+- `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the Pages owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io` for the main site or the owner of `target_repository` for docs and guides.
+- `MICRONAUT_GITHUB_PAGES_ORIGIN`: effective GitHub Pages host override. When unset, it falls back to `DEFAULT_GITHUB_PAGES_ORIGIN`.
+- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. When unset, they are derived from `MICRONAUT_GITHUB_PAGES_ORIGIN` plus `micronaut-web`, `micronaut-docs`, or `micronaut-guides`.
+
+All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-config.ts`. Those helpers translate `/docs`, `/guides`, and `/latest` links so the same source can run as an all-in-one preview, standalone docs, standalone guides, or the main site linking to external docs/guides.
+
+### Docs Versions and Latest
+
+Docs are versioned. The docs publish workflow accepts `docs_version`, for example `4.10.14`, and `publish_latest`.
+
+The docs workflow:
+
+1. Checks out this repository.
+2. Checks out the target docs Pages repository on `target_branch`, normally `gh-pages`.
+3. Checks out the requested Micronaut Platform ref for docs sources and metadata.
+4. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from existing version folders plus the version currently being published.
+5. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
+6. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
+7. Commits and pushes the branch.
+
+The published docs branch layout is:
+
+- `/index.html`: docs selector/index.
+- `/versions.json`: compact selector data for published versions.
+- `/latest/`: latest docs tree when `publish_latest=true`.
+- `/latest.html`: redirect to `/latest/`.
+- `/latest/guide/index.html`: compatibility redirect to `/latest/core/`.
+- `/<version>/`: immutable docs tree for a published version.
+- `/<version>.html`: compatibility redirect to `/<version>/`.
+- `/_astro/`: Astro-generated scripts and styles.
+- `/assets/<hash>/...`: shared generated content assets.
+- `/assets/...` and `/docsassets/...`: preserved upstream docs assets when already present in the published branch.
+
+Older docs are not copied into new builds. They remain in `gh-pages` from previous publishes, and the selector links to those existing version folders or legacy external URLs.
+
+### Guides Latest
+
+Guides are currently published as a latest-only surface. The guides workflow accepts the guides repository/ref to build from, checks out the target guides Pages repository on `target_branch`, builds `npm run build:guides`, replaces the published branch contents with the pruned `dist`, and pushes `gh-pages`.
+
+The published guides branch layout is:
+
+- `/index.html`: redirect to `/latest/`.
+- `/latest/`: latest guides catalog and generated guide pages.
+- `/latest/index.html`: compatibility entry point.
+- `/latest/<guide>/`: guide overview or detail pages.
+- `/_astro/`: Astro-generated scripts and styles.
+- `/assets/<hash>/...`: shared generated guide content assets.
+
+Guide ZIP downloads stay as redirects to the production guide ZIP URLs instead of storing ZIP payloads in the GitHub Pages branch.
+
+### Shared Assets
+
+There are three asset groups:
+
+- `_astro`: Astro-generated JavaScript and CSS. Surface pruning preserves this folder and writes `.nojekyll` so GitHub Pages serves underscore-prefixed paths.
+- `public/micronaut-assets`: source-controlled brand, icon, and main-site assets used mainly by the main surface.
+- Generated docs/guides content assets: images and copied resources produced under generated `assets` folders before pruning.
+
+Docs and guides surface pruning hoists generated docs/guides content assets out of version folders into content-addressed `/assets/<hash>/...` folders, then rewrites generated HTML to reference those shared files. The hash is based on file content, so identical assets across versions share one folder instead of being duplicated under every version. Docs publication preserves referenced shared hash folders and removes unreferenced generated hash folders so old assets do not accumulate unnecessarily.
 
 Legacy route behavior, production host mapping, canonical URL rules, PageSpeed baselines, and the manual QA checklist are documented in [`docs/website-ux-and-compatibility.md`](docs/website-ux-and-compatibility.md). Route aliases and redirects should be added through `src/lib/route-compatibility.ts` so compatibility remains centralized.
 

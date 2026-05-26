@@ -17,6 +17,7 @@ import { DocsShell } from "@/components/web/docs-shell";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
+import { withBasePath } from "@/lib/base-path";
 import { enhanceGeneratedContentHtml, generatedHtmlLabel } from "@/lib/generated-docs-html";
 import { micronautProtocol, projectBySlug } from "@/lib/protocol";
 
@@ -28,7 +29,7 @@ export function getStaticPaths() {
 
 const project = projectBySlug(Astro.params.slug!);
 if (!project) {
-  return Astro.redirect("/docs/");
+  return Astro.redirect(withBasePath("/docs/"));
 }
 
 let generatedDocHtml: string | undefined;

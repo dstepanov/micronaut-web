@@ -1,0 +1,25 @@
+{
+  "versions": [
+    {
+      "label": "Latest",
+      "href": "/latest/",
+      "current": true
+    },
+    {
+      "label": "4.10.14",
+      "href": "https://docs.micronaut.io/4.10.14.html"
+    },
+    {
+      "label": "4.9.x",
+      "href": "https://docs.micronaut.io/4.9.x/guide/"
+    },
+    {
+      "label": "4.8.x",
+      "href": "https://docs.micronaut.io/4.8.x/guide/"
+    },
+    {
+      "label": "3.10.x",
+      "href": "https://docs.micronaut.io/3.10.x/guide/"
+    }
+  ]
+}
