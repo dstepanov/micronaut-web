@@ -19,6 +19,13 @@ const deploymentConfigFile = path.join(
   "lib",
   "deployment-config.ts",
 );
+const surfaceRoutesFile = path.join(
+  projectDirectory,
+  "src",
+  "lib",
+  "surface-routes.ts",
+);
+const pagesArtifactTokenPattern = new RegExp("PAGES_" + "TOKEN");
 
 test("deployment routes keep all-in-one paths by default", async () => {
   const deployment = await importDeploymentConfig("all", {
@@ -148,6 +155,48 @@ test("deployment routes keep standalone guides latest as a directory", async () 
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
     "/latest/micronaut-http-client/",
+  );
+});
+
+test("surface route guards skip generated docs and guides routes in main builds", async () => {
+  const routes = await importSurfaceRoutes("guards", {});
+  assert.equal(routes.shouldBuildDocsRoutes("main"), false);
+  assert.equal(routes.shouldBuildGuidesRoutes("main"), false);
+  assert.equal(routes.shouldBuildDocsRoutes("docs"), true);
+  assert.equal(routes.shouldBuildGuidesRoutes("docs"), false);
+  assert.equal(routes.shouldBuildDocsRoutes("guides"), false);
+  assert.equal(routes.shouldBuildGuidesRoutes("guides"), true);
+  assert.equal(routes.shouldBuildDocsRoutes("all"), true);
+  assert.equal(routes.shouldBuildGuidesRoutes("all"), true);
+});
+
+test("generated docs and guides dynamic route files use surface guards", async () => {
+  const guardedRoutes = [
+    ["src/pages/docs/[slug].astro", "shouldBuildDocsRoutes"],
+    ["src/pages/docs/[searchIndex].json.ts", "shouldBuildDocsRoutes"],
+    ["src/pages/docs/assets/[...path].ts", "shouldBuildDocsRoutes"],
+    ["src/pages/guides/[slug].astro", "shouldBuildGuidesRoutes"],
+    ["src/pages/guides/[slug].html.ts", "shouldBuildGuidesRoutes"],
+    ["src/pages/guides/[download].zip.ts", "shouldBuildGuidesRoutes"],
+    ["src/pages/guides/assets/[...path].ts", "shouldBuildGuidesRoutes"],
+    ["src/pages/latest/[page].astro", "shouldBuildGuidesRoutes"],
+    ["src/pages/latest/[page].html.ts", "shouldBuildGuidesRoutes"],
+    ["src/pages/latest/[download].zip.ts", "shouldBuildGuidesRoutes"],
+    ["src/pages/latest/assets/[...path].ts", "shouldBuildGuidesRoutes"],
+  ];
+
+  for (const [routeFile, guard] of guardedRoutes) {
+    const source = await fs.readFile(
+      path.join(projectDirectory, routeFile),
+      "utf8",
+    );
+    assert.match(source, new RegExp(`${guard}\\(\\)`), routeFile);
+  }
+  assert.equal(
+    await exists(
+      path.join(projectDirectory, "src/pages/docs/search-index.json.ts"),
+    ),
+    false,
   );
 });
 
@@ -303,7 +352,28 @@ test("web workflow publishes the main surface to the gh-pages branch", async () 
   assert.match(workflow, /git push origin HEAD:"\$TARGET_BRANCH"/);
   assert.doesNotMatch(workflow, /upload-pages-artifact/);
   assert.doesNotMatch(workflow, /deploy-pages/);
+  assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
   assert.doesNotMatch(workflow, /pages:\s*write/);
+});
+
+test("branch deployment workflows do not use the GitHub Pages artifact token", async () => {
+  const workflows = await Promise.all(
+    ["deploy-web.yml", "deploy-docs.yml", "deploy-guides.yml"].map(
+      async (workflow) =>
+        fs.readFile(
+          path.join(projectDirectory, ".github", "workflows", workflow),
+          "utf8",
+        ),
+    ),
+  );
+
+  for (const workflow of workflows) {
+    assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
+    assert.doesNotMatch(workflow, /upload-pages-artifact/);
+    assert.doesNotMatch(workflow, /deploy-pages/);
+  }
+  assert.match(workflows[1], /TARGET_REPOSITORY_TOKEN/);
+  assert.match(workflows[2], /TARGET_REPOSITORY_TOKEN/);
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {
@@ -422,6 +492,21 @@ async function importDeploymentConfig(
   scenario: string,
   env: Record<string, string | undefined>,
 ): Promise<typeof import("../src/lib/deployment-config.ts")> {
+  return importWithEnv(deploymentConfigFile, scenario, env);
+}
+
+async function importSurfaceRoutes(
+  scenario: string,
+  env: Record<string, string | undefined>,
+): Promise<typeof import("../src/lib/surface-routes.ts")> {
+  return importWithEnv(surfaceRoutesFile, scenario, env);
+}
+
+async function importWithEnv<T>(
+  file: string,
+  scenario: string,
+  env: Record<string, string | undefined>,
+): Promise<T> {
   const previous = new Map<string, string | undefined>();
   for (const [name, value] of Object.entries(env)) {
     previous.set(name, process.env[name]);
@@ -432,9 +517,9 @@ async function importDeploymentConfig(
     }
   }
   try {
-    return await import(
-      `${pathToFileURL(deploymentConfigFile).href}?scenario=${scenario}-${Date.now()}`
-    );
+    return (await import(
+      `${pathToFileURL(file).href}?scenario=${scenario}-${Date.now()}`
+    )) as T;
   } finally {
     for (const [name, value] of previous) {
       if (value === undefined) {

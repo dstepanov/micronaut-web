@@ -858,7 +858,13 @@ test("docs routes render generated fragments and serve generated assets", async 
     "utf8",
   );
   const searchIndexRouteSource = await fs.readFile(
-    path.join(projectDirectory, "src", "pages", "docs", "search-index.json.ts"),
+    path.join(
+      projectDirectory,
+      "src",
+      "pages",
+      "docs",
+      "[searchIndex].json.ts",
+    ),
     "utf8",
   );
 

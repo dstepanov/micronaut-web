@@ -26,7 +26,6 @@ jobs:
       - name: Check out sources
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.PAGES_TOKEN || github.token }}
           fetch-depth: 0
 
       - name: Set up Node

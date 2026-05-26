@@ -20,8 +20,12 @@ import { ProjectReferenceLinks } from "@/components/web/project-reference-links"
 import { withBasePath } from "@/lib/base-path";
 import { enhanceGeneratedContentHtml, generatedHtmlLabel } from "@/lib/generated-docs-html";
 import { micronautProtocol, projectBySlug } from "@/lib/protocol";
+import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
 
 export function getStaticPaths() {
+  if (!shouldBuildDocsRoutes()) {
+    return [];
+  }
   return micronautProtocol.docs.projects.map((project) => ({
     params: { slug: project.slug }
   }));

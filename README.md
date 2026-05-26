@@ -87,7 +87,7 @@ Temporary GitHub Pages hosts keep the repository names in the path:
 
 Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `scripts/build-surface.ts` sets a matching default `ASTRO_BASE`, runs the full static build, then prunes the artifact:
 
-- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, and shared branding assets. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. It removes docs, guides, latest-route trees, and template artifacts from the published Pages branch.
+- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, and shared branding assets. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. Dynamic docs/guides route generation is disabled for this surface, and pruning removes any remaining docs, guides, latest-route, and template artifacts from the published Pages branch.
 - `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
 - `npm run build:guides` keeps the latest guides tree, root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
@@ -99,7 +99,7 @@ The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`,
 - The web workflow exposes `target_branch`, defaulting to `gh-pages`.
 - The docs and guides workflows expose `target_repository` and `target_branch`, defaulting to the target repo and `gh-pages`.
 
-Cross-repository docs and guides publishes require a `PAGES_TOKEN` secret with push access to the target Pages repository. The workflows fall back to `github.token` only when publishing back to the same repository.
+Branch-based Pages deployment does not use a dedicated Pages deployment secret. The web workflow publishes to this repository's `gh-pages` branch with the default `github.token`. Docs and guides also use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `TARGET_REPOSITORY_TOKEN` with `contents:write` access to that target repository.
 
 ### Routing Inputs
 

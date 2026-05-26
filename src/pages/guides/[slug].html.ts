@@ -11,11 +11,15 @@ import {
 import { withBasePath } from "@/lib/base-path";
 import { micronautProtocol } from "@/lib/protocol";
 import { appendRequestSearch, productionUrl } from "@/lib/route-compatibility";
+import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 const guidesRoot = "/guides";
 const legacyGuidesBase = productionUrl("guides");
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  if (!shouldBuildGuidesRoutes()) {
+    return [];
+  }
   const manifest = await readGeneratedGuidesManifest();
   const paths: Array<{ params: { slug: string }; props: { destination: string; external?: boolean } }> = [];
   const pages = new Set<string>();

@@ -20,6 +20,7 @@ import {
 import { withBasePath } from "@/lib/base-path";
 import { micronautProtocol } from "@/lib/protocol";
 import { productionUrl } from "@/lib/route-compatibility";
+import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 const guidesRoot = "/guides";
 
@@ -46,6 +47,9 @@ type ExternalProps = {
 };
 
 export async function getStaticPaths() {
+  if (!shouldBuildGuidesRoutes()) {
+    return [];
+  }
   const legacyGuidesBase = productionUrl("guides");
   const manifest = await readGeneratedGuidesManifest();
   const paths: Array<{ params: { slug: string }; props: TagProps | OverviewProps | VariantProps | ExternalProps }> = [];

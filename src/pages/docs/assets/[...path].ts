@@ -2,9 +2,14 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
+
 const generatedAssetsDirectory = path.join(process.cwd(), "src", "content", "generated-docs", "assets");
 
 export const getStaticPaths = (async () => {
+  if (!shouldBuildDocsRoutes()) {
+    return [];
+  }
   const assets = await listAssets(generatedAssetsDirectory);
   return assets.map((assetPath) => ({
     params: { path: assetPath }

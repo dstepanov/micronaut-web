@@ -35,13 +35,13 @@ jobs:
       - name: Check out Micronaut web
         uses: actions/checkout@v6
 
-      - name: Validate publish token
+      - name: Validate target repository token
         env:
-          HAS_PAGES_TOKEN: ${{ secrets.PAGES_TOKEN != '' }}
+          HAS_TARGET_REPOSITORY_TOKEN: ${{ secrets.TARGET_REPOSITORY_TOKEN != '' }}
           TARGET_REPOSITORY: ${{ inputs.target_repository }}
         run: |
-          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_PAGES_TOKEN" != "true" ]; then
-            echo "::error::Set PAGES_TOKEN with push access to $TARGET_REPOSITORY for cross-repository publishing."
+          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_TARGET_REPOSITORY_TOKEN" != "true" ]; then
+            echo "::error::Set TARGET_REPOSITORY_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
             exit 1
           fi
 
@@ -51,7 +51,7 @@ jobs:
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.target_branch }}
           path: published-guides
-          token: ${{ secrets.PAGES_TOKEN || github.token }}
+          token: ${{ secrets.TARGET_REPOSITORY_TOKEN || github.token }}
 
       - name: Check out guides project
         uses: actions/checkout@v6

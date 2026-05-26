@@ -1,8 +1,10 @@
+import type { GetStaticPaths } from "astro";
 import { readFile, readdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 
 import { buildDocsSearchIndex } from "../../../scripts/docs/search-index.ts";
 import { docsProjectCatalog, projectBySlug } from "@/lib/protocol";
+import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
 
 const generatedDocsDirectory = join(
   process.cwd(),
@@ -12,6 +14,13 @@ const generatedDocsDirectory = join(
 );
 
 export const prerender = true;
+
+export const getStaticPaths: GetStaticPaths = () => {
+  if (!shouldBuildDocsRoutes()) {
+    return [];
+  }
+  return [{ params: { searchIndex: "search-index" } }];
+};
 
 export async function GET() {
   const generatedHtmlBySlug = await readGeneratedDocsHtml();

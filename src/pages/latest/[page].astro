@@ -18,6 +18,7 @@ import {
   type GeneratedGuideOption
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
+import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 type TagProps = {
   kind: "tag";
@@ -37,6 +38,9 @@ type VariantProps = {
 };
 
 export async function getStaticPaths() {
+  if (!shouldBuildGuidesRoutes()) {
+    return [];
+  }
   const manifest = await readGeneratedGuidesManifest();
   const paths: Array<{ params: { page: string }; props: TagProps | OverviewProps | VariantProps }> = [];
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
