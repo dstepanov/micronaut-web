@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
+import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import LatestGuidesCatalog from "@/components/web/latest-guides-catalog.astro";
 import {
   allGeneratedGuideTags,
@@ -186,7 +186,7 @@ function extractSections(html: string) {
         {fragmentHtml ? (
           <>
             <div class="generated-docs-content generated-guides-content" data-generated-docs set:html={fragmentHtml} />
-            <GeneratedDocsEnhancer />
+            <GeneratedDocsStaticEnhancer />
           </>
         ) : (
           <Card>

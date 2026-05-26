@@ -1,6 +1,7 @@
 ---
 import { Badge } from "@/components/ui/badge";
 import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
+import GeneratedDocsPropertiesFallback from "@/components/web/generated-docs-properties-fallback.astro";
 import { SnippetTestGallery } from "@/components/web/snippet-test-gallery";
 import { componentCodeVariants, componentTerminalVariants, dependencyVariants } from "@/components/web/snippet-test-data";
 import WebLayout from "@/layouts/WebLayout.astro";
@@ -133,6 +134,7 @@ const generatedDocsFixture = `
         <div class="generated-docs-content grid gap-8" data-generated-docs set:html={generatedDocsFixture} />
       </div>
       <GeneratedDocsEnhancer />
+      <GeneratedDocsPropertiesFallback />
 
       <section class="rounded-xl border bg-card p-5 text-sm" data-snippet-validation>
         <div class="flex flex-wrap items-center justify-between gap-3">

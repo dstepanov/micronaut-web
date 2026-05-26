@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DocsShell } from "@/components/web/docs-shell";
-import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
+import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
-import { withBasePath } from "@/lib/base-path";
+import { canonicalSurfaceUrl, withBasePath } from "@/lib/base-path";
 import {
   docsCatalogProject,
   loadDocsProjectCatalog,
@@ -52,6 +52,7 @@ try {
   generatedDocHtml = undefined;
 }
 
+const canonicalUrl = canonicalSurfaceUrl("docs", `/docs/${project.slug}/`);
 const generatedDocSections = generatedDocHtml ? extractGeneratedDocSections(generatedDocHtml) : [];
 const contentSections = generatedDocSections.length ? generatedDocSections : project.sections.map((section) => ({
   id: section.id,
@@ -87,7 +88,7 @@ function extractGeneratedDocSections(html: string) {
 }
 ---
 
-<WebLayout title={`${project.displayName} Docs`} surface="docs" hideHeader>
+<WebLayout title={`${project.displayName} Docs`} surface="docs" canonicalUrl={canonicalUrl} hideHeader>
   <DocsShell
     projectCatalog={docsProjectCatalog}
     activeSlug={project.slug}
@@ -113,7 +114,7 @@ function extractGeneratedDocSections(html: string) {
         {generatedDocHtml ? (
           <>
             <div class="generated-docs-content" data-generated-docs set:html={generatedDocHtml} />
-            <GeneratedDocsEnhancer />
+            <GeneratedDocsStaticEnhancer />
           </>
         ) : (
           <div class="grid gap-8 text-base leading-7">

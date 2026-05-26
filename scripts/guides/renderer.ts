@@ -4,6 +4,7 @@ import path from "node:path";
 import { renderAsciiDoc } from "../shared/asciidoc-rendering.ts";
 import { optimizeImages as optimizeGeneratedGuideHtml } from "../shared/generated-html.ts";
 import { highlightListingBlocks, shikiStyle } from "../shared/highlight.ts";
+import { renderStaticDocsSnippets } from "../docs/static-snippets.ts";
 import { preprocessGuideSource } from "./preprocessor.ts";
 import type { Guide, GuideOption } from "./model.ts";
 import { productionUrl } from "../../src/lib/route-compatibility.ts";
@@ -37,6 +38,7 @@ export async function renderGuideOption(
     },
   });
 
+  html = await renderStaticDocsSnippets(html);
   html = await highlightListingBlocks(html);
   html = rewriteGuideUrls(html, guide.slug);
   html = optimizeGeneratedGuideHtml(html);

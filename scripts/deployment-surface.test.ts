@@ -77,6 +77,10 @@ test("deployment routes map docs project pages to the standalone docs root", asy
     deployment.externalSurfacePath("guides", "/guides/micronaut-http-client/"),
     "https://example.test/micronaut-guides/latest/micronaut-http-client/",
   );
+  assert.equal(
+    deployment.canonicalSurfaceUrl("docs", "/docs/core/"),
+    "https://example.test/micronaut-docs/latest/core/",
+  );
 });
 
 test("deployment routes map main links to external docs and guides sites", async () => {

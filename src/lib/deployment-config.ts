@@ -95,6 +95,10 @@ export function externalSurfacePath(surface: "main" | "docs" | "guides", path = 
   return new URL(externalRouteForSurface(surface, path).replace(/^\/+/, ""), externalSurfaceUrls[surface]).toString();
 }
 
+export function canonicalSurfaceUrl(surface: "main" | "docs" | "guides", path = "/") {
+  return new URL(routeForSurface(surface, path).replace(/^\/+/, ""), externalSurfaceUrls[surface]).toString();
+}
+
 export function currentDocsRootPath(path = "/") {
   return docsRoute(path);
 }

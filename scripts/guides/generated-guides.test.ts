@@ -111,6 +111,8 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Manual callout keeps its place/);
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
+  assert.match(html, /docs-properties-template/);
+  assert.match(html, /micronaut\.server\.port/);
   assert.match(html, /Unmarked source callout/);
   assert.match(html, /Missing source marker becomes manual/);
   assert.match(html, /Gapped first real callout/);
@@ -137,6 +139,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
     html,
     /source:|common-template:|callout:|dependency:|diffLink:/,
   );
+  assertNoRuntimeGeneratedRendering("generated guide HTML", html);
 });
 
 test("guide renderer can render all guides in strict pipeline mode", async (t: any): Promise<any> => {
@@ -264,13 +267,17 @@ test("latest guide replacement routes and parallel generated-content preparation
     path.join(projectDirectory, "src", "pages", "guides", "[download].zip.ts"),
     "utf8",
   );
-  const generatedDocsEnhancer = await fs.readFile(
+  const guidesRenderer = await fs.readFile(
+    path.join(projectDirectory, "scripts", "guides", "renderer.ts"),
+    "utf8",
+  );
+  const generatedDocsStaticEnhancer = await fs.readFile(
     path.join(
       projectDirectory,
       "src",
       "components",
       "web",
-      "generated-docs-enhancer.astro",
+      "generated-docs-static-enhancer.astro",
     ),
     "utf8",
   );
@@ -325,6 +332,12 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(latestRoute, /tag-\$\{tagSlug\(tag\)\}/);
   assert.match(latestRoute, /option\.file\.replace/);
   assert.match(latestRoute, /readGeneratedGuideFragment/);
+  assert.match(latestRoute, /GeneratedDocsStaticEnhancer/);
+  assertNoRuntimeGeneratedRendering("latest guide route", latestRoute);
+  assert.doesNotMatch(
+    latestRoute,
+    /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
+  );
   assert.match(legacyRoute, /micronautProtocol\.guides\.guides/);
   assert.match(legacyRoute, /productionUrl\("guides"\)/);
   assert.match(
@@ -350,6 +363,12 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(guidesRoute, /requestAnimationFrame\(updateActiveSection\)/);
   assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
   assert.match(guidesRoute, /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/);
+  assert.match(guidesRoute, /GeneratedDocsStaticEnhancer/);
+  assertNoRuntimeGeneratedRendering("guides route", guidesRoute);
+  assert.doesNotMatch(
+    guidesRoute,
+    /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
+  );
   assert.match(guidesLegacyRoute, /guideOverviewPath\(guide, guidesRoot\)/);
   assert.match(
     guidesLegacyRoute,
@@ -357,12 +376,27 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.match(guidesLegacyRoute, /productionUrl\("guides"\)/);
   assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
-  assert.match(generatedDocsEnhancer, /attachCalloutFooter/);
-  assert.match(generatedDocsEnhancer, /isCalloutFooter/);
-  assert.match(generatedDocsEnhancer, /cardFooterClass/);
+  assert.match(guidesRenderer, /renderStaticDocsSnippets/);
+  assertNoRuntimeGeneratedRendering(
+    "generated guides static enhancer",
+    generatedDocsStaticEnhancer,
+  );
   assert.match(guideCatalog, /root = "\/latest"/);
   assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
+
+function assertNoRuntimeGeneratedRendering(label: string, source: string) {
+  assert.doesNotMatch(
+    source,
+    /renderSharedSnippetCard|renderSharedPropertiesCard|enhanceCodeSnippets|enhanceStandaloneCodeBlocks|docsSnippetTemplates|renderDocsSnippetTemplates/,
+    `${label} must not render generated snippet or properties cards at runtime`,
+  );
+  assert.doesNotMatch(
+    source,
+    /codeToHtml|createHighlighter|getHighlighter|from ["']shiki["']|import\(["']shiki["']\)/,
+    `${label} must not highlight generated code at runtime`,
+  );
+}
 
 async function writeGuideFixture(
   guidesDirectory: any,
@@ -521,6 +555,13 @@ async function writeGuideFixture(
       `include::{sourceDir}/${slug}/@sourceDir@/deployment/k8s.yml[]`,
       "----",
       "<1> Kubernetes include callout.",
+      "",
+      ".Configuration Properties",
+      '[cols="1,1"]',
+      "|===",
+      "|Property |Description",
+      "|`micronaut.server.port` |Server port.",
+      "|===",
       "",
       "[source,java]",
       "----",
