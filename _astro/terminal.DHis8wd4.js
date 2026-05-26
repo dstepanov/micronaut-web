@@ -1,0 +1,1 @@
+import{f as e}from"./index.d-dc9npa.js";const c=[["path",{d:"M20 6 9 17l-5-5",key:"1gmf2c"}]],a=e("check",c);const o=[["path",{d:"M12 19h8",key:"baeox8"}],["path",{d:"m4 17 6-6-6-6",key:"1yngyt"}]],n=e("terminal",o);export{a as C,n as T};
