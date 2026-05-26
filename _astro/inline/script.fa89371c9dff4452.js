@@ -4,15 +4,16 @@ const themeModeStorageKey = "micronaut-web-theme-mode";
       (() => {
         const root = document.documentElement;
         const colorPreference = window.matchMedia("(prefers-color-scheme: dark)");
-        const isThemeMode = (value) => value === "system" || value === "light" || value === "dark";
-        const resolveDark = (mode) => mode === "dark" || (mode === "system" && colorPreference.matches);
+        const preferredThemeMode = colorPreference.matches ? "dark" : "light";
+        const isThemeMode = (value) => value === "light" || value === "dark";
+        const resolveDark = (mode) => mode === "dark";
         const applyThemeMode = (mode) => {
           const dark = resolveDark(mode);
           root.dataset.themeMode = mode;
           root.classList.toggle("dark", dark);
           root.style.colorScheme = dark ? "dark" : "light";
         };
-        let themeMode = "system";
+        let themeMode = preferredThemeMode;
         try {
           const storedMode = localStorage.getItem(themeModeStorageKey);
           const legacyMode = localStorage.getItem(legacyThemeStorageKey);
@@ -23,13 +24,8 @@ const themeModeStorageKey = "micronaut-web-theme-mode";
             localStorage.setItem(themeModeStorageKey, legacyMode);
           }
         } catch {
-          themeMode = "system";
+          themeMode = preferredThemeMode;
         }
         applyThemeMode(themeMode);
-        colorPreference.addEventListener("change", () => {
-          if (root.dataset.themeMode === "system") {
-            applyThemeMode("system");
-          }
-        });
       })();
     })();
