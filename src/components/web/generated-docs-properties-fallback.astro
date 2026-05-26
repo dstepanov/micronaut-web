@@ -1,0 +1,88 @@
+---
+import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+
+const docsPropertiesTemplate = renderDocsSnippetTemplates()["docs/snippets/properties-snippet.html"];
+const docsPropertiesCardClass = docsSnippetStyles.propertiesCard;
+---
+
+<script is:inline define:vars={{ docsPropertiesTemplate, docsPropertiesCardClass }}>
+  (() => {
+    void docsPropertiesCardClass;
+
+    const escapeHtml = (value) =>
+      String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;");
+
+    const renderSharedPropertiesCard = ({ propertiesId, propertiesAnchorId, propertiesTitle, propertiesEyebrow, propertiesCountLabel }) => {
+      const source = docsPropertiesTemplate.html;
+      const html = source.replace(/{{(\w+)}}/g, (_, key) => ({
+        propertiesId: escapeHtml(propertiesId),
+        propertiesAnchorId: escapeHtml(propertiesAnchorId),
+        propertiesTitle: escapeHtml(propertiesTitle),
+        propertiesEyebrow: escapeHtml(propertiesEyebrow),
+        propertiesCountLabel: escapeHtml(propertiesCountLabel),
+        propertiesTableHtml: ""
+      })[key] ?? "");
+      const template = document.createElement("template");
+      template.innerHTML = html.trim();
+      return template.content.firstElementChild;
+    };
+
+    const enhanceProperties = (root) => {
+      const tables = Array.from(root.querySelectorAll("table.tableblock"));
+      let propertiesIndex = 0;
+      for (const table of tables) {
+        const caption = table.querySelector("caption");
+        if (!caption || !/configuration properties/i.test(caption.textContent || "") || table.closest(".docs-properties-template")) {
+          continue;
+        }
+
+        const title = caption.textContent.trim().replace(/^Table\s+\d+\.\s*/i, "");
+        const rows = table.querySelectorAll("tbody tr").length;
+        const previous = table.previousElementSibling;
+        const anchor = previous?.tagName === "A" && previous.id ? previous : undefined;
+        const propertiesAnchorId = anchor?.id || `generated-properties-${propertiesIndex}`;
+        const template = renderSharedPropertiesCard({
+          propertiesId: `${propertiesAnchorId}-properties`,
+          propertiesAnchorId,
+          propertiesTitle: title,
+          propertiesEyebrow: "Configuration properties",
+          propertiesCountLabel: `${rows} ${rows === 1 ? "property" : "properties"}`
+        });
+        const scroller = template?.querySelector(":scope > [data-slot='card-content']");
+        if (!template || !scroller) {
+          continue;
+        }
+        caption.classList.add("sr-only");
+
+        const insertionPoint = anchor || table;
+        insertionPoint.parentNode.insertBefore(template, insertionPoint);
+        if (anchor) {
+          anchor.remove();
+        }
+        scroller.append(table);
+        propertiesIndex += 1;
+      }
+    };
+
+    const init = () => {
+      document.querySelectorAll("[data-generated-docs]").forEach((root) => {
+        if (root.dataset.generatedDocsPropertiesEnhanced === "true") {
+          return;
+        }
+        root.dataset.generatedDocsPropertiesEnhanced = "true";
+        enhanceProperties(root);
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init, { once: true });
+    } else {
+      init();
+    }
+  })();
+</script>

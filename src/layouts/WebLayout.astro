@@ -14,12 +14,13 @@ import { withBasePath } from "@/lib/base-path";
 interface Props {
   title: string;
   description?: string;
+  canonicalUrl?: string;
   surface?: "main" | "docs" | "guides" | "launch";
   hideHeader?: boolean;
   theme?: ExperienceTheme;
 }
 
-const { title, description = "Micronaut web experience", surface = "main", hideHeader = false, theme = "default" } = Astro.props;
+const { title, description = "Micronaut web experience", canonicalUrl, surface = "main", hideHeader = false, theme = "default" } = Astro.props;
 const mainSitePages = await getMainSitePageSummaries();
 const showExperienceThemeSwitch = RUNTIME_EXPERIENCE_ENABLED;
 ---
@@ -36,6 +37,7 @@ const showExperienceThemeSwitch = RUNTIME_EXPERIENCE_ENABLED;
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <script
       is:inline
       define:vars={{

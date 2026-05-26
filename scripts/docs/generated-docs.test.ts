@@ -514,6 +514,7 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedHtml, /docs-code-snippet-template/);
   assert.match(generatedHtml, /docs-dependency-template/);
   assert.match(generatedHtml, /docs-properties-template/);
+  assertNoRuntimeGeneratedRendering("generated docs HTML", generatedHtml);
   assert.match(generatedHtml, /docs-code-callouts/);
   assert.match(generatedHtml, /<i class="conum" data-value="1"><\/i>/);
   assert.ok(
@@ -957,6 +958,16 @@ test("docs routes render generated fragments and serve generated assets", async 
     path.join(projectDirectory, "src", "pages", "docs", "index.astro"),
     "utf8",
   );
+  const generatedDocsStaticEnhancerSource = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "src",
+      "components",
+      "web",
+      "generated-docs-static-enhancer.astro",
+    ),
+    "utf8",
+  );
   const appSidebarSource = await fs.readFile(
     path.join(projectDirectory, "src", "components", "app-sidebar.tsx"),
     "utf8",
@@ -968,6 +979,22 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(docsPageSource, /data-generated-docs/);
   assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
+  assertNoRuntimeGeneratedRendering("docs route", docsPageSource);
+  assert.match(
+    docsPageSource,
+    /canonicalSurfaceUrl\("docs", `\/docs\/\$\{project\.slug\}\/`\)/,
+  );
+  assert.match(docsPageSource, /canonicalUrl=\{canonicalUrl\}/);
+  assert.match(docsPageSource, /GeneratedDocsStaticEnhancer/);
+  assert.doesNotMatch(
+    docsPageSource,
+    /from "@\/components\/web\/generated-docs-enhancer\.astro"/,
+  );
+  assert.doesNotMatch(docsPageSource, /GeneratedDocsPropertiesFallback/);
+  assertNoRuntimeGeneratedRendering(
+    "docs static enhancer",
+    generatedDocsStaticEnhancerSource,
+  );
   assert.match(
     assetsRouteSource,
     /"src", "content", "generated-docs", "assets"/,
@@ -983,6 +1010,19 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(searchIndexRouteSource, /loadDocsProjectCatalog/);
   assert.match(appSidebarSource, /versionManifestHref="\/versions\.json"/);
 });
+
+function assertNoRuntimeGeneratedRendering(label: string, source: string) {
+  assert.doesNotMatch(
+    source,
+    /renderSharedSnippetCard|renderSharedPropertiesCard|enhanceCodeSnippets|enhanceStandaloneCodeBlocks|docsSnippetTemplates|renderDocsSnippetTemplates/,
+    `${label} must not render generated snippet or properties cards at runtime`,
+  );
+  assert.doesNotMatch(
+    source,
+    /codeToHtml|createHighlighter|getHighlighter|from ["']shiki["']|import\(["']shiki["']\)/,
+    `${label} must not highlight generated code at runtime`,
+  );
+}
 
 function assertScriptOrder(script: any, producer: any, consumer: any): any {
   assert.equal(typeof script, "string");

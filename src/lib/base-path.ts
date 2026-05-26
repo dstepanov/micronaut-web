@@ -59,6 +59,10 @@ export function withSurfacePath(surface: SurfaceTarget, path = "/") {
   return withBasePathForBase(routeForSurface(surface, path), basePath);
 }
 
+export function canonicalSurfaceUrl(surface: "main" | "docs" | "guides", path = "/") {
+  return new URL(routeForSurface(surface, path).replace(/^\/+/, ""), externalSurfaceUrls[surface]).toString();
+}
+
 function routeForCurrentDeployment(path: string) {
   if (!path || path.startsWith("#") || hasSchemeOrProtocolRelativeUrl(path) || !path.startsWith("/")) {
     return path;

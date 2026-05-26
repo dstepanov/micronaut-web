@@ -109,7 +109,6 @@ const consumers = [
       "renderDocsSnippetTemplates",
       "define:vars={{ docsSnippetStyles, docsSnippetTemplates }}",
       "renderSharedSnippetCard",
-      "renderSharedPropertiesCard",
       "docsSnippetStyles.standaloneCard",
       "docsSnippetStyles.copyButton",
       "docsSnippetStyles.codePre",
@@ -121,6 +120,26 @@ const consumers = [
       "docsSnippetStyles.cardWithFooter",
       "docsSnippetStyles.languageText",
       "docsSnippetStyles.kindIcon",
+    ],
+  },
+  {
+    file: "src/components/web/generated-docs-static-enhancer.astro",
+    requiredUses: [
+      "define:vars={{ docsSnippetStyles }}",
+      "docsSnippetStyles.buttonGhostXs",
+      "docsSnippetStyles.copyButton",
+      "docsSnippetStyles.codePre",
+      "docsSnippetStyles.codeElement",
+      "docsSnippetStyles.languageButton",
+    ],
+  },
+  {
+    file: "src/components/web/generated-docs-properties-fallback.astro",
+    requiredUses: [
+      "renderDocsSnippetTemplates",
+      "define:vars={{ docsPropertiesTemplate, docsPropertiesCardClass }}",
+      "renderSharedPropertiesCard",
+      "docsSnippetStyles.propertiesCard",
     ],
   },
   {
