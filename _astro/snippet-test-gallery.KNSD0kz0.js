@@ -1,4 +1,4 @@
-import{j as e}from"./utils._5d9EbYF.js";import{r as m}from"./index.Bb60DpJX.js";import{D as h,a as j,b as f,e as l,S as C,c as b,C as y,d as v}from"./docs-code-snippet.DA8QFAX5.js";const N=[{language:"java",label:"Java",fileName:"HelloController.java",code:`import io.micronaut.http.annotation.Controller;
+import{j as e}from"./utils._5d9EbYF.js";import{r as m}from"./index.Bb60DpJX.js";import{D as h,a as j,b as f,e as l,S as C,c as b,C as y,d as v}from"./docs-code-snippet.O4ovsfup.js";const N=[{language:"java",label:"Java",fileName:"HelloController.java",code:`import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 
 @Controller("/hello") // <1>
