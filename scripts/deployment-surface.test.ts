@@ -230,19 +230,14 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
   assert.equal(await exists(path.join(dist, "latest", "assets")), false);
-  const assetHash = await singleHashedAssetDirectory(dist);
+  const assetFile = await singleProjectHashedAssetFile(
+    dist,
+    "core",
+    "diagram",
+    "svg",
+  );
   assert.equal(
-    await exists(
-      path.join(
-        dist,
-        "assets",
-        assetHash,
-        "core",
-        "docs",
-        "img",
-        "diagram.svg",
-      ),
-    ),
+    await exists(path.join(dist, "assets", "core", assetFile)),
     true,
   );
   assert.match(
@@ -252,7 +247,7 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   assert.match(
     await fs.readFile(path.join(dist, "latest", "core", "index.html"), "utf8"),
     new RegExp(
-      `\\.\\./\\.\\./assets/${assetHash}/core/docs/img/diagram\\.svg\\?cache=1#diagram`,
+      `\\.\\./\\.\\./assets/core/${escapeRegExp(assetFile)}\\?cache=1#diagram`,
     ),
   );
   assert.match(
@@ -285,18 +280,14 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
   assert.equal(await exists(path.join(dist, "latest", "assets")), false);
-  const assetHash = await singleHashedAssetDirectory(dist);
+  const assetFile = await singleProjectHashedAssetFile(
+    dist,
+    "micronaut-http-client",
+    "client",
+    "png",
+  );
   assert.equal(
-    await exists(
-      path.join(
-        dist,
-        "assets",
-        assetHash,
-        "micronaut-http-client",
-        "images",
-        "client.png",
-      ),
-    ),
+    await exists(path.join(dist, "assets", "micronaut-http-client", assetFile)),
     true,
   );
   assert.match(
@@ -309,7 +300,7 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
       "utf8",
     ),
     new RegExp(
-      `\\.\\./\\.\\./assets/${assetHash}/micronaut-http-client/images/client\\.png`,
+      `\\.\\./\\.\\./assets/micronaut-http-client/${escapeRegExp(assetFile)}`,
     ),
   );
 });
@@ -482,7 +473,7 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   const published = await temporaryDirectory(t);
   await writeFiles(dist, [
     "_astro/app.js",
-    "assets/1111111111111111/core/docs/img/diagram.svg",
+    "assets/core/diagram.1111111111111111.svg",
     "index.html",
     "4.10.14/index.html",
     "4.10.14/core/index.html",
@@ -490,6 +481,8 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   await writeFiles(published, [
     "assets/aaaaaaaaaaaaaaaa/unused.png",
     "assets/bbbbbbbbbbbbbbbb/old.png",
+    "assets/core/unused.aaaaaaaaaaaaaaaa.png",
+    "assets/core/old.bbbbbbbbbbbbbbbb.png",
     "assets/stylesheets/site.css",
     "docsassets/css/main.css",
     "4.10.1/core/index.html",
@@ -498,12 +491,15 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   await writeTextFile(
     dist,
     "4.10.14/core/index.html",
-    '<img src="../../assets/1111111111111111/core/docs/img/diagram.svg">',
+    '<img src="../../assets/core/diagram.1111111111111111.svg">',
   );
   await writeTextFile(
     published,
     "4.10.1/core/index.html",
-    '<img src="../../assets/bbbbbbbbbbbbbbbb/old.png">',
+    [
+      '<img src="../../assets/bbbbbbbbbbbbbbbb/old.png">',
+      '<img src="/assets/core/old.bbbbbbbbbbbbbbbb.png">',
+    ].join("\n"),
   );
 
   await publishDocsSurface({
@@ -524,15 +520,7 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   assert.equal(await exists(path.join(published, ".nojekyll")), true);
   assert.equal(
     await exists(
-      path.join(
-        published,
-        "assets",
-        "1111111111111111",
-        "core",
-        "docs",
-        "img",
-        "diagram.svg",
-      ),
+      path.join(published, "assets", "core", "diagram.1111111111111111.svg"),
     ),
     true,
   );
@@ -542,7 +530,19 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   );
   assert.equal(
     await exists(
+      path.join(published, "assets", "core", "old.bbbbbbbbbbbbbbbb.png"),
+    ),
+    true,
+  );
+  assert.equal(
+    await exists(
       path.join(published, "assets", "aaaaaaaaaaaaaaaa", "unused.png"),
+    ),
+    false,
+  );
+  assert.equal(
+    await exists(
+      path.join(published, "assets", "core", "unused.aaaaaaaaaaaaaaaa.png"),
     ),
     false,
   );
@@ -663,15 +663,28 @@ async function writeTextFile(directory: string, file: string, content: string) {
   await fs.writeFile(target, content, "utf8");
 }
 
-async function singleHashedAssetDirectory(directory: string) {
-  const entries = await fs.readdir(path.join(directory, "assets"), {
+async function singleProjectHashedAssetFile(
+  directory: string,
+  project: string,
+  name: string,
+  extension: string,
+) {
+  const entries = await fs.readdir(path.join(directory, "assets", project), {
     withFileTypes: true,
   });
-  const hashes = entries
-    .filter((entry) => entry.isDirectory() && /^[a-f0-9]{16}$/.test(entry.name))
+  const files = entries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        new RegExp(`^${name}\\.[a-f0-9]{16}\\.${extension}$`).test(entry.name),
+    )
     .map((entry) => entry.name);
-  assert.equal(hashes.length, 1);
-  return hashes[0];
+  assert.equal(files.length, 1);
+  return files[0];
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function exists(file: string) {

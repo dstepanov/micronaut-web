@@ -3,7 +3,8 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const HASH_DIRECTORY_PATTERN = /^[a-f0-9]{16}$/;
+const LEGACY_HASH_DIRECTORY_PATTERN = /^[a-f0-9]{16}$/;
+const HASHED_FILE_PATTERN = /^.+\.[a-f0-9]{16}\.[^./]+$/;
 
 export type HoistSurfaceAssetResult = {
   files: number;
@@ -38,8 +39,8 @@ export async function hoistVersionedSurfaceAssets({
         .update(content)
         .digest("hex")
         .slice(0, 16);
-      const sharedAssetPath = path.posix.join("assets", hash, file);
-      const sharedAssetDirectory = path.posix.join("assets", hash);
+      const sharedAssetPath = sharedAssetPathFor(file, hash);
+      const sharedAssetDirectory = path.posix.dirname(sharedAssetPath);
       directories.add(sharedAssetDirectory);
       assetMappings.set(
         path.posix.join(versionAssetsRoot, file),
@@ -95,28 +96,107 @@ export async function pruneUnusedHashedSurfaceAssets(
     throw error;
   }
 
-  const referenced = await referencedHashedAssetDirectories(directory);
+  const referenced = await referencedHashedAssets(directory);
   await Promise.all(
-    entries
-      .filter(
-        (entry) =>
-          entry.isDirectory() &&
-          HASH_DIRECTORY_PATTERN.test(entry.name) &&
-          !referenced.has(entry.name),
-      )
-      .map((entry) =>
-        fs.rm(path.join(assetsDirectory, entry.name), {
+    entries.map(async (entry) => {
+      const entryPath = path.join(assetsDirectory, entry.name);
+      const relativePath = path.posix.join("assets", entry.name);
+      if (
+        entry.isDirectory() &&
+        LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name) &&
+        !referenced.legacyDirectories.has(entry.name)
+      ) {
+        return fs.rm(entryPath, {
           force: true,
           recursive: true,
-        }),
-      ),
+        });
+      }
+      if (
+        entry.isDirectory() &&
+        !LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name)
+      ) {
+        await pruneUnusedHashedFiles(entryPath, relativePath, referenced.files);
+        await removeEmptyDirectory(entryPath);
+        return;
+      }
+      if (
+        entry.isFile() &&
+        isHashedAssetFile(relativePath) &&
+        !referenced.files.has(relativePath)
+      ) {
+        return fs.rm(entryPath, { force: true });
+      }
+      return undefined;
+    }),
   );
 }
 
-async function referencedHashedAssetDirectories(
+async function pruneUnusedHashedFiles(
   directory: string,
-): Promise<Set<string>> {
-  const referenced = new Set<string>();
+  relativeDirectory: string,
+  referenced: Set<string>,
+): Promise<void> {
+  let entries: Array<import("node:fs").Dirent>;
+  try {
+    entries = await fs.readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (isNotFound(error)) {
+      return;
+    }
+    throw error;
+  }
+
+  await Promise.all(
+    entries.map(async (entry) => {
+      const absolutePath = path.join(directory, entry.name);
+      const relativePath = path.posix.join(relativeDirectory, entry.name);
+      if (entry.isDirectory()) {
+        await pruneUnusedHashedFiles(absolutePath, relativePath, referenced);
+        await removeEmptyDirectory(absolutePath);
+        return;
+      }
+      if (
+        entry.isFile() &&
+        isHashedAssetFile(relativePath) &&
+        !referenced.has(relativePath)
+      ) {
+        await fs.rm(absolutePath, { force: true });
+      }
+    }),
+  );
+}
+
+async function removeEmptyDirectory(directory: string): Promise<void> {
+  try {
+    const entries = await fs.readdir(directory);
+    if (!entries.length) {
+      await fs.rmdir(directory);
+    }
+  } catch (error) {
+    if (!isNotFound(error)) {
+      throw error;
+    }
+  }
+}
+
+function sharedAssetPathFor(file: string, hash: string) {
+  const parts = file.split("/").filter(Boolean);
+  const projectName = parts.length > 1 ? parts[0] : "shared";
+  const basename = path.posix.basename(file);
+  const extension = path.posix.extname(basename);
+  const name = extension ? basename.slice(0, -extension.length) : basename;
+  const hashedName = extension
+    ? `${name}.${hash}${extension}`
+    : `${name}.${hash}`;
+  return path.posix.join("assets", projectName, hashedName);
+}
+
+async function referencedHashedAssets(directory: string): Promise<{
+  legacyDirectories: Set<string>;
+  files: Set<string>;
+}> {
+  const legacyDirectories = new Set<string>();
+  const files = new Set<string>();
   const htmlFiles = await listRegularFiles(directory);
   await Promise.all(
     htmlFiles
@@ -125,13 +205,16 @@ async function referencedHashedAssetDirectories(
         const html = await fs.readFile(filesystemPath(directory, file), "utf8");
         for (const match of html.matchAll(/\b(?:href|src)="([^"]*)"/g)) {
           const asset = hashedAssetReference(file, match[1]);
-          if (asset) {
-            referenced.add(asset);
+          if (asset?.legacyDirectory) {
+            legacyDirectories.add(asset.legacyDirectory);
+          }
+          if (asset?.file) {
+            files.add(asset.file);
           }
         }
       }),
   );
-  return referenced;
+  return { legacyDirectories, files };
 }
 
 async function rewriteHtmlAssetReferences({
@@ -195,15 +278,53 @@ function rewriteAssetReferences(
 }
 
 function hashedAssetReference(htmlFilePath: string, value: string) {
-  const parsed = relativeUrlPath(value);
-  if (!parsed) {
+  const resolvedPath = referencedAssetPath(htmlFilePath, value);
+  if (!resolvedPath) {
     return undefined;
   }
-  const resolvedPath = path.posix.normalize(
-    path.posix.join(directoryName(htmlFilePath), parsed.pathname),
+  const legacyMatch = /^assets\/([a-f0-9]{16})(?:\/|$)/.exec(resolvedPath);
+  if (legacyMatch) {
+    return { legacyDirectory: legacyMatch[1] };
+  }
+  if (isHashedAssetFile(resolvedPath)) {
+    return { file: resolvedPath };
+  }
+  return undefined;
+}
+
+function referencedAssetPath(htmlFilePath: string, value: string) {
+  if (
+    !value ||
+    value.startsWith("#") ||
+    value.startsWith("//") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(value)
+  ) {
+    return undefined;
+  }
+  const suffixIndex = firstSuffixIndex(value);
+  const pathname = suffixIndex >= 0 ? value.slice(0, suffixIndex) : value;
+  if (!pathname) {
+    return undefined;
+  }
+  const normalizedPathname = pathname.replaceAll("\\", "/");
+  if (normalizedPathname.startsWith("/")) {
+    const rootRelativePath = path.posix.normalize(
+      normalizedPathname.replace(/^\/+/, ""),
+    );
+    return rootRelativePath.startsWith("assets/")
+      ? rootRelativePath
+      : undefined;
+  }
+  return path.posix.normalize(
+    path.posix.join(directoryName(htmlFilePath), normalizedPathname),
   );
-  const match = /^assets\/([a-f0-9]{16})(?:\/|$)/.exec(resolvedPath);
-  return match?.[1];
+}
+
+function isHashedAssetFile(value: string) {
+  return (
+    value.startsWith("assets/") &&
+    HASHED_FILE_PATTERN.test(path.posix.basename(value))
+  );
 }
 
 function relativeUrlPath(value: string) {
