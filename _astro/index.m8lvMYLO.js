@@ -1,0 +1,1 @@
+import{f as a}from"./index.d-dc9npa.js";import{r as e}from"./index.Bb60DpJX.js";const c=[["path",{d:"M12 19h8",key:"baeox8"}],["path",{d:"m4 17 6-6-6-6",key:"1yngyt"}]],u=a("terminal",c);function f(t){const r=e.useRef(t);return e.useEffect(()=>{r.current=t}),e.useMemo(()=>(...o)=>r.current?.(...o),[])}export{u as T,f as u};
