@@ -7,7 +7,7 @@ import {
   docsCatalogProject,
   loadDocsProjectCatalog,
 } from "@/lib/docs-project-catalog";
-import type { ProtocolProject } from "@/lib/protocol";
+import type { DocsProject } from "@/lib/content-catalog";
 import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
 
 const generatedDocsDirectory = join(
@@ -31,7 +31,7 @@ export async function GET() {
   const generatedHtmlBySlug = await readGeneratedDocsHtml();
   const projects = docsProjectCatalog.projects
     .map((project) => docsCatalogProject(docsProjectCatalog, project.slug))
-    .filter((project): project is ProtocolProject => Boolean(project));
+    .filter((project): project is DocsProject => Boolean(project));
 
   return new Response(
     JSON.stringify({

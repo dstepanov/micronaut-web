@@ -3,11 +3,11 @@ import { join } from "node:path";
 
 import fallbackDocsProjectCatalog from "@/data/docs-projects.fixture.json";
 import type {
+  CatalogCategory,
+  DocsProject,
   DocsProjectCatalog,
-  ProtocolCategory,
-  ProtocolProject,
-} from "@/lib/protocol";
-import { projectBySlug } from "@/lib/protocol";
+} from "@/lib/content-catalog";
+import { docsProjectFromCatalog } from "@/lib/content-catalog";
 
 const generatedDocsProjectCatalogFile = join(
   process.cwd(),
@@ -32,37 +32,26 @@ export async function loadDocsProjectCatalog(): Promise<DocsProjectCatalog> {
 
 export function docsCatalogProjectsByCategory(
   catalog: DocsProjectCatalog,
-  category: ProtocolCategory,
-): ProtocolProject[] {
+  category: CatalogCategory,
+): DocsProject[] {
   const selected = new Set(category.projectSlugs || []);
   return catalog.projects
     .filter((project) => selected.has(project.slug))
     .map((project) => docsCatalogProject(catalog, project.slug))
-    .filter(Boolean) as ProtocolProject[];
+    .filter(Boolean) as DocsProject[];
 }
 
 export function docsCatalogProject(
   catalog: DocsProjectCatalog,
   slug: string,
-): ProtocolProject | undefined {
+): DocsProject | undefined {
   const catalogProject = catalog.projects.find(
     (project) => project.slug === slug,
   );
   if (!catalogProject) {
     return undefined;
   }
-  const protocolProject = projectBySlug(slug);
-  return {
-    ...protocolProject,
-    ...catalogProject,
-    href: protocolProject?.href || `/docs/${catalogProject.slug}/`,
-    sections: protocolProject?.sections || [],
-    references: protocolProject?.references || [
-      { label: "Guide", href: catalogProject.publishedGuideUrl },
-      { label: "Repository", href: catalogProject.repositoryUrl },
-    ],
-    searchTerms: protocolProject?.searchTerms || [],
-  } as ProtocolProject;
+  return docsProjectFromCatalog(catalogProject);
 }
 
 function isMissingFileError(error: unknown) {

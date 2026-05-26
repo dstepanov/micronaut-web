@@ -15,7 +15,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
-import { docsSearchItems, searchItems, type SearchItem } from "@/lib/protocol";
+import {
+  docsSearchItems,
+  searchItems,
+  type SearchItem,
+} from "@/lib/content-catalog";
 
 type MainSiteSearchPage = {
   slug: string;

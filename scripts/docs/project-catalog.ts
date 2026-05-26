@@ -29,14 +29,12 @@ export function buildDocsProjectCatalog({
   projects,
   platformVersions,
   existingCatalog,
-  protocol,
   source,
   publishedSource,
 }: {
   projects: DocsProject[];
   platformVersions: Properties;
   existingCatalog: Record<string, any>;
-  protocol: Record<string, any>;
   source: string;
   publishedSource: string;
 }): DocsProjectCatalog {
@@ -48,11 +46,10 @@ export function buildDocsProjectCatalog({
       (project: any): any => [project.slug, project],
     ),
   );
-  const protocolProjectOrder = new Map<string, number>(
-    (
-      (protocol.docs as { projects?: Array<{ slug: string }> } | undefined)
-        ?.projects || []
-    ).map((project: any, index: any): any => [project.slug, index]),
+  const existingProjectOrder = new Map<string, number>(
+    ((existingCatalog.projects || []) as Array<{ slug: string }>).map(
+      (project: any, index: any): any => [project.slug, index],
+    ),
   );
   const categories = (existingCatalog.categories ||
     []) as DocsProjectCatalog["categories"];
@@ -103,8 +100,9 @@ export function buildDocsProjectCatalog({
     })
     .sort(
       (left: DocsProject, right: DocsProject): any =>
-        projectOrder(left, protocolProjectOrder) -
-        projectOrder(right, protocolProjectOrder),
+        projectOrder(left, existingProjectOrder) -
+          projectOrder(right, existingProjectOrder) ||
+        left.displayName.localeCompare(right.displayName),
     );
 
   return {
@@ -118,7 +116,7 @@ export function buildDocsProjectCatalog({
 
 function projectOrder(
   project: DocsProject,
-  protocolProjectOrder: Map<string, number>,
+  existingProjectOrder: Map<string, number>,
 ): number {
-  return protocolProjectOrder.get(project.slug) ?? Number.MAX_SAFE_INTEGER;
+  return existingProjectOrder.get(project.slug) ?? Number.MAX_SAFE_INTEGER;
 }

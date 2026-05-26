@@ -3,8 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  projectCatalogMetadataProperties,
   readPlatformCatalogProjects,
-  readProperties,
   readTomlStringVersions,
 } from "./docs/project-manifest.ts";
 import { buildDocsProjectCatalog } from "./docs/project-catalog.ts";
@@ -25,34 +25,18 @@ const platformVersionCatalogFile = path.resolve(
 );
 const platformCatalogSourceUrl =
   "https://github.com/micronaut-projects/micronaut-platform/blob/master/gradle/libs.versions.toml";
-const checkedInDocsDataDirectory = path.join(
-  projectDirectory,
-  "src",
-  "data",
-  "docs",
-);
 const outputFile = path.join(
   projectDirectory,
   "src",
   "data",
   "docs-projects.fixture.json",
 );
-const protocolFile = path.join(
-  projectDirectory,
-  "src",
-  "data",
-  "protocol.json",
-);
 
-const [projectProperties, platformVersions, existingFixture, protocol] =
-  await Promise.all([
-    readProperties(
-      path.join(checkedInDocsDataDirectory, "docs-projects.properties"),
-    ),
-    readTomlStringVersions(platformVersionCatalogFile),
-    readJson(outputFile),
-    readJson(protocolFile),
-  ]);
+const [platformVersions, existingFixture] = await Promise.all([
+  readTomlStringVersions(platformVersionCatalogFile),
+  readJson(outputFile),
+]);
+const projectProperties = projectCatalogMetadataProperties(existingFixture);
 
 const projects = await readPlatformCatalogProjects(
   platformVersionCatalogFile,
@@ -62,7 +46,6 @@ const fixture = buildDocsProjectCatalog({
   projects,
   platformVersions,
   existingCatalog: existingFixture,
-  protocol,
   source:
     "micronaut-projects/micronaut-platform gradle/libs.versions.toml plus checked-in docs metadata",
   publishedSource: platformCatalogSourceUrl,

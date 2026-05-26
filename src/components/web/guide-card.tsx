@@ -11,9 +11,12 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { withBasePath } from "@/lib/base-path";
-import type { ProtocolGuide } from "@/lib/protocol";
+import {
+  guideOverviewPath,
+  type GeneratedGuide,
+} from "@/lib/content-catalog";
 
-export function GuideCard({ guide }: { guide: ProtocolGuide }) {
+export function GuideCard({ guide }: { guide: GeneratedGuide }) {
   const primaryCategory = guide.categories[0] || "Guide";
   const tags = guide.tags.slice(0, 4);
 
@@ -25,7 +28,7 @@ export function GuideCard({ guide }: { guide: ProtocolGuide }) {
           <Badge variant="outline">{guide.estimatedMinutes} min</Badge>
         </CardAction>
         <CardTitle className="text-lg leading-tight">
-          <a href={withBasePath(guide.href)} className="after:absolute after:inset-0">
+          <a href={withBasePath(guideOverviewPath(guide, "/guides"))} className="after:absolute after:inset-0">
             {guide.title}
           </a>
         </CardTitle>

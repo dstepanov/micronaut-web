@@ -338,20 +338,18 @@ test("latest guide replacement routes and parallel generated-content preparation
     latestRoute,
     /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
   );
-  assert.match(legacyRoute, /micronautProtocol\.guides\.guides/);
-  assert.match(legacyRoute, /productionUrl\("guides"\)/);
+  assert.doesNotMatch(legacyRoute, /@\/lib\/protocol/);
+  assert.doesNotMatch(legacyRoute, /productionUrl\("guides"\)/);
   assert.match(
     legacyRoute,
-    /appendRequestSearch\(props\.external \? props\.destination : withBasePath\(props\.destination\), url\)/,
+    /appendRequestSearch\(withBasePath\(props\.destination\), url\)/,
   );
   assert.match(zipRoute, /productionUrl\("guides", option\.zipUrl\)/);
   assert.match(zipRoute, /redirect\(props\.zipUrl, 302\)/);
   assert.match(guidesIndexRoute, /readGeneratedGuidesManifest/);
   assert.match(guidesIndexRoute, /root="\/guides"/);
-  assert.doesNotMatch(
-    guidesIndexRoute,
-    /GuidesCatalogTabs|GuidesFilterPanel|micronautProtocol\.guides\.guides/,
-  );
+  assert.doesNotMatch(guidesIndexRoute, /GuidesCatalogTabs|GuidesFilterPanel/);
+  assert.doesNotMatch(guidesIndexRoute, /@\/lib\/protocol/);
   assert.match(guidesRoute, /readGeneratedGuideFragment/);
   assert.match(guidesRoute, /On this guide/);
   assert.match(guidesRoute, /In this section/);
@@ -363,7 +361,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesRoute, /\.guide-page-index/);
   assert.match(guidesRoute, /requestAnimationFrame\(updateActiveSection\)/);
   assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
-  assert.match(guidesRoute, /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/);
+  assert.doesNotMatch(guidesRoute, /legacyGuidesBase/);
   assert.match(guidesRoute, /GeneratedDocsStaticEnhancer/);
   assertNoRuntimeGeneratedRendering("guides route", guidesRoute);
   assert.doesNotMatch(
@@ -371,11 +369,8 @@ test("latest guide replacement routes and parallel generated-content preparation
     /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
   );
   assert.match(guidesLegacyRoute, /guideOverviewPath\(guide, guidesRoot\)/);
-  assert.match(
-    guidesLegacyRoute,
-    /legacyGuidesBase\}tag-\$\{tagSlug\(tag\)\}\.html/,
-  );
-  assert.match(guidesLegacyRoute, /productionUrl\("guides"\)/);
+  assert.doesNotMatch(guidesLegacyRoute, /legacyGuidesBase/);
+  assert.doesNotMatch(guidesLegacyRoute, /productionUrl\("guides"\)/);
   assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
   assert.match(guidesRenderer, /renderStaticDocsSnippets/);
   assertNoRuntimeGeneratedRendering(

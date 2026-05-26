@@ -9,36 +9,31 @@ import {
   tagSlug
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
-import { micronautProtocol } from "@/lib/protocol";
-import { appendRequestSearch, productionUrl } from "@/lib/route-compatibility";
+import { appendRequestSearch } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 const guidesRoot = "/guides";
-const legacyGuidesBase = productionUrl("guides");
 
 export const getStaticPaths: GetStaticPaths = async () => {
   if (!shouldBuildGuidesRoutes()) {
     return [];
   }
   const manifest = await readGeneratedGuidesManifest();
-  const paths: Array<{ params: { slug: string }; props: { destination: string; external?: boolean } }> = [];
+  const paths: Array<{ params: { slug: string }; props: { destination: string } }> = [];
   const pages = new Set<string>();
-  const addPath = (slug: string, destination: string, external = false) => {
+  const addPath = (slug: string, destination: string) => {
     if (pages.has(slug)) {
       return;
     }
     pages.add(slug);
     paths.push({
       params: { slug },
-      props: { destination, external }
+      props: { destination }
     });
   };
 
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
     addPath(`tag-${tagSlug(tag)}`, guideTagPath(tag, guidesRoot).replace(/\.html$/, "/"));
-  }
-  for (const tag of allGeneratedGuideTags(micronautProtocol.guides.guides)) {
-    addPath(`tag-${tagSlug(tag)}`, `${legacyGuidesBase}tag-${tagSlug(tag)}.html`, true);
   }
   for (const guide of manifest.guides) {
     addPath(guide.slug, guideOverviewPath(guide, guidesRoot).replace(/\.html$/, "/"));
@@ -47,20 +42,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
     }
   }
 
-  for (const guide of micronautProtocol.guides.guides) {
-    addPath(guide.slug, `${legacyGuidesBase}${guide.slug}.html`, true);
-    for (const variant of guide.variants) {
-      const page = `${guide.slug}-${variant.buildTool.toLowerCase()}-${variant.language.toLowerCase()}`;
-      addPath(page, `${legacyGuidesBase}${page}.html`, true);
-    }
-  }
-
   return paths;
 };
 
-export const GET: APIRoute<{ destination: string; external?: boolean }> = ({ props, redirect, url }) => {
+export const GET: APIRoute<{ destination: string }> = ({ props, redirect, url }) => {
   return redirect(
-    appendRequestSearch(props.external ? props.destination : withBasePath(props.destination), url),
-    props.external ? 302 : 301
+    appendRequestSearch(withBasePath(props.destination), url),
+    301
   );
 };

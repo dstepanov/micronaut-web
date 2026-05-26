@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import fallbackGeneratedGuidesManifest from "@/content/generated-guides/manifest.json";
 import { enhanceGeneratedContentHtml } from "@/lib/generated-docs-html";
-import { micronautProtocol } from "@/lib/protocol";
 
 export type GeneratedGuideOption = {
   id: string;
@@ -45,9 +45,9 @@ export async function readGeneratedGuidesManifest(): Promise<GeneratedGuidesMani
       return manifest as GeneratedGuidesManifest;
     }
   } catch {
-    // Fall back to the checked-in protocol below.
+    // Fall back to the checked-in manifest generated for local builds.
   }
-  return fallbackManifest();
+  return fallbackGeneratedGuidesManifest as GeneratedGuidesManifest;
 }
 
 export async function readGeneratedGuideFragment(option: GeneratedGuideOption): Promise<string | undefined> {
@@ -88,59 +88,7 @@ export function latestGuides(guides: GeneratedGuide[], limit = 8) {
     .slice(0, limit);
 }
 
-function fallbackManifest(): GeneratedGuidesManifest {
-  const guides = micronautProtocol.guides.guides.map((guide) => {
-    const options = uniqueOptions(guide.variants.map((variant) => {
-      const language = variant.language.toLowerCase();
-      const buildTool = variant.buildTool.toLowerCase();
-      const file = `${guide.slug}-${buildTool}-${language}.html`;
-      return {
-        id: `${guide.slug}-${buildTool}-${language}`,
-        label: `${variant.language} / ${variant.buildTool}`,
-        language,
-        languageLabel: variant.language,
-        buildTool,
-        buildToolLabel: variant.buildTool,
-        file,
-        fragment: `fragments/${file}`,
-        zipUrl: `${guide.slug}-${buildTool}-${language}.zip`
-      };
-    }));
-    const defaultOption = options.find((option) => option.language === "java" && option.buildTool === "gradle") || options[0];
-    return {
-      slug: guide.slug,
-      title: guide.title,
-      intro: guide.intro,
-      authors: guide.authors,
-      tags: guide.tags,
-      categories: guide.categories,
-      publicationDate: guide.publicationDate,
-      estimatedMinutes: guide.estimatedMinutes,
-      overviewFile: `${guide.slug}.html`,
-      defaultOptionFile: defaultOption?.file || "",
-      options
-    };
-  });
-  return {
-    generatedAt: micronautProtocol.generatedAt,
-    guideCount: guides.length,
-    guides
-  };
-}
-
 function normalizedRoot(root: string) {
   const value = root.endsWith("/") ? root.slice(0, -1) : root;
   return value || "";
-}
-
-function uniqueOptions(options: GeneratedGuideOption[]) {
-  const seen = new Set<string>();
-  return options.filter((option) => {
-    const key = `${option.buildTool}:${option.language}`;
-    if (seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
 }

@@ -101,6 +101,23 @@ export function readIndexed(
   return values;
 }
 
+export function projectCatalogMetadataProperties(catalog: {
+  projects?: Array<Record<string, unknown>>;
+}): Properties {
+  const projects = catalog.projects || [];
+  const properties: Properties = {
+    "project.count": String(projects.length),
+  };
+  projects.forEach((project, index) => {
+    for (const [key, value] of Object.entries(project)) {
+      if (typeof value === "string") {
+        properties[`project.${index}.${key}`] = value;
+      }
+    }
+  });
+  return properties;
+}
+
 export async function readTomlStringVersions(
   file: string,
   required: any = true,

@@ -3,12 +3,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { IconGlyph } from "@/components/web/icon-glyph";
 import { withBasePath } from "@/lib/base-path";
-import { micronautProtocol } from "@/lib/protocol";
+import {
+  guideCategories,
+  staticGeneratedGuidesManifest,
+} from "@/lib/content-catalog";
 
 export function GuidesFilterPanel() {
-  const topTags = Array.from(new Set(micronautProtocol.guides.guides.flatMap((guide) => guide.tags)))
+  const topTags = Array.from(
+    new Set(staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags)),
+  )
     .sort()
     .slice(0, 36);
+  const categories = guideCategories();
 
   return (
     <aside className="hidden w-[248px] shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
@@ -16,7 +22,7 @@ export function GuidesFilterPanel() {
         <div className="grid gap-5 p-2">
           <section className="grid gap-2">
             <h2 className="px-2 text-[0.72rem] font-normal text-muted-foreground">Topics</h2>
-            {micronautProtocol.guides.categories.slice(0, 18).map((category) => (
+            {categories.slice(0, 18).map((category) => (
               <a
                 key={category.slug}
                 href={withBasePath(`/guides/?category=${category.slug}`)}

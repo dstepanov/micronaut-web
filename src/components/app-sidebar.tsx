@@ -22,7 +22,10 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { type DocsProjectCatalog, type ProtocolCategory } from "@/lib/protocol";
+import {
+  type CatalogCategory,
+  type DocsProjectCatalog,
+} from "@/lib/content-catalog";
 import docsVersions from "@/data/docs-versions.json";
 import { withBasePath } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
@@ -228,7 +231,7 @@ export function AppSidebar({
 
 function docsCatalogProjectsByCategory(
   projectCatalog: DocsProjectCatalog,
-  category: ProtocolCategory,
+  category: CatalogCategory,
 ) {
   const selected = new Set(category.projectSlugs || []);
   return projectCatalog.projects

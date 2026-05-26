@@ -5,12 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GuideCard } from "@/components/web/guide-card";
 import { withBasePath } from "@/lib/base-path";
-import { featuredGuides, latestGuides, micronautProtocol } from "@/lib/protocol";
+import {
+  featuredGuides,
+  guideOverviewPath,
+  latestGuideSummaries,
+  staticGeneratedGuidesManifest,
+} from "@/lib/content-catalog";
 
 export function GuidesCatalogTabs() {
   const featured = featuredGuides();
-  const latest = latestGuides(12);
-  const all = micronautProtocol.guides.guides;
+  const latest = latestGuideSummaries(12);
+  const all = staticGeneratedGuidesManifest.guides;
 
   return (
     <Tabs defaultValue="featured" className="gap-6">
@@ -55,7 +60,7 @@ export function GuidesCatalogTabs() {
                   </td>
                   <td className="px-4 py-3">
                     <Button asChild variant="ghost" size="sm">
-                      <a href={withBasePath(guide.href)}>Open</a>
+                      <a href={withBasePath(guideOverviewPath(guide, "/guides"))}>Open</a>
                     </Button>
                   </td>
                 </tr>

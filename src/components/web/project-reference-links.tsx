@@ -2,9 +2,9 @@ import { ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { withBasePath } from "@/lib/base-path";
-import type { ProtocolLink } from "@/lib/protocol";
+import type { CatalogLink } from "@/lib/content-catalog";
 
-export function ProjectReferenceLinks({ references }: { references: ProtocolLink[] }) {
+export function ProjectReferenceLinks({ references }: { references: CatalogLink[] }) {
   return (
     <div className="mt-5 flex flex-wrap gap-2">
       {references.map((reference) => (

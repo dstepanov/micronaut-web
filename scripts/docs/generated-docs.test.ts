@@ -315,24 +315,9 @@ test("docs renderer writes generated HTML and page-relative docs asset links", a
     "img",
   );
 
-  await fs.mkdir(path.join(docsDirectory, "gradle"), {
-    recursive: true,
-  });
+  await writeDocsProjectManifest(docsDirectory);
   await fs.mkdir(guideDirectory, { recursive: true });
   await fs.mkdir(imageDirectory, { recursive: true });
-  await fs.writeFile(
-    path.join(docsDirectory, "gradle", "docs-projects.properties"),
-    [
-      "project.count=1",
-      "project.0.slug=fixture",
-      "project.0.displayName=Micronaut Fixture",
-      "project.0.submodulePath=repos/micronaut-fixture",
-      "project.0.repositoryUrl=https://github.com/micronaut-projects/micronaut-fixture.git",
-      "project.0.branch=master",
-      "project.0.platformVersionKey=micronaut",
-    ].join("\n"),
-    "utf8",
-  );
   await fs.writeFile(
     path.join(guideDirectory, "toc.yml"),
     "title: Fixture Docs\nintroduction: Introduction\n",
@@ -431,23 +416,8 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
     "example",
   );
 
-  await fs.mkdir(path.join(docsDirectory, "gradle"), {
-    recursive: true,
-  });
+  await writeDocsProjectManifest(docsDirectory);
   await fs.mkdir(snippetSourceDirectory, { recursive: true });
-  await fs.writeFile(
-    path.join(docsDirectory, "gradle", "docs-projects.properties"),
-    [
-      "project.count=1",
-      "project.0.slug=fixture",
-      "project.0.displayName=Micronaut Fixture",
-      "project.0.submodulePath=repos/micronaut-fixture",
-      "project.0.repositoryUrl=https://github.com/micronaut-projects/micronaut-fixture.git",
-      "project.0.branch=master",
-      "project.0.platformVersionKey=micronaut",
-    ].join("\n"),
-    "utf8",
-  );
   await fs.writeFile(
     path.join(snippetSourceDirectory, "FixtureSnippet.java"),
     [
@@ -758,28 +728,18 @@ test("docs renderer can render every project in a manifest", async (t: any): Pro
   const docsDirectory = path.join(temporaryDirectory, "docs");
   const outputDirectory = path.join(temporaryDirectory, "generated-docs");
 
-  await fs.mkdir(path.join(docsDirectory, "gradle"), {
-    recursive: true,
-  });
-  await fs.writeFile(
-    path.join(docsDirectory, "gradle", "docs-projects.properties"),
-    [
-      "project.count=2",
-      "project.0.slug=alpha",
-      "project.0.displayName=Micronaut Alpha",
-      "project.0.submodulePath=repos/micronaut-alpha",
-      "project.0.repositoryUrl=https://github.com/micronaut-projects/micronaut-alpha.git",
-      "project.0.branch=master",
-      "project.0.platformVersionKey=micronaut",
-      "project.1.slug=beta",
-      "project.1.displayName=Micronaut Beta",
-      "project.1.submodulePath=repos/micronaut-beta",
-      "project.1.repositoryUrl=https://github.com/micronaut-projects/micronaut-beta.git",
-      "project.1.branch=master",
-      "project.1.platformVersionKey=micronaut",
-    ].join("\n"),
-    "utf8",
-  );
+  await writeDocsProjectCatalog(docsDirectory, [
+    {
+      slug: "alpha",
+      displayName: "Micronaut Alpha",
+      repositoryName: "micronaut-alpha",
+    },
+    {
+      slug: "beta",
+      displayName: "Micronaut Beta",
+      repositoryName: "micronaut-beta",
+    },
+  ]);
   await writeGuide(
     docsDirectory,
     "micronaut-alpha",
@@ -1052,20 +1012,55 @@ async function writeDocsProjectManifest(
   slug = "fixture",
   repositoryName = "micronaut-fixture",
 ): Promise<any> {
-  await fs.mkdir(path.join(docsDirectory, "gradle"), {
-    recursive: true,
-  });
+  await writeDocsProjectCatalog(docsDirectory, [
+    {
+      slug,
+      displayName: "Micronaut Fixture",
+      repositoryName,
+    },
+  ]);
+}
+
+async function writeDocsProjectCatalog(
+  docsDirectory: any,
+  projects: Array<{
+    slug: string;
+    displayName: string;
+    repositoryName: string;
+  }>,
+): Promise<any> {
+  await fs.mkdir(docsDirectory, { recursive: true });
   await fs.writeFile(
-    path.join(docsDirectory, "gradle", "docs-projects.properties"),
-    [
-      "project.count=1",
-      `project.0.slug=${slug}`,
-      "project.0.displayName=Micronaut Fixture",
-      `project.0.submodulePath=repos/${repositoryName}`,
-      `project.0.repositoryUrl=https://github.com/micronaut-projects/${repositoryName}.git`,
-      "project.0.branch=master",
-      "project.0.platformVersionKey=micronaut",
-    ].join("\n"),
+    path.join(docsDirectory, "docs-projects.fixture.json"),
+    JSON.stringify(
+      {
+        source: "test fixture",
+        publishedSource: "",
+        projectCount: projects.length,
+        categories: [],
+        projects: projects.map((project) => ({
+          slug: project.slug,
+          displayName: project.displayName,
+          shortName: project.displayName.replace(/^Micronaut\s+/i, ""),
+          projectKey: project.slug,
+          module: `io.micronaut.${project.slug}:micronaut-${project.slug}-bom`,
+          repositoryName: project.repositoryName,
+          repositoryUrl: `https://github.com/micronaut-projects/${project.repositoryName}.git`,
+          publishedGuideUrl: `https://micronaut-projects.github.io/${project.repositoryName}/latest/guide/`,
+          branch: "master",
+          submodulePath: `repos/${project.repositoryName}`,
+          platformVersionKey: "micronaut",
+          version: "",
+          icon: "lucide:book-open",
+          primaryCategory: "test",
+          categorySlugs: ["test"],
+          shortDescription: project.displayName,
+          longDescription: `${project.displayName} test fixture.`,
+        })),
+      },
+      null,
+      2,
+    ),
     "utf8",
   );
 }

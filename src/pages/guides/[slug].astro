@@ -18,8 +18,6 @@ import {
   type GeneratedGuideOption
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
-import { micronautProtocol } from "@/lib/protocol";
-import { productionUrl } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 const guidesRoot = "/guides";
@@ -41,20 +39,14 @@ type VariantProps = {
   option: GeneratedGuideOption;
 };
 
-type ExternalProps = {
-  kind: "external";
-  destination: string;
-};
-
 export async function getStaticPaths() {
   if (!shouldBuildGuidesRoutes()) {
     return [];
   }
-  const legacyGuidesBase = productionUrl("guides");
   const manifest = await readGeneratedGuidesManifest();
-  const paths: Array<{ params: { slug: string }; props: TagProps | OverviewProps | VariantProps | ExternalProps }> = [];
+  const paths: Array<{ params: { slug: string }; props: TagProps | OverviewProps | VariantProps }> = [];
   const pages = new Set<string>();
-  const addPath = (slug: string, props: TagProps | OverviewProps | VariantProps | ExternalProps) => {
+  const addPath = (slug: string, props: TagProps | OverviewProps | VariantProps) => {
     if (pages.has(slug)) {
       return;
     }
@@ -65,9 +57,6 @@ export async function getStaticPaths() {
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
     addPath(`tag-${tagSlug(tag)}`, { kind: "tag", tag, guides: manifest.guides });
   }
-  for (const tag of allGeneratedGuideTags(micronautProtocol.guides.guides)) {
-    addPath(`tag-${tagSlug(tag)}`, { kind: "external", destination: `${legacyGuidesBase}tag-${tagSlug(tag)}.html` });
-  }
   for (const guide of manifest.guides) {
     addPath(guide.slug, { kind: "overview", guide });
     for (const option of guide.options) {
@@ -75,17 +64,10 @@ export async function getStaticPaths() {
     }
   }
 
-  for (const guide of micronautProtocol.guides.guides) {
-    addPath(guide.slug, { kind: "external", destination: `${legacyGuidesBase}${guide.slug}.html` });
-  }
-
   return paths;
 }
 
-const props = Astro.props as TagProps | OverviewProps | VariantProps | ExternalProps;
-if (props.kind === "external") {
-  return Astro.redirect(props.destination, 302);
-}
+const props = Astro.props as TagProps | OverviewProps | VariantProps;
 
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];

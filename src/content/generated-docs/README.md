@@ -9,7 +9,7 @@ npm run render:docs -- --slugs core,serde
 
 By default the renderer reads `.docs`, uses
 `.docs/repos/micronaut-platform/gradle/libs.versions.toml` together
-with checked-in metadata from `src/data/docs/docs-projects.properties`,
+with checked-in metadata from `src/data/docs-projects.fixture.json`,
 then reads each project's `src/main/docs/guide/toc.yml` and writes fragments
 back into this directory.
 Generated HTML files and copied docs assets are ignored by Git and are created
@@ -74,9 +74,9 @@ Validate snippet style sharing:
 npm run snippet-styles
 ```
 
-Run the protocol validation used by `dev` and `build`, including snippet style
-sharing checks:
+Run the checks used by `dev` and `build`, including snippet style sharing
+checks:
 
 ```bash
-npm run protocol
+npm run check
 ```

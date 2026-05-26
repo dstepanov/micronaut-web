@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 import { IconBadge } from "@/components/web/icon-badge";
 import { withBasePath } from "@/lib/base-path";
-import type { ProtocolProject } from "@/lib/protocol";
+import type { DocsProject } from "@/lib/content-catalog";
 
-export function ProjectCard({ project }: { project: ProtocolProject }) {
+export function ProjectCard({ project }: { project: DocsProject }) {
   return (
     <Card className="group relative grid h-full min-h-[252px] w-full grid-rows-[auto_minmax(84px,1fr)_auto] gap-2.5 rounded-lg p-3.5 py-3.5 transition hover:border-foreground/30 hover:shadow-md">
       <CardHeader className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-1 px-4">

@@ -10,7 +10,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import type { DocsProjectCatalog } from "@/lib/protocol";
+import type { DocsProjectCatalog } from "@/lib/content-catalog";
 
 type DocsShellProps = {
   projectCatalog: DocsProjectCatalog;

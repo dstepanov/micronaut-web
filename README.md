@@ -6,7 +6,7 @@ Astro prototype for three separately hostable Micronaut web surfaces:
 - `docs`: platform documentation catalog and detail pages under `/docs/`
 - `guides`: guides catalog and detail pages under `/guides/`
 
-All surfaces share the same protocol file, design tokens, and React components. The protocol is checked in as a static contract for the prototype:
+All surfaces share the same design tokens, React components, docs catalog fixture, and generated guide manifest:
 
 ```bash
 npm run dev
@@ -16,9 +16,9 @@ npm run build:docs
 npm run build:guides
 ```
 
-`npm run protocol` validates the checked-in protocol file without reading sibling repositories.
-`npm run sync:docs-projects` refreshes the test fixture at `src/data/docs-projects.fixture.json` from a local `micronaut-projects/micronaut-platform` checkout's `gradle/libs.versions.toml` plus checked-in project metadata.
-`src/data/docs/docs-projects.properties` is checked-in docs project metadata so CI can run the docs renderer without an external metadata checkout.
+`npm run check` validates TypeScript, script formatting, tests, and shared snippet styles.
+`npm run sync:docs-projects` refreshes the test fixture at `src/data/docs-projects.fixture.json` from a local `micronaut-projects/micronaut-platform` checkout's `gradle/libs.versions.toml` plus the metadata already stored in the fixture.
+`src/data/docs-projects.fixture.json` is the checked-in docs project metadata source so CI can run the docs renderer without an external metadata checkout.
 `npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web`.
 
 ## Script Development
@@ -55,17 +55,11 @@ Dark blue:          #66a9e6
 
 Tailwind can access the extra Micronaut-specific variables through the `@theme inline` mappings, for example `bg-micronaut-blue`, `text-micronaut-blue-deep`, `bg-hero`, `bg-blue-band`, and `bg-code`.
 
-## Protocol
+## Content Catalogs
 
-`src/data/protocol.json` contains:
+`src/data/docs-projects.fixture.json` contains the checked-in docs project catalog, categories, descriptions, repository links, and platform versions used when generated docs output is unavailable.
 
-- `surfaces`: deployment entries for `main`, `docs`, and `guides`
-- `docs.categories`: platform documentation category groups
-- `docs.projects`: all platform documentation projects with links, descriptions, references, sections, and search terms
-- `guides.categories`: guide category groups discovered from guide metadata
-- `guides.guides`: all guides with tags, variants, authors, dates, and searchable metadata
-
-`src/data/protocol.schema.json` documents the expected contract for future generators.
+`src/content/generated-guides/manifest.json` contains the checked-in guide catalog produced by `npm run render:guides`, including tags, authors, dates, and language/build variants.
 
 ## Deployment and Compatibility
 

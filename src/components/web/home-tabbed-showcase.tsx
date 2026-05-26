@@ -3,12 +3,16 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GuideCard } from "@/components/web/guide-card";
 import { ProjectCard } from "@/components/web/project-card";
-import { featuredGuides, featuredProjects, latestGuides } from "@/lib/protocol";
+import {
+  featuredGuides,
+  featuredProjects,
+  latestGuideSummaries,
+} from "@/lib/content-catalog";
 
 export function HomeTabbedShowcase() {
   const projects = featuredProjects();
   const guides = featuredGuides();
-  const latest = latestGuides(6);
+  const latest = latestGuideSummaries(6);
 
   return (
     <Tabs defaultValue="projects" className="gap-6">

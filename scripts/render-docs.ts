@@ -9,9 +9,9 @@ import { copyProjectImageAssets } from "./docs/assets.ts";
 import { buildDocsProjectCatalog } from "./docs/project-catalog.ts";
 import {
   type DocsProject,
+  projectCatalogMetadataProperties,
   readIndexed,
   readPlatformCatalogProjects,
-  readProperties,
   readTomlStringVersions,
   selectProjects,
 } from "./docs/project-manifest.ts";
@@ -47,12 +47,6 @@ const outputDirectory = path.resolve(
   stringArg(options.output) ||
     path.join(projectDirectory, "src", "content", "generated-docs"),
 );
-const checkedInDocsDataDirectory = path.join(
-  projectDirectory,
-  "src",
-  "data",
-  "docs",
-);
 const strict = Boolean(
   options.strict ||
   process.env.DOCS_RENDER_STRICT === "true" ||
@@ -74,36 +68,31 @@ const selectedSlugs = renderAll
     : DEFAULT_DOC_PROJECT_SLUGS;
 
 const asciidoctor = asciidoctorFactory();
-const externalProjectManifestFile = path.join(
-  docsDirectory,
-  "gradle",
-  "docs-projects.properties",
-);
-const checkedInProjectManifestFile = path.join(
-  checkedInDocsDataDirectory,
-  "docs-projects.properties",
-);
 const checkedInProjectCatalogFile = path.join(
   projectDirectory,
   "src",
   "data",
   "docs-projects.fixture.json",
 );
-const protocolFile = path.join(
-  projectDirectory,
-  "src",
-  "data",
-  "protocol.json",
+const localProjectCatalogFile = path.join(
+  docsDirectory,
+  "docs-projects.fixture.json",
+);
+const projectCatalogFile = path.resolve(
+  stringArg(options.projectCatalog) ||
+    process.env.DOCS_PROJECT_CATALOG ||
+    ((await isRegularFile(localProjectCatalogFile))
+      ? localProjectCatalogFile
+      : checkedInProjectCatalogFile),
 );
 const generatedProjectCatalogFile = path.join(
   outputDirectory,
   "project-catalog.json",
 );
-const metadataProperties = await readProperties(
-  checkedInProjectManifestFile,
-  false,
+const checkedInProjectCatalog = await readJson(projectCatalogFile);
+const metadataProperties = projectCatalogMetadataProperties(
+  checkedInProjectCatalog,
 );
-let projectManifest;
 let allProjects: DocsProject[];
 if (await isRegularFile(platformVersionCatalogFile)) {
   allProjects = await readPlatformCatalogProjects(
@@ -111,14 +100,10 @@ if (await isRegularFile(platformVersionCatalogFile)) {
     metadataProperties,
   );
 } else {
-  const projectManifestFile = (await isRegularFile(externalProjectManifestFile))
-    ? externalProjectManifestFile
-    : checkedInProjectManifestFile;
-  projectManifest = await readProperties(projectManifestFile);
   allProjects = readIndexed(
-    projectManifest,
+    metadataProperties,
     "project",
-    Number(projectManifest["project.count"] || 0),
+    Number(metadataProperties["project.count"] || 0),
   ) as unknown as DocsProject[];
 }
 const projects = selectProjects(allProjects, selectedSlugs);
@@ -234,15 +219,11 @@ async function writeGeneratedProjectCatalog(
   projects: DocsProject[],
   platformVersions: Record<string, string>,
 ): Promise<void> {
-  const [existingCatalog, protocol] = await Promise.all([
-    readJson(checkedInProjectCatalogFile),
-    readJson(protocolFile),
-  ]);
+  const existingCatalog = await readJson(projectCatalogFile);
   const catalog = buildDocsProjectCatalog({
     projects,
     platformVersions,
     existingCatalog,
-    protocol,
     source: `${path.relative(projectDirectory, platformVersionCatalogFile)} plus checked-in docs metadata`,
     publishedSource:
       typeof existingCatalog.publishedSource === "string"
