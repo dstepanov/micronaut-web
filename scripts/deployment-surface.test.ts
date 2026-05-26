@@ -276,6 +276,7 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   });
 
   assert.equal(await exists(path.join(dist, "index.html")), true);
+  assert.equal(await exists(path.join(dist, ".nojekyll")), true);
   assert.equal(await exists(path.join(dist, "launch", "index.html")), true);
   assert.equal(
     await exists(path.join(dist, "micronaut-assets", "logo.svg")),
@@ -285,6 +286,24 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "latest")), false);
   assert.equal(await exists(path.join(dist, "micronaut-web")), false);
+});
+
+test("web workflow publishes the main surface to the gh-pages branch", async () => {
+  const workflow = await fs.readFile(
+    path.join(projectDirectory, ".github", "workflows", "deploy-web.yml"),
+    "utf8",
+  );
+
+  assert.match(workflow, /contents:\s*write/);
+  assert.match(workflow, /fetch-depth:\s*0/);
+  assert.match(workflow, /git worktree add published-web FETCH_HEAD/);
+  assert.match(workflow, /checkout --orphan "\$TARGET_BRANCH"/);
+  assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*main/);
+  assert.match(workflow, /npm run build:main/);
+  assert.match(workflow, /git push origin HEAD:"\$TARGET_BRANCH"/);
+  assert.doesNotMatch(workflow, /upload-pages-artifact/);
+  assert.doesNotMatch(workflow, /deploy-pages/);
+  assert.doesNotMatch(workflow, /pages:\s*write/);
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {

@@ -87,16 +87,17 @@ Temporary GitHub Pages hosts keep the repository names in the path:
 
 Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `scripts/build-surface.ts` sets a matching default `ASTRO_BASE`, runs the full static build, then prunes the artifact:
 
-- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, and shared branding assets. It removes generated docs, guides, latest-route trees, and template artifacts from the uploaded Pages artifact.
-- `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It removes unrelated main and guides route trees.
-- `npm run build:guides` keeps the latest guides tree, root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It removes unrelated main and docs route trees.
+- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, and shared branding assets. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. It removes docs, guides, latest-route trees, and template artifacts from the published Pages branch.
+- `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
+- `npm run build:guides` keeps the latest guides tree, root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
-The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main` and uses GitHub Pages artifact deployment for this repository. The docs and guides workflows are manual publish jobs in this repository:
+The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`, checks out this repository's `gh-pages` branch, builds only the web surface, replaces the branch contents with the pruned `dist`, and pushes the branch. It does not check out Micronaut Platform or Micronaut Guides and does not render generated docs/guides content. The docs and guides workflows are manual publish jobs in this repository:
 
 - `.github/workflows/deploy-docs.yml` publishes to `dstepanov/micronaut-docs` by default.
 - `.github/workflows/deploy-guides.yml` publishes to `dstepanov/micronaut-guides` by default.
-- Both target repositories use branch-based GitHub Pages deployment from `gh-pages`.
-- Both workflows expose `target_repository` and `target_branch`, defaulting to the target repo and `gh-pages`.
+- All three Pages targets use branch-based GitHub Pages deployment from `gh-pages`.
+- The web workflow exposes `target_branch`, defaulting to `gh-pages`.
+- The docs and guides workflows expose `target_repository` and `target_branch`, defaulting to the target repo and `gh-pages`.
 
 Cross-repository docs and guides publishes require a `PAGES_TOKEN` secret with push access to the target Pages repository. The workflows fall back to `github.token` only when publishing back to the same repository.
 
@@ -110,6 +111,7 @@ The build reads these deployment inputs:
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
 - `MICRONAUT_GUIDES_ROOT`: guides root in the current artifact. It is `/guides` for all-in-one preview and `/latest` for standalone guides.
 - `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
+- `MICRONAUT_PREPARE_GENERATED_CONTENT`: set to `false`, `0`, or `none` to skip generated docs/guides rendering before Astro starts. `build:main` sets this to `false` by default; docs and guides builds leave it enabled but prepare only the generated content for their own surface.
 - `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the Pages owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io` for the main site or the owner of `target_repository` for docs and guides.
 - `MICRONAUT_GITHUB_PAGES_ORIGIN`: effective GitHub Pages host override. When unset, it falls back to `DEFAULT_GITHUB_PAGES_ORIGIN`.
 - `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. When unset, they are derived from `MICRONAUT_GITHUB_PAGES_ORIGIN` plus `micronaut-web`, `micronaut-docs`, or `micronaut-guides`.
@@ -130,6 +132,8 @@ The docs workflow:
 6. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
 7. Commits and pushes the branch.
 
+The docs workflow does not check out or render Micronaut Guides.
+
 The published docs branch layout is:
 
 - `/index.html`: docs selector/index.
@@ -147,7 +151,7 @@ Older docs are not copied into new builds. They remain in `gh-pages` from previo
 
 ### Guides Latest
 
-Guides are currently published as a latest-only surface. The guides workflow accepts the guides repository/ref to build from, checks out the target guides Pages repository on `target_branch`, builds `npm run build:guides`, replaces the published branch contents with the pruned `dist`, and pushes `gh-pages`.
+Guides are currently published as a latest-only surface. The guides workflow accepts the guides repository/ref to build from, checks out the target guides Pages repository on `target_branch`, builds `npm run build:guides`, replaces the published branch contents with the pruned `dist`, and pushes `gh-pages`. It does not check out Micronaut Platform or render generated docs.
 
 The published guides branch layout is:
 

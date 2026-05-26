@@ -49,6 +49,9 @@ function surfaceEnvironment(surface: Surface): NodeJS.ProcessEnv {
     env.MICRONAUT_GUIDES_ROOT ||= "/latest";
     env.MICRONAUT_GUIDES_LATEST_ROOT ||= "/latest";
   }
+  if (surface === "main") {
+    env.MICRONAUT_PREPARE_GENERATED_CONTENT ||= "false";
+  }
   return env;
 }
 

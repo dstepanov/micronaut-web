@@ -77,6 +77,7 @@ async function pruneMain(
       fs.rm(path.join(directory, entry), { force: true, recursive: true }),
     ),
   );
+  await writeNoJekyll(directory);
   await writeCustomDomain(directory, customDomain);
 }
 

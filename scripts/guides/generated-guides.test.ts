@@ -224,7 +224,11 @@ test("latest guide replacement routes and parallel generated-content preparation
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );
-  const workflow = await fs.readFile(
+  const guidesWorkflow = await fs.readFile(
+    path.join(projectDirectory, ".github", "workflows", "deploy-guides.yml"),
+    "utf8",
+  );
+  const webWorkflow = await fs.readFile(
     path.join(projectDirectory, ".github", "workflows", "deploy-web.yml"),
     "utf8",
   );
@@ -302,12 +306,22 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(prepareScript, /Promise\.all/);
   assert.match(prepareScript, /render-docs\.ts/);
   assert.match(prepareScript, /render-guides\.ts/);
+  assert.match(prepareScript, /MICRONAUT_PREPARE_GENERATED_CONTENT/);
+  assert.match(prepareScript, /MICRONAUT_DEPLOY_SURFACE/);
   assert.match(
-    workflow,
-    /github\.com\/micronaut-projects\/micronaut-guides\.git/,
+    guidesWorkflow,
+    /default:\s*micronaut-projects\/micronaut-guides/,
   );
-  assert.match(workflow, /GUIDES_RENDER_ALL:\s*"true"/);
-  assert.match(workflow, /GUIDES_RENDER_STRICT:\s*"true"/);
+  assert.match(guidesWorkflow, /GUIDES_RENDER_ALL:\s*"true"/);
+  assert.match(guidesWorkflow, /GUIDES_RENDER_STRICT:\s*"true"/);
+  assert.doesNotMatch(guidesWorkflow, /micronaut-platform/);
+  assert.doesNotMatch(guidesWorkflow, /DOCS_DIR/);
+  assert.doesNotMatch(guidesWorkflow, /DOCS_RENDER_ALL/);
+  assert.doesNotMatch(guidesWorkflow, /DOCS_RENDER_STRICT/);
+  assert.doesNotMatch(guidesWorkflow, /DOCS_SYNC_SOURCES/);
+  assert.doesNotMatch(webWorkflow, /micronaut-guides/);
+  assert.doesNotMatch(webWorkflow, /GUIDES_RENDER_ALL/);
+  assert.doesNotMatch(webWorkflow, /GUIDES_RENDER_STRICT/);
   assert.match(latestRoute, /tag-\$\{tagSlug\(tag\)\}/);
   assert.match(latestRoute, /option\.file\.replace/);
   assert.match(latestRoute, /readGeneratedGuideFragment/);

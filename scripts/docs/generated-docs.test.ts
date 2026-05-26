@@ -78,6 +78,7 @@ test("generated docs fragments and assets are ignored and not tracked source", a
 
 test("generated docs tooling uses Micronaut Platform catalog instead of the old aggregate docs project", async (): Promise<any> => {
   const checkedFiles = [
+    ".github/workflows/deploy-docs.yml",
     ".github/workflows/deploy-web.yml",
     "README.md",
     "src/content/generated-docs/README.md",
@@ -94,18 +95,25 @@ test("generated docs tooling uses Micronaut Platform catalog instead of the old 
     ),
   );
   const workflow = fileContents.find(
+    ([file]: any): any => file === ".github/workflows/deploy-docs.yml",
+  )[1];
+  const webWorkflow = fileContents.find(
     ([file]: any): any => file === ".github/workflows/deploy-web.yml",
   )[1];
   const syncScript = fileContents.find(
     ([file]: any): any => file === "scripts/sync-docs-fixture.ts",
   )[1];
 
-  assert.match(
-    workflow,
-    /github\.com\/micronaut-projects\/micronaut-platform\.git/,
-  );
+  assert.match(workflow, /default:\s*micronaut-projects\/micronaut-platform/);
   assert.match(workflow, /DOCS_RENDER_ALL:\s*"true"/);
   assert.match(workflow, /DOCS_SYNC_SOURCES:\s*"true"/);
+  assert.doesNotMatch(workflow, /micronaut-guides/);
+  assert.doesNotMatch(workflow, /MICRONAUT_GUIDES_DIR/);
+  assert.doesNotMatch(workflow, /GUIDES_RENDER_ALL/);
+  assert.doesNotMatch(workflow, /GUIDES_RENDER_STRICT/);
+  assert.doesNotMatch(webWorkflow, /micronaut-platform/);
+  assert.doesNotMatch(webWorkflow, /DOCS_RENDER_ALL/);
+  assert.doesNotMatch(webWorkflow, /DOCS_SYNC_SOURCES/);
   assert.match(syncScript, /readPlatformCatalogProjects/);
 
   const oldAggregateDocsProject = new RegExp("micronaut-platform-" + "docs");

@@ -19,14 +19,6 @@ on:
         description: Guides branch, tag, or SHA to build from
         required: false
         default: master
-      platform_repository:
-        description: Platform repository used while preparing generated content
-        required: false
-        default: micronaut-projects/micronaut-platform
-      platform_ref:
-        description: Platform branch, tag, or SHA to build from
-        required: false
-        default: main
 
 permissions:
   contents: write
@@ -61,13 +53,6 @@ jobs:
           path: published-guides
           token: ${{ secrets.PAGES_TOKEN || github.token }}
 
-      - name: Check out platform project
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ inputs.platform_repository }}
-          ref: ${{ inputs.platform_ref }}
-          path: ${{ runner.temp }}/docs/repos/micronaut-platform
-
       - name: Check out guides project
         uses: actions/checkout@v6
         with:
@@ -101,10 +86,6 @@ jobs:
           MICRONAUT_DEPLOY_SURFACE: guides
           MICRONAUT_GUIDES_ROOT: /latest
           MICRONAUT_GUIDES_LATEST_ROOT: /latest
-          DOCS_DIR: ${{ runner.temp }}/docs
-          DOCS_RENDER_ALL: "true"
-          DOCS_RENDER_STRICT: "true"
-          DOCS_SYNC_SOURCES: "true"
           MICRONAUT_GUIDES_DIR: ${{ runner.temp }}/micronaut-guides
           GUIDES_RENDER_ALL: "true"
           GUIDES_RENDER_STRICT: "true"

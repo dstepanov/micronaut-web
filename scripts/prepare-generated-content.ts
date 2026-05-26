@@ -7,14 +7,26 @@ const projectDirectory = path.resolve(
   "..",
 );
 
-const tasks: Array<[label: string, command: string, args: string[]]> = [
+type GeneratedContentTask = readonly [
+  label: "docs" | "guides",
+  command: string,
+  args: string[],
+];
+
+const tasks: GeneratedContentTask[] = [
   ["docs", process.execPath, ["scripts/render-docs.ts"]],
   ["guides", process.execPath, ["scripts/render-guides.ts"]],
 ];
 
-await Promise.all(
-  tasks.map(([label, command, args]: any): any => run(label, command, args)),
-);
+const selectedTasks = tasksForDeploymentSurface();
+
+if (selectedTasks.length === 0) {
+  console.log("Skipping generated docs and guides content preparation.");
+} else {
+  await Promise.all(
+    selectedTasks.map(([label, command, args]) => run(label, command, args)),
+  );
+}
 
 function run(label: string, command: string, args: string[]): Promise<void> {
   return new Promise<void>((resolve: any, reject: any): any => {
@@ -36,4 +48,23 @@ function run(label: string, command: string, args: string[]): Promise<void> {
       );
     });
   });
+}
+
+function shouldSkipGeneratedContent(): boolean {
+  const value = process.env.MICRONAUT_PREPARE_GENERATED_CONTENT;
+  return value === "false" || value === "0" || value === "none";
+}
+
+function tasksForDeploymentSurface(): GeneratedContentTask[] {
+  if (shouldSkipGeneratedContent()) {
+    return [];
+  }
+  const surface = process.env.MICRONAUT_DEPLOY_SURFACE;
+  if (surface === "docs" || surface === "guides") {
+    return tasks.filter(([label]) => label === surface);
+  }
+  if (surface === "main") {
+    return [];
+  }
+  return tasks;
 }
