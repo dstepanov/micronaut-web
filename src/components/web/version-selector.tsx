@@ -21,6 +21,8 @@ type VersionSelectorProps = {
   surface?: "main" | "docs" | "guides" | "launch";
   className?: string;
   versionManifestHref?: string;
+  showLabel?: boolean;
+  formatOptionLabel?: (option: VersionOption) => string;
 };
 
 export function VersionSelector({
@@ -29,6 +31,8 @@ export function VersionSelector({
   surface,
   className,
   versionManifestHref,
+  showLabel = true,
+  formatOptionLabel = (option) => option.label,
 }: VersionSelectorProps) {
   const [resolvedOptions, setResolvedOptions] = useState(options);
   const current =
@@ -81,7 +85,9 @@ export function VersionSelector({
         className,
       )}
     >
-      <span className="font-medium text-foreground">{label}</span>
+      {showLabel ? (
+        <span className="font-medium text-foreground">{label}</span>
+      ) : null}
       <select
         className="h-8 min-w-0 rounded-md border bg-background px-2 text-xs text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         value={selectedHref}
@@ -96,7 +102,7 @@ export function VersionSelector({
       >
         {resolvedOptions.map((option) => (
           <option key={option.href} value={option.href}>
-            {option.label}
+            {formatOptionLabel(option)}
           </option>
         ))}
       </select>

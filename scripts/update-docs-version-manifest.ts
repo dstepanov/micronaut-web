@@ -40,6 +40,30 @@ export async function updateDocsVersionManifest({
   version?: string;
   latest?: boolean;
 }): Promise<DocsVersionOption[]> {
+  const options = await buildDocsVersionOptions({
+    publishedDirectory,
+    version,
+    latest,
+  });
+
+  await fs.mkdir(path.dirname(manifestFile), { recursive: true });
+  await fs.writeFile(
+    manifestFile,
+    `${JSON.stringify({ versions: options }, null, 2)}\n`,
+    "utf8",
+  );
+  return options;
+}
+
+export async function buildDocsVersionOptions({
+  publishedDirectory,
+  version,
+  latest = true,
+}: {
+  publishedDirectory?: string;
+  version?: string;
+  latest?: boolean;
+}): Promise<DocsVersionOption[]> {
   const versions = new Map<string, string>();
   if (publishedDirectory) {
     for (const option of await readPublishedVersions(publishedDirectory)) {
@@ -50,24 +74,44 @@ export async function updateDocsVersionManifest({
     versions.set(version, `/${version}/`);
   }
 
-  const options: DocsVersionOption[] = [
-    {
-      label: "Latest",
-      href: "/latest/",
-      current: latest,
-    },
-    ...Array.from(versions.entries())
-      .sort(([left], [right]) => compareVersions(right, left))
-      .map(([label, href]) => ({ label, href })),
-  ];
-
-  await fs.mkdir(path.dirname(manifestFile), { recursive: true });
-  await fs.writeFile(
-    manifestFile,
-    `${JSON.stringify({ versions: options }, null, 2)}\n`,
-    "utf8",
+  const sortedVersions = Array.from(versions.entries()).sort(
+    ([left], [right]) => compareVersions(right, left),
   );
-  return options;
+  const latestVersion = await resolveLatestVersionName({
+    publishedDirectory,
+    version,
+    latest,
+    sortedVersions,
+  });
+
+  return [
+    {
+      label: latestVersion ? `Latest (${latestVersion})` : "Latest",
+      href: "/latest/",
+      ...(latest ? { current: true } : {}),
+    },
+    ...sortedVersions.map(([label, href]) => ({ label, href })),
+  ];
+}
+
+async function resolveLatestVersionName({
+  publishedDirectory,
+  version,
+  latest,
+  sortedVersions,
+}: {
+  publishedDirectory?: string;
+  version?: string;
+  latest: boolean;
+  sortedVersions: Array<[string, string]>;
+}) {
+  if (latest && version && version !== "latest") {
+    return version;
+  }
+  return (
+    (await readExistingLatestVersionName(publishedDirectory)) ||
+    sortedVersions[0]?.[0]
+  );
 }
 
 export async function readPublishedVersions(
@@ -101,6 +145,55 @@ export async function readPublishedVersions(
   }));
 }
 
+async function readExistingLatestVersionName(publishedDirectory?: string) {
+  if (!publishedDirectory) {
+    return undefined;
+  }
+  let payload: unknown;
+  try {
+    payload = JSON.parse(
+      await fs.readFile(path.join(publishedDirectory, "versions.json"), "utf8"),
+    );
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return undefined;
+    }
+    throw error;
+  }
+  if (!isVersionsPayload(payload)) {
+    return undefined;
+  }
+  const latestIndex = payload.versions.findIndex(
+    (option) => option.href === "/latest/",
+  );
+  const latestLabel =
+    latestIndex >= 0 ? payload.versions[latestIndex].label : undefined;
+  const labeledVersion = latestLabel?.match(/^Latest \((.+)\)$/)?.[1];
+  if (labeledVersion) {
+    return labeledVersion;
+  }
+  return payload.versions
+    .slice(Math.max(latestIndex + 1, 0))
+    .find((option) => isVersion(option.label))?.label;
+}
+
+function isVersionsPayload(
+  value: unknown,
+): value is { versions: DocsVersionOption[] } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Array.isArray((value as { versions?: unknown }).versions) &&
+    (value as { versions: unknown[] }).versions.every(
+      (option) =>
+        typeof option === "object" &&
+        option !== null &&
+        typeof (option as DocsVersionOption).label === "string" &&
+        typeof (option as DocsVersionOption).href === "string",
+    )
+  );
+}
+
 function compareVersions(left: string, right: string) {
   const leftParts = versionParts(left);
   const rightParts = versionParts(right);
@@ -114,11 +207,28 @@ function compareVersions(left: string, right: string) {
       return diff;
     }
   }
+  const qualifierDiff =
+    versionQualifierRank(left) - versionQualifierRank(right);
+  if (qualifierDiff !== 0) {
+    return qualifierDiff;
+  }
   return left.localeCompare(right);
 }
 
 function versionParts(version: string) {
-  return version.split(".").map((part) => Number.parseInt(part, 10) || 0);
+  const match = /^(\d+)\.(\d+)(?:\.(\d+))?/.exec(version);
+  return match
+    ? [
+        Number.parseInt(match[1], 10),
+        Number.parseInt(match[2], 10),
+        Number.parseInt(match[3] || "0", 10),
+      ]
+    : version.split(".").map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function versionQualifierRank(version: string) {
+  const core = /^\d+\.\d+(?:\.\d+)?/.exec(version)?.[0] || "";
+  return /^[-.][A-Za-z0-9]/.test(version.slice(core.length)) ? 0 : 1;
 }
 
 function isVersion(value: string) {

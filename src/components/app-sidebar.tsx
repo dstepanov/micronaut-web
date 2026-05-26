@@ -75,10 +75,12 @@ export function AppSidebar({
       <SidebarContent className="gap-2 px-2 pb-2 pt-2">
         <div className="group-data-[collapsible=icon]:hidden">
           <VersionSelector
-            label="Docs version"
+            label="Docs"
             options={docsVersions.versions}
             versionManifestHref="/versions.json"
             surface="docs"
+            showLabel={false}
+            formatOptionLabel={docsVersionLabel}
             className="rounded-md border border-sidebar-border bg-sidebar-accent/35 p-2"
           />
         </div>
@@ -234,6 +236,12 @@ export function AppSidebar({
       <SidebarRail />
     </Sidebar>
   );
+}
+
+function docsVersionLabel(option: { label: string }) {
+  return option.label.startsWith("Docs ")
+    ? option.label
+    : `Docs ${option.label}`;
 }
 
 function docsCatalogProjectsByCategory(

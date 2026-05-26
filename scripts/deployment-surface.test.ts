@@ -460,12 +460,68 @@ test("docs version manifest is rebuilt from the published docs branch", async (t
   });
 
   assert.deepEqual(versions.slice(0, 4), [
-    { label: "Latest", href: "/latest/", current: true },
+    { label: "Latest (4.10.14)", href: "/latest/", current: true },
     { label: "4.10.14", href: "/4.10.14/" },
     { label: "4.10.1", href: "/4.10.1/" },
     { label: "4.9.4", href: "/4.9.4.html" },
   ]);
   assert.match(await fs.readFile(manifest, "utf8"), /"4\.10\.14"/);
+});
+
+test("docs version manifest preserves latest label for non-latest publishes", async (t) => {
+  const published = await temporaryDirectory(t);
+  const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
+  await writeFiles(published, [
+    "4.10.14/index.html",
+    "4.10.1/index.html",
+    "4.9.4/index.html",
+  ]);
+  await writeTextFile(
+    published,
+    "versions.json",
+    JSON.stringify({
+      versions: [
+        { label: "Latest (4.10.14)", href: "/latest/", current: true },
+        { label: "4.10.14", href: "/4.10.14/" },
+      ],
+    }),
+  );
+
+  const versions = await updateDocsVersionManifest({
+    manifestFile: manifest,
+    publishedDirectory: published,
+    version: "4.9.5",
+    latest: false,
+  });
+
+  assert.deepEqual(versions, [
+    { label: "Latest (4.10.14)", href: "/latest/" },
+    { label: "4.10.14", href: "/4.10.14/" },
+    { label: "4.10.1", href: "/4.10.1/" },
+    { label: "4.9.5", href: "/4.9.5/" },
+    { label: "4.9.4", href: "/4.9.4/" },
+  ]);
+});
+
+test("docs version manifest sorts final releases before prereleases", async (t) => {
+  const published = await temporaryDirectory(t);
+  const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
+  await writeFiles(published, [
+    "5.0.0-rc1/index.html",
+    "4.10.14/index.html",
+    "5.0.0/index.html",
+  ]);
+
+  const versions = await updateDocsVersionManifest({
+    manifestFile: manifest,
+    publishedDirectory: published,
+    latest: false,
+  });
+
+  assert.deepEqual(
+    versions.map((version) => version.label),
+    ["Latest (5.0.0)", "5.0.0", "5.0.0-rc1", "4.10.14"],
+  );
 });
 
 test("docs publish merge preserves shared assets and updates version roots", async (t) => {
@@ -558,10 +614,14 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     await fs.readFile(path.join(published, "4.10.14.html"), "utf8"),
     /\/micronaut-docs\/4\.10\.14\//,
   );
-  assert.match(
+  const versionsJson = JSON.parse(
     await fs.readFile(path.join(published, "versions.json"), "utf8"),
-    /"4\.10\.14"/,
   );
+  assert.deepEqual(versionsJson.versions.slice(0, 3), [
+    { label: "Latest (4.10.14)", href: "/latest/", current: true },
+    { label: "4.10.14", href: "/4.10.14/" },
+    { label: "4.10.1", href: "/4.10.1/" },
+  ]);
 });
 
 async function importDeploymentConfig(

@@ -1,7 +1,7 @@
 {
   "versions": [
     {
-      "label": "Latest",
+      "label": "Latest (4.10.14)",
       "href": "/latest/",
       "current": true
     },

@@ -7,7 +7,7 @@ import {
   mergeSharedSurfaceAssets,
   pruneUnusedHashedSurfaceAssets,
 } from "./shared/surface-assets.ts";
-import { readPublishedVersions } from "./update-docs-version-manifest.ts";
+import { buildDocsVersionOptions } from "./update-docs-version-manifest.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -88,7 +88,7 @@ export async function publishDocsSurface({
     );
   }
 
-  await writeVersionsJson(publishedDirectory, publishVersion);
+  await writeVersionsJson(publishedDirectory, publishVersion, latest);
   await pruneUnusedHashedSurfaceAssets(publishedDirectory);
 }
 
@@ -106,20 +106,17 @@ async function docsRootSource(distDirectory: string, version: string) {
   );
 }
 
-async function writeVersionsJson(directory: string, version: string) {
-  const versions = new Map<string, string>();
-  for (const option of await readPublishedVersions(directory)) {
-    versions.set(option.label, option.href);
-  }
-  versions.set(version, `/${version}/`);
+async function writeVersionsJson(
+  directory: string,
+  version: string,
+  latest: boolean,
+) {
   const payload = {
-    versions: [
-      { label: "Latest", href: "/latest/", current: true },
-      ...Array.from(versions.entries()).map(([label, href]) => ({
-        label,
-        href,
-      })),
-    ],
+    versions: await buildDocsVersionOptions({
+      publishedDirectory: directory,
+      version,
+      latest,
+    }),
   };
   await fs.writeFile(
     path.join(directory, "versions.json"),
