@@ -1,0 +1,110 @@
+= Snippet Gallery Fixture
+
+This fixture exercises generated snippet rendering across source blocks, snippet macros, dependencies, configuration samples, and configuration property tables.
+
+== Ordinary Source Blocks
+
+[source,bash]
+----
+$ curl http://localhost:8080/hello
+Hello World
+----
+
+.Terminal command with title
+[source,bash]
+----
+./gradlew test
+----
+
+.Java source with callouts
+[source,java]
+----
+class HelloController { // <1>
+}
+----
+<1> The controller source callout is rendered inside the card footer.
+
+.Properties source with standalone callout marker
+[source,properties]
+----
+# <1>
+micronaut.server.port=8080
+----
+<1> The property callout marker moves to the property line.
+
+[source,kotlin]
+----
+class HelloController {
+    fun index(): String = "Hello World"
+}
+----
+
+[source,groovy]
+----
+class HelloController {
+    String index() {
+        'Hello World'
+    }
+}
+----
+
+[source,gradle]
+----
+implementation("io.micronaut:micronaut-http-client")
+----
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.micronaut</groupId>
+    <artifactId>micronaut-http-client</artifactId>
+</dependency>
+----
+
+[source,yaml]
+----
+micronaut:
+  application:
+    name: demo
+----
+
+[source,toml]
+----
+[versions]
+micronaut = "4.0.0"
+----
+
+[source,json]
+----
+{"micronaut": {"application": {"name": "demo"}}}
+----
+
+[source,hocon]
+----
+micronaut.application.name = demo
+----
+
+----
+plain listing output
+----
+
+== Generated Snippet Macros
+
+snippet::controller[title=Controller variants,description=Rendered from snippet macro]
+<1> The snippet macro callout is attached to the shared snippet card.
+
+dependency:micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]
+
+[configuration,title=Application configuration]
+----
+micronaut:
+  server:
+    port: 8080
+----
+
+.Configuration Properties
+|===
+|Property |Type |Description
+|micronaut.server.port |Integer |Server port
+|micronaut.application.name |String |Application name
+|===

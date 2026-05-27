@@ -79,7 +79,7 @@ export function shikiStyle(): any {
 
 async function highlightListingBlocksOnce(input: any): Promise<any> {
   const pattern =
-    /<div class="listingblock([^"]*)"(?![^>]*\sdata-lang=)([^>]*)>\s*(<div class="title">(?:(?!<\/div>)[\s\S])*<\/div>\s*)?<div class="content">\s*<pre([^>]*)><code([^>]*)>([\s\S]*?)<\/code><\/pre>\s*<\/div>\s*<\/div>/g;
+    /<div class="listingblock([^"]*)"(?![^>]*\sdata-lang=)([^>]*)>\s*(<div class="title">(?:(?!<\/div>)[\s\S])*<\/div>\s*)?<div class="content">\s*<pre([^>]*)>(?:<code([^>]*)>([\s\S]*?)<\/code>|([\s\S]*?))<\/pre>\s*<\/div>\s*<\/div>/g;
   const matches: RegExpMatchArray[] = Array.from(input.matchAll(pattern));
   let result = "";
   let position = 0;
@@ -91,6 +91,7 @@ async function highlightListingBlocksOnce(input: any): Promise<any> {
     const title = match[3] || "";
     const preAttributes = match[4] || "";
     const codeAttributes = match[5] || "";
+    const sourceHtml = match[6] ?? match[7] ?? "";
     if (/\bshiki\b/.test(preAttributes)) {
       result += match[0];
       position = matchIndex + match[0].length;
@@ -98,7 +99,7 @@ async function highlightListingBlocksOnce(input: any): Promise<any> {
     }
     const language = codeLanguage(codeAttributes);
     const decodedSource = decodeHtml(
-      match[6]
+      sourceHtml
         .replace(
           /<i\b[^>]*class="conum"[^>]*data-value="(\d+)"[^>]*><\/i>\s*<b>\(\d+\)<\/b>/g,
           "&lt;$1&gt;",

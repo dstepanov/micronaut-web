@@ -46,6 +46,18 @@ export async function renderStaticSnippetCards(input: any): Promise<any> {
   return parse5.serialize(fragment);
 }
 
+export async function renderStaticListingBlockCards(input: any): Promise<any> {
+  const support = await loadSnippetSupport();
+  const fragment = parse5.parseFragment(input);
+  const state = {
+    listingIndex: 0,
+    support,
+  };
+
+  replaceListingBlocks(fragment, state);
+  return parse5.serialize(fragment);
+}
+
 async function replaceSnippetMarkers(parent: any, state: any): Promise<any> {
   const children = parent.childNodes || [];
   for (let index = 0; index < children.length; index += 1) {
@@ -78,6 +90,40 @@ async function replaceSnippetMarkers(parent: any, state: any): Promise<any> {
 
     if (child.childNodes) {
       await replaceSnippetMarkers(child, state);
+    }
+  }
+}
+
+function replaceListingBlocks(parent: any, state: any): any {
+  const children = parent.childNodes || [];
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index];
+    if (isListingBlockSnippetCandidate(child)) {
+      const nextIndex = nextMeaningfulSiblingIndex(parent, index + 1);
+      const nextSibling = nextIndex >= 0 ? children[nextIndex] : undefined;
+      const footerHtml = isElementWithClass(nextSibling, "div", "colist")
+        ? footerHtmlForNode(nextSibling, state.support.styles)
+        : "";
+      if (footerHtml) {
+        children.splice(nextIndex, 1);
+      }
+
+      const replacement =
+        parse5.parseFragment(
+          renderListingBlockSnippet(child, state, footerHtml),
+        ).childNodes || [];
+      attachNodes(parent, replacement);
+      children.splice(index, 1, ...replacement);
+      index += replacement.length - 1;
+      continue;
+    }
+
+    if (
+      child.childNodes &&
+      !isElementWithClass(child, "div", "docs-snippet-template") &&
+      !isElementWithClass(child, "div", "docs-properties-template")
+    ) {
+      replaceListingBlocks(child, state);
     }
   }
 }
@@ -147,6 +193,70 @@ async function renderSnippetMarker(
   });
   state.snippetIndex += 1;
   return `${introHtml}${cardHtml}`;
+}
+
+function renderListingBlockSnippet(
+  block: any,
+  state: any,
+  footerHtml: any,
+): any {
+  const styles = state.support.styles;
+  const language = listingBlockLanguage(block);
+  const snippetId =
+    attr(block, "id") || `generated-listing-snippet-${state.listingIndex}`;
+  const tabId = `${snippetId}-tab-0`;
+  const panelId = `${snippetId}-panel-0`;
+  const titleHtml = childHtml(directChildWithClass(block, "div", "title"));
+  const descriptionHtml = childHtml(
+    directChildWithClass(block, "div", "description"),
+  );
+  const pre = firstDescendant(block, (node: any): any =>
+    isElement(node, "pre"),
+  );
+  const code = firstDescendant(pre, (node: any): any =>
+    isElement(node, "code"),
+  );
+
+  setAttr(pre, "class", styles.codePre);
+  setAttr(pre, "tabindex", attr(pre, "tabindex") || "0");
+  setAttr(
+    code,
+    "class",
+    `language-${attribute(language)} ${styles.codeElement}`,
+  );
+  setAttr(code, "data-lang", language);
+
+  let cardHtml = renderTemplate(
+    state.support.templates["docs/snippets/code-snippet.html"].html,
+    {
+      copyLabel: "Copy code",
+      optionButtonsHtml: renderLanguageOption({
+        active: true,
+        label: formatLanguage(language),
+        language,
+        panelId,
+        styles,
+        tabId,
+      }),
+      optionsLabel: html("Code language"),
+      snippetId: attribute(snippetId),
+      snippetPanelsHtml: `<div id="${attribute(panelId)}" role="tabpanel" aria-labelledby="${attribute(tabId)}" aria-hidden="false" class="${attribute(styles.panel)}">
+${serializeNode(pre)}
+</div>`,
+    },
+  );
+
+  if (footerHtml) {
+    cardHtml = appendFooterToCard(cardHtml, footerHtml, styles);
+  }
+
+  state.listingIndex += 1;
+  return `${externalSnippetIntroHtml({
+    descriptionHtml,
+    forceHeader: Boolean(descriptionHtml),
+    styles,
+    titleHtml,
+  })}${cardHtml}`;
 }
 
 function renderLanguageOption({
@@ -236,12 +346,16 @@ function encodeCalloutMarkers(source: any): any {
 
 function externalSnippetIntroHtml({
   description,
+  descriptionHtml: providedDescriptionHtml,
   forceHeader,
   styles,
   title,
+  titleHtml: providedTitleHtml,
 }: any): any {
-  const titleHtml = title ? inlineTitleHtml(title) : "";
-  const descriptionHtml = description ? inlineTitleHtml(description) : "";
+  const titleHtml = providedTitleHtml ?? (title ? inlineTitleHtml(title) : "");
+  const descriptionHtml =
+    providedDescriptionHtml ??
+    (description ? inlineTitleHtml(description) : "");
   if (!titleHtml && !descriptionHtml) {
     return "";
   }
@@ -353,6 +467,22 @@ function isConfigurationPropertyTable(node: any): any {
   return /configuration properties/i.test(textContent(caption));
 }
 
+function isListingBlockSnippetCandidate(node: any): any {
+  return (
+    isElementWithClass(node, "div", "listingblock") &&
+    !hasAncestorWithClass(node, "docs-snippet-template") &&
+    !hasAncestorWithClass(node, "docs-properties-template") &&
+    Boolean(
+      firstDescendant(node, (child: any): any =>
+        isElementWithClass(child, "pre", "shiki"),
+      ),
+    ) &&
+    Boolean(
+      firstDescendant(node, (child: any): any => isElement(child, "code")),
+    )
+  );
+}
+
 function renderTemplate(source: any, replacements: any): any {
   return source.replace(
     /{{(\w+)}}/g,
@@ -440,6 +570,12 @@ function firstElementChild(node: any): any {
   return (node.childNodes || []).find((child: any): any => child.tagName);
 }
 
+function directChildWithClass(node: any, tagName: any, className: any): any {
+  return (node.childNodes || []).find((child: any): any =>
+    isElementWithClass(child, tagName, className),
+  );
+}
+
 function firstDescendant(node: any, predicate: any): any {
   if (!node) {
     return undefined;
@@ -454,6 +590,10 @@ function firstDescendant(node: any, predicate: any): any {
     }
   }
   return undefined;
+}
+
+function childHtml(node: any): any {
+  return node ? (node.childNodes || []).map(serializeNode).join("") : "";
 }
 
 function countDescendants(node: any, predicate: any): any {
@@ -518,6 +658,20 @@ function textContent(node: any): any {
     return node.value || "";
   }
   return (node.childNodes || []).map(textContent).join("");
+}
+
+function listingBlockLanguage(block: any): any {
+  const code = firstDescendant(block, (node: any): any =>
+    isElement(node, "code"),
+  );
+  return (
+    attr(block, "data-lang") ||
+    attr(code, "data-lang") ||
+    /(?:^|\s)language-([A-Za-z0-9_+-]+)/.exec(attr(code, "class") || "")?.[1] ||
+    "text"
+  )
+    .trim()
+    .toLowerCase();
 }
 
 function serializeNode(node: any): any {

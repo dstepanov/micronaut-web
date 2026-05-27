@@ -3,7 +3,10 @@ import {
   shikiStyle,
   unwrapBlockParagraphs,
 } from "../shared/highlight.ts";
-import { renderStaticSnippetCards } from "./static-snippets.ts";
+import {
+  renderStaticListingBlockCards,
+  renderStaticSnippetCards,
+} from "./static-snippets.ts";
 
 export { shikiStyle };
 
@@ -16,5 +19,6 @@ export async function processAsciiDocHtml(
     : input;
   html = await renderStaticSnippetCards(html);
   html = await highlightListingBlocks(html);
+  html = await renderStaticListingBlockCards(html);
   return html;
 }
