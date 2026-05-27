@@ -143,16 +143,13 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
           </div>
         )}
       </div>
-      {contentSections.length > 0 && (
+      {sidebarSections.length > 0 && (
         <aside class="hidden xl:block" aria-label="In this section">
           <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]" data-docs-scroll-container>
             <h2 class="font-medium">In this section</h2>
             <Separator className="opacity-70" />
-            {contentSections.map((section) => (
-              <a href={`#${section.id}`} data-docs-scroll-link data-docs-section-depth={section.depth} data-docs-section-parent={section.parentId || ""} class:list={[
-                "relative rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground data-[active=true]:before:absolute data-[active=true]:before:bottom-[7px] data-[active=true]:before:left-[-11px] data-[active=true]:before:top-[7px] data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-brand data-[active=true]:before:content-['']",
-                section.depth > 1 && "pl-5 text-xs"
-              ]}>
+            {sidebarSections.map((section) => (
+              <a href={`#${section.id}`} data-docs-scroll-link class="relative rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground data-[active=true]:before:absolute data-[active=true]:before:bottom-[7px] data-[active=true]:before:left-[-11px] data-[active=true]:before:top-[7px] data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-brand data-[active=true]:before:content-['']">
                 {section.label}
               </a>
             ))}

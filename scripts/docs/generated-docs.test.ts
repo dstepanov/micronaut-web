@@ -1084,6 +1084,13 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsPageSource, /id=\{`\$\{project\.slug\}-docs`\}/);
   assert.match(docsPageSource, /data-docs-scroll-container/);
   assert.match(docsPageSource, /data-\[active=true\]:before:bg-brand/);
+  assert.match(docsPageSource, /\{sidebarSections\.length > 0 && \(/);
+  assert.match(docsPageSource, /\{sidebarSections\.map\(\(section\) => \(/);
+  assert.doesNotMatch(
+    docsPageSource,
+    /contentSections\.map\(\(section\) => \([\s\S]*?data-docs-scroll-link/,
+  );
+  assert.doesNotMatch(docsPageSource, /data-docs-section-depth/);
   assert.match(docsVersionSelectorSource, /data-docs-version-selector/);
   assert.match(docsVersionSelectorSource, /withBasePathForBase/);
   assert.match(docsVersionSelectorSource, /withSurfacePath\("docs"/);
