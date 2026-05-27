@@ -312,16 +312,6 @@ test("latest guide replacement routes and parallel generated-content preparation
     ),
     "utf8",
   );
-  const guideCard = await fs.readFile(
-    path.join(
-      projectDirectory,
-      "src",
-      "components",
-      "web",
-      "latest-guide-card.tsx",
-    ),
-    "utf8",
-  );
 
   assert.equal(
     packageJson.scripts["render:guides"],
@@ -329,7 +319,11 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides"],
-    "node --test scripts/guides/*.test.ts",
+    "node --test scripts/guides/*.test.ts && npm run test:guides:browser",
+  );
+  assert.equal(
+    packageJson.scripts["test:guides:browser"],
+    "playwright test --config playwright.config.ts",
   );
   assert.match(prepareScript, /Promise\.all/);
   assert.match(prepareScript, /render-docs\.ts/);
@@ -430,8 +424,6 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(generatedGuidesServerLibrary, /node:fs\/promises/);
   assert.match(generatedGuidesServerLibrary, /node:path/);
   assert.match(generatedGuidesServerLibrary, /generated-guide-routing/);
-  assert.doesNotMatch(guideCard, /@\/lib\/generated-guides/);
-  assert.match(guideCard, /@\/lib\/generated-guide-routing/);
   assert.match(generatedGuidesRoutingLibrary, /preferredGuideOption/);
   assert.match(
     generatedGuidesRoutingLibrary,
@@ -458,18 +450,6 @@ test("latest guide replacement routes and parallel generated-content preparation
     /docsSnippetStyles|define:vars/,
   );
   assert.match(guideCatalog, /version\.current \? rootPath : version\.href/);
-  assert.match(guideCatalog, /LatestGuideCard client:visible/);
-  assert.doesNotMatch(
-    guideCatalog,
-    /<LatestGuideCard guide=\{guide\} root=\{root\} \/>/,
-  );
-  assert.match(guideCard, /preferredGuideOption\(guide\)/);
-  assert.match(guideCard, /ButtonGroup/);
-  assert.match(guideCard, /DropdownMenu/);
-  assert.match(guideCard, /DropdownMenuTrigger asChild/);
-  assert.match(guideCard, /guide\.options\.map/);
-  assert.match(guideCard, /guideOptionPath\(variant, root\)/);
-  assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
 
 function assertMicronautHttpClientGuideHasProperSnippets(source: string) {
