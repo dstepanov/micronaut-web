@@ -12,6 +12,8 @@ import { withBasePath } from "@/lib/base-path";
 import { appendRequestSearch } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
+const guidesRoot = "/guides";
+
 export const getStaticPaths: GetStaticPaths = async () => {
   if (!shouldBuildGuidesRoutes()) {
     return [];
@@ -31,12 +33,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
-    addPath(`tag-${tagSlug(tag)}`, guideTagPath(tag).replace(/\.html$/, "/"));
+    addPath(`tag-${tagSlug(tag)}`, guideTagPath(tag, guidesRoot).replace(/\.html$/, "/"));
   }
   for (const guide of manifest.guides) {
-    addPath(guide.slug, guideOverviewPath(guide).replace(/\.html$/, "/"));
+    addPath(guide.slug, guideOverviewPath(guide, guidesRoot).replace(/\.html$/, "/"));
     for (const option of guide.options) {
-      addPath(option.file.replace(/\.html$/, ""), guideOptionPath(option).replace(/\.html$/, "/"));
+      addPath(option.file.replace(/\.html$/, ""), guideOptionPath(option, guidesRoot).replace(/\.html$/, "/"));
     }
   }
 

@@ -183,7 +183,6 @@ test("generated docs and guides dynamic route files use surface guards", async (
     ["src/pages/guides/[slug].html.ts", "shouldBuildGuidesRoutes"],
     ["src/pages/guides/[download].zip.ts", "shouldBuildGuidesRoutes"],
     ["src/pages/guides/assets/[...path].ts", "shouldBuildGuidesRoutes"],
-    ["src/pages/latest/[page].astro", "shouldBuildGuidesRoutes"],
     ["src/pages/latest/[page].html.ts", "shouldBuildGuidesRoutes"],
     ["src/pages/latest/[download].zip.ts", "shouldBuildGuidesRoutes"],
     ["src/pages/latest/assets/[...path].ts", "shouldBuildGuidesRoutes"],
@@ -787,6 +786,8 @@ async function fakeDist(t: TestContext) {
     "docs/assets/core/docs/img/diagram.svg",
     "docs/search-index.json",
     "guides/index.html",
+    "guides/micronaut-http-client/index.html",
+    "guides/assets/micronaut-http-client/images/client.png",
     "latest/index.html",
     "latest/guide/index.html",
     "latest/micronaut-http-client/index.html",
@@ -817,7 +818,7 @@ async function fakeDist(t: TestContext) {
   );
   await writeTextFile(
     dist,
-    "latest/index.html",
+    "guides/index.html",
     '<link rel="stylesheet" href="/micronaut-guides/_astro/app.css"><script type="module" src="/micronaut-guides/_astro/app.js"></script>',
   );
   await writeTextFile(
@@ -831,7 +832,7 @@ async function fakeDist(t: TestContext) {
   );
   await writeTextFile(
     dist,
-    "latest/micronaut-http-client/index.html",
+    "guides/micronaut-http-client/index.html",
     [
       "<style data-docs-shiki>.shiki { color: blue; }</style>",
       "<script data-guides-runtime>window.docsSnippetStyles = true;</script>",

@@ -159,7 +159,7 @@ async function pruneGuides(
       path.join(temporaryDirectory, "_astro"),
     );
     await copyIfExists(
-      path.join(directory, "latest"),
+      path.join(directory, "guides"),
       path.join(temporaryDirectory, "latest"),
     );
     await hoistVersionedSurfaceAssets({

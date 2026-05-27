@@ -252,10 +252,6 @@ test("latest guide replacement routes and parallel generated-content preparation
     path.join(projectDirectory, "scripts", "prepare-generated-content.ts"),
     "utf8",
   );
-  const latestRoute = await fs.readFile(
-    path.join(projectDirectory, "src", "pages", "latest", "[page].astro"),
-    "utf8",
-  );
   const legacyRoute = await fs.readFile(
     path.join(projectDirectory, "src", "pages", "latest", "[page].html.ts"),
     "utf8",
@@ -346,32 +342,17 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(webWorkflow, /micronaut-guides/);
   assert.doesNotMatch(webWorkflow, /GUIDES_RENDER_ALL/);
   assert.doesNotMatch(webWorkflow, /GUIDES_RENDER_STRICT/);
-  assert.match(latestRoute, /tag-\$\{tagSlug\(tag\)\}/);
-  assert.match(latestRoute, /option\.file\.replace/);
-  assert.match(latestRoute, /readGeneratedGuideFragment/);
-  assert.match(latestRoute, /GeneratedDocsStaticEnhancer/);
-  assert.match(
-    latestRoute,
-    /guideSectionLinks = sections\.filter\(\(section\) => section\.depth === 2\)\.slice\(0, 30\)/,
-  );
-  assert.match(
-    latestRoute,
-    /guideSectionLinks\.map\(\(section\)[\s\S]*Different variants[\s\S]*props\.guide\.options\.map\(\(option\)/,
-  );
-  assert.doesNotMatch(
-    latestRoute,
-    /Different variants[\s\S]{0,500}All variants/,
-  );
-  assert.match(latestRoute, /data-guide-section-link/);
-  assert.match(latestRoute, /requestAnimationFrame\(updateActiveSection\)/);
-  assert.match(latestRoute, /\[&\.active\]:bg-accent/);
-  assertNoRuntimeGeneratedRendering("latest guide route", latestRoute);
-  assert.doesNotMatch(
-    latestRoute,
-    /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
+  await assert.rejects(
+    () =>
+      fs.access(
+        path.join(projectDirectory, "src", "pages", "latest", "[page].astro"),
+      ),
+    (error: any): boolean => error?.code === "ENOENT",
   );
   assert.doesNotMatch(legacyRoute, /@\/lib\/protocol/);
   assert.doesNotMatch(legacyRoute, /productionUrl\("guides"\)/);
+  assert.match(legacyRoute, /const guidesRoot = "\/guides"/);
+  assert.match(legacyRoute, /guideOptionPath\(option, guidesRoot\)/);
   assert.match(
     legacyRoute,
     /appendRequestSearch\(withBasePath\(props\.destination\), url\)/,
@@ -438,7 +419,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     generatedDocsStaticEnhancer,
     /docsSnippetStyles|define:vars/,
   );
-  assert.match(guideCatalog, /root = "\/latest"/);
+  assert.match(guideCatalog, /version\.current \? rootPath : version\.href/);
   assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
 

@@ -79,7 +79,7 @@ const hasFilters = Boolean(query || selectedCategory || selectedTag || sortMode 
 const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
 const guideVersionOptions = guidesVersions.versions.map((version) => ({
   ...version,
-  href: version.href.startsWith("http") ? version.href : withBasePath(version.href)
+  href: version.href.startsWith("http") ? version.href : withBasePath(version.current ? rootPath : version.href)
 }));
 
 function categorySlug(category: string) {

@@ -113,7 +113,7 @@ Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `s
 
 - `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, `.nojekyll`, and shared branding assets. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. Dynamic docs/guides route generation is disabled for this surface, and pruning removes any remaining docs, guides, latest-route, and template artifacts from the published Pages artifact.
 - `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
-- `npm run build:guides` keeps the latest guides tree, root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
+- `npm run build:guides` renders the generated guides once under `/guides`, moves that tree to `/latest` for the standalone guides artifact, and keeps the root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
 The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`, builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned `dist` directory as the GitHub Pages artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides and does not render generated docs/guides content. The docs and guides workflows are manual publish jobs in this repository:
 
@@ -136,7 +136,7 @@ The build reads these deployment inputs:
 - `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
 - `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
-- `MICRONAUT_GUIDES_ROOT`: guides root in the current artifact. It is `/guides` for all-in-one preview and `/latest` for standalone guides.
+- `MICRONAUT_GUIDES_ROOT`: public guides root in the current artifact. Source guide pages are authored under `/guides`; standalone guides builds publish that rendered tree at `/latest`.
 - `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
 - `MICRONAUT_PREPARE_GENERATED_CONTENT`: set to `false`, `0`, or `none` to skip generated docs/guides rendering before Astro starts. `build:main` sets this to `false` by default; docs and guides builds leave it enabled but prepare only the generated content for their own surface.
 - `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the Pages owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io` for the main site or the owner of `target_repository` for docs and guides.
@@ -264,10 +264,10 @@ When a legacy route is added, update the manifest and add or update one route mo
 | `/core/?q=bean` | Deferred until `/core/` routing is resumed | Deferred until main-host Core routing is resumed | Query/hash preservation should be covered when this route is reintroduced. |
 | `https://docs.micronaut.io/latest/guide/` | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/` | Remains Core docs on docs host | Production may serve this as canonical or alias. |
 | `https://docs.micronaut.io/latest/guide/index.html#ioc` | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirect or alias to Core docs with the same section | Fragments require client redirect pages. |
-| `https://guides.micronaut.io/latest/index.html` | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/latest/` | Redirect or alias to guides latest index | Query strings are preserved. |
-| `https://guides.micronaut.io/latest/tag-security.html` | Redirects to the generated tag route when present, otherwise external production tag URL | Served or redirected by guides production | Existing tag compatibility stays generated from guide metadata. |
-| `https://guides.micronaut.io/latest/micronaut-http-client.html` | Redirects to slash-style generated overview when present, otherwise external production URL | Served by guides production | Applies to guide overview `.html` pages. |
-| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html` | Redirects to slash-style generated variant when present, otherwise external production URL | Served by guides production | Applies to language/build variants. |
+| `https://guides.micronaut.io/latest/index.html` | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/` | Redirect or alias to guides latest index | Query strings are preserved. |
+| `https://guides.micronaut.io/latest/tag-security.html` | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL | Served or redirected by guides production | Existing tag compatibility stays generated from guide metadata. |
+| `https://guides.micronaut.io/latest/micronaut-http-client.html` | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL | Served by guides production | Applies to guide overview `.html` pages. |
+| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html` | Redirects to slash-style generated `/guides/` variant when present, otherwise external production URL | Served by guides production | Applies to language/build variants. |
 | `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.zip` | Redirects to production ZIP URL | Production ZIP remains downloadable | ZIP redirects are temporary external redirects. |
 | `https://micronaut.io/blog/2020-04-30-introducing-micronaut-launch.html` | Redirects to the canonical dated post | Redirects to the canonical dated post | Dated blog aliases are generated from post metadata. |
 | `https://micronaut.io/blog/2019-07-18-unleashing-predator-precomputed-data-repositories.html` | Redirects to `/2019/07/18/announcing-micronaut-data/` | Same canonical post | Explicit historical aliases remain in `blog-redirects`. |
@@ -297,7 +297,7 @@ When a legacy route is added, update the manifest and add or update one route mo
 #### Manual QA Checklist
 
 - Build with `ASTRO_BASE=/micronaut-web/` and verify all preview links keep the base path.
-- Check `/`, `/docs/`, `/docs/core/`, `/latest/`, `/latest/index.html`, `/latest/guide/`, `/latest/guide/index.html`, `/guides/`, a guide detail page, `/launch/`, `/blog/`, a dated blog alias, and a content page.
+- Check `/`, `/docs/`, `/docs/core/`, `/latest/index.html`, `/latest/guide/`, `/latest/guide/index.html`, `/guides/`, a guide detail page, `/launch/`, `/blog/`, a dated blog alias, and a content page.
 - Repeat the checks on desktop and mobile widths.
 - Verify `/latest/guide/index.html#ioc` preserves the fragment after redirect.
 - Verify guides filters update and restore state with `q`, `category`, `tag`, and `sort`.
