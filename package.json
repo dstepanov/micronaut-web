@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "npm run typecheck && npm run typecheck:scripts && npm run style:scripts && npm run test:docs && npm run test:guides && npm run test:main-site && npm run test:deployment && node scripts/validate-docs-snippet-style-sharing.ts",
+    "check": "npm run typecheck && npm run typecheck:scripts && npm run style:scripts && npm run test:asciidoc && npm run test:docs && npm run test:guides && npm run test:main-site && npm run test:deployment && node scripts/validate-docs-snippet-style-sharing.ts",
     "snippet-styles": "node scripts/validate-docs-snippet-style-sharing.ts",
     "sync:docs-projects": "node scripts/sync-docs-fixture.ts",
     "sync:main-site-content": "node scripts/sync-main-site-content.ts && npm run normalize:main-site-markdown",
@@ -16,6 +16,7 @@
     "prepare:generated-docs": "npm run render:docs",
     "prepare:generated-content": "node scripts/prepare-generated-content.ts",
     "test:main-site": "node --test scripts/main-site*.test.ts",
+    "test:asciidoc": "node --test scripts/asciidoc/*.test.ts",
     "test:docs": "node --test scripts/docs/*.test.ts",
     "test:guides": "node --test scripts/guides/*.test.ts",
     "test:deployment": "node --test scripts/deployment*.test.ts",

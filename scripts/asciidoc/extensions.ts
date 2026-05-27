@@ -2,7 +2,11 @@ import { apiLink, packageLink } from "./api-links.ts";
 import { dependencyBlocksHtml } from "./dependencies.ts";
 import { snippetBlocksHtml } from "./snippets.ts";
 
-export function docsExtensionRegistry(asciidoctor: any, context: any): any {
+export function micronautExtensionRegistry(
+  asciidoctor: any,
+  context: any,
+  options: { snippetSamples: any },
+): any {
   const registry = asciidoctor.Extensions.create();
   for (const kind of [
     "api",
@@ -66,7 +70,12 @@ export function docsExtensionRegistry(asciidoctor: any, context: any): any {
       target: any,
       attrs: any,
     ): any {
-      const htmlContent = snippetBlocksHtml(target, attrs, context);
+      const htmlContent = snippetBlocksHtml(
+        target,
+        attrs,
+        context,
+        options.snippetSamples,
+      );
       if (!htmlContent) {
         return undefined;
       }

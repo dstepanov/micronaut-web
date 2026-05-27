@@ -1,6 +1,6 @@
 import { parseAttributeList } from "./adoc-attributes.ts";
 import { configurationSamples } from "./configuration-samples.ts";
-import { snippetMarkerHtml } from "./snippet-markers.ts";
+import { snippetPassthroughBlock } from "./snippet-blocks.ts";
 
 export function renderConfigurationBlocksInSource(source: any): any {
   return source.replace(
@@ -8,11 +8,10 @@ export function renderConfigurationBlocksInSource(source: any): any {
     (_: any, rawAttributes: any, configurationSource: any): any => {
       const attributes = parseAttributeList(rawAttributes || "");
       const title = attributes.title || "";
-      const marker = snippetMarkerHtml("code", {
+      return snippetPassthroughBlock("code", {
         title,
         samples: configurationSamples(configurationSource),
       });
-      return `++++\n${marker}\n++++`;
     },
   );
 }

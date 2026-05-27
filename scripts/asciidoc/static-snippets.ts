@@ -15,6 +15,7 @@ import {
   shikiLanguage,
 } from "../shared/highlight.ts";
 import { inlineTitleHtml } from "./listing.ts";
+import { SNIPPET_CALLOUT_VALIDATION_CLASS } from "./snippet-blocks.ts";
 import { decodeSnippetMarkerPayload } from "./snippet-markers.ts";
 
 const projectDirectory = path.resolve(
@@ -31,7 +32,7 @@ const CALLOUT_MARKER_SUFFIX = "__";
 
 let snippetSupportPromise: Promise<any> | undefined;
 
-export async function renderStaticDocsSnippets(input: any): Promise<any> {
+export async function renderStaticSnippetCards(input: any): Promise<any> {
   const support = await loadSnippetSupport();
   const fragment = parse5.parseFragment(input);
   const state = {
@@ -227,8 +228,9 @@ async function highlightedCodeHtml(
 
 function encodeCalloutMarkers(source: any): any {
   return source.replace(
-    /<(\d+)>/g,
-    `${CALLOUT_MARKER_PREFIX}$1${CALLOUT_MARKER_SUFFIX}`,
+    /<!--(\d+)-->|<(\d+)>/g,
+    (_match: any, xmlCommentNumber: any, angleNumber: any): any =>
+      `${CALLOUT_MARKER_PREFIX}${xmlCommentNumber || angleNumber}${CALLOUT_MARKER_SUFFIX}`,
   );
 }
 
@@ -421,7 +423,7 @@ function isElementWithClass(node: any, tagName: any, className: any): any {
 }
 
 function isSnippetCalloutValidationBlock(node: any): any {
-  return isElementWithClass(node, "div", "docs-snippet-callout-validation");
+  return isElementWithClass(node, "div", SNIPPET_CALLOUT_VALIDATION_CLASS);
 }
 
 function addClass(node: any, className: any): any {

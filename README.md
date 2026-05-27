@@ -61,6 +61,36 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 `src/data/generated-guides.fixture.json` contains the checked-in guide catalog subset used when generated guide output is unavailable. `src/content/generated-guides/manifest.json` is produced by `npm run render:guides` and ignored as generated content.
 
+## Search
+
+Search is static and catalog-backed. There is no external search service; the UI searches data already shipped in the current surface artifact.
+
+The header search is `SearchDialog`, rendered by `SiteHeader` and hydrated on idle. It opens from the search button or the `Meta/Ctrl+K` keyboard shortcut, then navigates by assigning `window.location.href` through `withBasePath(...)` so the same result paths work in the all-in-one preview, standalone docs, standalone guides, and GitHub Pages base paths.
+
+The main-site search mode is used on the main, guides, and launch surfaces. Its result sets are built synchronously from:
+
+- `getMainSitePageSummaries()`, passed into `SiteHeader`, for main-site pages.
+- `searchItems()` in `src/lib/content-catalog.ts`, backed by `src/data/docs-projects.fixture.json` for docs projects and synthetic docs sections.
+- `src/data/generated-guides.fixture.json` for guides and guide tags.
+
+Main-site search groups results into actions, main-site pages, docs and APIs, guides, and tags. Each command item exposes a searchable value made from its kind, title, description, and terms; the `cmdk` command component handles the visible filtering. The source groups are capped before rendering to keep the dialog small: up to 80 main-site pages, 80 docs entries, 80 guide entries, and 40 tags. This mode does not read generated docs HTML, so deep generated headings, configuration properties, and API classes are available only in docs search mode.
+
+Docs search mode is used when `SiteHeader` is rendered with `surface="docs"`. The dialog starts with the synchronous fallback from `docsSearchItems()` and, when opened, fetches `withBasePath("/docs/search-index.json")`. In standalone docs deployments that path is routed to `/latest/search-index.json`; in the all-in-one preview it stays under `/docs/search-index.json`. If the fetch fails, the fallback project/section/repository index remains usable.
+
+The docs search index route is `src/pages/docs/[searchIndex].json.ts`. It is prerendered only when docs routes are enabled, returns JSON as `{ "items": [...] }`, and sets `Cache-Control: public, max-age=300`. It loads the docs project catalog from `src/content/generated-docs/project-catalog.json` when present, otherwise from `src/data/docs-projects.fixture.json`, then reads generated HTML from `src/content/generated-docs/*.html` and calls `buildDocsSearchIndex(...)` in `scripts/docs/search-index.ts`.
+
+`buildDocsSearchIndex(...)` emits project, docs section, and repository items for every project, then extracts richer generated-doc entries from HTML:
+
+- `h1` and `h2` headings inside `.guide-section-heading` become docs results.
+- Table rows whose first cell looks like a configuration property become property results.
+- Links to generated `/api/*.html` pages become class results.
+
+Generated entries are deduplicated by scope, href, and title, and each project is capped at 1200 generated items. Docs search adds scope chips for all results, projects, docs, properties, classes, and repositories, then filters by lower-case substring over kind, title, description, and terms before rendering up to 240 results.
+
+Guides catalog filtering is separate from the header dialog. `LatestGuidesCatalog` reads URL parameters on the server: `q` matches guide title, intro, authors, categories, and tags; `category` and `tag` narrow the list; and `sort` accepts `latest`, `title`, or `duration`. Filter links are generated with `filterHref(...)`, so the selected filters remain URL-addressable.
+
+Launch feature search is also separate. It is client-side React state over feature name, title, description, and category; it is not part of the global search index.
+
 ## Deployment and Compatibility
 
 This repository is the only source implementation for the three web surfaces. A normal Astro build can render the all-in-one preview, then `scripts/prune-surface.ts` rewrites that full `dist` output into the artifact shape needed by one deploy target.
@@ -282,12 +312,13 @@ Run:
 npm run typecheck
 npm run typecheck:scripts
 npm run test:main-site
+npm run test:asciidoc
 npm run test:guides
 npm run test:docs
 npm run build
 ```
 
-This repository currently names the docs test script `test:docs`; use that for the planned `test:platform-docs` coverage unless a separate script is introduced.
+This repository keeps shared Asciidoc renderer coverage in `test:asciidoc` and docs integration coverage in `test:docs`; use `test:docs` for planned `test:platform-docs` coverage unless a separate script is introduced.
 
 ## Astro Publishing Best Practices
 

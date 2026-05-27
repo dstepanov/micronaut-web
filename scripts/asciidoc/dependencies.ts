@@ -1,5 +1,5 @@
 import { macroAttribute } from "./listing.ts";
-import { snippetMarkerHtml } from "./snippet-markers.ts";
+import { snippetMarkerBlockHtml } from "./snippet-blocks.ts";
 
 export function dependencyBlocksHtml(
   target: any,
@@ -13,7 +13,7 @@ export function dependencyBlocksHtml(
   );
   const gradle = gradleDependency(dependency);
   const maven = mavenDependency(dependency);
-  return snippetMarkerHtml("dependency", {
+  return snippetMarkerBlockHtml("dependency", {
     title: dependency.title,
     description: dependency.description,
     samples: [

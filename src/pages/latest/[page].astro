@@ -67,9 +67,11 @@ export async function getStaticPaths() {
 const props = Astro.props as TagProps | OverviewProps | VariantProps;
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
+let guideSectionLinks: Array<{ id: string; label: string; depth: number }> = [];
 if (props.kind === "variant") {
   fragmentHtml = await readGeneratedGuideFragment(props.option);
   sections = fragmentHtml ? extractSections(fragmentHtml) : [];
+  guideSectionLinks = sections.filter((section) => section.depth === 2).slice(0, 30);
 }
 
 function extractSections(html: string) {
@@ -199,20 +201,130 @@ function extractSections(html: string) {
       </article>
       <aside class="hidden xl:block">
         <div class="sticky top-24 grid gap-1.5 text-[0.82rem]">
-          <h2 class="font-medium">On this guide</h2>
+          <h2 class="m-0 font-medium">On this guide</h2>
           <Separator className="opacity-70" />
-          <a href={withBasePath(guideOverviewPath(props.guide))} class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground">Variants</a>
-          {sections.slice(0, 30).map((section) => (
-            <a href={`#${section.id}`} class:list={[
-              "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
-              section.depth > 2 && "pl-5 text-xs"
-            ]}>
+          {guideSectionLinks.map((section) => (
+            <a
+              href={`#${section.id}`}
+              class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground"
+              data-guide-section-link
+              data-section-id={section.id}
+            >
               {section.label}
+            </a>
+          ))}
+          {guideSectionLinks.length > 0 && <Separator className="opacity-70" />}
+          <h3 class="m-0 font-medium">Different variants</h3>
+          {props.guide.options.map((option) => (
+            <a
+              href={withBasePath(guideOptionPath(option))}
+              aria-current={option.file === props.option.file ? "page" : undefined}
+              class:list={[
+                "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
+                option.file === props.option.file && "bg-accent font-medium text-foreground"
+              ]}
+            >
+              {option.label}
             </a>
           ))}
         </div>
       </aside>
     </main>
+    <script is:inline>
+      (() => {
+        const links = Array.from(document.querySelectorAll("[data-guide-section-link]"));
+        if (!links.length) {
+          return;
+        }
+
+        const linksById = new Map(links.map((link) => [link.dataset.sectionId, link]));
+        const headings = links
+          .map((link) => document.getElementById(link.dataset.sectionId || ""))
+          .filter(Boolean);
+        let activeLink;
+        let updateFrame = 0;
+
+        const scrollOffset = () => {
+          const scrollPaddingTop = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+          const fixedOffset = (Number.isFinite(scrollPaddingTop) ? scrollPaddingTop : 80) + 16;
+          return Math.max(fixedOffset, window.innerHeight * 0.25);
+        };
+
+        const activeHeadingFromScroll = () => {
+          if (!headings.length) {
+            return undefined;
+          }
+          const offset = scrollOffset();
+          let activeHeading = headings[0];
+          for (const heading of headings) {
+            if (heading.getBoundingClientRect().top <= offset) {
+              activeHeading = heading;
+            } else {
+              break;
+            }
+          }
+          return activeHeading;
+        };
+
+        const setActiveSection = (sectionId) => {
+          const nextLink = linksById.get(sectionId) || links[0];
+          if (activeLink && activeLink !== nextLink) {
+            activeLink.classList.remove("active");
+            activeLink.removeAttribute("aria-current");
+          }
+          if (nextLink) {
+            nextLink.classList.add("active");
+            nextLink.setAttribute("aria-current", "location");
+            activeLink = nextLink;
+          }
+        };
+
+        const setActiveSectionFromHash = () => {
+          if (!window.location.hash) {
+            return false;
+          }
+          let sectionId = "";
+          try {
+            sectionId = decodeURIComponent(window.location.hash.slice(1));
+          } catch {
+            sectionId = window.location.hash.slice(1);
+          }
+          if (!linksById.has(sectionId)) {
+            return false;
+          }
+          setActiveSection(sectionId);
+          return true;
+        };
+
+        const updateActiveSection = () => {
+          updateFrame = 0;
+          const activeHeading = activeHeadingFromScroll();
+          if (activeHeading) {
+            setActiveSection(activeHeading.id);
+          }
+        };
+
+        const queueActiveSectionUpdate = () => {
+          if (updateFrame) {
+            return;
+          }
+          updateFrame = window.requestAnimationFrame(updateActiveSection);
+        };
+
+        window.addEventListener("scroll", queueActiveSectionUpdate, { passive: true });
+        window.addEventListener("resize", queueActiveSectionUpdate);
+        window.addEventListener("hashchange", () => {
+          window.setTimeout(() => {
+            if (!setActiveSectionFromHash()) {
+              queueActiveSectionUpdate();
+            }
+          }, 0);
+        });
+        if (!setActiveSectionFromHash()) {
+          updateActiveSection();
+        }
+      })();
+    </script>
     <style is:global>
       .generated-guides-content {
         min-width: 0;

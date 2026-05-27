@@ -23,14 +23,16 @@ AsciiDoc macros do not emit finished snippet cards directly. They emit semantic
 `<micronaut-snippet>` marker tags whose `data-payload` contains base64url JSON
 describing the snippet kind, title, description, and code samples.
 
-After Asciidoctor.js produces HTML, `scripts/docs/static-snippets.ts`
-parses the fragment, replaces each marker with static HTML, and wraps generated
-configuration property tables in the shared properties card. The static snippet
-markup comes from `src/components/web/docs-snippet-templates.tsx`; the renderer
-loads that support through `renderDocsSnippetStaticSupport()` so the generated
-HTML and browser enhancement use the same templates.
+After Asciidoctor.js produces HTML, `scripts/asciidoc/postprocess.ts` runs the
+shared docs/guides HTML pipeline. It calls
+`scripts/asciidoc/static-snippets.ts` to replace each marker with static HTML
+and wrap generated configuration property tables in the shared properties card.
+The static snippet markup comes from
+`src/components/web/docs-snippet-templates.tsx`; the renderer loads that support
+through `renderDocsSnippetStaticSupport()` so the generated HTML and browser
+enhancement use the same templates.
 
-The `[configuration]` preprocessor in `scripts/docs/configuration.ts`
+The `[configuration]` preprocessor in `scripts/asciidoc/configuration.ts`
 also emits snippet markers. `configuration-samples.ts` parses the source YAML
 with `js-yaml`, formats TOML with `smol-toml`, and keeps the small remaining
 format adapters for Properties, Groovy config, and HOCON source text. Those
@@ -38,8 +40,8 @@ adapters only generate source strings; Shiki still performs all syntax
 highlighting in the static snippet pipeline.
 
 Shiki highlighting stays in the build/server-side rendering path. Static snippet
-panels are highlighted by `static-snippets.ts`, and ordinary listing blocks are
-highlighted by the docs renderer. React is used only to render static
+panels are highlighted by `scripts/asciidoc/static-snippets.ts`, and ordinary
+listing blocks are highlighted by the docs renderer. React is used only to render static
 markup for these generated fragments; snippets are not hydrated React islands.
 
 `src/components/web/generated-docs-enhancer.astro` adds progressive behavior in

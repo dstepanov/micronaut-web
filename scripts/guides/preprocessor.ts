@@ -1,6 +1,15 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
+import {
+  decodeSnippetMarkerPayload,
+  snippetMarkerHtml,
+} from "../asciidoc/snippet-markers.ts";
+import {
+  SNIPPET_CALLOUT_VALIDATION_CLASS,
+  snippetPassthroughBlockLines,
+} from "../asciidoc/snippet-blocks.ts";
+import { parseAttributeList } from "../asciidoc/adoc-attributes.ts";
 import { extractTaggedSource } from "../shared/tagged-source.ts";
 import {
   appFeatures,
@@ -284,11 +293,15 @@ async function sourceBlock(
   const title = path
     .relative(context.guide.directory, file)
     .replaceAll(path.sep, "/");
-  return sourceBlockLines(
-    languageForFile(file, context.option.language),
+  return snippetPassthroughBlockLines("code", {
     title,
-    source,
-  );
+    samples: [
+      {
+        language: languageForFile(file, context.option.language),
+        source,
+      },
+    ],
+  });
 }
 
 async function resourceBlock(
@@ -314,7 +327,15 @@ async function resourceBlock(
   const title = path
     .relative(context.guide.directory, file)
     .replaceAll(path.sep, "/");
-  return sourceBlockLines(languageForFile(file), title, source);
+  return snippetPassthroughBlockLines("code", {
+    title,
+    samples: [
+      {
+        language: languageForFile(file),
+        source,
+      },
+    ],
+  });
 }
 
 async function zipIncludeBlock(
@@ -330,7 +351,15 @@ async function zipIncludeBlock(
   source = extractTaggedSource(source, tagSelection(attributes));
   source = normalizeSourceCalloutMarkers(source);
   source = normalizeIndent(source, attributes.indent);
-  return sourceBlockLines(languageForFile(file), target.trim(), source);
+  return snippetPassthroughBlockLines("code", {
+    title: target.trim(),
+    samples: [
+      {
+        language: languageForFile(file),
+        source,
+      },
+    ],
+  });
 }
 
 function dependencyLines(lines: any, context: any): any {
@@ -363,7 +392,16 @@ function dependencyLines(lines: any, context: any): any {
 </dependency>`;
       })
       .join("\n");
-    return sourceBlockLines("xml", "Dependency", xml);
+    return snippetPassthroughBlockLines("dependency", {
+      title: "Dependency",
+      samples: [
+        {
+          highlighterLanguage: "xml",
+          language: "maven",
+          source: xml,
+        },
+      ],
+    });
   }
 
   const gradleScope = {
@@ -384,20 +422,16 @@ function dependencyLines(lines: any, context: any): any {
       return `${scope}("${groupId}:${artifactId}${version}")${dependencyCalloutMarker(attributes, "gradle")}`;
     })
     .join("\n");
-  return sourceBlockLines("groovy", "Dependency", gradle);
-}
-
-function sourceBlockLines(language: any, title: any, source: any): any {
-  const lines = [""];
-  if (title) {
-    lines.push(`.${title}`);
-  }
-  lines.push(`[source,${language || "text"}]`);
-  lines.push("----");
-  lines.push(source.trimEnd());
-  lines.push("----");
-  lines.push("");
-  return lines;
+  return snippetPassthroughBlockLines("dependency", {
+    title: "Dependency",
+    samples: [
+      {
+        highlighterLanguage: "groovy",
+        language: "gradle",
+        source: gradle,
+      },
+    ],
+  });
 }
 
 async function findSourceFile(
@@ -645,27 +679,9 @@ function diffLink(_target: any, attributes: any, context: any): any {
 type Attributes = Record<string, string> & { _positional?: string[] };
 
 function parseAttributes(source: any): Attributes {
-  const attributes: Attributes = {};
-  const positional: string[] = [];
-  for (const part of splitAttributes(source)) {
-    const separator = part.indexOf("=");
-    if (separator < 0) {
-      positional.push(part);
-      continue;
-    }
-    const key = part.slice(0, separator).trim();
-    const value = part
-      .slice(separator + 1)
-      .trim()
-      .replace(/^["']|["']$/g, "");
-    if (key) {
-      attributes[key] = value;
-    }
-  }
-  if (positional.length) {
-    attributes._positional = positional;
-  }
-  return attributes;
+  return parseAttributeList(String(source || ""), {
+    positionalKey: "_positional",
+  }) as Attributes;
 }
 
 function calloutNumber(attributes: any): any {
@@ -732,10 +748,18 @@ function normalizeOrphanCalloutLists(lines: any): any {
   let inListingBlock = false;
   let listingBlockLines = [];
   let listingBlockOutputStart = -1;
+  let pendingSnippetMarkerOutputIndex = -1;
   let previousListing = emptyListingContext();
 
   for (let index = 0; index < lines.length; ) {
     const line = lines[index];
+
+    if (isSnippetMarkerLine(line)) {
+      output.push(line);
+      pendingSnippetMarkerOutputIndex = output.length - 1;
+      index += 1;
+      continue;
+    }
 
     if (isListingDelimiter(line)) {
       output.push(line);
@@ -744,8 +768,12 @@ function normalizeOrphanCalloutLists(lines: any): any {
           listingBlockLines,
           listingBlockOutputStart,
           output.length - 1,
+          isSnippetCalloutValidationListing(output, listingBlockOutputStart)
+            ? pendingSnippetMarkerOutputIndex
+            : -1,
         );
         listingBlockLines = [];
+        pendingSnippetMarkerOutputIndex = -1;
       } else {
         previousListing = emptyListingContext();
         listingBlockOutputStart = output.length;
@@ -786,6 +814,9 @@ function normalizeOrphanCalloutLists(lines: any): any {
     output.push(line);
     if (line.trim()) {
       previousListing = emptyListingContext();
+      if (!keepsSnippetMarkerPending(line)) {
+        pendingSnippetMarkerOutputIndex = -1;
+      }
     }
     index += 1;
   }
@@ -794,7 +825,28 @@ function normalizeOrphanCalloutLists(lines: any): any {
 }
 
 function isListingDelimiter(line: any): any {
-  return line.trim() === "----";
+  return /^-{4,}$/.test(line.trim());
+}
+
+function isSnippetMarkerLine(line: any): any {
+  return /<micronaut-snippet\b/.test(line);
+}
+
+function keepsSnippetMarkerPending(line: any): any {
+  const trimmed = line.trim();
+  return (
+    trimmed === "++++" || trimmed === `[.${SNIPPET_CALLOUT_VALIDATION_CLASS}]`
+  );
+}
+
+function isSnippetCalloutValidationListing(
+  output: any,
+  listingBlockOutputStart: any,
+): any {
+  return (
+    output[listingBlockOutputStart - 2]?.trim() ===
+    `[.${SNIPPET_CALLOUT_VALIDATION_CLASS}]`
+  );
 }
 
 function isCalloutListItem(line: any): any {
@@ -805,13 +857,21 @@ function listingCalloutContext(
   lines: any,
   outputStart: any,
   outputEnd: any,
+  markerOutputIndex: any = -1,
 ): any {
   const source = lines.join("\n");
   if (/^include::/m.test(source)) {
-    return { unknown: true, numbers: new Set(), outputStart, outputEnd };
+    return {
+      unknown: true,
+      markerOutputIndex,
+      numbers: new Set(),
+      outputStart,
+      outputEnd,
+    };
   }
   return {
     unknown: false,
+    markerOutputIndex,
     numbers: new Set(
       Array.from(
         source.matchAll(/<(\d+)>|<!--(\d+)-->/g),
@@ -825,6 +885,7 @@ function listingCalloutContext(
 
 function emptyListingContext(): any {
   return {
+    markerOutputIndex: -1,
     unknown: false,
     numbers: new Set(),
     outputStart: -1,
@@ -891,15 +952,12 @@ function renumberListingCallouts(items: any, listing: any, output: any): any {
     return [];
   }
   for (let index = listing.outputStart; index < listing.outputEnd; index += 1) {
-    output[index] = output[index].replace(
-      /<(\d+)>|<!--(\d+)-->/g,
-      (match: any, xmlNumber: any, commentNumber: any): any => {
-        const nextNumber = numberMap.get(xmlNumber || commentNumber);
-        if (!nextNumber) {
-          return match;
-        }
-        return xmlNumber ? `<${nextNumber}>` : `<!--${nextNumber}-->`;
-      },
+    output[index] = replaceSourceCalloutNumbers(output[index], numberMap);
+  }
+  if (listing.markerOutputIndex >= 0) {
+    output[listing.markerOutputIndex] = renumberSnippetMarkerLine(
+      output[listing.markerOutputIndex],
+      numberMap,
     );
   }
   for (const item of items) {
@@ -909,6 +967,41 @@ function renumberListingCallouts(items: any, listing: any, output: any): any {
     );
   }
   return [];
+}
+
+function replaceSourceCalloutNumbers(source: any, numberMap: any): any {
+  return String(source).replace(
+    /<(\d+)>|<!--(\d+)-->/g,
+    (match: any, xmlNumber: any, commentNumber: any): any => {
+      const nextNumber = numberMap.get(xmlNumber || commentNumber);
+      if (!nextNumber) {
+        return match;
+      }
+      return xmlNumber ? `<${nextNumber}>` : `<!--${nextNumber}-->`;
+    },
+  );
+}
+
+function renumberSnippetMarkerLine(line: any, numberMap: any): any {
+  const payloadValue = /\bdata-payload="([^"]+)"/.exec(line)?.[1];
+  if (!payloadValue) {
+    return line;
+  }
+  try {
+    const payload = decodeSnippetMarkerPayload(payloadValue);
+    const samples = Array.isArray(payload.samples)
+      ? payload.samples.map((sample: any): any => ({
+          ...sample,
+          source: replaceSourceCalloutNumbers(sample.source || "", numberMap),
+        }))
+      : [];
+    return snippetMarkerHtml(payload.kind || "code", {
+      ...payload,
+      samples,
+    });
+  } catch {
+    return line;
+  }
 }
 
 function canRenumberListing(numberMap: any, listingNumbers: any): any {
@@ -1011,27 +1104,6 @@ function findExistingIncludeTarget(candidate: any, context: any): any {
     }
   }
   return "";
-}
-
-function splitAttributes(source: any): any {
-  const parts = [];
-  let current = "";
-  let quote = "";
-  for (const char of source || "") {
-    if ((char === '"' || char === "'") && (!quote || quote === char)) {
-      quote = quote ? "" : char;
-      current += char;
-      continue;
-    }
-    if (char === "," && !quote) {
-      parts.push(current);
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  parts.push(current);
-  return parts.map((part: any): any => part.trim()).filter(Boolean);
 }
 
 function replaceTemplateArguments(line: any, attributes: any): any {

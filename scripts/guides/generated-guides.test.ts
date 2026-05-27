@@ -107,6 +107,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
     html,
     /implementation[\s\S]*io\.micronaut:micronaut-http-client/,
   );
+  assertMicronautHttpClientGuideHasProperSnippets(html);
   assert.match(html, /Adds HTTP client dependency/);
   assert.match(html, /Manual callout keeps its place/);
   assert.match(html, /Raw include callout/);
@@ -140,6 +141,18 @@ test("guide renderer defaults to the small guide subset and expands guide macros
     /source:|common-template:|callout:|dependency:|diffLink:/,
   );
   assertNoRuntimeGeneratedRendering("generated guide HTML", html);
+  const mavenHtml = await fs.readFile(
+    path.join(
+      outputDirectory,
+      "fragments",
+      "micronaut-http-client-maven-java.html",
+    ),
+    "utf8",
+  );
+  assertMicronautHttpClientGuideHasProperSnippets(mavenHtml);
+  assert.match(mavenHtml, /Maven/);
+  assert.match(mavenHtml, /io\.micronaut/);
+  assert.doesNotMatch(mavenHtml, /<!--1-->|<!--2-->/);
 });
 
 test("guide renderer can render all guides in strict pipeline mode", async (t: any): Promise<any> => {
@@ -271,6 +284,10 @@ test("latest guide replacement routes and parallel generated-content preparation
     path.join(projectDirectory, "scripts", "guides", "renderer.ts"),
     "utf8",
   );
+  const guidesPreprocessor = await fs.readFile(
+    path.join(projectDirectory, "scripts", "guides", "preprocessor.ts"),
+    "utf8",
+  );
   const generatedDocsStaticEnhancer = await fs.readFile(
     path.join(
       projectDirectory,
@@ -333,6 +350,21 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(latestRoute, /option\.file\.replace/);
   assert.match(latestRoute, /readGeneratedGuideFragment/);
   assert.match(latestRoute, /GeneratedDocsStaticEnhancer/);
+  assert.match(
+    latestRoute,
+    /guideSectionLinks = sections\.filter\(\(section\) => section\.depth === 2\)\.slice\(0, 30\)/,
+  );
+  assert.match(
+    latestRoute,
+    /guideSectionLinks\.map\(\(section\)[\s\S]*Different variants[\s\S]*props\.guide\.options\.map\(\(option\)/,
+  );
+  assert.doesNotMatch(
+    latestRoute,
+    /Different variants[\s\S]{0,500}All variants/,
+  );
+  assert.match(latestRoute, /data-guide-section-link/);
+  assert.match(latestRoute, /requestAnimationFrame\(updateActiveSection\)/);
+  assert.match(latestRoute, /\[&\.active\]:bg-accent/);
   assertNoRuntimeGeneratedRendering("latest guide route", latestRoute);
   assert.doesNotMatch(
     latestRoute,
@@ -352,8 +384,26 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesIndexRoute, /@\/lib\/protocol/);
   assert.match(guidesRoute, /readGeneratedGuideFragment/);
   assert.match(guidesRoute, /On this guide/);
+  assert.doesNotMatch(
+    guidesRoute,
+    /aria-label="On this guide"[\s\S]*Choose the language and build tool variant for the tutorial/,
+  );
   assert.match(guidesRoute, /In this section/);
   assert.match(guidesRoute, /buildGuidePageIndexSections/);
+  assert.match(
+    guidesRoute,
+    /guideSectionLinks = pageIndexSections\.filter\(\(section\) => section\.level === 0\)\.slice\(0, 30\)/,
+  );
+  assert.match(
+    guidesRoute,
+    /guideSectionLinks\.map\(\(section\)[\s\S]*Different variants[\s\S]*props\.guide\.options\.map\(\(option\)/,
+  );
+  assert.doesNotMatch(
+    guidesRoute,
+    /Different variants[\s\S]{0,500}All variants/,
+  );
+  assert.match(guidesRoute, /data-guide-section-link/);
+  assert.match(guidesRoute, /guideSectionLinksById/);
   assert.match(guidesRoute, /data-guide-page-index/);
   assert.match(guidesRoute, /data-guide-page-index-inner/);
   assert.match(guidesRoute, /data-root-id/);
@@ -372,7 +422,12 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesLegacyRoute, /legacyGuidesBase/);
   assert.doesNotMatch(guidesLegacyRoute, /productionUrl\("guides"\)/);
   assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
-  assert.match(guidesRenderer, /renderStaticDocsSnippets/);
+  assert.match(guidesRenderer, /processAsciiDocHtml/);
+  assert.doesNotMatch(guidesRenderer, /renderStaticSnippetCards/);
+  assert.doesNotMatch(guidesRenderer, /renderStaticDocsSnippets/);
+  assert.doesNotMatch(guidesRenderer, /renderStaticListingBlockSnippets/);
+  assert.match(guidesPreprocessor, /snippetPassthroughBlockLines/);
+  assert.match(guidesPreprocessor, /SNIPPET_CALLOUT_VALIDATION_CLASS/);
   assertNoRuntimeGeneratedRendering(
     "generated guides static enhancer",
     generatedDocsStaticEnhancer,
@@ -384,6 +439,34 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(guideCatalog, /root = "\/latest"/);
   assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
+
+function assertMicronautHttpClientGuideHasProperSnippets(source: string) {
+  assert.match(
+    source,
+    /docs-code-snippet-template/,
+    "Micronaut HTTP Client guide source blocks must render as snippet cards",
+  );
+  assert.match(
+    source,
+    /docs-dependency-template/,
+    "Micronaut HTTP Client guide dependency blocks must render as dependency snippet cards",
+  );
+  assert.match(
+    source,
+    /docs-code-callouts/,
+    "Micronaut HTTP Client guide callouts must render below snippet cards",
+  );
+  assert.match(
+    source,
+    /data-copy-active-snippet/,
+    "Micronaut HTTP Client guide snippet cards must include copy controls",
+  );
+  assert.doesNotMatch(
+    source,
+    /<micronaut-snippet|docs-snippet-callout-validation/,
+    "Micronaut HTTP Client guide snippet markers must be fully consumed during static rendering",
+  );
+}
 
 function assertNoRuntimeGeneratedRendering(label: string, source: string) {
   assert.doesNotMatch(
@@ -504,7 +587,7 @@ async function writeGuideFixture(
         categories: ["HTTP Client"],
         publicationDate: "2026-01-01",
         languages: ["java"],
-        buildTools: ["gradle"],
+        buildTools: ["gradle", "maven"],
         apps: [{ name: "default", features: ["http-client"] }],
       },
       null,

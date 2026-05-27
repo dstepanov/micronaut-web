@@ -1,20 +1,16 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { renderAsciiDoc } from "../shared/asciidoc-rendering.ts";
+import { micronautExtensionRegistry } from "../asciidoc/extensions.ts";
+import { processAsciiDocHtml, shikiStyle } from "../asciidoc/postprocess.ts";
+import { renderAsciiDoc } from "../asciidoc/rendering.ts";
+import { expandSnippetMacrosForCallouts } from "../asciidoc/snippets.ts";
+import { normalizeAsciiDocSource } from "../asciidoc/source-normalizer.ts";
 import { optimizeImages } from "../shared/generated-html.ts";
-import { docsExtensionRegistry } from "./extensions.ts";
-import {
-  highlightListingBlocks,
-  shikiStyle,
-  unwrapBlockParagraphs,
-} from "../shared/highlight.ts";
 import { attribute, html } from "../shared/html.ts";
 import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
 import { readProperties } from "./project-manifest.ts";
-import { normalizeAsciiDocSource } from "./source-normalizer.ts";
-import { renderStaticDocsSnippets } from "./static-snippets.ts";
-import { expandSnippetMacrosForCallouts } from "./snippets.ts";
+import { docsSnippetSamples } from "./snippet-samples.ts";
 import { readGuideToc } from "./toc.ts";
 import { prefixIds, rewriteUrls } from "./urls.ts";
 
@@ -61,9 +57,9 @@ export async function renderProject(
     content += await renderNode(asciidoctor, context, node);
   }
 
-  content = unwrapBlockParagraphs(content);
-  content = await renderStaticDocsSnippets(content);
-  content = await highlightListingBlocks(content);
+  content = await processAsciiDocHtml(content, {
+    unwrapSnippetParagraphs: true,
+  });
   content = prefixIds(content, project.slug);
   content = rewriteUrls(content, project);
   content = optimizeImages(content);
@@ -78,7 +74,7 @@ async function renderNode(
   const sourceFile = path.join(context.guideSourceDirectory, node.file);
   let source = await fs.readFile(sourceFile, "utf8");
   source = normalizeAsciiDocSource(source);
-  source = expandSnippetMacrosForCallouts(source, context);
+  source = expandSnippetMacrosForCallouts(source, context, docsSnippetSamples);
 
   const converted = renderAsciiDoc({
     asciidoctor,
@@ -88,7 +84,9 @@ async function renderNode(
     convertOptions: {
       attributes: context.attributes,
       base_dir: context.submoduleDirectory,
-      extension_registry: docsExtensionRegistry(asciidoctor, context),
+      extension_registry: micronautExtensionRegistry(asciidoctor, context, {
+        snippetSamples: docsSnippetSamples,
+      }),
     },
     fatalDiagnostic: isFatalDocsDiagnostic,
   });
