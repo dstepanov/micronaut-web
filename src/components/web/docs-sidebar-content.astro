@@ -1,0 +1,167 @@
+---
+import { DocsVersionSwitcher } from "@/components/web/docs-version-switcher";
+import { IconGlyph } from "@/components/web/icon-glyph";
+import docsVersions from "@/data/docs-versions.json";
+import type {
+  CatalogCategory,
+  DocsProjectCatalog,
+} from "@/lib/content-catalog";
+import { withBasePath } from "@/lib/base-path";
+import { cn } from "@/lib/utils";
+
+type ActiveSection = {
+  id: string;
+  label: string;
+};
+
+interface Props {
+  projectCatalog: DocsProjectCatalog;
+  activeSlug?: string;
+  activeSections?: ActiveSection[];
+}
+
+const {
+  projectCatalog,
+  activeSlug,
+  activeSections = [],
+} = Astro.props;
+
+const activeProject = activeSlug
+  ? projectCatalog.projects.find((project) => project.slug === activeSlug)
+  : undefined;
+const activeCategorySlug = activeSlug
+  ? projectCatalog.categories.find(
+      (category) =>
+        category.slug === activeProject?.primaryCategory &&
+        category.projectSlugs?.includes(activeSlug),
+    )?.slug ||
+    projectCatalog.categories.find((category) =>
+      category.projectSlugs?.includes(activeSlug),
+    )?.slug
+  : undefined;
+
+function docsCatalogProjectsByCategory(
+  catalog: DocsProjectCatalog,
+  category: CatalogCategory,
+) {
+  const selected = new Set(category.projectSlugs || []);
+  return catalog.projects
+    .filter((project) => selected.has(project.slug))
+    .map((project) => ({
+      ...project,
+      href: `/docs/${project.slug}/`,
+    }));
+}
+---
+
+<div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 border-b border-sidebar-border p-2">
+  <DocsVersionSwitcher
+    label="Docs"
+    options={docsVersions.versions}
+    versionManifestHref="/versions.json"
+    surface="docs"
+    className="w-full"
+    client:idle
+  />
+</div>
+<div
+  data-slot="sidebar-content"
+  data-sidebar="content"
+  class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto px-2 pb-2 pt-2 group-data-[collapsible=icon]:overflow-hidden"
+>
+  {projectCatalog.categories.map((category) => {
+    const projects = docsCatalogProjectsByCategory(projectCatalog, category);
+    if (!projects.length) {
+      return null;
+    }
+    const hasActiveProject = category.slug === activeCategorySlug;
+    const categoryHeaderClassName = cn(
+      "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
+      "gap-1.5 px-2 text-[0.78rem] leading-4",
+      hasActiveProject && "text-sidebar-foreground",
+      !activeSlug &&
+        "no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
+    );
+    return (
+      <div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-0">
+        {!activeSlug ? (
+          <a
+            href={`#${category.slug}`}
+            data-slot="sidebar-group-label"
+            data-sidebar="group-label"
+            data-docs-scroll-link
+            data-docs-target-id={category.slug}
+            class={categoryHeaderClassName}
+          >
+            <IconGlyph name={category.icon} className="size-3.5 shrink-0" />
+            <span class="truncate">{category.name}</span>
+          </a>
+        ) : (
+          <div
+            data-slot="sidebar-group-label"
+            data-sidebar="group-label"
+            class={categoryHeaderClassName}
+          >
+            <IconGlyph name={category.icon} className="size-3.5 shrink-0" />
+            <span class="truncate">{category.name}</span>
+          </div>
+        )}
+        <ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+          {projects.map((project) => {
+            const isActiveProject =
+              project.slug === activeSlug && category.slug === activeCategorySlug;
+            const hasActiveSections = isActiveProject && activeSections.length > 0;
+            return (
+              <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">
+                <a
+                  href={withBasePath(project.href)}
+                  data-slot="sidebar-menu-button"
+                  data-sidebar="menu-button"
+                  data-size="default"
+                  data-active={isActiveProject ? "true" : "false"}
+                  aria-current={isActiveProject ? "page" : undefined}
+                  title={project.displayName}
+                  class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 h-auto min-h-8 whitespace-normal px-2 py-1.5 text-[0.85rem] leading-[1.19rem]"
+                >
+                  <IconGlyph name={project.icon} className="size-4 shrink-0" />
+                  <span class="whitespace-normal break-words group-data-[collapsible=icon]:sr-only">
+                    {project.displayName}
+                  </span>
+                </a>
+                {hasActiveSections && (
+                  <ul data-slot="sidebar-menu-sub" data-sidebar="menu-sub" class="mb-2 ml-3 mr-0 mt-0.5 flex min-w-0 translate-x-px flex-col gap-0 border-l-0 px-0 py-0.5 group-data-[collapsible=icon]:hidden">
+                    {activeSections.map((section) => {
+                      const [, number, title] = /^(\S+)\s+(.+)$/.exec(section.label) || [];
+                      return (
+                        <li data-slot="sidebar-menu-sub-item" data-sidebar="menu-sub-item" class="group/menu-sub-item relative">
+                          <a
+                            href={`#${section.id}`}
+                            data-slot="sidebar-menu-sub-button"
+                            data-sidebar="menu-sub-button"
+                            data-size="md"
+                            data-docs-scroll-link
+                            aria-label={section.label}
+                            class="flex min-w-0 -translate-x-px items-center overflow-hidden rounded-md text-sidebar-foreground ring-sidebar-ring outline-hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden my-px ml-[7px] mr-2 h-auto w-[calc(100%-15px)] gap-2 whitespace-normal px-2 py-1.5 text-[0.82rem] leading-[1.18rem]"
+                          >
+                            {number ? (
+                              <span class="w-4 shrink-0 text-sidebar-foreground/60">
+                                {number}
+                              </span>
+                            ) : null}
+                            <span class="whitespace-normal break-words">
+                              {title || section.label}
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  })}
+</div>

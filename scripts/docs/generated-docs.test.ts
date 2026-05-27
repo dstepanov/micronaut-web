@@ -947,8 +947,14 @@ test("docs routes render generated fragments and serve generated assets", async 
     ),
     "utf8",
   );
-  const appSidebarSource = await fs.readFile(
-    path.join(projectDirectory, "src", "components", "app-sidebar.tsx"),
+  const docsSidebarContentSource = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "src",
+      "components",
+      "web",
+      "docs-sidebar-content.astro",
+    ),
     "utf8",
   );
 
@@ -991,7 +997,10 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsIndexSource, /loadDocsProjectCatalog/);
   assert.match(docsPageSource, /loadDocsProjectCatalog/);
   assert.match(searchIndexRouteSource, /loadDocsProjectCatalog/);
-  assert.match(appSidebarSource, /versionManifestHref="\/versions\.json"/);
+  assert.match(
+    docsSidebarContentSource,
+    /versionManifestHref="\/versions\.json"/,
+  );
 });
 
 function assertNoRuntimeGeneratedRendering(label: string, source: string) {

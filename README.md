@@ -65,7 +65,7 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 Search is static and catalog-backed. There is no external search service; the UI searches data already shipped in the current surface artifact.
 
-The header search is `SearchDialog`, rendered by `SiteHeader` and hydrated on idle. It opens from the search button or the `Meta/Ctrl+K` keyboard shortcut, then navigates by assigning `window.location.href` through `withBasePath(...)` so the same result paths work in the all-in-one preview, standalone docs, standalone guides, and GitHub Pages base paths.
+The header search is `SearchDialog`, rendered by `SiteHeader` in the top-menu island and hydrated on load. It opens from the search button or the `Meta/Ctrl+K` keyboard shortcut, then navigates by assigning `window.location.href` through `withBasePath(...)` so the same result paths work in the all-in-one preview, standalone docs, standalone guides, and GitHub Pages base paths.
 
 The main-site search mode is used on the main, guides, and launch surfaces. Its result sets are built synchronously from:
 

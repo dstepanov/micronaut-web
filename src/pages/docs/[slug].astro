@@ -13,7 +13,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DocsShell } from "@/components/web/docs-shell";
+import DocsShell from "@/components/web/docs-shell.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
@@ -88,12 +88,11 @@ function extractGeneratedDocSections(html: string) {
 }
 ---
 
-<WebLayout title={`${project.displayName} Docs`} surface="docs" canonicalUrl={canonicalUrl} hideHeader>
+<WebLayout title={`${project.displayName} Docs`} surface="docs" canonicalUrl={canonicalUrl}>
   <DocsShell
     projectCatalog={docsProjectCatalog}
     activeSlug={project.slug}
     activeSections={sidebarSections}
-    client:idle
   >
     <article class:list={[
       "grid w-full grid-cols-1 py-6",

@@ -1,0 +1,81 @@
+---
+import DocsSidebarContent from "@/components/web/docs-sidebar-content.astro";
+import {
+  DocsSidebarMobileSheet,
+  DocsSidebarRailControl,
+} from "@/components/web/docs-sidebar-controls";
+import { DocsScrollSpy } from "@/components/web/docs-scroll-spy";
+import type { DocsProjectCatalog } from "@/lib/content-catalog";
+
+type ActiveSection = {
+  id: string;
+  label: string;
+};
+
+interface Props {
+  projectCatalog: DocsProjectCatalog;
+  activeSlug?: string;
+  activeSections?: ActiveSection[];
+}
+
+const {
+  projectCatalog,
+  activeSlug,
+  activeSections = [],
+} = Astro.props;
+---
+
+<div
+  data-docs-shell
+  class="min-h-[calc(100svh-3.5rem)]"
+  style="--sidebar-width: 248px; --sidebar-width-icon: 56px;"
+>
+  <div class="flex min-h-0 flex-1">
+    <aside
+      data-docs-sidebar
+      data-state="expanded"
+      data-collapsible=""
+      data-variant="sidebar"
+      data-side="left"
+      data-slot="sidebar"
+      class="group peer hidden text-sidebar-foreground md:block"
+    >
+      <div
+        data-slot="sidebar-gap"
+        class="relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+      >
+      </div>
+      <div
+        data-slot="sidebar-container"
+        class="fixed inset-y-0 bottom-auto left-0 top-14 z-10 hidden h-[calc(100svh-3.5rem)] w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l"
+      >
+        <div
+          data-sidebar="sidebar"
+          data-slot="sidebar-inner"
+          class="flex h-full w-full flex-col bg-sidebar"
+        >
+          <DocsSidebarContent
+            projectCatalog={projectCatalog}
+            activeSlug={activeSlug}
+            activeSections={activeSections}
+          />
+          <DocsSidebarRailControl client:load />
+        </div>
+      </div>
+    </aside>
+    <main data-slot="sidebar-inset" class="relative flex w-full min-w-0 flex-1 flex-col bg-background">
+      <div class="sticky top-14 z-30 flex h-11 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+        <span class="text-sm font-medium text-foreground">Docs</span>
+        <DocsSidebarMobileSheet client:load>
+          <DocsSidebarContent
+            projectCatalog={projectCatalog}
+            activeSlug={activeSlug}
+            activeSections={activeSections}
+          />
+        </DocsSidebarMobileSheet>
+      </div>
+      <slot />
+    </main>
+  </div>
+  <DocsScrollSpy client:idle />
+</div>
