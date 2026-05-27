@@ -276,8 +276,12 @@ test("latest guide replacement routes and parallel generated-content preparation
     path.join(projectDirectory, "src", "pages", "guides", "[download].zip.ts"),
     "utf8",
   );
-  const generatedGuidesLibrary = await fs.readFile(
+  const generatedGuidesServerLibrary = await fs.readFile(
     path.join(projectDirectory, "src", "lib", "generated-guides.ts"),
+    "utf8",
+  );
+  const generatedGuidesRoutingLibrary = await fs.readFile(
+    path.join(projectDirectory, "src", "lib", "generated-guide-routing.ts"),
     "utf8",
   );
   const guidesRenderer = await fs.readFile(
@@ -423,13 +427,18 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesLegacyRoute, /legacyGuidesBase/);
   assert.doesNotMatch(guidesLegacyRoute, /productionUrl\("guides"\)/);
   assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
-  assert.match(generatedGuidesLibrary, /preferredGuideOption/);
+  assert.match(generatedGuidesServerLibrary, /node:fs\/promises/);
+  assert.match(generatedGuidesServerLibrary, /node:path/);
+  assert.match(generatedGuidesServerLibrary, /generated-guide-routing/);
+  assert.doesNotMatch(guideCard, /@\/lib\/generated-guides/);
+  assert.match(guideCard, /@\/lib\/generated-guide-routing/);
+  assert.match(generatedGuidesRoutingLibrary, /preferredGuideOption/);
   assert.match(
-    generatedGuidesLibrary,
+    generatedGuidesRoutingLibrary,
     /option\.language === "java" && option\.buildTool === "gradle"/,
   );
   assert.match(
-    generatedGuidesLibrary,
+    generatedGuidesRoutingLibrary,
     /option\.file === guide\.defaultOptionFile/,
   );
   assert.match(guidesRenderer, /processAsciiDocHtml/);

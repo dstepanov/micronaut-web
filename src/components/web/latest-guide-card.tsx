@@ -24,7 +24,7 @@ import {
   guideTagPath,
   preferredGuideOption,
   type GeneratedGuide,
-} from "@/lib/generated-guides";
+} from "@/lib/generated-guide-routing";
 import { withBasePath } from "@/lib/base-path";
 
 export function LatestGuideCard({
