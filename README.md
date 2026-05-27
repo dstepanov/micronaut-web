@@ -308,27 +308,3 @@ Deduplicate public assets before publishing. Prefer canonical asset paths for sh
 Prune published artifacts. Surface publication should remove unreferenced `_astro` chunks and unrelated surface output so Pages branches do not accumulate stale JavaScript, CSS, docs, guides, or template artifacts.
 
 Pin npm dependencies. Avoid `latest` ranges in `package.json`; use exact or caret-bounded versions so local builds, CI, and Pages publishes resolve the same Astro, React, Vite, and tooling behavior.
-
-## Template Artifacts
-
-The static build prepares plain HTML templates with exact `{{placeholder}}` slots,
-plus asset manifests, under `dist/micronaut-web`.
-
-Required placeholders are:
-
-- `{{pageTitle}}`, `{{pageDescription}}`, `{{assetBasePath}}`
-- `{{headAssetsHtml}}`, `{{themeScriptHtml}}`, `{{bodyScriptsHtml}}`
-- `{{topNavigationHtml}}`, `{{contentHtml}}`, `{{searchIndexJson}}`
-- docs templates additionally use `{{sidebarHtml}}`
-- detail-page templates additionally use `{{contentSubmenuHtml}}`
-
-The expected consumer flow is:
-
-1. Generate the docs or guides content body as HTML.
-2. Generate navigation fragments separately: top navigation, docs sidebar when applicable, and the right-side content submenu for detail pages.
-3. Generate the search index as JSON.
-4. Render one template with exact placeholder values.
-
-## Shared Assets
-
-`public/micronaut-assets` contains the Micronaut logos and project/language icon SVGs copied from `~/dev/micronaut-ui`. It also keeps local copies of the classic micronaut.io feature SVGs under `public/micronaut-assets/icons/features` for product and Launch feature cards. The React shell consumes those assets through `MicronautLogo` and `IconGlyph` so the prototype matches the docs and micronaut.io visual systems without inventing replacement marks.
