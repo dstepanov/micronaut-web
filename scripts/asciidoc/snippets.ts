@@ -112,7 +112,13 @@ function snippetSamples(
 ): any {
   const samples = [];
   for (const snippetTarget of splitList(target)) {
-    samples.push(...resolveSamples(snippetTarget, attrs, context));
+    const targetSamples = resolveSamples(snippetTarget, attrs, context);
+    samples.push(
+      ...targetSamples.map((sample: any): any => ({
+        ...sample,
+        group: sample.group || snippetTarget,
+      })),
+    );
   }
   return dedupeSamples(samples);
 }
@@ -120,7 +126,7 @@ function snippetSamples(
 function dedupeSamples(samples: any): any {
   const seen = new Set();
   return samples.filter((sample: any): any => {
-    const key = `${sample.language}:${sample.source}`;
+    const key = `${sample.group || ""}:${sample.language}:${sample.source}`;
     if (seen.has(key)) {
       return false;
     }

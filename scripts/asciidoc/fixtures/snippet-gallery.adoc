@@ -93,6 +93,8 @@ plain listing output
 snippet::controller[title=Controller variants,description=Rendered from snippet macro]
 <1> The snippet macro callout is attached to the shared snippet card.
 
+snippet::event-listener,event-listener-spec[title=Listening for Events with `ApplicationEventListener`]
+
 dependency:micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]
 
 [configuration,title=Application configuration]

@@ -65,6 +65,9 @@ function normalizeSnippetSamples(samples: any): any {
       language: sample.language || "text",
       source: String(sample.source || "").trimEnd(),
     };
+    if (sample.group) {
+      normalized.group = String(sample.group);
+    }
     if (sample.highlighterLanguage) {
       normalized.highlighterLanguage = sample.highlighterLanguage;
     }

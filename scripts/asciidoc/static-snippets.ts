@@ -140,13 +140,41 @@ async function renderSnippetMarker(
   const payload = decodeSnippetMarkerPayload(attr(node, "data-payload"));
   const styles = state.support.styles;
   const kind = payload.kind === "dependency" ? "dependency" : "code";
+  const sampleGroups = groupedSnippetSamples(payload.samples, kind);
+  const renderedGroups = [];
+
+  for (const [index, samples] of sampleGroups.entries()) {
+    renderedGroups.push(
+      await renderSnippetSampleGroup({
+        footerHtml: index === sampleGroups.length - 1 ? footerHtml : "",
+        kind,
+        payload,
+        samples,
+        showIntro: index === 0,
+        state,
+        styles,
+      }),
+    );
+  }
+
+  return renderedGroups.join("");
+}
+
+async function renderSnippetSampleGroup({
+  footerHtml,
+  kind,
+  payload,
+  samples,
+  showIntro,
+  state,
+  styles,
+}: any): Promise<any> {
   const templateName =
     kind === "dependency"
       ? "docs/snippets/dependency-snippet.html"
       : "docs/snippets/code-snippet.html";
   const template = state.support.templates[templateName];
   const snippetId = `generated-docs-snippet-${state.snippetIndex}`;
-  const samples = Array.isArray(payload.samples) ? payload.samples : [];
   const optionsLabel =
     kind === "dependency" ? "Dependency format" : "Code language";
 
@@ -189,14 +217,47 @@ async function renderSnippetMarker(
     cardHtml = appendFooterToCard(cardHtml, footerHtml, styles);
   }
 
-  const introHtml = externalSnippetIntroHtml({
-    description: payload.description || "",
-    forceHeader: kind === "dependency",
-    styles,
-    title: payload.title || "",
-  });
+  const introHtml = showIntro
+    ? externalSnippetIntroHtml({
+        description: payload.description || "",
+        forceHeader: kind === "dependency",
+        styles,
+        title: payload.title || "",
+      })
+    : "";
   state.snippetIndex += 1;
   return `${introHtml}${cardHtml}`;
+}
+
+function groupedSnippetSamples(samples: any, kind: any): any {
+  const normalizedSamples = Array.isArray(samples) ? samples : [];
+  if (kind !== "code" || normalizedSamples.length < 2) {
+    return [normalizedSamples];
+  }
+
+  if (normalizedSamples.every((sample: any): any => sample.group)) {
+    const groups = new Map();
+    for (const sample of normalizedSamples) {
+      const group = sample.group;
+      if (!groups.has(group)) {
+        groups.set(group, []);
+      }
+      groups.get(group).push(sample);
+    }
+    if (groups.size > 1) {
+      return Array.from(groups.values());
+    }
+  }
+
+  const languageCounts = new Map();
+  for (const sample of normalizedSamples) {
+    const language = sample.language || "text";
+    languageCounts.set(language, (languageCounts.get(language) || 0) + 1);
+  }
+  if ([...languageCounts.values()].some((count: any): any => count > 1)) {
+    return normalizedSamples.map((sample: any): any => [sample]);
+  }
+  return [normalizedSamples];
 }
 
 function renderListingBlockSnippet(

@@ -33,11 +33,11 @@ test("AsciiDoc snippets render through the shared component templates", async ()
     html,
     /<micronaut-snippet|docs-snippet-callout-validation/,
   );
-  assert.equal(count(html, /docs-code-snippet-template/g), 15);
+  assert.equal(count(html, /docs-code-snippet-template/g), 17);
   assert.equal(count(html, /docs-dependency-template/g), 1);
   assert.equal(count(html, /docs-properties-template/g), 2);
-  assert.equal(count(html, /docs-snippet-template docs-code-block/g), 16);
-  assert.equal(count(html, /data-copy-active-snippet/g), 16);
+  assert.equal(count(html, /docs-snippet-template docs-code-block/g), 18);
+  assert.equal(count(html, /data-copy-active-snippet/g), 18);
   assert.ok(count(html, /docs-code-callouts/g) >= 3);
 
   assert.match(html, /id="generated-listing-snippet-0"/);
@@ -105,6 +105,15 @@ test("AsciiDoc snippets render through the shared component templates", async ()
     text,
     /The snippet macro callout is attached to the shared snippet card/,
   );
+  assert.match(text, /Listening for Events with ApplicationEventListener/);
+  assert.doesNotMatch(
+    snippetCardHtmlContaining(html, "EventListenerFixture"),
+    /EventListenerFixtureSpec/,
+  );
+  assert.match(
+    snippetCardHtmlContaining(html, "EventListenerFixtureSpec"),
+    /EventListenerFixtureSpec/,
+  );
   assert.match(text, /HTTP Client dependency/);
   assert.match(text, /Rendered from dependency macro/);
   assert.match(text, /io\.micronaut:micronaut-http-client/);
@@ -152,54 +161,87 @@ async function renderSnippetGalleryFixture(): Promise<string> {
 }
 
 function fixtureSnippetSamples(target: any): any {
-  if (String(target).trim() !== "controller") {
-    return [];
+  switch (String(target).trim()) {
+    case "controller":
+      return [
+        {
+          language: "java",
+          source: [
+            "import io.micronaut.http.annotation.Controller;",
+            "import io.micronaut.http.annotation.Get;",
+            "",
+            '@Controller("/hello") // <1>',
+            "class HelloController {",
+            "    @Get",
+            "    String index() {",
+            '        return "Hello World";',
+            "    }",
+            "}",
+          ].join("\n"),
+        },
+        {
+          language: "kotlin",
+          source: [
+            "import io.micronaut.http.annotation.Controller",
+            "import io.micronaut.http.annotation.Get",
+            "",
+            '@Controller("/hello") // <1>',
+            "class HelloController {",
+            "    @Get",
+            '    fun index(): String = "Hello World"',
+            "}",
+          ].join("\n"),
+        },
+        {
+          language: "groovy",
+          source: [
+            "import io.micronaut.http.annotation.Controller",
+            "import io.micronaut.http.annotation.Get",
+            "",
+            "@Controller('/hello') // <1>",
+            "class HelloController {",
+            "    @Get",
+            "    String index() {",
+            "        'Hello World'",
+            "    }",
+            "}",
+          ].join("\n"),
+        },
+      ];
+    case "event-listener":
+      return [
+        {
+          language: "java",
+          source: [
+            "import io.micronaut.context.event.ApplicationEventListener;",
+            "",
+            "class EventListenerFixture implements ApplicationEventListener<SampleEvent> {",
+            "    @Override",
+            "    public void onApplicationEvent(SampleEvent event) {",
+            "    }",
+            "}",
+          ].join("\n"),
+        },
+      ];
+    case "event-listener-spec":
+      return [
+        {
+          language: "java",
+          source: [
+            "import io.micronaut.context.ApplicationContext;",
+            "import org.junit.jupiter.api.Test;",
+            "",
+            "class EventListenerFixtureSpec {",
+            "    @Test",
+            "    void receivesEvents() {",
+            "    }",
+            "}",
+          ].join("\n"),
+        },
+      ];
+    default:
+      return [];
   }
-  return [
-    {
-      language: "java",
-      source: [
-        "import io.micronaut.http.annotation.Controller;",
-        "import io.micronaut.http.annotation.Get;",
-        "",
-        '@Controller("/hello") // <1>',
-        "class HelloController {",
-        "    @Get",
-        "    String index() {",
-        '        return "Hello World";',
-        "    }",
-        "}",
-      ].join("\n"),
-    },
-    {
-      language: "kotlin",
-      source: [
-        "import io.micronaut.http.annotation.Controller",
-        "import io.micronaut.http.annotation.Get",
-        "",
-        '@Controller("/hello") // <1>',
-        "class HelloController {",
-        "    @Get",
-        '    fun index(): String = "Hello World"',
-        "}",
-      ].join("\n"),
-    },
-    {
-      language: "groovy",
-      source: [
-        "import io.micronaut.http.annotation.Controller",
-        "import io.micronaut.http.annotation.Get",
-        "",
-        "@Controller('/hello') // <1>",
-        "class HelloController {",
-        "    @Get",
-        "    String index() {",
-        "        'Hello World'",
-        "    }",
-        "}",
-      ].join("\n"),
-    },
-  ];
 }
 
 function count(value: string, pattern: RegExp): number {
@@ -235,4 +277,19 @@ function buttonHtmlForLanguage(value: string, language: string): string {
     return "";
   }
   return value.slice(buttonStart, buttonEnd + "</button>".length);
+}
+
+function snippetCardHtmlContaining(value: string, marker: string): string {
+  const markerIndex = value.indexOf(marker);
+  assert.notEqual(markerIndex, -1, `${marker} should appear in snippet HTML`);
+  const cardStart = value.lastIndexOf(
+    "docs-code-snippet-template",
+    markerIndex,
+  );
+  assert.notEqual(cardStart, -1, `${marker} should appear inside a code card`);
+  const nextCard = value.indexOf(
+    "docs-code-snippet-template",
+    markerIndex + marker.length,
+  );
+  return value.slice(cardStart, nextCard < 0 ? undefined : nextCard);
 }
