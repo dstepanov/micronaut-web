@@ -378,27 +378,31 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   assert.equal(await exists(path.join(dist, "versions.json")), false);
 });
 
-test("web workflow publishes the main surface to the gh-pages branch", async () => {
+test("web workflow deploys the main surface through GitHub Pages Actions", async () => {
   const workflow = await fs.readFile(
     path.join(projectDirectory, ".github", "workflows", "deploy-web.yml"),
     "utf8",
   );
 
-  assert.match(workflow, /contents:\s*write/);
-  assert.match(workflow, /fetch-depth:\s*0/);
-  assert.match(workflow, /git worktree add published-web FETCH_HEAD/);
-  assert.match(workflow, /checkout --orphan "\$TARGET_BRANCH"/);
+  assert.match(workflow, /contents:\s*read/);
+  assert.match(workflow, /pages:\s*write/);
+  assert.match(workflow, /id-token:\s*write/);
+  assert.match(workflow, /environment:\s*\n\s*name:\s*github-pages/);
   assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*main/);
   assert.match(workflow, /npm run build:main/);
-  assert.match(workflow, /git push origin HEAD:"\$TARGET_BRANCH"/);
-  assert.doesNotMatch(workflow, /upload-pages-artifact/);
-  assert.doesNotMatch(workflow, /deploy-pages/);
+  assert.match(workflow, /touch dist\/\.nojekyll/);
+  assert.match(workflow, /actions\/configure-pages@/);
+  assert.match(workflow, /actions\/upload-pages-artifact@/);
+  assert.match(workflow, /path:\s*dist/);
+  assert.match(workflow, /actions\/deploy-pages@/);
   assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
-  assert.doesNotMatch(workflow, /pages:\s*write/);
+  assert.doesNotMatch(workflow, /git worktree add published-web/);
+  assert.doesNotMatch(workflow, /checkout --orphan/);
+  assert.doesNotMatch(workflow, /git push origin HEAD:"\$TARGET_BRANCH"/);
 });
 
-test("branch deployment workflows do not use the GitHub Pages artifact token", async () => {
-  const workflows = await Promise.all(
+test("docs and guides workflows branch-deploy to configured target repositories", async () => {
+  const [webWorkflow, ...branchWorkflows] = await Promise.all(
     ["deploy-web.yml", "deploy-docs.yml", "deploy-guides.yml"].map(
       async (workflow) =>
         fs.readFile(
@@ -408,13 +412,34 @@ test("branch deployment workflows do not use the GitHub Pages artifact token", a
     ),
   );
 
-  for (const workflow of workflows) {
+  const [docsWorkflow, guidesWorkflow] = branchWorkflows;
+  assert.doesNotMatch(webWorkflow, pagesArtifactTokenPattern);
+  for (const workflow of branchWorkflows) {
+    assert.match(workflow, /target_repository:/);
+    assert.match(
+      workflow,
+      /repository:\s*\$\{\{ inputs\.target_repository \}\}/,
+    );
+    assert.match(
+      workflow,
+      /token:\s*\$\{\{ secrets\.TARGET_REPOSITORY_TOKEN \|\| github\.token \}\}/,
+    );
+    assert.match(
+      workflow,
+      /git push origin HEAD:\$\{\{ inputs\.target_branch \}\}/,
+    );
     assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
     assert.doesNotMatch(workflow, /upload-pages-artifact/);
     assert.doesNotMatch(workflow, /deploy-pages/);
   }
-  assert.match(workflows[1], /TARGET_REPOSITORY_TOKEN/);
-  assert.match(workflows[2], /TARGET_REPOSITORY_TOKEN/);
+  assert.match(docsWorkflow, /default:\s*dstepanov\/micronaut-docs/);
+  assert.match(docsWorkflow, /path:\s*published-docs/);
+  assert.match(docsWorkflow, /working-directory:\s*published-docs/);
+  assert.match(guidesWorkflow, /default:\s*dstepanov\/micronaut-guides/);
+  assert.match(guidesWorkflow, /path:\s*published-guides/);
+  assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
+  assert.match(docsWorkflow, /TARGET_REPOSITORY_TOKEN/);
+  assert.match(guidesWorkflow, /TARGET_REPOSITORY_TOKEN/);
 });
 
 test("PostCSS disables Tailwind production optimization reparsing", async () => {

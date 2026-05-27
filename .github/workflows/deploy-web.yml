@@ -5,14 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      target_branch:
-        description: GitHub Pages source branch in this repository
-        required: false
-        default: gh-pages
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: web-pages
@@ -22,11 +19,12 @@ jobs:
   publish:
     name: Build and publish web
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out sources
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -57,35 +55,17 @@ jobs:
           MICRONAUT_DEPLOY_SURFACE: main
         run: npm run build:main
 
-      - name: Prepare web Pages branch
-        env:
-          TARGET_BRANCH: ${{ inputs.target_branch || 'gh-pages' }}
-        run: |
-          if git ls-remote --exit-code --heads origin "$TARGET_BRANCH" >/dev/null 2>&1; then
-            git fetch --depth=1 origin "$TARGET_BRANCH"
-            git worktree add published-web FETCH_HEAD
-          else
-            git worktree add --detach published-web
-            git -C published-web checkout --orphan "$TARGET_BRANCH"
-            git -C published-web rm -rf . || true
-          fi
+      - name: Ensure GitHub Pages serves underscore assets
+        run: touch dist/.nojekyll
 
-      - name: Replace web Pages artifact
-        run: |
-          find published-web -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -R dist/. published-web/
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-      - name: Commit and push web Pages branch
-        working-directory: published-web
-        env:
-          TARGET_BRANCH: ${{ inputs.target_branch || 'gh-pages' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git status --porcelain)" ]; then
-            git add .
-            git commit -m "Publish Micronaut web from ${GITHUB_SHA::12}"
-            git push origin HEAD:"$TARGET_BRANCH"
-          else
-            echo "Web Pages branch is already up to date."
-          fi
+      - name: Upload web Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+      - name: Deploy web Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
