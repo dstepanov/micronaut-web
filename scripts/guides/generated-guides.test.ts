@@ -379,6 +379,18 @@ test("latest guide replacement routes and parallel generated-content preparation
     guidesRoute,
     /guideSectionLinks\.map\(\(section\)[\s\S]*Different variants[\s\S]*props\.guide\.options\.map\(\(option\)/,
   );
+  assert.equal(
+    guidesRoute.match(/aria-label=\{section\.label\}/g)?.length,
+    4,
+  );
+  assert.equal(
+    guidesRoute.match(/aria-label=\{option\.label\}/g)?.length,
+    2,
+  );
+  assert.equal(
+    guidesRoute.match(/aria-label="Different variants"/g)?.length,
+    2,
+  );
   assert.doesNotMatch(
     guidesRoute,
     /Different variants[\s\S]{0,500}All variants/,

@@ -195,6 +195,7 @@ function variantAnchor(option: GeneratedGuideOption) {
           {guideSectionLinks.map((section) => (
             <a
               href={`#${section.id}`}
+              aria-label={section.label}
               class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground"
               data-guide-section-link
               data-section-id={section.id}
@@ -203,10 +204,11 @@ function variantAnchor(option: GeneratedGuideOption) {
             </a>
           ))}
           {guideSectionLinks.length > 0 && <Separator className="opacity-70" />}
-          <h3 class="m-0 font-medium">Different variants</h3>
+          <h3 class="m-0 font-medium" aria-label="Different variants">Different variants</h3>
           {props.guide.options.map((option) => (
             <a
               href={withBasePath(guideOptionPath(option, guidesRoot))}
+              aria-label={option.label}
               aria-current={option.file === props.option.file ? "page" : undefined}
               class:list={[
                 "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
@@ -238,6 +240,7 @@ function variantAnchor(option: GeneratedGuideOption) {
             {guideSectionLinks.map((section) => (
               <a
                 href={`#${section.id}`}
+                aria-label={section.label}
                 class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground"
                 data-guide-section-link
                 data-section-id={section.id}
@@ -246,10 +249,11 @@ function variantAnchor(option: GeneratedGuideOption) {
               </a>
             ))}
             {guideSectionLinks.length > 0 && <Separator className="my-1 opacity-70" />}
-            <h3 class="m-0 text-sm font-medium">Different variants</h3>
+            <h3 class="m-0 text-sm font-medium" aria-label="Different variants">Different variants</h3>
             {props.guide.options.map((option) => (
               <a
                 href={withBasePath(guideOptionPath(option, guidesRoot))}
+                aria-label={option.label}
                 aria-current={option.file === props.option.file ? "page" : undefined}
                 class:list={[
                   "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
@@ -269,6 +273,7 @@ function variantAnchor(option: GeneratedGuideOption) {
               {pageIndexSections.map((section) => (
                 <a
                   href={`#${section.id}`}
+                  aria-label={section.label}
                   class:list={[
                     "relative block min-w-0 rounded-md py-1 pr-2 text-[0.82rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground",
                     section.level === 0 && "pl-2",
@@ -336,6 +341,7 @@ function variantAnchor(option: GeneratedGuideOption) {
               {pageIndexSections.map((section) => (
                 <a
                   href={`#${section.id}`}
+                  aria-label={section.label}
                   class:list={[
                     "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
                     section.level === 0 && "pl-2",

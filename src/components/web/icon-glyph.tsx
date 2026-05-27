@@ -104,6 +104,30 @@ function assetThemeClass(name: string, themeTreatment: IconThemeTreatment) {
   return "dark:brightness-0 dark:invert";
 }
 
+function DecorativeAssetGlyph({
+  src,
+  name,
+  className,
+  themeTreatment
+}: {
+  src: string;
+  name: string;
+  className?: string;
+  themeTreatment: IconThemeTreatment;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-block bg-contain bg-center bg-no-repeat",
+        assetThemeClass(name, themeTreatment),
+        className
+      )}
+      style={{ backgroundImage: `url(${src})` }}
+      aria-hidden="true"
+    />
+  );
+}
+
 export function IconGlyph({
   name,
   className,
@@ -115,37 +139,31 @@ export function IconGlyph({
 }) {
   if (name.startsWith("brand:")) {
     return (
-      <img
+      <DecorativeAssetGlyph
         src={withBasePath(`/micronaut-assets/icons/brands/${name.slice("brand:".length)}.svg`)}
-        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
-        width={24}
-        height={24}
-        alt=""
-        aria-hidden="true"
+        name={name}
+        className={className}
+        themeTreatment={themeTreatment}
       />
     );
   }
   if (name.startsWith("feature:")) {
     return (
-      <img
+      <DecorativeAssetGlyph
         src={withBasePath(`/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`)}
-        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
-        width={60}
-        height={60}
-        alt=""
-        aria-hidden="true"
+        name={name}
+        className={className}
+        themeTreatment={themeTreatment}
       />
     );
   }
   if (name.startsWith("image:")) {
     return (
-      <img
+      <DecorativeAssetGlyph
         src={withBasePath(`/micronaut-assets/icons/${name.slice("image:".length)}`)}
-        className={cn("object-contain", assetThemeClass(name, themeTreatment), className)}
-        width={150}
-        height={150}
-        alt=""
-        aria-hidden="true"
+        name={name}
+        className={className}
+        themeTreatment={themeTreatment}
       />
     );
   }

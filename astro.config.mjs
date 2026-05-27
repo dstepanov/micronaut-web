@@ -48,7 +48,7 @@ const deploymentConfig = {
 export default defineConfig({
   base,
   devToolbar: {
-    enabled: false
+    enabled: true
   },
   integrations: [react()],
   output: "static",

@@ -328,6 +328,16 @@ Route internal links through `src/lib/base-path.ts` or `src/lib/deployment-confi
 
 Use Astro islands deliberately. Hydrate only UI that must run in the browser, and prefer static Astro markup for shared layout such as headers, navigation structure, and content shells wherever possible. Reserve `client:load` for controls that must be interactive immediately; use `client:idle` or `client:visible` for lower-priority UI.
 
+#### Island Usage
+
+Default to static Astro components for route chrome and generated content. Generated docs, generated guides, sidebar link trees, version lists, and article bodies should render as HTML first and should not become React islands just to attach a small behavior.
+
+Use a React island only when the component owns meaningful client state, keyboard handling, focus management, or third-party interactive primitives. Current docs pages intentionally hydrate `SiteHeader`, `DocsSidebarRailControl`, `DocsSidebarMobileSheet`, and `DocsScrollSpy`. Do not reintroduce a docs version switcher island; `src/components/web/docs-version-selector.astro` renders fallback options statically and uses a processed Astro script to fetch `/versions.json`.
+
+For small native controls, use an Astro component plus a processed `<script>` instead of `client:*`. The script should import shared routing helpers, leave server-rendered fallback markup usable when fetches fail, and enhance all matching instances on the page. If the control can appear inside a hydrated React island, such as content passed into a mobile sheet, use delegated events and handle late DOM insertion through `astro:hydrate` or a narrowly scoped observer.
+
+When adding, removing, or changing an island, inspect built HTML for `<astro-island>` markers and update tests that encode the expected island inventory. A docs page should not include `DocsVersionSwitcher` in `component-export`, `component-url`, or bundled source output.
+
 Avoid broad browser-side dynamic imports. Syntax highlighting, especially Shiki, should run at build time where possible or use a constrained language/theme bundle. Do not ship full highlighter language catalogs to the browser for small preview panes or generated content.
 
 Use `is:inline` only for intentional critical scripts, such as the early theme script that prevents a visible color-mode flash. Non-critical scripts should be processed by Astro so they can be bundled, deduplicated, and cached.
