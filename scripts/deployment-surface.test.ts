@@ -253,6 +253,7 @@ test("docs pruning publishes docs at the repository root", async (t) => {
     path.join(dist, "latest", "core", "index.html"),
     "utf8",
   );
+  assertNoDocsVersionSwitcherIsland(docsCoreHtml);
   assertNoInlineStyles(docsCoreHtml);
   assertNoInlineExecutableScripts(docsCoreHtml);
   assert.doesNotMatch(docsCoreHtml, /docsSnippetStyles/);
@@ -916,6 +917,13 @@ function assertNoInlineExecutableScripts(html: string) {
     }
     assert.fail(`Expected no inline executable script, found ${match[0]}`);
   }
+}
+
+function assertNoDocsVersionSwitcherIsland(html: string) {
+  assert.doesNotMatch(
+    html,
+    /<astro-island\b[^>]*(?:DocsVersionSwitcher|docs-version-switcher)/i,
+  );
 }
 
 function assertNoUnusedInlineFixtureAssets(files: string[]) {

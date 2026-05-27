@@ -1,0 +1,270 @@
+---
+import { GalleryVerticalEnd } from "lucide-react";
+
+import { withSurfacePath } from "@/lib/base-path";
+
+export type DocsVersionOption = {
+  label: string;
+  href: string;
+  current?: boolean;
+};
+
+interface Props {
+  label: string;
+  options: DocsVersionOption[];
+  versionManifestHref?: string;
+  className?: string;
+}
+
+const {
+  label,
+  options,
+  versionManifestHref = "",
+  className = "",
+} = Astro.props;
+const current = options.find((option) => option.current) || options[0];
+
+function routedDocsHref(href: string) {
+  return withSurfacePath("docs", href);
+}
+---
+
+{current && options.length >= 2 && (
+  <div
+    class:list={[className]}
+    data-docs-version-selector
+    data-version-manifest-href={versionManifestHref}
+    data-label={label}
+  >
+    <label
+      class="flex h-12 w-full items-center gap-2 rounded-md px-2 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
+    >
+      <span class="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+        <GalleryVerticalEnd className="size-4" aria-hidden="true" />
+      </span>
+      <span class="grid min-w-0 flex-1 gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
+        <span class="truncate font-medium">{label}</span>
+        <select
+          class="h-5 min-w-0 border-0 bg-transparent p-0 text-xs text-sidebar-foreground/70 outline-none transition focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          aria-label={label}
+          data-docs-version-select
+        >
+          {options.map((option) => (
+            <option
+              value={option.href}
+              data-route-href={routedDocsHref(option.href)}
+              selected={option.href === current.href}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </span>
+    </label>
+    <noscript>
+      <ul class="mt-2 grid gap-1 text-xs group-data-[collapsible=icon]:hidden">
+        {options.map((option) => (
+          <li>
+            <a
+              href={routedDocsHref(option.href)}
+              class="block rounded-md px-2 py-1 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              aria-current={option.href === current.href ? "page" : undefined}
+            >
+              {option.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </noscript>
+  </div>
+)}
+
+<script>
+  import {
+    withBasePathForBase,
+    withSurfacePath,
+  } from "@/lib/base-path";
+
+  type DocsVersionOption = {
+    label: string;
+    href: string;
+    current?: boolean;
+  };
+
+  type DocsVersionSelectorState = {
+    dynamicOptions?: DocsVersionOption[];
+    initialized?: boolean;
+    manifestRequested?: boolean;
+    observer?: MutationObserver;
+  };
+
+  type DocsVersionSelectorWindow = Window & {
+    __micronautDocsVersionSelectors?: DocsVersionSelectorState;
+  };
+
+  const selectorState = () => {
+    const selectorWindow = window as DocsVersionSelectorWindow;
+    selectorWindow.__micronautDocsVersionSelectors ||= {};
+    return selectorWindow.__micronautDocsVersionSelectors;
+  };
+
+  const selectorContainers = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>("[data-docs-version-selector]"),
+    );
+
+  const isVersionOption = (value: unknown): value is DocsVersionOption => {
+    if (!value || typeof value !== "object") {
+      return false;
+    }
+    const option = value as Partial<DocsVersionOption>;
+    return (
+      typeof option.label === "string" &&
+      typeof option.href === "string" &&
+      (option.current === undefined || typeof option.current === "boolean")
+    );
+  };
+
+  const normalizedPathname = (href: string) =>
+    new URL(href, window.location.href).pathname.replace(/\/index\.html$/, "/");
+
+  const pathMatchesCurrentLocation = (href: string) => {
+    const destination = normalizedPathname(href);
+    const current = normalizedPathname(window.location.href);
+    return (
+      current === destination ||
+      current.startsWith(`${destination.replace(/\/$/, "")}/`)
+    );
+  };
+
+  const currentOptionHref = (options: DocsVersionOption[]) => {
+    const match = options.find((option) =>
+      pathMatchesCurrentLocation(withSurfacePath("docs", option.href)),
+    );
+    return (match || options.find((option) => option.current) || options[0])
+      ?.href;
+  };
+
+  const optionSignature = (options: DocsVersionOption[]) =>
+    JSON.stringify(
+      options.map((option) => [
+        option.label,
+        option.href,
+        option.current === true,
+      ]),
+    );
+
+  const updateSelect = (
+    select: HTMLSelectElement,
+    options: DocsVersionOption[],
+  ) => {
+    const signature = optionSignature(options);
+    const selectedHref = currentOptionHref(options);
+    if (select.dataset.docsVersionOptionsSignature === signature) {
+      if (selectedHref) {
+        select.value = selectedHref;
+      }
+      return;
+    }
+
+    select.replaceChildren(
+      ...options.map((option) => {
+        const item = document.createElement("option");
+        item.value = option.href;
+        item.dataset.routeHref = withSurfacePath("docs", option.href);
+        item.textContent = option.label;
+        item.selected = option.href === selectedHref;
+        return item;
+      }),
+    );
+    if (selectedHref) {
+      select.value = selectedHref;
+    }
+    select.dataset.docsVersionOptionsSignature = signature;
+  };
+
+  const updateAllSelects = (options = selectorState().dynamicOptions) => {
+    if (!options) {
+      return;
+    }
+    for (const container of selectorContainers()) {
+      const select = container.querySelector<HTMLSelectElement>(
+        "[data-docs-version-select]",
+      );
+      if (select) {
+        updateSelect(select, options);
+      }
+    }
+  };
+
+  const loadDynamicOptions = async () => {
+    const state = selectorState();
+    if (state.manifestRequested || state.dynamicOptions) {
+      return;
+    }
+    const manifestHref = selectorContainers().find(
+      (container) => container.dataset.versionManifestHref,
+    )?.dataset.versionManifestHref;
+    if (!manifestHref) {
+      return;
+    }
+    state.manifestRequested = true;
+    try {
+      const response = await fetch(
+        withBasePathForBase(manifestHref, import.meta.env.BASE_URL || "/"),
+      );
+      const payload = response.ok ? await response.json() : undefined;
+      if (Array.isArray(payload?.versions)) {
+        if (
+          payload.versions.length >= 2 &&
+          payload.versions.every(isVersionOption)
+        ) {
+          state.dynamicOptions = payload.versions;
+          updateAllSelects(payload.versions);
+        }
+      }
+    } catch {
+      // The checked-in options keep the selector usable before publication.
+    }
+  };
+
+  const onVersionSelectChange = (event: Event) => {
+    const select = event.target;
+    if (
+      !(select instanceof HTMLSelectElement) ||
+      !select.matches("[data-docs-version-select]")
+    ) {
+      return;
+    }
+    const selected = select.selectedOptions[0];
+    const href = selected?.dataset.routeHref || selected?.value;
+    if (href) {
+      window.location.href = href;
+    }
+  };
+
+  const enhanceDocsVersionSelectors = async () => {
+    const state = selectorState();
+    if (!state.initialized) {
+      state.initialized = true;
+      document.addEventListener("change", onVersionSelectChange);
+      document.addEventListener("astro:hydrate", () => updateAllSelects());
+      state.observer = new MutationObserver(() => updateAllSelects());
+      state.observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    updateAllSelects();
+    await loadDynamicOptions();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", enhanceDocsVersionSelectors, {
+      once: true,
+    });
+  } else {
+    enhanceDocsVersionSelectors();
+  }
+</script>

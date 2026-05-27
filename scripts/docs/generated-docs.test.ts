@@ -957,6 +957,16 @@ test("docs routes render generated fragments and serve generated assets", async 
     ),
     "utf8",
   );
+  const docsVersionSelectorSource = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "src",
+      "components",
+      "web",
+      "docs-version-selector.astro",
+    ),
+    "utf8",
+  );
 
   assert.match(
     docsPageSource,
@@ -1001,6 +1011,19 @@ test("docs routes render generated fragments and serve generated assets", async 
     docsSidebarContentSource,
     /versionManifestHref="\/versions\.json"/,
   );
+  assert.match(docsSidebarContentSource, /DocsVersionSelector/);
+  assert.doesNotMatch(docsSidebarContentSource, /DocsVersionSwitcher/);
+  assert.doesNotMatch(docsSidebarContentSource, /client:idle/);
+  assert.match(docsVersionSelectorSource, /data-docs-version-selector/);
+  assert.match(docsVersionSelectorSource, /withBasePathForBase/);
+  assert.match(docsVersionSelectorSource, /withSurfacePath\("docs"/);
+  assert.match(
+    docsVersionSelectorSource,
+    /document\.addEventListener\("change"/,
+  );
+  assert.match(docsVersionSelectorSource, /MutationObserver/);
+  assert.match(docsVersionSelectorSource, /astro:hydrate/);
+  assert.doesNotMatch(docsVersionSelectorSource, /astro-island/);
 });
 
 function assertNoRuntimeGeneratedRendering(label: string, source: string) {

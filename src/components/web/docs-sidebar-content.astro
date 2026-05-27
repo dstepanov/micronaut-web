@@ -1,6 +1,6 @@
 ---
-import { DocsVersionSwitcher } from "@/components/web/docs-version-switcher";
 import { IconGlyph } from "@/components/web/icon-glyph";
+import DocsVersionSelector from "@/components/web/docs-version-selector.astro";
 import docsVersions from "@/data/docs-versions.json";
 import type {
   CatalogCategory,
@@ -55,13 +55,11 @@ function docsCatalogProjectsByCategory(
 ---
 
 <div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 border-b border-sidebar-border p-2">
-  <DocsVersionSwitcher
+  <DocsVersionSelector
     label="Docs"
     options={docsVersions.versions}
     versionManifestHref="/versions.json"
-    surface="docs"
     className="w-full"
-    client:idle
   />
 </div>
 <div
