@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { normalizeAsciiDocCallouts } from "../asciidoc/callouts.ts";
 import { micronautExtensionRegistry } from "../asciidoc/extensions.ts";
 import { processAsciiDocHtml, shikiStyle } from "../asciidoc/postprocess.ts";
 import { renderAsciiDoc } from "../asciidoc/rendering.ts";
@@ -75,6 +76,7 @@ async function renderNode(
   let source = await fs.readFile(sourceFile, "utf8");
   source = normalizeAsciiDocSource(source);
   source = expandSnippetMacrosForCallouts(source, context, docsSnippetSamples);
+  source = normalizeAsciiDocCallouts(source);
 
   const converted = renderAsciiDoc({
     asciidoctor,

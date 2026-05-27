@@ -250,7 +250,7 @@ const docsSnippetTemplates = Object.fromEntries(
     const isDependencyBlock = (element) => element.classList.contains("docs-code-dependency-snippet");
 
     const isCalloutFooter = (element) =>
-      element?.classList?.contains("colist") || element?.classList?.contains("guide-manual-callouts");
+      element?.classList?.contains("colist") || element?.classList?.contains("asciidoc-manual-callouts");
 
     const attachCalloutFooter = (block, footer) => {
       if (!isCalloutFooter(footer) || footer.closest(".docs-code-block")) {

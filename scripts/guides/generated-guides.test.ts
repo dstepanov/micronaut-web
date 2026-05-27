@@ -121,7 +121,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Gapped third real callout/);
   assert.match(html, /Gapped fourth real callout/);
   assert.match(html, /Gapped missing marker becomes manual/);
-  assert.match(html, /guide-manual-callouts/);
+  assert.match(html, /asciidoc-manual-callouts/);
   assert.match(html, /<i class="conum" data-value="1"><\/i>/);
   assert.match(html, /<i class="conum" data-value="4"><\/i>/);
   assert.match(
@@ -427,7 +427,9 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesRenderer, /renderStaticDocsSnippets/);
   assert.doesNotMatch(guidesRenderer, /renderStaticListingBlockSnippets/);
   assert.match(guidesPreprocessor, /snippetPassthroughBlockLines/);
-  assert.match(guidesPreprocessor, /SNIPPET_CALLOUT_VALIDATION_CLASS/);
+  assert.match(guidesPreprocessor, /normalizeAsciiDocCallouts/);
+  assert.doesNotMatch(guidesPreprocessor, /normalizeOrphanCalloutLists/);
+  assert.doesNotMatch(guidesPreprocessor, /SNIPPET_CALLOUT_VALIDATION_CLASS/);
   assertNoRuntimeGeneratedRendering(
     "generated guides static enhancer",
     generatedDocsStaticEnhancer,
