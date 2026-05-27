@@ -5,12 +5,12 @@ import { type ReactNode, useRef, useState } from "react";
 import {
   CopyIcon,
   DocsSnippetCard,
+  DocsSnippetCodeLanguageIcon,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
   DocsSnippetStaticLanguage
 } from "@/components/web/docs-snippet-card";
 import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
-import { withBasePath } from "@/lib/base-path";
 
 export type CodeSnippetLanguage = "java" | "kotlin" | "groovy" | "bash" | "gradle" | "maven" | "text";
 
@@ -31,29 +31,6 @@ export type CodeSnippetExample = {
   callouts?: ReactNode[];
   variants: CodeSnippetVariant[];
 };
-
-const languageIcons: Partial<Record<CodeSnippetLanguage, string>> = {
-  bash: "/micronaut-assets/icons/brands/gnubash.svg",
-  gradle: "/micronaut-assets/icons/brands/gradle.svg",
-  groovy: "/micronaut-assets/icons/brands/apachegroovy.svg",
-  java: "/micronaut-assets/icons/languages/java.svg",
-  kotlin: "/micronaut-assets/icons/brands/kotlin.svg",
-  maven: "/micronaut-assets/icons/brands/apachemaven.svg",
-  text: "/micronaut-assets/icons/languages/text.svg"
-};
-
-function LanguageIcon({ language }: { language: CodeSnippetLanguage }) {
-  const icon = languageIcons[language] || languageIcons.text;
-
-  return (
-    <img
-      src={withBasePath(icon || "/micronaut-assets/icons/languages/text.svg")}
-      alt=""
-      aria-hidden="true"
-      className={docsSnippetStyles.languageImageIcon}
-    />
-  );
-}
 
 export function ShikiCodeBlock({
   code,
@@ -177,7 +154,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
                     activate(nextIndex, true);
                   }}
                 >
-                  <LanguageIcon language={variant.language} />
+                  <DocsSnippetCodeLanguageIcon language={variant.language} />
                   <span className={docsSnippetStyles.languageText}>{variant.label}</span>
                 </DocsSnippetLanguageButton>
               );
@@ -185,7 +162,7 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
           </div>
         ) : (
           <DocsSnippetStaticLanguage aria-label={`${activeVariant.label} snippet`}>
-            <LanguageIcon language={activeVariant.language} />
+            <DocsSnippetCodeLanguageIcon language={activeVariant.language} />
             <span className={docsSnippetStyles.languageText}>{activeVariant.label}</span>
           </DocsSnippetStaticLanguage>
         )

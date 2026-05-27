@@ -138,7 +138,6 @@ export const docsSnippetStyles = {
   languageText: "docs-code-language-text inline-flex items-center leading-none",
   languageTextSelector: ".docs-code-language-text",
   languageIcon: "docs-code-language-icon inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none [&_svg]:block [&_svg]:size-full",
-  languageImageIcon: "docs-code-language-icon block size-3.5 shrink-0 self-center align-middle dark:brightness-0 dark:invert",
   languageIconFill: "docs-code-language-icon-fill",
   kindIcon: "docs-snippet-kind-icon"
 };

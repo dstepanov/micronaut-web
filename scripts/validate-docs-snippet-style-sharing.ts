@@ -44,7 +44,6 @@ const requiredSharedKeys = [
   "languageText",
   "languageTextSelector",
   "languageIcon",
-  "languageImageIcon",
   "languageIconFill",
   "kindIcon",
 ];
@@ -72,7 +71,7 @@ const consumers = [
       "docsSnippetStyles.panel",
       "docsSnippetStyles.codePre",
       "docsSnippetStyles.codeElement",
-      "docsSnippetStyles.languageImageIcon",
+      "DocsSnippetCodeLanguageIcon",
       "docsSnippetStyles.languageText",
       "ShikiCodeBlock",
     ],
