@@ -78,6 +78,18 @@ const consumers = [
     ],
   },
   {
+    file: "src/components/web/docs-snippet-icons.ts",
+    requiresDocsSnippetStyles: false,
+    requiredUses: [
+      "docsSnippetLanguageLabels",
+      "docsSnippetLanguageAliases",
+      "docsSnippetCodeLanguageIcons",
+      "docsSnippetLanguageKey",
+      "docsSnippetLanguageLabel",
+      "docsSnippetCodeLanguageIcon",
+    ],
+  },
+  {
     file: "src/components/web/docs-snippet-templates.tsx",
     requiredUses: [
       "DocsSnippetCard",
@@ -96,10 +108,9 @@ const consumers = [
       "DocsSnippetCard",
       "DocsPropertiesSnippetCard",
       "ShikiCodeBlock",
+      "DocsSnippetCodeLanguageIcon",
       "docsSnippetStyles.tabs",
       "docsSnippetStyles.panel",
-      "docsSnippetStyles.languageIcon",
-      "docsSnippetStyles.languageIconFill",
       "docsSnippetStyles.languageText",
     ],
   },
@@ -107,7 +118,10 @@ const consumers = [
     file: "src/components/web/generated-docs-enhancer.astro",
     requiredUses: [
       "renderDocsSnippetTemplates",
-      "define:vars={{ docsSnippetStyles, docsSnippetTemplates }}",
+      "define:vars={{",
+      "docsSnippetStyles",
+      "docsSnippetTemplates",
+      "sharedCodeLanguageIcons",
       "renderSharedSnippetCard",
       "docsSnippetStyles.standaloneCard",
       "docsSnippetStyles.copyButton",
@@ -201,7 +215,10 @@ for (const key of requiredSharedKeys) {
 
 for (const consumer of consumers) {
   const source = await readProjectFile(consumer.file);
-  if (!source.includes("docsSnippetStyles")) {
+  if (
+    consumer.requiresDocsSnippetStyles !== false &&
+    !source.includes("docsSnippetStyles")
+  ) {
     failures.push(
       `${consumer.file}: expected this snippet surface to use docsSnippetStyles.`,
     );
