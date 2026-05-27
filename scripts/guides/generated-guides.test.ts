@@ -276,6 +276,10 @@ test("latest guide replacement routes and parallel generated-content preparation
     path.join(projectDirectory, "src", "pages", "guides", "[download].zip.ts"),
     "utf8",
   );
+  const generatedGuidesLibrary = await fs.readFile(
+    path.join(projectDirectory, "src", "lib", "generated-guides.ts"),
+    "utf8",
+  );
   const guidesRenderer = await fs.readFile(
     path.join(projectDirectory, "scripts", "guides", "renderer.ts"),
     "utf8",
@@ -353,6 +357,8 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(legacyRoute, /productionUrl\("guides"\)/);
   assert.match(legacyRoute, /const guidesRoot = "\/guides"/);
   assert.match(legacyRoute, /guideOptionPath\(option, guidesRoot\)/);
+  assert.match(legacyRoute, /preferredGuideOption\(guide\)/);
+  assert.doesNotMatch(legacyRoute, /guideOverviewPath/);
   assert.match(
     legacyRoute,
     /appendRequestSearch\(withBasePath\(props\.destination\), url\)/,
@@ -364,6 +370,13 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(guidesIndexRoute, /GuidesCatalogTabs|GuidesFilterPanel/);
   assert.doesNotMatch(guidesIndexRoute, /@\/lib\/protocol/);
   assert.match(guidesRoute, /readGeneratedGuideFragment/);
+  assert.match(guidesRoute, /preferredGuideOption\(props\.guide\)/);
+  assert.match(guidesRoute, /Astro\.redirect/);
+  assert.doesNotMatch(
+    guidesRoute,
+    /Choose the language and build tool variant for the tutorial/,
+  );
+  assert.doesNotMatch(guidesRoute, /Read This Guide/);
   assert.match(guidesRoute, /On this guide/);
   assert.doesNotMatch(
     guidesRoute,
@@ -405,10 +418,20 @@ test("latest guide replacement routes and parallel generated-content preparation
     guidesRoute,
     /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback/,
   );
-  assert.match(guidesLegacyRoute, /guideOverviewPath\(guide, guidesRoot\)/);
+  assert.match(guidesLegacyRoute, /preferredGuideOption\(guide\)/);
+  assert.doesNotMatch(guidesLegacyRoute, /guideOverviewPath/);
   assert.doesNotMatch(guidesLegacyRoute, /legacyGuidesBase/);
   assert.doesNotMatch(guidesLegacyRoute, /productionUrl\("guides"\)/);
   assert.match(guidesZipRoute, /productionUrl\("guides", option\.zipUrl\)/);
+  assert.match(generatedGuidesLibrary, /preferredGuideOption/);
+  assert.match(
+    generatedGuidesLibrary,
+    /option\.language === "java" && option\.buildTool === "gradle"/,
+  );
+  assert.match(
+    generatedGuidesLibrary,
+    /option\.file === guide\.defaultOptionFile/,
+  );
   assert.match(guidesRenderer, /processAsciiDocHtml/);
   assert.doesNotMatch(guidesRenderer, /renderStaticSnippetCards/);
   assert.doesNotMatch(guidesRenderer, /renderStaticDocsSnippets/);
@@ -426,6 +449,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     /docsSnippetStyles|define:vars/,
   );
   assert.match(guideCatalog, /version\.current \? rootPath : version\.href/);
+  assert.match(guideCard, /preferredGuideOption\(guide\)/);
   assert.match(guideCard, /guideOverviewPath\(guide, root\)/);
 });
 

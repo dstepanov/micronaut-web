@@ -1,8 +1,7 @@
 ---
 import WebLayout from "@/layouts/WebLayout.astro";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import LatestGuidesCatalog from "@/components/web/latest-guides-catalog.astro";
@@ -10,8 +9,7 @@ import { ArrowUp } from "lucide-react";
 import {
   allGeneratedGuideTags,
   guideOptionPath,
-  guideOverviewPath,
-  guideTagPath,
+  preferredGuideOption,
   readGeneratedGuideFragment,
   readGeneratedGuidesManifest,
   tagSlug,
@@ -69,6 +67,15 @@ export async function getStaticPaths() {
 }
 
 const props = Astro.props as TagProps | OverviewProps | VariantProps;
+if (props.kind === "overview") {
+  const overviewOption = preferredGuideOption(props.guide);
+  return Astro.redirect(
+    withBasePath(
+      overviewOption ? guideOptionPath(overviewOption, guidesRoot) : `${guidesRoot}/`,
+    ),
+    302,
+  );
+}
 
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
@@ -118,68 +125,11 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
   });
 }
 
-function variantAnchor(option: GeneratedGuideOption) {
-  return `variant-${option.id.replace(/[^a-zA-Z0-9_-]+/g, "-")}`;
-}
 ---
 
 {props.kind === "tag" && (
   <WebLayout title={`Micronaut Guides: ${props.tag}`} surface="guides">
     <LatestGuidesCatalog guides={props.guides} activeTag={props.tag} root={guidesRoot} />
-  </WebLayout>
-)}
-
-{props.kind === "overview" && (
-  <WebLayout title={`${props.guide.title} | Micronaut Guides`} surface="guides">
-    <main class="mx-auto max-w-[1180px] px-4 py-8 md:px-6">
-      <article class="min-w-0">
-        <header class="mb-8">
-          <Badge variant="secondary">{props.guide.categories[0] || "Guide"}</Badge>
-          <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">{props.guide.title}</h1>
-          <p class="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">{props.guide.intro}</p>
-          <div class="mt-5 flex flex-wrap gap-2">
-            {props.guide.tags.slice(0, 10).map((tag) => (
-              <a href={withBasePath(guideTagPath(tag, guidesRoot))} class="no-underline">
-                <Badge variant="outline">{tag}</Badge>
-              </a>
-            ))}
-          </div>
-        </header>
-
-        <Card id="variants">
-          <CardHeader>
-            <CardTitle>Read This Guide</CardTitle>
-            <CardDescription>Choose the language and build tool variant for the tutorial.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="overflow-hidden rounded-lg border">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-muted text-xs text-muted-foreground">
-                  <tr>
-                    <th class="px-4 py-3 font-medium">Language</th>
-                    <th class="px-4 py-3 font-medium">Build</th>
-                    <th class="px-4 py-3 font-medium">Read</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {props.guide.options.map((option) => (
-                    <tr id={variantAnchor(option)} class="scroll-mt-24 border-t">
-                      <td class="px-4 py-3">{option.languageLabel}</td>
-                      <td class="px-4 py-3">{option.buildToolLabel}</td>
-                      <td class="px-4 py-3">
-                        <Button asChild variant="ghost" size="sm">
-                          <a href={withBasePath(guideOptionPath(option, guidesRoot))} aria-label={`Read ${props.guide.title} for ${option.label}`}>Read</a>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </article>
-    </main>
   </WebLayout>
 )}
 
@@ -230,8 +180,6 @@ function variantAnchor(option: GeneratedGuideOption) {
             <span>{props.guide.authors.join(", ")}</span>
             <span aria-hidden="true">/</span>
             <span>{props.guide.estimatedMinutes} min</span>
-            <span aria-hidden="true">/</span>
-            <a href={withBasePath(guideOverviewPath(props.guide, guidesRoot))} class="text-brand no-underline hover:underline">All variants</a>
           </div>
         </header>
 

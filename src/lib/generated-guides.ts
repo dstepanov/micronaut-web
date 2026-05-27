@@ -36,11 +36,18 @@ export type GeneratedGuidesManifest = {
   guides: GeneratedGuide[];
 };
 
-const generatedGuidesDirectory = join(process.cwd(), "src", "content", "generated-guides");
+const generatedGuidesDirectory = join(
+  process.cwd(),
+  "src",
+  "content",
+  "generated-guides",
+);
 
 export async function readGeneratedGuidesManifest(): Promise<GeneratedGuidesManifest> {
   try {
-    const manifest = JSON.parse(await readFile(join(generatedGuidesDirectory, "manifest.json"), "utf8"));
+    const manifest = JSON.parse(
+      await readFile(join(generatedGuidesDirectory, "manifest.json"), "utf8"),
+    );
     if (Array.isArray(manifest.guides)) {
       return manifest as GeneratedGuidesManifest;
     }
@@ -50,9 +57,13 @@ export async function readGeneratedGuidesManifest(): Promise<GeneratedGuidesMani
   return fallbackGeneratedGuidesManifest as GeneratedGuidesManifest;
 }
 
-export async function readGeneratedGuideFragment(option: GeneratedGuideOption): Promise<string | undefined> {
+export async function readGeneratedGuideFragment(
+  option: GeneratedGuideOption,
+): Promise<string | undefined> {
   try {
-    return enhanceGeneratedContentHtml(await readFile(join(generatedGuidesDirectory, option.fragment), "utf8"));
+    return enhanceGeneratedContentHtml(
+      await readFile(join(generatedGuidesDirectory, option.fragment), "utf8"),
+    );
   } catch {
     return undefined;
   }
@@ -70,12 +81,26 @@ export function tagSlug(tag: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export function guideOptionPath(option: GeneratedGuideOption, root = "/latest") {
+export function guideOptionPath(
+  option: GeneratedGuideOption,
+  root = "/latest",
+) {
   return `${normalizedRoot(root)}/${option.file}`;
 }
 
 export function guideOverviewPath(guide: GeneratedGuide, root = "/latest") {
   return `${normalizedRoot(root)}/${guide.overviewFile}`;
+}
+
+export function preferredGuideOption(guide: GeneratedGuide) {
+  return (
+    guide.options.find(
+      (option) => option.language === "java" && option.buildTool === "gradle",
+    ) ||
+    guide.options.find((option) => option.file === guide.defaultOptionFile) ||
+    guide.options.find((option) => option.language === "java") ||
+    guide.options[0]
+  );
 }
 
 export function guideTagPath(tag: string, root = "/latest") {
@@ -84,7 +109,11 @@ export function guideTagPath(tag: string, root = "/latest") {
 
 export function latestGuides(guides: GeneratedGuide[], limit = 8) {
   return [...guides]
-    .sort((left, right) => right.publicationDate.localeCompare(left.publicationDate) || left.title.localeCompare(right.title))
+    .sort(
+      (left, right) =>
+        right.publicationDate.localeCompare(left.publicationDate) ||
+        left.title.localeCompare(right.title),
+    )
     .slice(0, limit);
 }
 

@@ -3,10 +3,10 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import {
   allGeneratedGuideTags,
   guideOptionPath,
-  guideOverviewPath,
+  preferredGuideOption,
   guideTagPath,
   readGeneratedGuidesManifest,
-  tagSlug
+  tagSlug,
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 import { appendRequestSearch } from "@/lib/route-compatibility";
@@ -19,7 +19,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
     return [];
   }
   const manifest = await readGeneratedGuidesManifest();
-  const paths: Array<{ params: { page: string }; props: { destination: string } }> = [];
+  const paths: Array<{
+    params: { page: string };
+    props: { destination: string };
+  }> = [];
   const pages = new Set<string>();
   const addPath = (page: string, destination: string) => {
     if (pages.has(page)) {
@@ -28,26 +31,43 @@ export const getStaticPaths: GetStaticPaths = async () => {
     pages.add(page);
     paths.push({
       params: { page },
-      props: { destination }
+      props: { destination },
     });
   };
 
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
-    addPath(`tag-${tagSlug(tag)}`, guideTagPath(tag, guidesRoot).replace(/\.html$/, "/"));
+    addPath(
+      `tag-${tagSlug(tag)}`,
+      guideTagPath(tag, guidesRoot).replace(/\.html$/, "/"),
+    );
   }
   for (const guide of manifest.guides) {
-    addPath(guide.slug, guideOverviewPath(guide, guidesRoot).replace(/\.html$/, "/"));
+    const overviewOption = preferredGuideOption(guide);
+    addPath(
+      guide.slug,
+      (overviewOption
+        ? guideOptionPath(overviewOption, guidesRoot)
+        : `${guidesRoot}/`
+      ).replace(/\.html$/, "/"),
+    );
     for (const option of guide.options) {
-      addPath(option.file.replace(/\.html$/, ""), guideOptionPath(option, guidesRoot).replace(/\.html$/, "/"));
+      addPath(
+        option.file.replace(/\.html$/, ""),
+        guideOptionPath(option, guidesRoot).replace(/\.html$/, "/"),
+      );
     }
   }
 
   return paths;
 };
 
-export const GET: APIRoute<{ destination: string }> = ({ props, redirect, url }) => {
+export const GET: APIRoute<{ destination: string }> = ({
+  props,
+  redirect,
+  url,
+}) => {
   return redirect(
     appendRequestSearch(withBasePath(props.destination), url),
-    301
+    301,
   );
 };
