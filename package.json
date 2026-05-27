@@ -18,7 +18,8 @@
     "test:main-site": "node --test scripts/main-site*.test.ts",
     "test:asciidoc": "node --test scripts/asciidoc/*.test.ts",
     "test:docs": "node --test scripts/docs/*.test.ts",
-    "test:guides": "node --test scripts/guides/*.test.ts",
+    "test:guides": "node --test scripts/guides/*.test.ts && npm run test:guides:browser",
+    "test:guides:browser": "playwright test --config playwright.config.ts",
     "test:deployment": "node --test scripts/deployment*.test.ts",
     "typecheck": "tsc --noEmit --pretty false",
     "typecheck:scripts": "tsc --project tsconfig.scripts.json --noEmit --pretty false",
@@ -58,6 +59,7 @@
     "tailwindcss": "4.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.9.1",
