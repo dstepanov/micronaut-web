@@ -10,7 +10,7 @@ const projectDirectory = path.resolve(
 );
 const routeCompatibility = importRouteCompatibility();
 
-test("route compatibility manifest documents representative legacy urls", async (): Promise<any> => {
+test("route compatibility manifest documents representative legacy urls", async (): Promise<void> => {
   const { routeCompatibilityManifest } = await routeCompatibility;
   const entriesById = new Map<string, any>(
     routeCompatibilityManifest.map((entry: any): [string, any] => [
@@ -43,7 +43,7 @@ test("route compatibility manifest documents representative legacy urls", async 
   assert.equal(entriesById.get("guides-zip").status, 302);
 });
 
-test("production url helper is host and surface aware", async (): Promise<any> => {
+test("production url helper is host and surface aware", async (): Promise<void> => {
   const { productionUrl } = await routeCompatibility;
 
   assert.equal(
@@ -64,7 +64,7 @@ test("production url helper is host and surface aware", async (): Promise<any> =
   );
 });
 
-test("redirect helpers preserve query strings without losing hashes", async (): Promise<any> => {
+test("redirect helpers preserve query strings without losing hashes", async (): Promise<void> => {
   const { appendRequestSearch } = await routeCompatibility;
   const requestUrl = new URL(
     "https://docs.micronaut.io/latest/guide/index.html?q=bean&sort=title",
@@ -84,7 +84,7 @@ test("redirect helpers preserve query strings without losing hashes", async (): 
   );
 });
 
-test("new route files use the compatibility manifest", async (): Promise<any> => {
+test("new route files use the compatibility manifest", async (): Promise<void> => {
   const routeFiles = [
     "src/pages/latest/guide/index.astro",
     "src/pages/latest/guide/index.html.ts",
@@ -100,7 +100,7 @@ test("new route files use the compatibility manifest", async (): Promise<any> =>
   }
 });
 
-test("runtime theme route and header controls stay removed", async (): Promise<any> => {
+test("runtime theme route and header controls stay removed", async (): Promise<void> => {
   await assert.rejects(
     () => fs.access(path.join(projectDirectory, "src/pages/new.astro")),
     (error: any): boolean => error?.code === "ENOENT",
@@ -143,7 +143,7 @@ test("runtime theme route and header controls stay removed", async (): Promise<a
   }
 });
 
-test("compatibility documentation covers production hosts and legacy matrix", async (): Promise<any> => {
+test("compatibility documentation covers production hosts and legacy matrix", async (): Promise<void> => {
   const doc = await fs.readFile(
     path.join(projectDirectory, "README.md"),
     "utf8",

@@ -34,6 +34,17 @@ const MACRO_LINE = /^([A-Za-z][A-Za-z0-9_-]*):([^\[]*)\[(.*)]\s*$/;
 const DEFAULT_MIN_JDK = 21;
 const LICENSE_INCLUDE = "common:license.adoc[]";
 
+type ConstructableReader = Reader & {
+  constructor: new (
+    document: unknown,
+    lines: string[],
+    cursor: unknown,
+    options: Record<string, unknown>,
+  ) => Reader;
+  cursor: unknown;
+  lines: string[];
+};
+
 export function registerGuidePreprocessor(
   registry: Registry,
   context: GuideRenderContext,
@@ -45,8 +56,8 @@ export function registerGuidePreprocessor(
       document: unknown,
       reader: unknown,
     ): Reader {
-      const sourceReader = reader as Reader;
-      return new (reader as any).constructor(
+      const sourceReader = reader as ConstructableReader;
+      return new sourceReader.constructor(
         document,
         prepareGuideSourceForExtensions(
           sourceReader.lines.join("\n"),
@@ -81,13 +92,16 @@ export function rewriteGuideSourceForExtensions(
   return rewriteGuideLines(source.split(/\r?\n/), context).join("\n");
 }
 
-function rewriteGuideLines(lines: string[], context: GuideRenderContext): any {
-  const output = [];
+function rewriteGuideLines(
+  lines: string[],
+  context: GuideRenderContext,
+): string[] {
+  const output: string[] = [];
   let excludeLanguage = false;
   let excludeBuild = false;
   let excludeMinJdk = false;
   let dependencyGroup = false;
-  let groupedDependencies = [];
+  let groupedDependencies: string[] = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -171,7 +185,7 @@ function rewriteGuideLines(lines: string[], context: GuideRenderContext): any {
   return output;
 }
 
-function rewriteMacroLine(line: any, bodyLines: string[] = []): any {
+function rewriteMacroLine(line: string, bodyLines: string[] = []): string[] {
   const match = MACRO_LINE.exec(line);
   if (!match) {
     return [line];
@@ -219,9 +233,9 @@ function dependencyGroupBlockLines(
   bodyLines: string[] = [],
 ): string[] {
   const dependencies = lines
-    .map((line: any): any => MACRO_LINE.exec(line))
-    .filter(Boolean)
-    .map((match: any): any => ({
+    .map((line) => MACRO_LINE.exec(line))
+    .filter((match): match is RegExpExecArray => Boolean(match))
+    .map((match) => ({
       attributes: parseAttributes(match[3]),
       target: match[2].trim(),
     }));
@@ -329,7 +343,7 @@ function encodePayload(payload: unknown): string {
 }
 
 function parseAttributes(
-  source: any,
+  source: unknown,
 ): Record<string, string> & { _positional?: string[] } {
   return parseAttributeList(String(source || ""), {
     positionalKey: "_positional",
@@ -342,13 +356,13 @@ function parseAttributeList(
     includeText?: boolean;
     positionalKey?: "$positional" | "_positional";
   } = {},
-): Record<string, string> & {
+): Record<string, string | string[]> & {
   $positional?: string[];
   _positional?: string[];
   text?: string;
 } {
-  const attributes: Record<string, any> = {};
-  const positional = [];
+  const attributes: Record<string, string | string[]> = {};
+  const positional: string[] = [];
   if (options.includeText) {
     attributes.text = value;
   }
@@ -374,7 +388,7 @@ function parseAttributeList(
 }
 
 function splitAttributeList(value: string): string[] {
-  const items = [];
+  const items: string[] = [];
   let current = "";
   let quote = "";
   for (const char of value || "") {
@@ -556,7 +570,7 @@ function excludes(line: string, prefix: string, selected: string): boolean {
   return line
     .slice(prefix.length)
     .split(",")
-    .map((value: any): any => value.trim().toLowerCase())
+    .map((value) => value.trim().toLowerCase())
     .filter(Boolean)
     .includes(String(selected || "").toLowerCase());
 }

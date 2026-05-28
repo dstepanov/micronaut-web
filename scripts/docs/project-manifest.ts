@@ -57,9 +57,9 @@ const UPPERCASE_WORDS = new Set([
 
 export async function readProperties(
   file: string,
-  required: any = true,
+  required = true,
 ): Promise<Properties> {
-  const content = await fs.readFile(file, "utf8").catch((error: any): any => {
+  const content = await fs.readFile(file, "utf8").catch((error: unknown) => {
     if (required) {
       throw error;
     }
@@ -102,9 +102,11 @@ export function readIndexed(
 }
 
 export function projectCatalogMetadataProperties(catalog: {
-  projects?: Array<Record<string, unknown>>;
+  projects?: unknown;
 }): Properties {
-  const projects = catalog.projects || [];
+  const projects = Array.isArray(catalog.projects)
+    ? catalog.projects.filter(isRecord)
+    : [];
   const properties: Properties = {
     "project.count": String(projects.length),
   };
@@ -120,10 +122,10 @@ export function projectCatalogMetadataProperties(catalog: {
 
 export async function readTomlStringVersions(
   file: string,
-  required: any = true,
+  required = true,
 ): Promise<Properties> {
   const versions: Properties = {};
-  const content = await fs.readFile(file, "utf8").catch((error: any): any => {
+  const content = await fs.readFile(file, "utf8").catch((error: unknown) => {
     if (required) {
       throw error;
     }
@@ -210,9 +212,9 @@ export function selectProjects(
     return projects;
   }
   const bySlug = new Map(
-    projects.map((project: any): any => [project.slug, project]),
+    projects.map((project): [string, DocsProject] => [project.slug, project]),
   );
-  return slugs.map((slug: any): any => {
+  return slugs.map((slug) => {
     const project = bySlug.get(slug);
     if (!project) {
       throw new Error(`Unknown docs project slug: ${slug}`);
@@ -375,4 +377,8 @@ function displayWord(word: string): string {
 
 function choose(value: string | undefined, fallback: string): string {
   return value == null || String(value).trim() === "" ? fallback : value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }

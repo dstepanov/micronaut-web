@@ -7,18 +7,32 @@ import { shikiStyle } from "../shared/highlight.ts";
 import { optimizeImages } from "../shared/generated-html.ts";
 import { attribute, html } from "../shared/html.ts";
 import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
-import { readProperties } from "./project-manifest.ts";
+import {
+  type DocsProject,
+  type Properties,
+  readProperties,
+} from "./project-manifest.ts";
 import { docsSnippetSamples } from "./snippet-samples.ts";
-import { readGuideToc } from "./toc.ts";
+import { type TocNode, readGuideToc } from "./toc.ts";
 import { prefixIds, rewriteUrls } from "./urls.ts";
+
+type DocsRenderContext = {
+  project: DocsProject;
+  platformVersion: string;
+  submoduleDirectory: string;
+  sourceDocsDirectory: string;
+  guideSourceDirectory: string;
+  attributes: Properties;
+  renderOptions: { strict?: boolean };
+};
 
 export async function renderProject(
   asciidoctor: typeof import("@asciidoctor/core"),
-  docsDirectory: any,
-  project: any,
-  platformVersion: any,
+  docsDirectory: string,
+  project: DocsProject,
+  platformVersion: string,
   renderOptions: { strict?: boolean } = {},
-): Promise<any> {
+): Promise<string> {
   const submoduleDirectory = path.join(docsDirectory, project.submodulePath);
   const sourceDocsDirectory = path.join(
     submoduleDirectory,
@@ -63,9 +77,9 @@ export async function renderProject(
 
 async function renderNode(
   asciidoctor: typeof import("@asciidoctor/core"),
-  context: any,
-  node: any,
-): Promise<any> {
+  context: DocsRenderContext,
+  node: TocNode,
+): Promise<string> {
   const sourceFile = path.join(context.guideSourceDirectory, node.file);
   const source = await fs.readFile(sourceFile, "utf8");
 
@@ -99,7 +113,7 @@ export function isFatalDocsDiagnostic(diagnostic: string): boolean {
   ].some((fatalWarning) => fatalWarning.test(diagnostic));
 }
 
-function sectionHeading(project: any, node: any): any {
+function sectionHeading(project: DocsProject, node: TocNode): string {
   const headingLevel = node.level === 0 ? 1 : 2;
   const id = attribute(node.id);
   const editUrl = `${sourceDocsEditUrl(project)}/guide/${node.file}`;

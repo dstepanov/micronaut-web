@@ -6,9 +6,48 @@ import type {
   Registry,
 } from "@asciidoctor/core";
 
-const API_MACROS = ["api", "ann", "mnapi", "jdk", "jee", "rs", "rx", "reactor"];
+const API_MACROS = [
+  "api",
+  "ann",
+  "mnapi",
+  "jdk",
+  "jee",
+  "rs",
+  "rx",
+  "reactor",
+] as const;
 
-export function registerApiMacros(registry: Registry, context: any): void {
+type ApiKind = (typeof API_MACROS)[number];
+
+type ApiMacroContext = Record<string, unknown> & {
+  project?: {
+    slug?: string;
+  };
+  attributes?: Record<string, string | undefined>;
+};
+
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+};
+
+type ParsedApiTarget = {
+  classTarget: string;
+  methodRef: string;
+  propRef: string;
+  shortName: string;
+};
+
+type ApiLibrary = {
+  defaultUri: string;
+  packagePrefix: string | null;
+  attributeKey: string | null;
+};
+
+export function registerApiMacros(
+  registry: Registry,
+  context: ApiMacroContext,
+): void {
   for (const kind of API_MACROS) {
     registry.inlineMacro(
       kind,
@@ -35,7 +74,12 @@ export function registerApiMacros(registry: Registry, context: any): void {
   }
 }
 
-function apiLink(context: any, kind: any, target: any, attrs: any): any {
+function apiLink(
+  context: ApiMacroContext,
+  kind: ApiKind,
+  target: string,
+  attrs: MacroAttributes,
+): { href: string; label: string } {
   const parsed = parseApiTarget(target);
   const library = apiLibrary(context, kind, attrs);
   let baseUri = apiBaseUri(context, library.attributeKey, library);
@@ -57,13 +101,13 @@ function apiLink(context: any, kind: any, target: any, attrs: any): any {
   return { href, label };
 }
 
-function parseApiTarget(target: any): any {
+function parseApiTarget(target: string): ParsedApiTarget {
   const methodIndex = target.lastIndexOf("(");
   const propIndex = target.lastIndexOf("#");
   let classTarget = target;
   let methodRef = "";
   let propRef = "";
-  let shortName;
+  let shortName: string;
 
   if (methodIndex > -1 && target.endsWith(")")) {
     const signature = target.slice(methodIndex + 1, -1);
@@ -88,16 +132,14 @@ function parseApiTarget(target: any): any {
   return { classTarget, methodRef, propRef, shortName };
 }
 
-function apiLibrary(context: any, kind: any, attrs: any): any {
-  const localApi = `assets/${context.project.slug}/docs/api`;
-  const libraries: Record<
-    string,
-    {
-      defaultUri: string;
-      packagePrefix: string | null;
-      attributeKey: string | null;
-    }
-  > = {
+function apiLibrary(
+  context: ApiMacroContext,
+  kind: ApiKind,
+  attrs: MacroAttributes,
+): ApiLibrary {
+  const projectSlug = context.project?.slug || "core";
+  const localApi = `assets/${projectSlug}/docs/api`;
+  const libraries: Record<ApiKind, ApiLibrary> = {
     api: {
       defaultUri: localApi,
       packagePrefix: "io.micronaut.",
@@ -152,11 +194,15 @@ function apiLibrary(context: any, kind: any, attrs: any): any {
   return library;
 }
 
-function apiBaseUri(context: any, attributeKey: any, library: any): any {
+function apiBaseUri(
+  context: ApiMacroContext,
+  attributeKey: string | null,
+  library: ApiLibrary,
+): string {
   if (attributeKey) {
     const configured =
-      context.attributes[attributeKey] ||
-      context.attributes[attributeKey.toLowerCase()];
+      context.attributes?.[attributeKey] ||
+      context.attributes?.[attributeKey.toLowerCase()];
     if (configured) {
       return configured;
     }
@@ -164,7 +210,7 @@ function apiBaseUri(context: any, attributeKey: any, library: any): any {
   return library.defaultUri;
 }
 
-function apiModule(classTarget: any, attrs: any): any {
+function apiModule(classTarget: string, attrs: MacroAttributes): string {
   const configured = macroAttribute(attrs, "module");
   if (configured !== undefined) {
     return configured;
@@ -172,7 +218,7 @@ function apiModule(classTarget: any, attrs: any): any {
   return classTarget.startsWith("java") ? "java.base" : "";
 }
 
-function targetPathUrl(target: any, packagePrefix: any): any {
+function targetPathUrl(target: string, packagePrefix: string | null): string {
   let result = target;
   if (packagePrefix && !target.startsWith(packagePrefix)) {
     result = `${packagePrefix}${target}`;
@@ -180,7 +226,7 @@ function targetPathUrl(target: any, packagePrefix: any): any {
   return scapeDots(result);
 }
 
-function scapeDots(value: any): any {
+function scapeDots(value: string): string {
   const tokens = value.split(".");
   let result = "";
   for (let index = 0; index < tokens.length; index += 1) {
@@ -200,15 +246,21 @@ function scapeDots(value: any): any {
   return result;
 }
 
-function simpleName(className: any): any {
+function simpleName(className: string): string {
   return className.split(".").filter(Boolean).at(-1) || className;
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return cleanMacroAttributeValue(String(attrs[name]), name);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,
@@ -223,8 +275,11 @@ function macroAttribute(attrs: any, name: string): any {
   return undefined;
 }
 
-function macroText(attrs: any): any {
-  return macroAttribute(attrs, "text") || attrs?.$positional?.[0] || "";
+function macroText(attrs: MacroAttributes): string {
+  const positional = Array.isArray(attrs.$positional)
+    ? String(attrs.$positional[0] ?? "")
+    : "";
+  return macroAttribute(attrs, "text") || positional;
 }
 
 function cleanMacroAttributeValue(value: string, name: string): string {

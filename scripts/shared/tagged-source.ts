@@ -1,19 +1,32 @@
 import { splitList } from "./cli.ts";
 
-export function extractTaggedSource(source: any, tags: any): any {
+type TagDirective = {
+  kind: "tag" | "end";
+  name: string;
+};
+
+type ParsedTagDirectiveLine = {
+  before?: string;
+  directive: TagDirective;
+};
+
+export function extractTaggedSource(
+  source: string,
+  tags: string | string[] | boolean | undefined,
+): string {
   const selectedTags = splitList(tags).map(cleanTagName).filter(Boolean);
   const lines = source.replace(/\s+$/, "").split(/\r?\n/);
   if (!selectedTags.length) {
     return lines
-      .map((line: any): any => lineWithoutTagDirective(line))
-      .filter((line: any): any => line !== undefined)
+      .map((line) => lineWithoutTagDirective(line))
+      .filter((line): line is string => line !== undefined)
       .join("\n")
       .trim();
   }
 
-  const output = [];
+  const output: string[] = [];
   for (const tag of selectedTags) {
-    const tagOutput = [];
+    const tagOutput: string[] = [];
     let activeDepth = 0;
     for (const line of lines) {
       const parsed = parseTagDirectiveLine(line);
@@ -45,7 +58,7 @@ export function extractTaggedSource(source: any, tags: any): any {
   return output.join("\n\n").trim();
 }
 
-function trimBlankLines(lines: any): any {
+function trimBlankLines(lines: string[]): string[] {
   let start = 0;
   let end = lines.length;
   while (start < end && !lines[start].trim()) {
@@ -57,7 +70,7 @@ function trimBlankLines(lines: any): any {
   return lines.slice(start, end);
 }
 
-function cleanTagName(value: any): any {
+function cleanTagName(value: string): string {
   const trimmed = String(value || "").trim();
   if (
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
@@ -68,7 +81,7 @@ function cleanTagName(value: any): any {
   return trimmed;
 }
 
-function lineWithoutTagDirective(line: any): any {
+function lineWithoutTagDirective(line: string): string | undefined {
   const parsed = parseTagDirectiveLine(line);
   if (!parsed) {
     return line;
@@ -76,7 +89,9 @@ function lineWithoutTagDirective(line: any): any {
   return parsed.before;
 }
 
-function parseTagDirectiveLine(line: any): any {
+function parseTagDirectiveLine(
+  line: string,
+): ParsedTagDirectiveLine | undefined {
   const directive = tagDirective(line);
   if (directive) {
     return { directive };
@@ -89,16 +104,20 @@ function parseTagDirectiveLine(line: any): any {
   if (!trailingMatch) {
     return undefined;
   }
+  const kind = tagDirectiveKind(trailingMatch[2]);
+  if (!kind) {
+    return undefined;
+  }
   return {
     before: trailingMatch[1],
     directive: {
-      kind: trailingMatch[2],
+      kind,
       name: trailingMatch[3],
     },
   };
 }
 
-function tagDirective(line: any): any {
+function tagDirective(line: string): TagDirective | undefined {
   const match =
     /^(?:(?:\/\/|#|;|<!--|\/\*|\*)\s*)?(tag|end)::([^\s\[\]]+)(?:\[[^\]]*]|\])?\s*(?:-->|\*\/)?\s*$/.exec(
       line.trim(),
@@ -106,8 +125,16 @@ function tagDirective(line: any): any {
   if (!match) {
     return undefined;
   }
+  const kind = tagDirectiveKind(match[1]);
+  if (!kind) {
+    return undefined;
+  }
   return {
-    kind: match[1],
+    kind,
     name: match[2],
   };
+}
+
+function tagDirectiveKind(value: string): TagDirective["kind"] | undefined {
+  return value === "tag" || value === "end" ? value : undefined;
 }

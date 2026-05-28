@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { normalizeSourceCalloutMarkers } from "../../guides/extensions/register-guide-snippet-blocks.ts";
 
-test("normalizeSourceCalloutMarkers converts guide shorthand comment markers", (): any => {
+test("normalizeSourceCalloutMarkers converts guide shorthand comment markers", (): void => {
   assert.equal(
     normalizeSourceCalloutMarkers(
       ["name=weather", "# 1>", "transport=http"].join("\n"),

@@ -56,10 +56,10 @@ console.log(
   `Wrote ${projects.length} docs projects to ${path.relative(projectDirectory, outputFile)}.`,
 );
 
-async function readJson(file: string): Promise<Record<string, any>> {
+async function readJson(file: string): Promise<Record<string, unknown>> {
   try {
     return JSON.parse(await fs.readFile(file, "utf8"));
-  } catch (error: any) {
+  } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return {};
     }

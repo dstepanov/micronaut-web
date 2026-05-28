@@ -1,15 +1,15 @@
-export function html(value: any): any {
+export function html(value: unknown): string {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
 
-export function attribute(value: any): any {
+export function attribute(value: unknown): string {
   return html(value).replaceAll('"', "&quot;");
 }
 
-export function decodeHtml(value: any): any {
+export function decodeHtml(value: unknown): string {
   return String(value)
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">")
@@ -19,6 +19,6 @@ export function decodeHtml(value: any): any {
     .replaceAll("&amp;", "&");
 }
 
-export function escapeRegExp(value: any): any {
+export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

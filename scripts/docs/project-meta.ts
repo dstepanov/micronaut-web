@@ -1,13 +1,15 @@
 import path from "node:path";
 
+import type { DocsProject, Properties } from "./project-manifest.ts";
+
 export function renderAttributes(
-  project: any,
-  platformVersion: any,
-  submoduleDirectory: any,
-  sourceDocsDirectory: any,
-  projectProperties: any,
-): any {
-  const attributes = {
+  project: DocsProject,
+  platformVersion: string,
+  submoduleDirectory: string,
+  sourceDocsDirectory: string,
+  projectProperties: Properties,
+): Properties {
+  const attributes: Properties = {
     ...projectProperties,
     title: project.displayName,
     version: platformVersion,
@@ -63,7 +65,7 @@ export function renderAttributes(
   return attributes;
 }
 
-export function sourceDocsEditUrl(project: any): any {
+export function sourceDocsEditUrl(project: DocsProject): string {
   const branch = project.branch || "HEAD";
   return `${project.repositoryUrl.replace(/\.git$/, "")}/edit/${branch}/src/main/docs`;
 }

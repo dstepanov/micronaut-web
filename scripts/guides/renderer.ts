@@ -8,6 +8,12 @@ import { guideExtensionRegistry } from "./extensions/index.ts";
 import type { Guide, GuideOption, GuideRenderContext } from "./model.ts";
 import { productionUrl } from "../../src/lib/route-compatibility.ts";
 
+export type GuideManifestEntry = {
+  guide: Guide;
+  options: GuideOption[];
+  defaultOption: GuideOption | undefined;
+};
+
 export async function renderGuideOption(
   asciidoctor: typeof import("@asciidoctor/core"),
   guidesDirectory: string,
@@ -88,32 +94,56 @@ export async function copyGuideAssets(
   await copyReferencedSharedAssets(guidesDirectory, outputDirectory, options);
 }
 
-export function guideManifest(guides: any): any {
-  const manifestGuides = guides.map(
-    ({ guide, options, defaultOption }: any): any => ({
-      slug: guide.slug,
-      title: guide.title,
-      intro: guide.intro,
-      authors: guide.authors,
-      tags: guide.tags,
-      categories: guide.categories,
-      publicationDate: guide.publicationDate,
-      estimatedMinutes: estimateMinutes(guide),
-      overviewFile: `${guide.slug}.html`,
-      defaultOptionFile: defaultOption?.file || "",
-      options: options.map((option: any): any => ({
-        id: option.id,
-        label: option.label,
-        language: option.language,
-        languageLabel: option.languageLabel,
-        buildTool: option.buildTool,
-        buildToolLabel: option.buildToolLabel,
-        file: option.file,
-        fragment: `fragments/${option.file}`,
-        zipUrl: option.zipUrl,
-      })),
-    }),
-  );
+export function guideManifest(guides: GuideManifestEntry[]): {
+  generatedAt: string;
+  guideCount: number;
+  guides: Array<{
+    slug: string;
+    title: string;
+    intro: string;
+    authors: string[];
+    tags: string[];
+    categories: string[];
+    publicationDate: string;
+    estimatedMinutes: number;
+    overviewFile: string;
+    defaultOptionFile: string;
+    options: Array<{
+      id: string;
+      label: string;
+      language: string;
+      languageLabel: string;
+      buildTool: string;
+      buildToolLabel: string;
+      file: string;
+      fragment: string;
+      zipUrl: string;
+    }>;
+  }>;
+} {
+  const manifestGuides = guides.map(({ guide, options, defaultOption }) => ({
+    slug: guide.slug,
+    title: guide.title,
+    intro: guide.intro,
+    authors: guide.authors,
+    tags: guide.tags,
+    categories: guide.categories,
+    publicationDate: guide.publicationDate,
+    estimatedMinutes: estimateMinutes(guide),
+    overviewFile: `${guide.slug}.html`,
+    defaultOptionFile: defaultOption?.file || "",
+    options: options.map((option) => ({
+      id: option.id,
+      label: option.label,
+      language: option.language,
+      languageLabel: option.languageLabel,
+      buildTool: option.buildTool,
+      buildToolLabel: option.buildToolLabel,
+      file: option.file,
+      fragment: `fragments/${option.file}`,
+      zipUrl: option.zipUrl,
+    })),
+  }));
 
   return {
     generatedAt: new Date().toISOString(),
@@ -125,7 +155,7 @@ export function guideManifest(guides: any): any {
 function rewriteGuideUrls(input: string, slug: string): string {
   return input.replace(
     /\b(href|src)="([^"]*)"/g,
-    (match: any, attributeName: any, value: any): any => {
+    (match: string, attributeName: string, value: string): string => {
       const legacyGuidePath =
         /^https:\/\/guides\.micronaut\.io\/latest\/([^?#]+)([?#].*)?$/i.exec(
           value,
@@ -187,7 +217,7 @@ async function copyReferencedSharedAssets(
 ): Promise<void> {
   const referenced = new Set<string>();
   for (const option of options) {
-    let html;
+    let html: string;
     try {
       html = await fs.readFile(
         path.join(outputDirectory, "fragments", option.file),
@@ -204,7 +234,7 @@ async function copyReferencedSharedAssets(
   }
 
   await Promise.all(
-    Array.from(referenced).map(async (asset: any): Promise<any> => {
+    Array.from(referenced).map(async (asset): Promise<void> => {
       const source = path.join(
         guidesDirectory,
         "src",

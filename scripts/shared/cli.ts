@@ -8,7 +8,7 @@ export function splitList(
   return value
     ? String(value)
         .split(",")
-        .map((item: any): any => item.trim())
+        .map((item) => item.trim())
         .filter(Boolean)
     : [];
 }
@@ -48,7 +48,7 @@ export function parseArgs(args: string[]): ParsedArgs {
 }
 
 function camelCase(value: string): string {
-  return value.replace(/-([a-z])/g, (_: any, char: any): any =>
+  return value.replace(/-([a-z])/g, (_match: string, char: string): string =>
     char.toUpperCase(),
   );
 }

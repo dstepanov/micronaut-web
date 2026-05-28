@@ -1,4 +1,5 @@
 import * as asciidoctor from "@asciidoctor/core";
+import type { Dirent } from "node:fs";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +13,7 @@ import {
 } from "./guides/model.ts";
 import {
   copyGuideAssets,
+  type GuideManifestEntry,
   guideManifest,
   renderGuideOption,
 } from "./guides/renderer.ts";
@@ -71,8 +73,8 @@ await cleanGeneratedGuidesOutput(
 
 let rendered = 0;
 let skipped = 0;
-const skippedGuides = [];
-const manifestGuides = [];
+const skippedGuides: string[] = [];
+const manifestGuides: GuideManifestEntry[] = [];
 for (const guide of guides) {
   const optionsToRender = guideOptions(guide);
   const defaultOption = defaultGuideOption(guide);
@@ -107,9 +109,9 @@ for (const guide of guides) {
     );
     manifestGuides.push({ guide, options: renderedOptions, defaultOption });
     console.log(`Rendered ${guide.slug}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     skipped += 1;
-    skippedGuides.push(`${guide.slug}: ${error.message}`);
+    skippedGuides.push(`${guide.slug}: ${errorMessage(error)}`);
     console.warn(`Skipping ${skippedGuides.at(-1)}`);
   }
 }
@@ -131,9 +133,9 @@ if (strict && skippedGuides.length) {
 }
 
 async function cleanGeneratedGuidesOutput(
-  directory: any,
-  slugs: any,
-): Promise<any> {
+  directory: string,
+  slugs: string[],
+): Promise<void> {
   await fs.mkdir(directory, { recursive: true });
   if (slugs.length) {
     const fragmentEntries = await safeReaddir(
@@ -141,13 +143,13 @@ async function cleanGeneratedGuidesOutput(
     );
     await Promise.all([
       ...fragmentEntries
-        .filter((entry: any): any =>
-          slugs.some((slug: any): any => entry.name.startsWith(`${slug}-`)),
+        .filter((entry) =>
+          slugs.some((slug) => entry.name.startsWith(`${slug}-`)),
         )
-        .map((entry: any): any =>
+        .map((entry) =>
           fs.rm(path.join(directory, "fragments", entry.name), { force: true }),
         ),
-      ...slugs.map((slug: any): any =>
+      ...slugs.map((slug) =>
         fs.rm(path.join(directory, "assets", slug), {
           force: true,
           recursive: true,
@@ -159,7 +161,7 @@ async function cleanGeneratedGuidesOutput(
 
   const entries = await fs.readdir(directory, { withFileTypes: true });
   await Promise.all(
-    entries.map((entry: any): any => {
+    entries.map((entry) => {
       if (entry.isFile() && entry.name === "manifest.json") {
         return fs.rm(path.join(directory, entry.name), { force: true });
       }
@@ -174,10 +176,14 @@ async function cleanGeneratedGuidesOutput(
   );
 }
 
-async function safeReaddir(directory: any): Promise<any> {
+async function safeReaddir(directory: string): Promise<Dirent<string>[]> {
   try {
     return await fs.readdir(directory, { withFileTypes: true });
   } catch {
     return [];
   }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

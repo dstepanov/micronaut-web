@@ -13,9 +13,54 @@ import { renderSnippetBlock } from "./snippet-block-renderer.ts";
 const DEPENDENCY_BLOCK = "dependency";
 const SNIPPET_CALLOUT_VALIDATION_CLASS = "docs-snippet-callout-validation";
 
+type DependencyContext = Record<string, unknown> & {
+  attributes?: Record<string, string | undefined>;
+};
+
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+  _positional?: unknown;
+};
+
+type SnippetSample = {
+  language: string;
+  source: string;
+  group?: string;
+  highlighterLanguage?: string;
+};
+
+type DependencyPayload = {
+  title: string;
+  description: string;
+  samples: SnippetSample[];
+};
+
+type Dependency = {
+  groupId: string;
+  artifactId: string;
+  version?: string;
+  classifier?: string;
+  gradleScope: string;
+  mavenScope: string;
+  title: string;
+  description: string;
+};
+
+type ConstructableReader = Reader & {
+  constructor: new (
+    document: unknown,
+    lines: string[],
+    cursor: unknown,
+    options: Record<string, unknown>,
+  ) => Reader;
+  cursor: unknown;
+  lines: string[];
+};
+
 export function registerDependencyBlock(
   registry: Registry,
-  context: any,
+  context: DependencyContext,
 ): void {
   registry.preprocessor(function registerDependencyMacroPreprocessor(
     this: DocumentProcessorDslInterface,
@@ -24,8 +69,8 @@ export function registerDependencyBlock(
       document: unknown,
       reader: unknown,
     ): Reader {
-      const sourceReader = reader as Reader;
-      return new (sourceReader as any).constructor(
+      const sourceReader = reader as ConstructableReader;
+      return new sourceReader.constructor(
         document,
         rewriteDependencyMacrosForExtension(
           sourceReader.lines.join("\n"),
@@ -65,9 +110,12 @@ export function registerDependencyBlock(
   });
 }
 
-function rewriteDependencyMacrosForExtension(source: any, context: any): any {
+function rewriteDependencyMacrosForExtension(
+  source: string,
+  context: DependencyContext,
+): string {
   const lines = source.split(/\r?\n/);
-  const output = [];
+  const output: string[] = [];
   let delimiter: string | undefined;
 
   for (const line of lines) {
@@ -98,10 +146,10 @@ function rewriteDependencyMacrosForExtension(source: any, context: any): any {
       positionalKey: "$positional",
     });
     output.push(
-      snippetBlock("dependency", {
-        ...dependencyPayload(macroMatch[1], attrs, context),
-        kind: "dependency",
-      }),
+      snippetBlock(
+        "dependency",
+        dependencyPayload(macroMatch[1], attrs, context),
+      ),
     );
   }
 
@@ -123,7 +171,7 @@ function blockTarget(attrs: Record<string, unknown>): string {
   );
 }
 
-function snippetBlock(kind: string, payload: any): string {
+function snippetBlock(kind: string, payload: DependencyPayload): string {
   return snippetBlockLines(kind, payload, {
     surroundWithBlankLines: false,
   }).join("\n");
@@ -131,11 +179,11 @@ function snippetBlock(kind: string, payload: any): string {
 
 function snippetBlockLines(
   kind: string,
-  payload: any,
+  payload: DependencyPayload,
   options: { surroundWithBlankLines?: boolean } = {},
 ): string[] {
   const normalized = normalizeSnippetPayload(payload);
-  const lines = [];
+  const lines: string[] = [];
   if (options.surroundWithBlankLines !== false) {
     lines.push("");
   }
@@ -149,7 +197,10 @@ function snippetBlockLines(
   return lines;
 }
 
-function snippetBlockAttributeLine(kind: string, payload: any): string {
+function snippetBlockAttributeLine(
+  kind: string,
+  payload: DependencyPayload,
+): string {
   return `[${kind === DEPENDENCY_BLOCK ? DEPENDENCY_BLOCK : "snippet"},payload=${encodePayload(
     {
       ...payload,
@@ -158,20 +209,20 @@ function snippetBlockAttributeLine(kind: string, payload: any): string {
   )}]`;
 }
 
-function snippetPayloadFromValue(value: unknown): any {
+function snippetPayloadFromValue(value: unknown): DependencyPayload {
   return JSON.parse(
     Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  );
+  ) as DependencyPayload;
 }
 
-function encodePayload(payload: any): string {
+function encodePayload(payload: Record<string, unknown>): string {
   return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
 }
 
-function snippetCalloutValidationLines(samples: any): string[] {
+function snippetCalloutValidationLines(samples: SnippetSample[]): string[] {
   const source = (Array.isArray(samples) ? samples : [])
-    .map((sample: any): any => sample.source || "")
-    .filter((sampleSource: any): any => snippetSourceHasCallouts(sampleSource))
+    .map((sample) => sample.source || "")
+    .filter((sampleSource) => snippetSourceHasCallouts(sampleSource))
     .join("\n");
   if (!source) {
     return [];
@@ -185,7 +236,9 @@ function snippetCalloutValidationLines(samples: any): string[] {
   ];
 }
 
-function normalizeSnippetPayload(payload: any): any {
+function normalizeSnippetPayload(
+  payload: DependencyPayload,
+): DependencyPayload {
   return {
     ...payload,
     description: payload?.description || "",
@@ -194,31 +247,32 @@ function normalizeSnippetPayload(payload: any): any {
   };
 }
 
-function normalizeSnippetSamples(samples: any): any {
-  return (Array.isArray(samples) ? samples : []).map((sample: any): any => {
-    const normalized: any = {
-      language: sample.language || "text",
+function normalizeSnippetSamples(samples: unknown): SnippetSample[] {
+  return (Array.isArray(samples) ? samples : []).map((value) => {
+    const sample = record(value);
+    const normalized: SnippetSample = {
+      language: String(sample.language || "text"),
       source: String(sample.source || "").trimEnd(),
     };
     if (sample.group) {
       normalized.group = String(sample.group);
     }
     if (sample.highlighterLanguage) {
-      normalized.highlighterLanguage = sample.highlighterLanguage;
+      normalized.highlighterLanguage = String(sample.highlighterLanguage);
     }
     return normalized;
   });
 }
 
-function snippetSourceHasCallouts(source: any): boolean {
+function snippetSourceHasCallouts(source: string): boolean {
   return /<\d+>|<!--\d+-->/.test(String(source || ""));
 }
 
-function sourceBlockDelimiter(source: any): string {
+function sourceBlockDelimiter(source: string): string {
   const longestHyphenRun = Math.max(
     3,
     ...Array.from(String(source).matchAll(/^-{4,}$/gm)).map(
-      (match: any): any => match[0].length,
+      (match) => match[0].length,
     ),
   );
   return "-".repeat(longestHyphenRun + 1);
@@ -230,13 +284,9 @@ function parseAttributeList(
     includeText?: boolean;
     positionalKey?: "$positional" | "_positional";
   } = {},
-): Record<string, string> & {
-  $positional?: string[];
-  _positional?: string[];
-  text?: string;
-} {
-  const attributes: Record<string, any> = {};
-  const positional = [];
+): MacroAttributes {
+  const attributes: MacroAttributes = {};
+  const positional: string[] = [];
   if (options.includeText) {
     attributes.text = value;
   }
@@ -301,11 +351,17 @@ function stripQuotes(value: string): string {
   return value;
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return cleanMacroAttributeValue(String(attrs[name]), name);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,
@@ -344,7 +400,11 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function dependencyPayload(target: any, attrs: any, context: any): any {
+function dependencyPayload(
+  target: string,
+  attrs: MacroAttributes,
+  context: DependencyContext,
+): DependencyPayload {
   const dependency = dependencyForTargetAndAttributes(
     target.trim(),
     attrs,
@@ -371,17 +431,17 @@ function dependencyPayload(target: any, attrs: any, context: any): any {
 }
 
 function dependencyForTargetAndAttributes(
-  target: any,
-  attrs: any,
-  context: any,
-): any {
-  let groupId;
-  let artifactId;
-  let version;
+  target: string,
+  attrs: MacroAttributes,
+  context: DependencyContext,
+): Dependency {
+  let groupId: string;
+  let artifactId: string;
+  let version: string | undefined;
   const groupAttribute =
     macroAttribute(attrs, "groupId") ||
     macroAttribute(attrs, "group") ||
-    context.attributes.projectGroup;
+    context.attributes?.projectGroup;
 
   if (target.includes(":")) {
     const tokens = target.split(":");
@@ -414,7 +474,7 @@ function dependencyForTargetAndAttributes(
   };
 }
 
-function toMavenScope(attrs: any): any {
+function toMavenScope(attrs: MacroAttributes): string {
   const scope = macroAttribute(attrs, "scope");
   if (!scope) {
     return "";
@@ -433,7 +493,7 @@ function toMavenScope(attrs: any): any {
   return scopes[scope] || scope;
 }
 
-function toGradleScope(attrs: any): any {
+function toGradleScope(attrs: MacroAttributes): string {
   const scope = macroAttribute(attrs, "scope");
   if (!scope) {
     return "";
@@ -448,12 +508,12 @@ function toGradleScope(attrs: any): any {
   return scopes[scope] || scope;
 }
 
-function gradleDependency(dependency: any): any {
+function gradleDependency(dependency: Dependency): string {
   const gav = `${dependency.groupId}:${dependency.artifactId}${dependency.version !== undefined || dependency.classifier !== undefined ? ":" : ""}${dependency.version || ""}${dependency.classifier !== undefined ? `:${dependency.classifier}` : ""}`;
   return `${dependency.gradleScope}("${gav}")`;
 }
 
-function mavenDependency(dependency: any): any {
+function mavenDependency(dependency: Dependency): string {
   if (dependency.mavenScope === "annotationProcessor") {
     return `<annotationProcessorPaths>
     <path>
@@ -466,4 +526,10 @@ function mavenDependency(dependency: any): any {
     <groupId>${dependency.groupId}</groupId>
     <artifactId>${dependency.artifactId}</artifactId>${dependency.version ? `\n    <version>${dependency.version}</version>` : ""}${dependency.mavenScope && dependency.mavenScope !== "compile" ? `\n    <scope>${dependency.mavenScope}</scope>` : ""}${dependency.classifier ? `\n    <classifier>${dependency.classifier}</classifier>` : ""}
 </dependency>`;
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

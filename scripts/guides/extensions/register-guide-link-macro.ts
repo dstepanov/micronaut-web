@@ -32,15 +32,29 @@ export function registerGuideLinkMacro(registry: Registry): void {
   );
 }
 
-function macroText(attrs: any): any {
-  return macroAttribute(attrs, "text") || attrs?.$positional?.[0] || "";
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+};
+
+function macroText(attrs: MacroAttributes): string {
+  const positional = Array.isArray(attrs.$positional)
+    ? String(attrs.$positional[0] ?? "")
+    : "";
+  return macroAttribute(attrs, "text") || positional;
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return String(attrs[name]);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,

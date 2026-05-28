@@ -8,14 +8,14 @@ const outputDir = join(rootDir, "public", "micronaut-assets", "main-site");
 const resourcePattern =
   /https?:\/\/micronaut\.io\/wp-content\/uploads\/[^\s)\]>"']+/g;
 
-function cleanResourceUrl(value: any): any {
+function cleanResourceUrl(value: string): string {
   return value.replace(/[.,;:!?]+$/g, "");
 }
 
-async function listMarkdownFiles(dir: any): Promise<any> {
+async function listMarkdownFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = await Promise.all(
-    entries.map(async (entry: any): Promise<any> => {
+    entries.map(async (entry): Promise<string[]> => {
       const file = join(dir, entry.name);
       if (entry.isDirectory()) {
         return listMarkdownFiles(file);
@@ -26,8 +26,8 @@ async function listMarkdownFiles(dir: any): Promise<any> {
   return files.flat().sort();
 }
 
-async function collectResourceUrls(): Promise<any> {
-  const urls = new Set();
+async function collectResourceUrls(): Promise<string[]> {
+  const urls = new Set<string>();
   for (const file of await listMarkdownFiles(contentDir)) {
     const markdown = await readFile(file, "utf8");
     for (const match of markdown.matchAll(resourcePattern)) {
@@ -37,7 +37,7 @@ async function collectResourceUrls(): Promise<any> {
   return Array.from(urls).sort();
 }
 
-async function exists(file: any): Promise<any> {
+async function exists(file: string): Promise<boolean> {
   try {
     const fileStat = await stat(file);
     return fileStat.isFile() && fileStat.size > 0;
@@ -46,18 +46,18 @@ async function exists(file: any): Promise<any> {
   }
 }
 
-function outputFileForUrl(url: any): any {
+function outputFileForUrl(url: string): string {
   const pathname = new URL(url).pathname;
   return join(
     outputDir,
     ...pathname
       .split("/")
       .filter(Boolean)
-      .map((part: any): any => decodeURIComponent(part)),
+      .map((part) => decodeURIComponent(part)),
   );
 }
 
-async function downloadResource(url: any, file: any): Promise<any> {
+async function downloadResource(url: string, file: string): Promise<void> {
   const response = await fetch(url, {
     headers: {
       "user-agent": "micronaut-web-content-sync/1.0",
@@ -74,7 +74,7 @@ const force = process.argv.includes("--force");
 const urls = await collectResourceUrls();
 let downloaded = 0;
 let skipped = 0;
-const failed = [];
+const failed: string[] = [];
 
 for (const url of urls) {
   const file = outputFileForUrl(url);
@@ -85,8 +85,8 @@ for (const url of urls) {
   try {
     await downloadResource(url, file);
     downloaded += 1;
-  } catch (error: any) {
-    failed.push(`${url}: ${error.message}`);
+  } catch (error: unknown) {
+    failed.push(`${url}: ${errorMessage(error)}`);
   }
 }
 
@@ -106,4 +106,8 @@ console.log(
 
 if (failed.length > 0) {
   process.exitCode = 1;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -11,10 +11,16 @@ import { registerSnippetPayloadBlocks } from "./register-snippet-payload-blocks.
 
 const componentRenderingRegistries = new WeakSet<Registry>();
 
+type DocsExtensionContext = {
+  project?: {
+    slug?: string;
+  };
+} & Record<string, unknown>;
+
 export function micronautExtensionRegistry(
   asciidoctor: typeof import("@asciidoctor/core"),
-  context: any,
-  options: { snippetSamples: any },
+  context: DocsExtensionContext,
+  options: { snippetSamples: unknown },
 ): Registry {
   const registry = asciidoctor.Extensions.create();
   registerDocsSourcePreprocessor(registry);

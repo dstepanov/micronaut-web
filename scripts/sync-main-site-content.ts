@@ -12,14 +12,46 @@ const micronautOrigin = "https://micronaut.io";
 
 const now = new Date().toISOString();
 
-type Frontmatter = Record<string, any>;
+type Frontmatter = Record<string, unknown>;
 
-function decodeHtml(value: any): any {
+type HtmlNode = {
+  nodeName: string;
+  tagName?: string;
+  value?: string;
+  attrs?: Array<{ name: string; value: string }>;
+  childNodes?: HtmlNode[];
+};
+
+type SyncPagesReport = {
+  synced: number;
+  validated: number;
+  failed: string[];
+};
+
+type WordPressTerm = {
+  taxonomy?: string;
+  slug?: string;
+};
+
+type WordPressPost = {
+  id: number;
+  link: string;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  content: { rendered: string };
+  date: string;
+  modified: string;
+  _embedded?: {
+    "wp:term"?: WordPressTerm[][];
+  };
+};
+
+function decodeHtml(value: string): string {
   return value
-    .replace(/&#x([0-9a-f]+);/gi, (_match: any, code: any): any =>
+    .replace(/&#x([0-9a-f]+);/gi, (_match: string, code: string): string =>
       String.fromCodePoint(Number.parseInt(code, 16)),
     )
-    .replace(/&#(\d+);/g, (_match: any, code: any): any =>
+    .replace(/&#(\d+);/g, (_match: string, code: string): string =>
       String.fromCodePoint(Number.parseInt(code, 10)),
     )
     .replace(/&nbsp;/g, " ")
@@ -30,7 +62,7 @@ function decodeHtml(value: any): any {
     .replace(/&#039;|&apos;/g, "'");
 }
 
-function htmlToText(html: any): any {
+function htmlToText(html: string): string {
   return decodeHtml(html)
     .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
@@ -44,7 +76,7 @@ function htmlToText(html: any): any {
     .trim();
 }
 
-function normalizeText(value: any): any {
+function normalizeText(value: string): string {
   return htmlToText(value)
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
@@ -55,19 +87,19 @@ function normalizeText(value: any): any {
 const htmlTagPattern =
   /<\/?(?:a|abbr|address|article|aside|audio|b|blockquote|br|button|canvas|caption|cite|code|col|colgroup|data|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|footer|form|h[1-6]|header|hr|i|iframe|img|input|ins|kbd|label|legend|li|main|mark|menu|meter|nav|object|ol|option|p|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|tr|u|ul|var|video|wbr)(?:\s[^>]*)?>/gi;
 
-function rawHtmlTags(markdown: any): any {
+function rawHtmlTags(markdown: string): string[] {
   const bodyWithoutCode = markdown
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`[^`\n]*`/g, "");
   return Array.from(
     bodyWithoutCode.matchAll(htmlTagPattern),
-    (match: any): any => match[0],
+    (match) => match[0],
   );
 }
 
 function splitFrontmatter(
-  markdown: any,
-  file: any,
+  markdown: string,
+  file: string,
 ): { data: Frontmatter; body: string } {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!match) {
@@ -79,7 +111,7 @@ function splitFrontmatter(
   };
 }
 
-function stringifyMarkdown(data: any, body: any): any {
+function stringifyMarkdown(data: Frontmatter, body: string): string {
   return `---\n${YAML.dump(data, {
     lineWidth: -1,
     noRefs: true,
@@ -87,18 +119,18 @@ function stringifyMarkdown(data: any, body: any): any {
   }).trim()}\n---\n\n${body.trim()}\n`;
 }
 
-function attr(node: any, name: any): any {
-  return node.attrs?.find((item: any): any => item.name === name)?.value;
+function attr(node: HtmlNode | undefined, name: string): string | undefined {
+  return node?.attrs?.find((item) => item.name === name)?.value;
 }
 
-function textContent(node: any): any {
+function textContent(node: HtmlNode): string {
   if (node.nodeName === "#text") {
-    return node.value;
+    return node.value ?? "";
   }
   return (node.childNodes ?? []).map(textContent).join("");
 }
 
-function escapeInlineText(value: any): any {
+function escapeInlineText(value: string): string {
   return decodeHtml(value)
     .replace(/\\/g, "\\\\")
     .replace(/</g, "&lt;")
@@ -107,15 +139,13 @@ function escapeInlineText(value: any): any {
     .replace(/\]/g, "\\]");
 }
 
-function markdownUrl(value: any): any {
+function markdownUrl(value: string): string {
   return value.replace(/\s/g, "%20").replace(/\)/g, "%29");
 }
 
-function escapeCodeSpan(value: any): any {
+function escapeCodeSpan(value: string): string {
   const backticks =
-    value
-      .match(/`+/g)
-      ?.reduce((max: any, item: any): any => Math.max(max, item.length), 0) ??
+    value.match(/`+/g)?.reduce((max, item) => Math.max(max, item.length), 0) ??
     0;
   const fence = "`".repeat(backticks + 1);
   const padding = value.startsWith(" ") || value.endsWith(" ") ? " " : "";
@@ -155,15 +185,15 @@ const blockTags = new Set([
   "ul",
 ]);
 
-function isBlockNode(node: any): any {
-  return node.tagName && blockTags.has(node.tagName);
+function isBlockNode(node: HtmlNode): boolean {
+  return Boolean(node.tagName && blockTags.has(node.tagName));
 }
 
-function isBlank(value: any): any {
+function isBlank(value: string): boolean {
   return !value || !value.replace(/\s+/g, "");
 }
 
-function normalizeMarkdown(value: any): any {
+function normalizeMarkdown(value: string): string {
   return value
     .replace(/\r\n?/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
@@ -171,16 +201,16 @@ function normalizeMarkdown(value: any): any {
     .trim();
 }
 
-function inlineChildren(nodes: any): any {
+function inlineChildren(nodes: HtmlNode[]): string {
   return normalizeInline(nodes.map(inlineMarkdown).join(""));
 }
 
-function iframeMarkdown(node: any): any {
+function iframeMarkdown(node: HtmlNode): string {
   const src = attr(node, "src");
   return src ? `[Embedded content](${markdownUrl(src)})` : "";
 }
 
-function normalizeInline(value: any): any {
+function normalizeInline(value: string): string {
   return value
     .replace(/[ \t\n]+/g, " ")
     .replace(/([\p{L}\p{N})])(\[)/gu, "$1 $2")
@@ -192,12 +222,12 @@ function normalizeInline(value: any): any {
     .trim();
 }
 
-function inlineMarkdown(node: any): any {
+function inlineMarkdown(node: HtmlNode): string {
   if (node.nodeName === "#comment") {
     return "";
   }
   if (node.nodeName === "#text") {
-    return escapeInlineText(node.value);
+    return escapeInlineText(node.value ?? "");
   }
   const tag = node.tagName;
   const children = node.childNodes ?? [];
@@ -239,11 +269,11 @@ function inlineMarkdown(node: any): any {
   return inlineChildren(children);
 }
 
-function childrenToMarkdown(nodes: any): any {
-  const blocks = [];
-  let inlineNodes: any[] = [];
+function childrenToMarkdown(nodes: HtmlNode[]): string {
+  const blocks: string[] = [];
+  let inlineNodes: HtmlNode[] = [];
 
-  function flushInline(): any {
+  function flushInline(): void {
     const value = inlineChildren(inlineNodes);
     inlineNodes = [];
     if (!isBlank(value)) {
@@ -269,14 +299,14 @@ function childrenToMarkdown(nodes: any): any {
   return blocks.join("\n\n");
 }
 
-function listMarkdown(node: any, ordered: any): any {
+function listMarkdown(node: HtmlNode, ordered: boolean): string {
   let index = Number.parseInt(attr(node, "start") ?? "1", 10);
   if (!Number.isFinite(index)) {
     index = 1;
   }
   return (node.childNodes ?? [])
-    .filter((child: any): any => child.tagName === "li")
-    .map((child: any): any => {
+    .filter((child) => child.tagName === "li")
+    .map((child) => {
       const marker = ordered ? `${index++}. ` : "- ";
       const item = normalizeMarkdown(
         childrenToMarkdown(child.childNodes ?? []),
@@ -285,15 +315,15 @@ function listMarkdown(node: any, ordered: any): any {
         return "";
       }
       const [first, ...rest] = item.split("\n");
-      return `${marker}${first}${rest.length ? `\n${rest.map((line: any): any => `  ${line}`).join("\n")}` : ""}`;
+      return `${marker}${first}${rest.length ? `\n${rest.map((line) => `  ${line}`).join("\n")}` : ""}`;
     })
     .filter(Boolean)
     .join("\n");
 }
 
-function codeLanguage(node: any): any {
+function codeLanguage(node: HtmlNode): string {
   const codeNode = (node.childNodes ?? []).find(
-    (child: any): any => child.tagName === "code",
+    (child) => child.tagName === "code",
   );
   const className = attr(codeNode ?? node, "class") ?? "";
   const match =
@@ -302,17 +332,14 @@ function codeLanguage(node: any): any {
   return match?.[1] ?? "";
 }
 
-function tableMarkdown(node: any): any {
+function tableMarkdown(node: HtmlNode): string {
   const rows: string[][] = [];
-  function visit(current: any): any {
+  function visit(current: HtmlNode): void {
     if (current.tagName === "tr") {
       rows.push(
         (current.childNodes ?? [])
-          .filter(
-            (child: any): any =>
-              child.tagName === "th" || child.tagName === "td",
-          )
-          .map((cell: any): any => inlineChildren(cell.childNodes ?? [])),
+          .filter((child) => child.tagName === "th" || child.tagName === "td")
+          .map((cell) => inlineChildren(cell.childNodes ?? [])),
       );
     }
     for (const child of current.childNodes ?? []) {
@@ -323,33 +350,30 @@ function tableMarkdown(node: any): any {
   if (!rows.length) {
     return "";
   }
-  const width = Math.max(...rows.map((row: any): any => row.length));
-  const normalizedRows = rows.map((row: any): any =>
-    Array.from(
-      { length: width },
-      (_item: any, index: any): any => row[index] ?? "",
-    ),
+  const width = Math.max(...rows.map((row) => row.length));
+  const normalizedRows = rows.map((row) =>
+    Array.from({ length: width }, (_item, index) => row[index] ?? ""),
   );
   const header = normalizedRows[0];
-  const divider = header.map((): any => "---");
+  const divider = header.map(() => "---");
   const body = normalizedRows.slice(1);
   return [header, divider, ...body]
     .map(
-      (row: any): any =>
-        `| ${row.map((cell: any): any => cell.replace(/\|/g, "\\|")).join(" | ")} |`,
+      (row) =>
+        `| ${row.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`,
     )
     .join("\n");
 }
 
-function blockquoteMarkdown(node: any): any {
+function blockquoteMarkdown(node: HtmlNode): string {
   const value = normalizeMarkdown(childrenToMarkdown(node.childNodes ?? []));
   return value
     .split("\n")
-    .map((line: any): any => (line ? `> ${line}` : ">"))
+    .map((line) => (line ? `> ${line}` : ">"))
     .join("\n");
 }
 
-function blockMarkdown(node: any): any {
+function blockMarkdown(node: HtmlNode): string {
   if (node.nodeName === "#comment") {
     return "";
   }
@@ -395,15 +419,15 @@ function blockMarkdown(node: any): any {
   return childrenToMarkdown(children);
 }
 
-function htmlToMarkdown(html: any): any {
+function htmlToMarkdown(html: string): string {
   const fragment = parse5.parseFragment(html);
   return normalizeMarkdown(childrenToMarkdown(fragment.childNodes ?? []));
 }
 
-async function listMarkdownFiles(dir: any): Promise<any> {
+async function listMarkdownFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = await Promise.all(
-    entries.map(async (entry: any): Promise<any> => {
+    entries.map(async (entry): Promise<string[]> => {
       const file = join(dir, entry.name);
       if (entry.isDirectory()) {
         return listMarkdownFiles(file);
@@ -414,7 +438,7 @@ async function listMarkdownFiles(dir: any): Promise<any> {
   return files.flat().sort();
 }
 
-async function fetchText(url: any): Promise<any> {
+async function fetchText(url: string): Promise<string> {
   const response = await fetch(url, {
     headers: {
       "user-agent": "micronaut-web-content-sync/1.0",
@@ -426,7 +450,7 @@ async function fetchText(url: any): Promise<any> {
   return response.text();
 }
 
-async function fetchJson(url: any): Promise<any> {
+async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url, {
     headers: {
       "user-agent": "micronaut-web-content-sync/1.0",
@@ -438,7 +462,7 @@ async function fetchJson(url: any): Promise<any> {
   return response.json();
 }
 
-function extractMainHtml(html: any): any {
+function extractMainHtml(html: string): string {
   const match =
     html.match(/<main\b[^>]*id=["']main["'][^>]*>([\s\S]*?)<\/main>/i) ??
     html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);
@@ -452,12 +476,12 @@ function extractMainHtml(html: any): any {
     .trim();
 }
 
-function extractFirstHeading(html: any): any {
+function extractFirstHeading(html: string): string | undefined {
   const match = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
   return match ? htmlToText(match[1]) : undefined;
 }
 
-function extractMetaDescription(html: any): any {
+function extractMetaDescription(html: string): string | undefined {
   const meta =
     html.match(
       /<meta\s+[^>]*(?:name|property)=["'](?:description|og:description)["'][^>]*content=["']([^"']*)["'][^>]*>/i,
@@ -468,16 +492,16 @@ function extractMetaDescription(html: any): any {
   return meta ? decodeHtml(meta[1]).trim() : undefined;
 }
 
-function canonicalPath(url: any): any {
+function canonicalPath(url: string): string {
   return new URL(url).pathname.replace(/^\/+|\/+$/g, "");
 }
 
-function fileForBlogRoute(route: any): any {
+function fileForBlogRoute(route: string): string {
   return join(blogDir, `${route}.md`);
 }
 
-async function fetchAllWordPressPosts(): Promise<any> {
-  const posts = [];
+async function fetchAllWordPressPosts(): Promise<WordPressPost[]> {
+  const posts: WordPressPost[] = [];
   for (let page = 1; ; page += 1) {
     const url = `${micronautOrigin}/wp-json/wp/v2/posts?per_page=100&page=${page}&_embed=wp:term`;
     const response = await fetch(url, {
@@ -491,7 +515,7 @@ async function fetchAllWordPressPosts(): Promise<any> {
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}: ${url}`);
     }
-    const batch = await response.json();
+    const batch = (await response.json()) as WordPressPost[];
     posts.push(...batch);
     const totalPages = Number(response.headers.get("x-wp-totalpages") ?? page);
     if (page >= totalPages) {
@@ -501,15 +525,15 @@ async function fetchAllWordPressPosts(): Promise<any> {
   return posts;
 }
 
-function termsByTaxonomy(post: any, taxonomy: any): any {
+function termsByTaxonomy(post: WordPressPost, taxonomy: string): string[] {
   return (post._embedded?.["wp:term"] ?? [])
     .flat()
-    .filter((term: any): any => term.taxonomy === taxonomy)
-    .map((term: any): any => term.slug)
-    .filter(Boolean);
+    .filter((term) => term.taxonomy === taxonomy)
+    .map((term) => term.slug)
+    .filter((slug): slug is string => Boolean(slug));
 }
 
-async function syncMainSitePages(): Promise<any> {
+async function syncMainSitePages(): Promise<SyncPagesReport> {
   const files = await listMarkdownFiles(pageDir);
   const report = {
     synced: 0,
@@ -518,7 +542,7 @@ async function syncMainSitePages(): Promise<any> {
   };
   for (const file of files) {
     const current = splitFrontmatter(await readFile(file, "utf8"), file);
-    if (!current.data.sourceUrl) {
+    if (typeof current.data.sourceUrl !== "string") {
       continue;
     }
     try {
@@ -542,7 +566,7 @@ async function syncMainSitePages(): Promise<any> {
       } else {
         report.failed.push(relative(rootDir, file));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       report.failed.push(
         `${relative(rootDir, file)}: ${(error as Error).message}`,
       );
@@ -551,7 +575,7 @@ async function syncMainSitePages(): Promise<any> {
   return report;
 }
 
-function postFrontmatter(post: any): any {
+function postFrontmatter(post: WordPressPost): Frontmatter {
   const route = canonicalPath(post.link);
   const categories = termsByTaxonomy(post, "category");
   return {
@@ -570,7 +594,7 @@ function postFrontmatter(post: any): any {
   };
 }
 
-async function syncWordPressPosts(): Promise<any> {
+async function syncWordPressPosts(): Promise<number> {
   const posts = await fetchAllWordPressPosts();
   for (const post of posts) {
     const route = canonicalPath(post.link);
@@ -587,7 +611,7 @@ async function syncWordPressPosts(): Promise<any> {
   return posts.length;
 }
 
-async function validateGeneratedMarkdown(): Promise<any> {
+async function validateGeneratedMarkdown(): Promise<string[]> {
   const files = [
     ...(await listMarkdownFiles(pageDir)),
     ...(await listMarkdownFiles(blogDir)),

@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { Block, BlockProcessor, Reader, Section } from "@asciidoctor/core";
+import type { OnResolveArgs, PluginBuild } from "esbuild";
 import { build } from "esbuild";
 import { codeToHtml } from "shiki";
 
@@ -27,10 +28,42 @@ const MANUAL_CALLOUTS_CLASS = "asciidoc-manual-callouts";
 const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
 const CALLOUT_MARKER_SUFFIX = "__";
 
-let componentRendererPromise: Promise<any> | undefined;
+let componentRendererPromise: Promise<ComponentRenderer> | undefined;
 
-type SnippetPayload = Record<string, unknown> & {
+export type SnippetPayload = Record<string, unknown> & {
+  description?: unknown;
   footerSource?: unknown;
+  kind?: unknown;
+  samples?: unknown;
+  title?: unknown;
+};
+
+type SnippetKind = "code" | "dependency";
+
+type NormalizedSnippetSample = {
+  language: string;
+  source: string;
+  group?: string;
+  highlighterLanguage?: string;
+};
+
+type SnippetVariant = {
+  active: boolean;
+  highlightedHtml: string;
+  label: string;
+  language: string;
+  panelId: string;
+  source: string;
+  tabId: string;
+};
+
+type ComponentRenderer = {
+  renderGeneratedSnippetCard(
+    input: Record<string, unknown>,
+  ): Promise<string> | string;
+  renderGeneratedPropertiesCard(
+    input: Record<string, unknown>,
+  ): Promise<string> | string;
 };
 
 type SnippetRenderOptions = {
@@ -133,11 +166,11 @@ export async function renderSnippetPayloadCards({
 }: {
   footerHtml: string;
   idSeed: string;
-  payload: any;
+  payload: SnippetPayload;
 }): Promise<RenderedSnippetCards> {
   const kind = payload.kind === "dependency" ? "dependency" : "code";
   const sampleGroups = groupedSnippetSamples(payload.samples, kind);
-  const snippets = [];
+  const snippets: string[] = [];
   const baseId = `generated-docs-snippet-${snippetIdHash(idSeed, payload)}`;
 
   for (const [index, samples] of sampleGroups.entries()) {
@@ -161,13 +194,15 @@ export async function renderSnippetPayloadCards({
   };
 }
 
-export async function renderGeneratedSnippetCard(input: any): Promise<string> {
+export async function renderGeneratedSnippetCard(
+  input: Record<string, unknown>,
+): Promise<string> {
   const renderer = await loadComponentRenderer();
   return renderer.renderGeneratedSnippetCard(input);
 }
 
 export async function renderGeneratedPropertiesCard(
-  input: any,
+  input: Record<string, unknown>,
 ): Promise<string> {
   const renderer = await loadComponentRenderer();
   return renderer.renderGeneratedPropertiesCard(input);
@@ -179,7 +214,13 @@ export async function renderSnippetVariant({
   panelId,
   sample,
   tabId,
-}: any): Promise<any> {
+}: {
+  active: boolean;
+  language: string;
+  panelId: string;
+  sample: NormalizedSnippetSample;
+  tabId: string;
+}): Promise<SnippetVariant> {
   const displayLanguage = String(language || "text")
     .trim()
     .toLowerCase();
@@ -198,14 +239,14 @@ export async function renderSnippetVariant({
   };
 }
 
-function loadComponentRenderer(): Promise<any> {
+function loadComponentRenderer(): Promise<ComponentRenderer> {
   if (!componentRendererPromise) {
     componentRendererPromise = bundleComponentRenderer();
   }
   return componentRendererPromise;
 }
 
-async function bundleComponentRenderer(): Promise<any> {
+async function bundleComponentRenderer(): Promise<ComponentRenderer> {
   const tempDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-direct-snippet-renderer-"),
   );
@@ -230,22 +271,25 @@ async function bundleComponentRenderer(): Promise<any> {
       plugins: [
         {
           name: "micronaut-web-alias",
-          setup(buildContext: any): any {
-            buildContext.onResolve({ filter: /^@\// }, (args: any): any => ({
-              path: resolveSourceImport(args.path),
-            }));
+          setup(buildContext: PluginBuild): void {
+            buildContext.onResolve(
+              { filter: /^@\// },
+              (args: OnResolveArgs) => ({
+                path: resolveSourceImport(args.path),
+              }),
+            );
           },
         },
       ],
     });
     const requireRendererBundle = createRequire(import.meta.url);
-    return requireRendererBundle(outfile);
+    return requireRendererBundle(outfile) as ComponentRenderer;
   } finally {
     await fs.rm(tempDirectory, { recursive: true, force: true });
   }
 }
 
-function resolveSourceImport(specifier: any): any {
+function resolveSourceImport(specifier: string): string {
   const candidate = path.join(projectDirectory, "src", specifier.slice(2));
   for (const extension of ["", ".tsx", ".ts", ".jsx", ".js"]) {
     const resolved = `${candidate}${extension}`;
@@ -256,7 +300,7 @@ function resolveSourceImport(specifier: any): any {
   return candidate;
 }
 
-function snippetIdHash(idSeed: string, payload: any): string {
+function snippetIdHash(idSeed: string, payload: SnippetPayload): string {
   return createHash("sha1")
     .update(idSeed)
     .update("\0")
@@ -273,7 +317,15 @@ async function renderSnippetCard({
   optionsLabel,
   samples,
   title,
-}: any): Promise<string> {
+}: {
+  description: unknown;
+  footerHtml: string;
+  id: string;
+  kind: SnippetKind;
+  optionsLabel: string;
+  samples: NormalizedSnippetSample[];
+  title: unknown;
+}): Promise<string> {
   return renderGeneratedSnippetCard({
     copyLabel: "Copy code",
     descriptionHtml: description ? inlineTitleHtml(description) : "",
@@ -283,7 +335,7 @@ async function renderSnippetCard({
     optionsLabel,
     titleHtml: title ? inlineTitleHtml(title) : "",
     variants: await Promise.all(
-      samples.map((sample: any, index: number): any =>
+      samples.map((sample, index) =>
         renderSnippetVariant({
           active: index === 0,
           language: sample.language || "text",
@@ -296,35 +348,52 @@ async function renderSnippetCard({
   });
 }
 
-function groupedSnippetSamples(samples: any, kind: any): any {
-  const normalizedSamples = Array.isArray(samples) ? samples : [];
+function groupedSnippetSamples(
+  samples: unknown,
+  kind: SnippetKind,
+): NormalizedSnippetSample[][] {
+  const normalizedSamples = normalizeSnippetSamples(samples);
   if (kind !== "code" || normalizedSamples.length < 2) {
     return [normalizedSamples];
   }
 
-  if (normalizedSamples.every((sample: any): any => sample.group)) {
-    const groups = new Map();
+  if (normalizedSamples.every((sample) => sample.group)) {
+    const groups = new Map<string, NormalizedSnippetSample[]>();
     for (const sample of normalizedSamples) {
-      const group = sample.group;
+      const group = sample.group || "";
       if (!groups.has(group)) {
         groups.set(group, []);
       }
-      groups.get(group).push(sample);
+      groups.get(group)?.push(sample);
     }
     if (groups.size > 1) {
       return Array.from(groups.values());
     }
   }
 
-  const languageCounts = new Map();
+  const languageCounts = new Map<string, number>();
   for (const sample of normalizedSamples) {
     const language = sample.language || "text";
     languageCounts.set(language, (languageCounts.get(language) || 0) + 1);
   }
-  if ([...languageCounts.values()].some((count: any): any => count > 1)) {
-    return normalizedSamples.map((sample: any): any => [sample]);
+  if ([...languageCounts.values()].some((count) => count > 1)) {
+    return normalizedSamples.map((sample) => [sample]);
   }
   return [normalizedSamples];
+}
+
+function normalizeSnippetSamples(samples: unknown): NormalizedSnippetSample[] {
+  return (Array.isArray(samples) ? samples : []).map((value) => {
+    const sample = record(value);
+    return {
+      language: String(sample.language || "text"),
+      source: String(sample.source || "").trimEnd(),
+      group: sample.group ? String(sample.group) : undefined,
+      highlighterLanguage: sample.highlighterLanguage
+        ? String(sample.highlighterLanguage)
+        : undefined,
+    };
+  });
 }
 
 async function snippetFooterHtml(
@@ -392,9 +461,9 @@ function snippetIdSeed(
 }
 
 async function highlightedCodeInnerHtml(
-  source: any,
-  highlighterLanguage: any,
-  displayLanguage: any,
+  source: unknown,
+  highlighterLanguage: string,
+  displayLanguage: string,
 ): Promise<string> {
   const markedSource = encodeCalloutMarkers(
     normalizeStandaloneCalloutLines(
@@ -433,23 +502,23 @@ function codeElementInnerHtml(value: string): string {
   return /<code(?:\s[^>]*)?>([\s\S]*)<\/code>/.exec(value)?.[1] || value;
 }
 
-function encodeCalloutMarkers(source: any): any {
+function encodeCalloutMarkers(source: string): string {
   return source.replace(
     /<!--(\d+)-->|<(\d+)>/g,
-    (_match: any, xmlCommentNumber: any, angleNumber: any): any =>
+    (_match: string, xmlCommentNumber: string, angleNumber: string): string =>
       `${CALLOUT_MARKER_PREFIX}${xmlCommentNumber || angleNumber}${CALLOUT_MARKER_SUFFIX}`,
   );
 }
 
 async function absorbFollowingCalloutLines(
   reader: CalloutReader | undefined,
-  payload: any,
+  payload: SnippetPayload,
   options: {
     collectManualCallouts?: (lines: string[]) => void;
     manualCalloutsClass?: string;
     resolveCalloutLines?: CalloutLineResolver;
   } = {},
-): Promise<any> {
+): Promise<SnippetPayload> {
   if (!reader) {
     return payload;
   }
@@ -495,11 +564,11 @@ async function absorbFollowingCalloutLines(
   };
 }
 
-function isListingDelimiter(line: any): any {
+function isListingDelimiter(line: string): boolean {
   return /^-{4,}$/.test(line.trim());
 }
 
-function isCalloutListItem(line: any): any {
+function isCalloutListItem(line: string): boolean {
   return /^<(\.|\d+)>/.test(line);
 }
 
@@ -533,7 +602,7 @@ async function consumeSnippetCalloutValidationListing(
 }
 
 async function readLeadingBlankLines(reader: CalloutReader): Promise<string[]> {
-  const lines = [];
+  const lines: string[] = [];
   for (;;) {
     const line = await reader.peekLine();
     if (line === undefined || line.trim()) {
@@ -547,7 +616,7 @@ async function readCalloutListItems(
   reader: CalloutReader,
   resolveCalloutLines?: CalloutLineResolver,
 ): Promise<CalloutItem[]> {
-  const items = [];
+  const items: CalloutItem[] = [];
   let nextCallout = 1;
   for (;;) {
     const line = await reader.peekLine();
@@ -587,12 +656,10 @@ async function readCalloutListItems(
   }
 }
 
-function payloadCalloutNumbers(payload: any): Set<string> {
+function payloadCalloutNumbers(payload: SnippetPayload): Set<string> {
   const numbers = new Set<string>();
-  for (const sample of Array.isArray(payload?.samples) ? payload.samples : []) {
-    for (const match of String(sample?.source || "").matchAll(
-      /<(\d+)>|<!--(\d+)-->/g,
-    )) {
+  for (const sample of normalizeSnippetSamples(payload.samples)) {
+    for (const match of sample.source.matchAll(/<(\d+)>|<!--(\d+)-->/g)) {
       numbers.add(match[1] || match[2]);
     }
   }
@@ -600,19 +667,22 @@ function payloadCalloutNumbers(payload: any): Set<string> {
 }
 
 function renumberPayloadSamples(
-  samples: any,
+  samples: unknown,
   numberMap: Map<string, string>,
-): any {
-  return (Array.isArray(samples) ? samples : []).map((sample: any): any => ({
+): NormalizedSnippetSample[] {
+  return normalizeSnippetSamples(samples).map((sample) => ({
     ...sample,
     source: replaceSourceCalloutNumbers(sample.source || "", numberMap),
   }));
 }
 
-function replaceSourceCalloutNumbers(source: any, numberMap: any): any {
+function replaceSourceCalloutNumbers(
+  source: unknown,
+  numberMap: Map<string, string>,
+): string {
   return String(source).replace(
     /<(\d+)>|<!--(\d+)-->/g,
-    (match: any, xmlNumber: any, commentNumber: any): any => {
+    (match: string, xmlNumber: string, commentNumber: string): string => {
       const nextNumber = numberMap.get(xmlNumber || commentNumber);
       if (!nextNumber) {
         return match;
@@ -657,14 +727,21 @@ async function nextNonBlankLineIsCallout(
 }
 
 function isCalloutList(node: unknown): node is ComponentBlockNode {
+  const candidate = node as ComponentBlockNode;
   return Boolean(
-    node && typeof node === "object" && (node as any).context === "colist",
+    node && typeof node === "object" && candidate.context === "colist",
   );
 }
 
-function inlineTitleHtml(value: any): any {
+function inlineTitleHtml(value: unknown): string {
   return html(value).replace(
     /`([^`\r\n]+)`/g,
-    (_: any, code: any): any => `<code>${code}</code>`,
+    (_match: string, code: string): string => `<code>${code}</code>`,
   );
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

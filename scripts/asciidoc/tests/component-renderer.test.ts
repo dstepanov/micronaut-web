@@ -23,7 +23,7 @@ const fixtureDirectory = path.join(
   "fixtures",
 );
 
-test("AsciiDoc snippets render directly through generated React components", async (): Promise<any> => {
+test("AsciiDoc snippets render directly through generated React components", async (): Promise<void> => {
   const { converted, html } = await renderSnippetGalleryFixture();
   const text = textOnly(html);
 
@@ -129,7 +129,7 @@ test("AsciiDoc snippets render directly through generated React components", asy
   assert.match(text, /3 properties/);
 });
 
-test("snippet, dependency, and configuration block processors render React snippet components", async (): Promise<any> => {
+test("snippet, dependency, and configuration block processors render React snippet components", async (): Promise<void> => {
   const context = {
     attributes: {
       projectGroup: "io.micronaut",
@@ -177,7 +177,7 @@ test("snippet, dependency, and configuration block processors render React snipp
   assert.match(text, /micronaut\.application\.name=demo/);
 });
 
-test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<any> => {
+test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<void> => {
   const converted = await renderAsciiDoc({
     asciidoctor,
     source: [
@@ -219,7 +219,7 @@ test("snippet block processor absorbs following callout lines from the document 
   assert.match(text, /Manual callout/);
 });
 
-test("generated snippet ids stay unique without shared render state", async (): Promise<any> => {
+test("generated snippet ids stay unique without shared render state", async (): Promise<void> => {
   const repeatedPayload = {
     samples: [{ language: "java", source: "class Example {}" }],
   };
@@ -246,7 +246,7 @@ test("generated snippet ids stay unique without shared render state", async (): 
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test("guide macro block processors render snippet gallery macros", async (): Promise<any> => {
+test("guide macro block processors render snippet gallery macros", async (): Promise<void> => {
   const context = guideMacroFixtureContext();
   const source = await fs.readFile(
     path.join(fixtureDirectory, "snippet-gallery.adoc"),
@@ -300,7 +300,7 @@ test("guide macro block processors render snippet gallery macros", async (): Pro
   );
 });
 
-test("guide dependencies group renders DependencyMacroSubstitution-compatible snippets", async (): Promise<any> => {
+test("guide dependencies group renders DependencyMacroSubstitution-compatible snippets", async (): Promise<void> => {
   const source = [
     ":dependencies:",
     "dependency:micronaut-http-client[groupId=io.micronaut,callout=1]",

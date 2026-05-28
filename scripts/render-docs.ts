@@ -124,7 +124,7 @@ if (syncSources) {
 
 let rendered = 0;
 let skipped = 0;
-const skippedProjects = [];
+const skippedProjects: string[] = [];
 for (const project of projects) {
   const guideSourceDirectory = path.join(
     docsDirectory,
@@ -159,9 +159,9 @@ for (const project of projects) {
     await copyProjectImageAssets(project, docsDirectory, outputDirectory);
     rendered += 1;
     console.log(`Rendered ${project.slug}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     skipped += 1;
-    skippedProjects.push(`${project.slug}: ${error.message}`);
+    skippedProjects.push(`${project.slug}: ${errorMessage(error)}`);
     console.warn(`Skipping ${skippedProjects.at(-1)}`);
   }
 }
@@ -176,14 +176,14 @@ if (strict && skippedProjects.length) {
 }
 
 async function cleanGeneratedDocsOutput(
-  directory: any,
-  slugs: any,
-): Promise<any> {
+  directory: string,
+  slugs: string[],
+): Promise<void> {
   await fs.mkdir(directory, { recursive: true });
   if (slugs.length) {
     await Promise.all([
       fs.rm(path.join(directory, "project-catalog.json"), { force: true }),
-      ...slugs.flatMap((slug: any): any => [
+      ...slugs.flatMap((slug) => [
         fs.rm(path.join(directory, `${slug}.html`), { force: true }),
         fs.rm(path.join(directory, "assets", slug), {
           force: true,
@@ -196,7 +196,7 @@ async function cleanGeneratedDocsOutput(
 
   const entries = await fs.readdir(directory, { withFileTypes: true });
   await Promise.all(
-    entries.map((entry: any): any => {
+    entries.map((entry) => {
       if (entry.isFile() && entry.name.endsWith(".html")) {
         return fs.rm(path.join(directory, entry.name), { force: true });
       }
@@ -236,10 +236,10 @@ async function writeGeneratedProjectCatalog(
   );
 }
 
-async function readJson(file: string): Promise<Record<string, any>> {
+async function readJson(file: string): Promise<Record<string, unknown>> {
   try {
     return JSON.parse(await fs.readFile(file, "utf8"));
-  } catch (error: any) {
+  } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return {};
     }
@@ -248,9 +248,9 @@ async function readJson(file: string): Promise<Record<string, any>> {
 }
 
 async function syncProjectSources(
-  projects: any,
-  platformVersions: any,
-): Promise<any> {
+  projects: DocsProject[],
+  platformVersions: Record<string, string>,
+): Promise<void> {
   for (const project of projects) {
     const guideSourceDirectory = path.join(
       docsDirectory,
@@ -284,12 +284,12 @@ async function syncProjectSources(
         destination,
         releaseTag || project.branch,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (!releaseTag || releaseTag === project.branch) {
         throw error;
       }
       console.warn(
-        `Could not clone ${project.repositoryName} at ${releaseTag}: ${error.message}. Falling back to ${project.branch}.`,
+        `Could not clone ${project.repositoryName} at ${releaseTag}: ${errorMessage(error)}. Falling back to ${project.branch}.`,
       );
       await cloneProject(project.repositoryUrl, destination, project.branch);
     }
@@ -297,10 +297,10 @@ async function syncProjectSources(
 }
 
 async function cloneProject(
-  repositoryUrl: any,
-  destination: any,
-  ref: any,
-): Promise<any> {
+  repositoryUrl: string,
+  destination: string,
+  ref: string,
+): Promise<void> {
   const cloneDirectory = `${destination}.clone-${process.pid}`;
   await fs.rm(cloneDirectory, { force: true, recursive: true });
   try {
@@ -311,8 +311,12 @@ async function cloneProject(
     args.push(repositoryUrl, cloneDirectory);
     await execFile("git", args, { cwd: projectDirectory });
     await fs.rename(cloneDirectory, destination);
-  } catch (error: any) {
+  } catch (error: unknown) {
     await fs.rm(cloneDirectory, { force: true, recursive: true });
     throw error;
   }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

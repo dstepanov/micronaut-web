@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { extractTaggedSource } from "../../shared/tagged-source.ts";
 
-test("extractTaggedSource removes nested tag directives from selected regions", (): any => {
+test("extractTaggedSource removes nested tag directives from selected regions", (): void => {
   const source = `
 // tag::repository[]
 package example;
@@ -66,7 +66,7 @@ public interface BookRepository extends CrudRepository<Book, Long> { // <2>
   );
 });
 
-test("extractTaggedSource removes all tag directives when no tag is selected", (): any => {
+test("extractTaggedSource removes all tag directives when no tag is selected", (): void => {
   const source = `
 class Example {
     // tag::method[]
@@ -85,7 +85,7 @@ class Example {
   );
 });
 
-test("extractTaggedSource handles bracketless and trailing tag directives", (): any => {
+test("extractTaggedSource handles bracketless and trailing tag directives", (): void => {
   const source = `
 class Example {
     // tag::method[]

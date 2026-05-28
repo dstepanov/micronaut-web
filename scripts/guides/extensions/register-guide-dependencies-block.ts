@@ -93,7 +93,7 @@ function renderGuideDependencyBlock(
 function dependencySnippetPayload(
   dependencies: { target: string; attributes: Record<string, string> }[],
   context: GuideRenderContext,
-): any {
+): Record<string, unknown> {
   if (!dependencies.length) {
     return missingNotePayload("Missing dependency.");
   }
@@ -268,7 +268,7 @@ function toGradleScope(
   return scopes[scope] || scope;
 }
 
-function missingNotePayload(message: string): any {
+function missingNotePayload(message: string): Record<string, unknown> {
   return {
     kind: "code",
     samples: [

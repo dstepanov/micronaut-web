@@ -14,7 +14,7 @@ const projectDirectory = path.resolve(
   "..",
 );
 
-test("generated guides fragments, manifest, and assets are ignored", async (): Promise<any> => {
+test("generated guides fragments, manifest, and assets are ignored", async (): Promise<void> => {
   const ignoredPaths = [
     "src/content/generated-guides/manifest.json",
     "src/content/generated-guides/fragments/example-gradle-java.html",
@@ -236,7 +236,7 @@ test("strict guide renderer fails when Asciidoctor reports diagnostics", async (
   );
 });
 
-test("latest guide replacement routes and parallel generated-content preparation are wired", async (): Promise<any> => {
+test("latest guide replacement routes and parallel generated-content preparation are wired", async (): Promise<void> => {
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );

@@ -8,15 +8,42 @@ import type {
   Section,
 } from "@asciidoctor/core";
 
-import { renderSnippetBlock } from "./snippet-block-renderer.ts";
+import {
+  type SnippetPayload,
+  renderSnippetBlock,
+} from "./snippet-block-renderer.ts";
 import { splitList } from "../../shared/cli.ts";
 
 const SNIPPET_BLOCK = "snippet";
 
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+  _positional?: unknown;
+};
+
+type SnippetSample = {
+  language: string;
+  source: string;
+  group?: string;
+};
+
+type SnippetSamplesResolver = (
+  target: string,
+  attrs: MacroAttributes,
+  context: Record<string, unknown>,
+) => SnippetSample[];
+
+type TargetSnippetPayload = {
+  title: string;
+  description: string;
+  samples: SnippetSample[];
+};
+
 export function registerSnippetBlock(
   registry: Registry,
-  context: any,
-  options: { snippetSamples: any },
+  context: Record<string, unknown>,
+  options: { snippetSamples: unknown },
 ): void {
   registry.blockMacro(
     "snippet",
@@ -28,8 +55,8 @@ export function registerSnippetBlock(
         attrs: unknown,
       ): Promise<Block | undefined> {
         const payload = snippetPayloadForTarget(
-          target,
-          attrs,
+          String(target),
+          attrs as MacroAttributes,
           context,
           options.snippetSamples,
         );
@@ -54,7 +81,7 @@ export function registerSnippetBlock(
       _reader: unknown,
       attrs: unknown,
     ): Promise<Block | undefined> {
-      const attributes = attrs as Record<string, unknown>;
+      const attributes = attrs as MacroAttributes;
       const blockParent = parent as Block | Section;
       if (attributes?.payload) {
         return renderSnippetBlock(
@@ -81,17 +108,23 @@ export function registerSnippetBlock(
   });
 }
 
-function snippetPayloadFromValue(value: unknown): any {
+function snippetPayloadFromValue(value: unknown): SnippetPayload {
   return JSON.parse(
     Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  );
+  ) as SnippetPayload;
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return cleanMacroAttributeValue(String(attrs[name]), name);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,
@@ -130,7 +163,7 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function blockTarget(attrs: Record<string, unknown>): string {
+function blockTarget(attrs: MacroAttributes): string {
   const positional = Array.isArray(attrs._positional) ? attrs._positional : [];
   const dollarPositional = Array.isArray(attrs.$positional)
     ? attrs.$positional
@@ -146,11 +179,11 @@ function blockTarget(attrs: Record<string, unknown>): string {
 }
 
 function snippetPayloadForTarget(
-  target: any,
-  attrs: any,
-  context: any,
-  resolveSamples: any,
-): any {
+  target: string,
+  attrs: MacroAttributes,
+  context: Record<string, unknown>,
+  resolveSamples: unknown,
+): TargetSnippetPayload | undefined {
   const deduped = snippetSamples(target, attrs, context, resolveSamples);
   if (!deduped.length) {
     return undefined;
@@ -163,16 +196,22 @@ function snippetPayloadForTarget(
 }
 
 function snippetSamples(
-  target: any,
-  attrs: any,
-  context: any,
-  resolveSamples: any,
-): any {
-  const samples = [];
+  target: string,
+  attrs: MacroAttributes,
+  context: Record<string, unknown>,
+  resolveSamples: unknown,
+): SnippetSample[] {
+  if (typeof resolveSamples !== "function") {
+    return [];
+  }
+  const resolver = resolveSamples as SnippetSamplesResolver;
+  const samples: SnippetSample[] = [];
   for (const snippetTarget of splitList(target)) {
-    const targetSamples = resolveSamples(snippetTarget, attrs, context);
+    const targetSamples = normalizeSamples(
+      resolver(snippetTarget, attrs, context),
+    );
     samples.push(
-      ...targetSamples.map((sample: any): any => ({
+      ...targetSamples.map((sample) => ({
         ...sample,
         group: sample.group || snippetTarget,
       })),
@@ -181,9 +220,20 @@ function snippetSamples(
   return dedupeSamples(samples);
 }
 
-function dedupeSamples(samples: any): any {
-  const seen = new Set();
-  return samples.filter((sample: any): any => {
+function normalizeSamples(samples: unknown): SnippetSample[] {
+  return (Array.isArray(samples) ? samples : []).map((value) => {
+    const sample = record(value);
+    return {
+      language: String(sample.language || "text"),
+      source: String(sample.source || ""),
+      group: sample.group ? String(sample.group) : undefined,
+    };
+  });
+}
+
+function dedupeSamples(samples: SnippetSample[]): SnippetSample[] {
+  const seen = new Set<string>();
+  return samples.filter((sample) => {
     const key = `${sample.group || ""}:${sample.language}:${sample.source}`;
     if (seen.has(key)) {
       return false;
@@ -191,4 +241,10 @@ function dedupeSamples(samples: any): any {
     seen.add(key);
     return true;
   });
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

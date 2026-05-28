@@ -23,7 +23,7 @@ const projectDirectory = path.resolve(
   "..",
 );
 
-test("generated docs are prepared before Astro dev and build", async (): Promise<any> => {
+test("generated docs are prepared before Astro dev and build", async (): Promise<void> => {
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );
@@ -85,7 +85,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   );
 });
 
-test("generated docs fragments and assets are ignored and not tracked source", async (): Promise<any> => {
+test("generated docs fragments and assets are ignored and not tracked source", async (): Promise<void> => {
   const ignoredPaths = [
     "src/content/generated-docs/generated-docs-test.html",
     "src/content/generated-docs/project-catalog.json",
@@ -115,7 +115,7 @@ test("generated docs fragments and assets are ignored and not tracked source", a
   assert.deepEqual(trackedGeneratedOutput, []);
 });
 
-test("Tailwind does not scan generated docs and guides fragments", async (): Promise<any> => {
+test("Tailwind does not scan generated docs and guides fragments", async (): Promise<void> => {
   const globalsCss = await fs.readFile(
     path.join(projectDirectory, "src", "styles", "globals.css"),
     "utf8",
@@ -137,7 +137,7 @@ test("Tailwind does not scan generated docs and guides fragments", async (): Pro
   );
 });
 
-test("generated docs tooling uses Micronaut Platform catalog instead of the old aggregate docs project", async (): Promise<any> => {
+test("generated docs tooling uses Micronaut Platform catalog instead of the old aggregate docs project", async (): Promise<void> => {
   const checkedFiles = [
     ".github/workflows/deploy-docs.yml",
     ".github/workflows/deploy-web.yml",
@@ -195,7 +195,7 @@ test("generated docs tooling uses Micronaut Platform catalog instead of the old 
   }
 });
 
-test("docs project catalog uses unique project and category icons", async (): Promise<any> => {
+test("docs project catalog uses unique project and category icons", async (): Promise<void> => {
   const catalog = JSON.parse(
     await fs.readFile(
       path.join(projectDirectory, "src", "data", "docs-projects.fixture.json"),
@@ -661,7 +661,7 @@ test("strict docs renderer allows known upstream source-shape warnings", async (
   assert.match(generatedHtml, /Out-of-sequence heading/);
 });
 
-test("docs strict diagnostic filter only fails render-stopping diagnostics", (): any => {
+test("docs strict diagnostic filter only fails render-stopping diagnostics", (): void => {
   const allowedWarnings = [
     "asciidoctor: WARN: <stdin>:5: no callout found for <1>",
     "asciidoctor: WARN: <stdin>:27: callout list item index: expected 2, got 1",
@@ -730,7 +730,7 @@ test("strict docs renderer still fails on fatal Asciidoctor diagnostics", async 
   );
 });
 
-test("docs search index includes generated headings, properties, classes, projects, and repos", (): any => {
+test("docs search index includes generated headings, properties, classes, projects, and repos", (): void => {
   const project = {
     slug: "fixture",
     displayName: "Micronaut Fixture",
@@ -821,7 +821,7 @@ test("docs search index includes generated headings, properties, classes, projec
   );
 });
 
-test("docs search index covers several generated docs fragments", (): any => {
+test("docs search index covers several generated docs fragments", (): void => {
   const projects = [
     searchProject("core", "Micronaut Core", "Core Framework"),
     searchProject("data", "Micronaut Data", "Data Access"),
@@ -1149,13 +1149,13 @@ test("docs project manifest can be derived from Micronaut Platform libraries", a
   assert.equal(projects[1].branch, "4.10.x");
 });
 
-test("docs commandline source blocks use shell highlighting", (): any => {
+test("docs commandline source blocks use shell highlighting", (): void => {
   assert.equal(shikiLanguage("commandline"), "shellscript");
   assert.equal(shikiLanguage("graphqls"), "graphql");
   assert.equal(shikiLanguage("mysql"), "sql");
 });
 
-test("properties listings attach standalone callout markers to the next property line", async (): Promise<any> => {
+test("properties listings attach standalone callout markers to the next property line", async (): Promise<void> => {
   const html = await highlightListingBlocks(
     [
       '<div class="listingblock">',
@@ -1179,7 +1179,7 @@ test("properties listings attach standalone callout markers to the next property
   );
 });
 
-test("properties listings attach comment-only callout markers to the next property line", async (): Promise<any> => {
+test("properties listings attach comment-only callout markers to the next property line", async (): Promise<void> => {
   const html = await highlightListingBlocks(
     [
       '<div class="listingblock">',
@@ -1201,7 +1201,7 @@ test("properties listings attach comment-only callout markers to the next proper
   assert.doesNotMatch(html, />#[^<]*<i class="conum" data-value="1"><\/i>/);
 });
 
-test("docs routes render generated fragments and serve generated assets", async (): Promise<any> => {
+test("docs routes render generated fragments and serve generated assets", async (): Promise<void> => {
   const docsPageSource = await fs.readFile(
     path.join(projectDirectory, "src", "pages", "docs", "[slug].astro"),
     "utf8",

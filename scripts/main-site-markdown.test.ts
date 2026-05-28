@@ -17,7 +17,7 @@ const projectDirectory = path.resolve(
 const require = createRequire(import.meta.url);
 const modules = importSnippetModules();
 
-test("launch feature category icons are unique", async (): Promise<any> => {
+test("launch feature category icons are unique", async (): Promise<void> => {
   const launchProjectConfig = JSON.parse(
     await fs.readFile(
       path.join(projectDirectory, "src", "data", "launch-project-config.json"),
@@ -50,7 +50,7 @@ test("launch feature category icons are unique", async (): Promise<any> => {
   }
 });
 
-test("homepage code example Markdown files use plain fenced blocks", async (): Promise<any> => {
+test("homepage code example Markdown files use plain fenced blocks", async (): Promise<void> => {
   const { parseMarkdownCodeSnippetVariants } = await modules;
   const entries = await readCodeExampleEntries();
 
@@ -89,7 +89,7 @@ test("homepage code example Markdown files use plain fenced blocks", async (): P
   );
 });
 
-test("homepage code examples parse plain Markdown fences into snippet variants", async (): Promise<any> => {
+test("homepage code examples parse plain Markdown fences into snippet variants", async (): Promise<void> => {
   const { parseMarkdownCodeSnippetVariants } = await modules;
   const variants = parseMarkdownCodeSnippetVariants(
     `
@@ -124,7 +124,7 @@ class HelloController {
   );
 });
 
-test("homepage code examples reject nonstandard fence metadata", async (): Promise<any> => {
+test("homepage code examples reject nonstandard fence metadata", async (): Promise<void> => {
   const { parseMarkdownCodeSnippetVariants } = await modules;
 
   assert.throws(
@@ -137,7 +137,7 @@ test("homepage code examples reject nonstandard fence metadata", async (): Promi
   );
 });
 
-test("main-site Markdown code snippets use shared snippet cards", async (): Promise<any> => {
+test("main-site Markdown code snippets use shared snippet cards", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
   const html = await renderMainSiteCodeSnippets(`
 <p>Before</p>
@@ -157,7 +157,7 @@ String index() {
   assert.doesNotMatch(html, /<pre><code class="language-java">/);
 });
 
-test("main-site Markdown snippets infer language when the fence has no language", async (): Promise<any> => {
+test("main-site Markdown snippets infer language when the fence has no language", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
   const html = await renderMainSiteCodeSnippets(`
 <pre><code>import io.micronaut.http.annotation.Controller;
@@ -171,7 +171,7 @@ class HelloController {
   assert.match(html, /<code class="language-java [^"]*shiki-code/);
 });
 
-test("main-site Markdown snippets infer Gradle and XML when fences have no language", async (): Promise<any> => {
+test("main-site Markdown snippets infer Gradle and XML when fences have no language", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
   const html = await renderMainSiteCodeSnippets(`
 <pre><code>dependencies {
@@ -191,7 +191,7 @@ test("main-site Markdown snippets infer Gradle and XML when fences have no langu
   assert.match(html, /<code class="language-xml [^"]*shiki-code/);
 });
 
-test("main-site Markdown uses local copies of micronaut.io upload resources", async (): Promise<any> => {
+test("main-site Markdown uses local copies of micronaut.io upload resources", async (): Promise<void> => {
   const contentDirectory = path.join(
     projectDirectory,
     "src",

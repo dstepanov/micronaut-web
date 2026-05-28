@@ -5,7 +5,7 @@ import { attribute, decodeHtml, escapeRegExp } from "./html.ts";
 const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
 const CALLOUT_MARKER_SUFFIX = "__";
 
-export async function highlightListingBlocks(input: any): Promise<any> {
+export async function highlightListingBlocks(input: string): Promise<string> {
   let current = input;
   for (let pass = 0; pass < 4; pass += 1) {
     const next = await highlightListingBlocksOnce(current);
@@ -17,7 +17,7 @@ export async function highlightListingBlocks(input: any): Promise<any> {
   return current;
 }
 
-export function shikiStyle(): any {
+export function shikiStyle(): string {
   return `<style data-docs-shiki>
 .shiki {
   overflow: auto;
@@ -47,7 +47,7 @@ export function shikiStyle(): any {
 </style>`;
 }
 
-async function highlightListingBlocksOnce(input: any): Promise<any> {
+async function highlightListingBlocksOnce(input: string): Promise<string> {
   const pattern =
     /<div class="listingblock([^"]*)"(?![^>]*\sdata-lang=)([^>]*)>\s*(<div class="title">(?:(?!<\/div>)[\s\S])*<\/div>\s*)?<div class="content">\s*<pre([^>]*)>(?:<code([^>]*)>([\s\S]*?)<\/code>|([\s\S]*?))<\/pre>\s*<\/div>\s*<\/div>/g;
   const matches: RegExpMatchArray[] = Array.from(input.matchAll(pattern));
@@ -101,14 +101,14 @@ async function highlightListingBlocksOnce(input: any): Promise<any> {
   return result;
 }
 
-function encodeCalloutMarkers(source: any): any {
+function encodeCalloutMarkers(source: string): string {
   return source.replace(
     /<(\d+)>/g,
     `${CALLOUT_MARKER_PREFIX}$1${CALLOUT_MARKER_SUFFIX}`,
   );
 }
 
-function decodeCalloutMarkers(source: any): any {
+function decodeCalloutMarkers(source: string): string {
   return source.replace(
     new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"),
     '<i class="conum" data-value="$1"></i>',
@@ -116,14 +116,14 @@ function decodeCalloutMarkers(source: any): any {
 }
 
 export function normalizeStandaloneCalloutLines(
-  source: any,
-  language: any,
-): any {
+  source: string,
+  language: string,
+): string {
   if (!standaloneCalloutLanguage(language)) {
     return source;
   }
   const lines = source.split(/\r?\n/);
-  const output = [];
+  const output: string[] = [];
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     const marker = /^[ \t]*(?:[#;][ \t]*)?<(\.|\d+)>[ \t]*$/.exec(line)?.[1];
@@ -140,13 +140,16 @@ export function normalizeStandaloneCalloutLines(
   return output.join("\n");
 }
 
-function standaloneCalloutLanguage(language: any): any {
+function standaloneCalloutLanguage(language: string): boolean {
   return new Set(["conf", "hocon", "properties", "props"]).has(
     normalizeCodeLanguage(language),
   );
 }
 
-function nextCalloutTargetLineIndex(lines: any, startIndex: any): any {
+function nextCalloutTargetLineIndex(
+  lines: string[],
+  startIndex: number,
+): number {
   for (let index = startIndex; index < lines.length; index += 1) {
     const trimmed = lines[index].trim();
     if (!trimmed) {
@@ -160,14 +163,14 @@ function nextCalloutTargetLineIndex(lines: any, startIndex: any): any {
   return -1;
 }
 
-function removeHtmlAttribute(attributes: any, name: any): any {
+function removeHtmlAttribute(attributes: string, name: string): string {
   return attributes.replace(
     new RegExp(`\\s+${escapeRegExp(name)}="[^"]*"`, "gi"),
     "",
   );
 }
 
-function codeLanguage(codeAttributes: any): any {
+function codeLanguage(codeAttributes: string): string {
   return normalizeCodeLanguage(
     /data-lang="([^"]+)"/.exec(codeAttributes)?.[1] ||
       /class="[^"]*\blanguage-([A-Za-z0-9_+-]+)/.exec(codeAttributes)?.[1] ||
@@ -175,13 +178,13 @@ function codeLanguage(codeAttributes: any): any {
   );
 }
 
-function normalizeCodeLanguage(language: any): any {
+function normalizeCodeLanguage(language: unknown): string {
   return String(language || "text")
     .trim()
     .toLowerCase();
 }
 
-export function shikiLanguage(language: any): any {
+export function shikiLanguage(language: string): string {
   const normalized = normalizeCodeLanguage(language);
   const languages: Record<string, string> = {
     conf: "properties",

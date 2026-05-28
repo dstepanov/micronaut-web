@@ -24,11 +24,32 @@ type RenderAsciiDocOptions = {
   strict?: boolean;
 };
 
+type AsciidoctorNode = {
+  id?: string;
+  title?: unknown;
+  context?: unknown;
+  role?: unknown;
+  attributes?: Record<string, unknown>;
+  rows?: { body?: unknown[] };
+  hasTitle?: () => boolean;
+  getAttribute?: (name: string) => unknown;
+  getSource?: () => string;
+};
+
+type AsciidoctorDiagnostic = {
+  getSeverity(): string;
+  getSourceLocation?: () => {
+    getPath?: () => string | undefined;
+    getLineNumber?: () => number | undefined;
+  };
+  getText(): string;
+};
+
 class MicronautComponentHtmlConverter extends Html5Converter {
   private micronautListingIndex = 0;
   private micronautPropertiesIndex = 0;
 
-  override async convert_listing(node: any): Promise<string> {
+  override async convert_listing(node: AsciidoctorNode): Promise<string> {
     if (isSnippetCalloutValidationBlock(node)) {
       return "";
     }
@@ -42,11 +63,11 @@ class MicronautComponentHtmlConverter extends Html5Converter {
       id: node.id || `generated-listing-snippet-${generatedIndex}`,
       language: listingBlockLanguage(node),
       source: node.getSource?.() || "",
-      titleHtml: node.hasTitle() ? String(node.title || "") : "",
+      titleHtml: node.hasTitle?.() ? String(node.title || "") : "",
     });
   }
 
-  override async convert_table(node: any): Promise<string> {
+  override async convert_table(node: AsciidoctorNode): Promise<string> {
     if (!isConfigurationPropertyTable(node)) {
       return super.convert_table(node);
     }
@@ -140,7 +161,7 @@ function isSnippetCalloutValidationBlock(node: unknown): boolean {
   );
 }
 
-function listingBlockLanguage(node: any): string {
+function listingBlockLanguage(node: AsciidoctorNode): string {
   return String(
     node.getAttribute?.("language") ||
       node.attributes?.language ||
@@ -209,24 +230,27 @@ async function renderPropertiesSnippetCard({
   });
 }
 
-function isConfigurationPropertyTable(node: any): boolean {
+function isConfigurationPropertyTable(node: AsciidoctorNode): boolean {
   return (
     node?.context === "table" &&
     /configuration properties/i.test(configurationPropertyTitle(node))
   );
 }
 
-function configurationPropertyTitle(node: any): string {
+function configurationPropertyTitle(node: AsciidoctorNode): string {
   return String(node?.title || "")
     .trim()
     .replace(/^Table\s+\d+\.\s*/i, "");
 }
 
-function configurationPropertyCount(node: any): number {
+function configurationPropertyCount(node: AsciidoctorNode): number {
   return Number(node?.rows?.body?.length || node?.attributes?.rowcount || 0);
 }
 
-function configurationPropertyTableHtml(tableHtml: string, id: any): string {
+function configurationPropertyTableHtml(
+  tableHtml: string,
+  id: unknown,
+): string {
   return hideTableCaption(removeTableId(tableHtml, id));
 }
 
@@ -237,7 +261,7 @@ function hideTableCaption(tableHtml: string): string {
   );
 }
 
-function removeTableId(tableHtml: string, id: any): string {
+function removeTableId(tableHtml: string, id: unknown): string {
   if (!id) {
     return tableHtml;
   }
@@ -247,7 +271,7 @@ function removeTableId(tableHtml: string, id: any): string {
   );
 }
 
-function formatAsciidoctorDiagnostic(message: any): string {
+function formatAsciidoctorDiagnostic(message: AsciidoctorDiagnostic): string {
   const severity = message.getSeverity();
   const location = message.getSourceLocation?.();
   const pathName = location?.getPath?.();

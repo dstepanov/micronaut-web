@@ -25,12 +25,23 @@ const objectComputingDownloadFiles: Record<string, string> = {
   5451: "/micronaut-assets/main-site/objectcomputing/download-file/5451-Slide_Deck_2022_Q1_2GM_Town_Hall.pdf",
 };
 
-function decodeHtml(value: any): any {
+type Frontmatter = Record<string, unknown>;
+
+type SplitMarkdown = {
+  data: Frontmatter;
+  body: string;
+};
+
+type NormalizeBodyOptions = {
+  blogPost: boolean;
+};
+
+function decodeHtml(value: unknown): string {
   return String(value ?? "")
-    .replace(/&#x([0-9a-f]+);/gi, (_match: any, code: any): any =>
+    .replace(/&#x([0-9a-f]+);/gi, (_match: string, code: string): string =>
       String.fromCodePoint(Number.parseInt(code, 16)),
     )
-    .replace(/&#(\d+);/g, (_match: any, code: any): any =>
+    .replace(/&#(\d+);/g, (_match: string, code: string): string =>
       String.fromCodePoint(Number.parseInt(code, 10)),
     )
     .replace(/&nbsp;/g, " ")
@@ -42,7 +53,7 @@ function decodeHtml(value: any): any {
     .replace(/&#039;|&apos;/g, "'");
 }
 
-function cleanExcerpt(value: any): any {
+function cleanExcerpt(value: unknown): string {
   return decodeHtml(value)
     .replace(/\u00a0/g, " ")
     .replace(/\s*\[(?:&hellip;|&amp;hellip;|…|\.\.\.)\]\s*$/i, "...")
@@ -50,18 +61,18 @@ function cleanExcerpt(value: any): any {
     .trim();
 }
 
-function splitFrontmatter(markdown: any, file: any): any {
+function splitFrontmatter(markdown: string, file: string): SplitMarkdown {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!match) {
     throw new Error(`Missing frontmatter in ${relative(rootDir, file)}`);
   }
   return {
-    data: YAML.load(match[1]) ?? {},
+    data: (YAML.load(match[1]) ?? {}) as Frontmatter,
     body: match[2],
   };
 }
 
-function stringifyMarkdown(data: any, body: any): any {
+function stringifyMarkdown(data: Frontmatter, body: string): string {
   return `---\n${YAML.dump(data, {
     lineWidth: -1,
     noRefs: true,
@@ -69,10 +80,10 @@ function stringifyMarkdown(data: any, body: any): any {
   }).trim()}\n---\n\n${body.trim()}\n`;
 }
 
-async function listMarkdownFiles(dir: any): Promise<any> {
+async function listMarkdownFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = await Promise.all(
-    entries.map(async (entry: any): Promise<any> => {
+    entries.map(async (entry): Promise<string[]> => {
       const file = join(dir, entry.name);
       if (entry.isDirectory()) {
         return listMarkdownFiles(file);
@@ -83,14 +94,17 @@ async function listMarkdownFiles(dir: any): Promise<any> {
   return files.flat().sort();
 }
 
-function normalizeBody(body: any, { blogPost }: any): any {
+function normalizeBody(
+  body: string,
+  { blogPost }: NormalizeBodyOptions,
+): string {
   const lines = fenceEscapedXmlBlocks(
     body
       .replace(/\r\n?/g, "\n")
       .replace(/\u00a0/g, " ")
       .split("\n"),
   );
-  const normalized = [];
+  const normalized: string[] = [];
   let fenced = false;
 
   for (const line of lines) {
@@ -121,7 +135,7 @@ function normalizeBody(body: any, { blogPost }: any): any {
       .replace(/organizations>$/g, "organizations")
       .replace(
         /\[\((\d{3})\)\s+([0-9-]+)\]\(tel:\(\1%29%20\2\)/g,
-        (_match: any, area: any, number: any): any =>
+        (_match: string, area: string, number: string): string =>
           `[(${area}) ${number}](tel:${area}-${number})`,
       )
       .replace(
@@ -142,7 +156,7 @@ function normalizeBody(body: any, { blogPost }: any): any {
       )
       .replace(
         /\]\(https:\/\/objectcomputing\.com\/download_file\/(\d+)\)/g,
-        (match: any, id: any): any =>
+        (match: string, id: string): string =>
           objectComputingDownloadFiles[id]
             ? `](${objectComputingDownloadFiles[id]})`
             : match,
@@ -178,7 +192,7 @@ function normalizeBody(body: any, { blogPost }: any): any {
     .trim();
 }
 
-function normalizeFencedCodeLine(line: any): any {
+function normalizeFencedCodeLine(line: string): string {
   return line
     .replace(
       /public void >beforeCheckpoint>\(>Context><\? >extends >Resource>> context\)/g,
@@ -190,14 +204,14 @@ function normalizeFencedCodeLine(line: any): any {
     );
 }
 
-function normalizeFenceLine(line: any): any {
+function normalizeFenceLine(line: string): string {
   return line
     .replace(/^```php\s*$/, "```java")
     .replace(/^```javastacktrace\s*$/, "```java");
 }
 
-function fenceEscapedXmlBlocks(lines: any): any {
-  const normalized = [];
+function fenceEscapedXmlBlocks(lines: string[]): string[] {
+  const normalized: string[] = [];
   let fenced = false;
 
   for (let index = 0; index < lines.length; ) {
@@ -209,7 +223,7 @@ function fenceEscapedXmlBlocks(lines: any): any {
       continue;
     }
     if (!fenced && isEscapedXmlLine(line)) {
-      const block = [];
+      const block: string[] = [];
       let cursor = index;
       while (cursor < lines.length) {
         const current = lines[cursor];
@@ -239,21 +253,29 @@ function fenceEscapedXmlBlocks(lines: any): any {
   return normalized;
 }
 
-function isEscapedXmlLine(line: any): any {
+function isEscapedXmlLine(line: string): boolean {
   return /^&lt;\/?[A-Za-z][\s\S]*&gt;$/.test(line.trim());
 }
 
-function normalizeInlineCode(line: any): any {
-  return line.replace(/`([^`\n]+)`/g, (match: any, value: any): any => {
-    const trimmed = value.trim().replace(/::\s+/g, "::");
-    return trimmed ? `\`${trimmed}\`` : match;
-  });
-}
-
-function normalizeInlineCodeSpacing(line: any): any {
+function normalizeInlineCode(line: string): string {
   return line.replace(
     /`([^`\n]+)`/g,
-    (match: any, value: any, offset: any, fullLine: any): any => {
+    (match: string, value: string): string => {
+      const trimmed = value.trim().replace(/::\s+/g, "::");
+      return trimmed ? `\`${trimmed}\`` : match;
+    },
+  );
+}
+
+function normalizeInlineCodeSpacing(line: string): string {
+  return line.replace(
+    /`([^`\n]+)`/g,
+    (
+      match: string,
+      value: string,
+      offset: number,
+      fullLine: string,
+    ): string => {
       const code = value.trim();
       if (!code) {
         return match;
@@ -267,28 +289,28 @@ function normalizeInlineCodeSpacing(line: any): any {
   );
 }
 
-function normalizePunctuationOnlyLinks(line: any): any {
+function normalizePunctuationOnlyLinks(line: string): string {
   return line
     .replace(
       /, and (\[[^\]\n]+\]\([^)]+\))\s+\[\.\]\((https:\/\/github\.com\/micronaut-projects\/[^)]+)\)/g,
-      (_match: any, previousLink: any, href: any): any =>
+      (_match: string, previousLink: string, href: string): string =>
         `, ${previousLink}, and [${labelForMicronautReleaseUrl(href)}](${href}).`,
     )
     .replace(/\s+\[!\]\([^)]+\)/g, "!")
     .replace(/\s+\[\.\]\(mailto:[^)]+\)/g, ".")
     .replace(
       /\s+\[\.\]\((https:\/\/github\.com\/micronaut-projects\/[^)]+)\)/g,
-      (_match: any, href: any): any =>
+      (_match: string, href: string): string =>
         `, and [${labelForMicronautReleaseUrl(href)}](${href}).`,
     )
     .replace(
       /\.\[`{2}\]\((https:\/\/github\.com\/micronaut-projects\/[^)]+)\)/g,
-      (_match: any, href: any): any =>
+      (_match: string, href: string): string =>
         `. [${labelForMicronautReleaseUrl(href)}](${href})`,
     )
     .replace(
       /\s+\[`{2}\]\((https:\/\/github\.com\/micronaut-projects\/[^)]+)\)/g,
-      (_match: any, href: any): any =>
+      (_match: string, href: string): string =>
         ` [${labelForMicronautReleaseUrl(href)}](${href})`,
     )
     .replace(
@@ -297,7 +319,7 @@ function normalizePunctuationOnlyLinks(line: any): any {
     );
 }
 
-function normalizeBlockImages(line: any): any {
+function normalizeBlockImages(line: string): string {
   if (!line.includes("![")) {
     return line;
   }
@@ -307,21 +329,21 @@ function normalizeBlockImages(line: any): any {
     .trim();
 }
 
-function needsSpaceBeforeCode(char: any): any {
+function needsSpaceBeforeCode(char: string): boolean {
   return Boolean(char) && !/[\s([{"'`]/.test(char);
 }
 
-function needsSpaceAfterCode(char: any): any {
+function needsSpaceAfterCode(char: string): boolean {
   return Boolean(char) && /[A-Za-z0-9(@`]/.test(char);
 }
 
-function normalizeStandaloneHeading(line: any): any {
+function normalizeStandaloneHeading(line: string): string {
   return line
     .replace(/^(#{2,6})\s+\*\*([^*\n]+)\*\*\s*$/, "$1 $2")
     .replace(/^\*\*([^*\n]{1,80})\*\*\s*$/, "### $1");
 }
 
-function decodeBodyTextEntities(line: any): any {
+function decodeBodyTextEntities(line: string): string {
   return line
     .replace(/&gt;/g, ">")
     .replace(/&lt;/g, "<")
@@ -336,7 +358,7 @@ function decodeBodyTextEntities(line: any): any {
     .replace(/&ldquo;/g, '"');
 }
 
-function normalizeUrlOnlyLine(line: any): any {
+function normalizeUrlOnlyLine(line: string): string | undefined {
   const match = line.match(
     /^(\s*(?:[-*]\s*)?)(?:\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/\S+))\s*$/,
   );
@@ -355,7 +377,7 @@ function normalizeUrlOnlyLine(line: any): any {
   return `${prefix}[${labelForUrl(href)}](${href})`;
 }
 
-function shouldRemoveUrlOnlyLine(href: any, prefix: any): any {
+function shouldRemoveUrlOnlyLine(href: string, prefix: string): boolean {
   try {
     const url = new URL(href);
     if (
@@ -377,7 +399,7 @@ function shouldRemoveUrlOnlyLine(href: any, prefix: any): any {
   }
 }
 
-function labelForUrl(href: any): any {
+function labelForUrl(href: string): string {
   try {
     const url = new URL(href);
     const path = url.pathname.replace(/\/+$/, "");
@@ -385,7 +407,9 @@ function labelForUrl(href: any): any {
     if (lastSegment) {
       return lastSegment
         .replace(/[-_]+/g, " ")
-        .replace(/\b\w/g, (character: any): any => character.toUpperCase());
+        .replace(/\b\w/g, (character: string): string =>
+          character.toUpperCase(),
+        );
     }
     return url.hostname;
   } catch {
@@ -393,8 +417,8 @@ function labelForUrl(href: any): any {
   }
 }
 
-function normalizeData(data: any): any {
-  const nextData = { ...data };
+function normalizeData(data: Frontmatter): Frontmatter {
+  const nextData: Frontmatter = { ...data };
   for (const field of [
     "description",
     "summary",
@@ -413,13 +437,13 @@ function normalizeData(data: any): any {
   return nextData;
 }
 
-function cleanTitle(value: any): any {
+function cleanTitle(value: string): string {
   return value
     .replace(/^Micronaut Micronaut framework\b/i, "Micronaut Framework")
     .replace(/^Micronaut Micronaut\b/i, "Micronaut");
 }
 
-function archiveBody(data: any, file: any): any {
+function archiveBody(data: Frontmatter, file: string): string | undefined {
   const sourceUrl = String(data.sourceUrl ?? "");
   if (!sourceUrl) {
     return undefined;
@@ -440,7 +464,7 @@ function archiveBody(data: any, file: any): any {
   return undefined;
 }
 
-function labelForMicronautReleaseUrl(href: any): any {
+function labelForMicronautReleaseUrl(href: string): string {
   try {
     const url = new URL(href);
     const match = url.pathname.match(
@@ -457,7 +481,7 @@ function labelForMicronautReleaseUrl(href: any): any {
   }
 }
 
-function labelForMicronautProject(project: any): any {
+function labelForMicronautProject(project: string): string {
   const labels: Record<string, string> = {
     "micronaut-openapi": "Micronaut OpenAPI",
     "micronaut-problem-json": "Micronaut Problem+JSON",
@@ -469,12 +493,12 @@ function labelForMicronautProject(project: any): any {
   return project
     .replace(/^micronaut-/, "Micronaut ")
     .replace(/-/g, " ")
-    .replace(/\b\w/g, (character: any): any => character.toUpperCase());
+    .replace(/\b\w/g, (character: string): string => character.toUpperCase());
 }
 
 let checked = 0;
 let changed = 0;
-const changedFiles = [];
+const changedFiles: string[] = [];
 
 for (const dir of contentDirs) {
   const files = await listMarkdownFiles(dir);

@@ -6,7 +6,22 @@ import type {
   Registry,
 } from "@asciidoctor/core";
 
-export function registerPackageMacro(registry: Registry, context: any): void {
+type PackageMacroContext = {
+  project?: {
+    slug?: string;
+  };
+  attributes?: Record<string, unknown>;
+};
+
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+};
+
+export function registerPackageMacro(
+  registry: Registry,
+  context: PackageMacroContext,
+): void {
   registry.inlineMacro(
     "pkg",
     function registerPackageMacro(
@@ -32,26 +47,41 @@ export function registerPackageMacro(registry: Registry, context: any): void {
   );
 }
 
-function packageLink(context: any, target: any, attrs: any): any {
+function packageLink(
+  context: PackageMacroContext,
+  target: string,
+  attrs: MacroAttributes,
+): { href: string; label: string } {
   let packageName = target;
   if (!packageName.startsWith("io.micronaut.")) {
     packageName = `io.micronaut.${packageName}`;
   }
+  const projectSlug =
+    context.project?.slug || String(context.attributes?.projectSlug || "core");
   return {
-    href: `assets/${context.project.slug}/docs/api/${packageName.replaceAll(".", "/")}/package-summary.html`,
+    href: `assets/${projectSlug}/docs/api/${packageName.replaceAll(".", "/")}/package-summary.html`,
     label: macroText(attrs) || packageName,
   };
 }
 
-function macroText(attrs: any): any {
-  return macroAttribute(attrs, "text") || attrs?.$positional?.[0] || "";
+function macroText(attrs: MacroAttributes): string {
+  const positional = Array.isArray(attrs.$positional)
+    ? String(attrs.$positional[0] ?? "")
+    : "";
+  return macroAttribute(attrs, "text") || positional;
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return String(attrs[name]);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,

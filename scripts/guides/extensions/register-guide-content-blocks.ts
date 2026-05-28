@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Registry } from "@asciidoctor/core";
-import { appFeatures, type GuideRenderContext } from "../model.ts";
+import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
 import { registerGuideContentBlock } from "./register-guide-content-block.ts";
 import { prepareGuideSourceForExtensions } from "./register-guide-preprocessor.ts";
 
@@ -157,7 +157,7 @@ function prepareIncludedGuideSource(
   });
 }
 
-function commonSnippetPath(guidesDirectory: any, target: any): any {
+function commonSnippetPath(guidesDirectory: string, target: string): string {
   return path.join(
     guidesDirectory,
     "src",
@@ -168,7 +168,7 @@ function commonSnippetPath(guidesDirectory: any, target: any): any {
   );
 }
 
-function externalPath(guidesDirectory: any, target: any): any {
+function externalPath(guidesDirectory: string, target: string): string {
   return path.join(
     guidesDirectory,
     "guides",
@@ -176,11 +176,15 @@ function externalPath(guidesDirectory: any, target: any): any {
   );
 }
 
-function ensureSuffix(value: any, suffix: any): any {
+function ensureSuffix(value: string, suffix: string): string {
   return value.endsWith(suffix) ? value : `${value}${suffix}`;
 }
 
-function diffLink(_target: any, attributes: any, context: any): any {
+function diffLink(
+  _target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+): string {
   const appName = attributes.app || "default";
   const app = findApp(context.guide, appName);
   const excluded = new Set(
@@ -190,7 +194,7 @@ function diffLink(_target: any, attributes: any, context: any): any {
     attributes.features
       ? attributes.features.split("|")
       : appFeatures(context.guide, context.option, appName)
-  ).filter((feature: any): any => feature && !excluded.has(feature));
+  ).filter((feature) => feature && !excluded.has(feature));
   const params = new URLSearchParams();
   for (const feature of features) {
     params.append("features", feature);
@@ -205,8 +209,9 @@ function diffLink(_target: any, attributes: any, context: any): any {
   return `https://micronaut.io/launch?${params.toString()}[Diff, window="_blank"]`;
 }
 
-function findApp(guide: any, appName: any): any {
-  return (
-    guide.apps.find((app: any): any => app.name === appName) || guide.apps[0]
-  );
+function findApp(
+  guide: Guide,
+  appName: string,
+): Guide["apps"][number] | undefined {
+  return guide.apps.find((app) => app.name === appName) || guide.apps[0];
 }

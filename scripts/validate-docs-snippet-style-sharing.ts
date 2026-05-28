@@ -199,7 +199,7 @@ const requiredRuntimeClassFragments = [
   "[&_table.tableblock_:where(th,td)]:border",
 ];
 
-const failures = [];
+const failures: string[] = [];
 const sharedStyles = await readProjectFile(sharedStylesPath);
 const globalsCss = await readProjectFile("src/styles/globals.css");
 const webLayout = await readProjectFile("src/layouts/WebLayout.astro");
@@ -274,7 +274,7 @@ for (const fragment of [
 
 if (failures.length) {
   throw new Error(
-    `Docs snippet style sharing check failed:\n${failures.map((failure: any): any => `- ${failure}`).join("\n")}`,
+    `Docs snippet style sharing check failed:\n${failures.map((failure) => `- ${failure}`).join("\n")}`,
   );
 }
 
@@ -282,31 +282,29 @@ console.log(
   `Validated docs snippet style sharing across ${consumers.length} consumers.`,
 );
 
-async function readProjectFile(relativePath: any): Promise<any> {
+async function readProjectFile(relativePath: string): Promise<string> {
   return fs.readFile(path.join(projectDirectory, relativePath), "utf8");
 }
 
-async function projectFileExists(relativePath: any): Promise<any> {
+async function projectFileExists(relativePath: string): Promise<boolean> {
   try {
     await fs.access(path.join(projectDirectory, relativePath));
     return true;
-  } catch (error: any) {
-    if (error.code === "ENOENT") {
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return false;
     }
     throw error;
   }
 }
 
-function matchingLineNumbers(source: any, fragment: any): any {
+function matchingLineNumbers(source: string, fragment: string): number[] {
   return source
     .split(/\r?\n/)
-    .map((line: any, index: any): any =>
-      line.includes(fragment) ? index + 1 : undefined,
-    )
-    .filter(Boolean);
+    .map((line, index) => (line.includes(fragment) ? index + 1 : undefined))
+    .filter((lineNumber): lineNumber is number => Boolean(lineNumber));
 }
 
-function escapeRegExp(value: any): any {
+function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

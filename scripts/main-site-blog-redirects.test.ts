@@ -12,7 +12,7 @@ const projectDirectory = path.resolve(
 );
 const blogRedirects = importBlogRedirects();
 
-test("generated dated blog posts produce legacy html redirects", async (): Promise<any> => {
+test("generated dated blog posts produce legacy html redirects", async (): Promise<void> => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const slug = "2020/03/09/introduction-to-micronaut-testing";
   const routeSlugs = routeSlugsForPost(slug);
@@ -33,7 +33,7 @@ test("generated dated blog posts produce legacy html redirects", async (): Promi
   );
 });
 
-test("legacy redirect slugs work for both html and slash-style routes", async (): Promise<any> => {
+test("legacy redirect slugs work for both html and slash-style routes", async (): Promise<void> => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const [redirect] = getLegacyBlogRedirects([
     {
@@ -53,7 +53,7 @@ test("legacy redirect slugs work for both html and slash-style routes", async ()
   );
 });
 
-test("explicit historical aliases redirect to canonical post hrefs", async (): Promise<any> => {
+test("explicit historical aliases redirect to canonical post hrefs", async (): Promise<void> => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const slug = "2019/07/18/announcing-micronaut-data";
   const redirects = getLegacyBlogRedirects([
@@ -73,7 +73,7 @@ test("explicit historical aliases redirect to canonical post hrefs", async (): P
   );
 });
 
-test("legacy redirect destinations are base-path aware", async (): Promise<any> => {
+test("legacy redirect destinations are base-path aware", async (): Promise<void> => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const slug = "2020/04/30/introducing-micronaut-2-0-launch";
 
@@ -100,7 +100,7 @@ test("legacy redirect destinations are base-path aware", async (): Promise<any> 
   );
 });
 
-test("base path helper does not double-prefix already-prefixed paths", async (): Promise<any> => {
+test("base path helper does not double-prefix already-prefixed paths", async (): Promise<void> => {
   const { withBasePathForBase } = await importBasePath();
 
   assert.equal(
@@ -122,7 +122,7 @@ test("base path helper does not double-prefix already-prefixed paths", async ():
   );
 });
 
-test("main route redirects to the canonical homepage", async (): Promise<any> => {
+test("main route redirects to the canonical homepage", async (): Promise<void> => {
   const source = await fs.readFile(
     path.join(projectDirectory, "src", "pages", "main", "index.astro"),
     "utf8",
@@ -133,7 +133,7 @@ test("main route redirects to the canonical homepage", async (): Promise<any> =>
   assert.doesNotMatch(source, /import MainPage/);
 });
 
-test("main-site browser tests are wired through a surface-aware runner", async (): Promise<any> => {
+test("main-site browser tests are wired through a surface-aware runner", async (): Promise<void> => {
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );
@@ -154,7 +154,7 @@ test("main-site browser tests are wired through a surface-aware runner", async (
   assert.match(runner, /surface !== "all" && surface !== "main"/);
 });
 
-test("meeting minutes index does not duplicate dated minutes", async (): Promise<any> => {
+test("meeting minutes index does not duplicate dated minutes", async (): Promise<void> => {
   const index = await fs.readFile(
     path.join(
       projectDirectory,
@@ -184,7 +184,7 @@ test("meeting minutes index does not duplicate dated minutes", async (): Promise
   assert.match(aprilMinutes, /## Board Members In Attendance/);
 });
 
-test("runtime code block uses a constrained client highlighter", async (): Promise<any> => {
+test("runtime code block uses a constrained client highlighter", async (): Promise<void> => {
   const codeBlock = await fs.readFile(
     path.join(projectDirectory, "src", "components", "ui", "code-block.tsx"),
     "utf8",
@@ -200,7 +200,7 @@ test("runtime code block uses a constrained client highlighter", async (): Promi
   assert.doesNotMatch(clientHighlighter, /from "shiki"/);
 });
 
-test("brand content prefers canonical shared asset paths", async (): Promise<any> => {
+test("brand content prefers canonical shared asset paths", async (): Promise<void> => {
   const logoContent = await fs.readFile(
     path.join(
       projectDirectory,
@@ -246,7 +246,7 @@ test("brand content prefers canonical shared asset paths", async (): Promise<any
   );
 });
 
-test("FAQ accordion items are extracted from rendered markdown HTML", async (): Promise<any> => {
+test("FAQ accordion items are extracted from rendered markdown HTML", async (): Promise<void> => {
   const { extractFaqItemsFromHtml } = await importFaqParser();
   const items = extractFaqItemsFromHtml(`
     <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
@@ -276,7 +276,7 @@ test("FAQ accordion items are extracted from rendered markdown HTML", async (): 
   ]);
 });
 
-test("non-dated posts only get legacy redirects when aliased", async (): Promise<any> => {
+test("non-dated posts only get legacy redirects when aliased", async (): Promise<void> => {
   const { getLegacyBlogRedirects, routeSlugsForPost } = await blogRedirects;
   const slug = "micronaut-success-stories/agorapulse-micronaut-journey";
 
@@ -309,7 +309,7 @@ test("non-dated posts only get legacy redirects when aliased", async (): Promise
   );
 });
 
-test("both legacy blog route modules use shared base-path redirects", async (): Promise<any> => {
+test("both legacy blog route modules use shared base-path redirects", async (): Promise<void> => {
   const routeFiles = [
     "src/pages/blog/[legacySlug].astro",
     "src/pages/blog/[legacySlug].html.ts",

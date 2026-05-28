@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import type { OnResolveArgs, PluginBuild } from "esbuild";
 import { build } from "esbuild";
 
 const projectDirectory = path.resolve(
@@ -82,7 +83,7 @@ const requiredTemplates: TemplatePlaceholders = {
   ...copiedTemplatePlaceholders,
   ...Object.fromEntries(
     Object.entries(generatedSnippetTemplates).map(
-      ([relativeTemplate, generated]: any): any => [
+      ([relativeTemplate, generated]) => [
         relativeTemplate,
         generated.placeholders,
       ],
@@ -118,7 +119,7 @@ const assets = {
   ),
 };
 const allTemplates = Object.fromEntries(
-  Object.keys(requiredTemplates).map((template: any): any => [
+  Object.keys(requiredTemplates).map((template) => [
     template,
     {
       resource: `META-INF/micronaut-web/templates/${template.split("/").slice(1).join("/")}`,
@@ -140,7 +141,7 @@ await fs.mkdir(manifestDirectory, { recursive: true });
 await fs.writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
 for (const surface of ["docs", "guides"]) {
   const templates = Object.fromEntries(
-    Object.entries(allTemplates).filter(([template]: any): any =>
+    Object.entries(allTemplates).filter(([template]) =>
       template.startsWith(`${surface}/`),
     ),
   );
@@ -182,10 +183,13 @@ async function renderGeneratedSnippetTemplates(): Promise<
       plugins: [
         {
           name: "micronaut-web-alias",
-          setup(buildContext: any): any {
-            buildContext.onResolve({ filter: /^@\// }, (args: any): any => ({
-              path: resolveSourceImport(args.path),
-            }));
+          setup(buildContext: PluginBuild): void {
+            buildContext.onResolve(
+              { filter: /^@\// },
+              (args: OnResolveArgs) => ({
+                path: resolveSourceImport(args.path),
+              }),
+            );
           },
         },
       ],
@@ -200,7 +204,7 @@ async function renderGeneratedSnippetTemplates(): Promise<
   }
 }
 
-function resolveSourceImport(specifier: any): any {
+function resolveSourceImport(specifier: string): string {
   const candidate = path.join(projectDirectory, "src", specifier.slice(2));
   for (const extension of ["", ".tsx", ".ts", ".jsx", ".js"]) {
     const resolved = `${candidate}${extension}`;
@@ -211,11 +215,11 @@ function resolveSourceImport(specifier: any): any {
   return candidate;
 }
 
-async function listFiles(directory: any): Promise<any> {
+async function listFiles(directory: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(directory, { withFileTypes: true });
     const files = await Promise.all(
-      entries.map(async (entry: any): Promise<any> => {
+      entries.map(async (entry): Promise<string[]> => {
         const fullPath = path.join(directory, entry.name);
         if (entry.isDirectory()) {
           return listFiles(fullPath);
@@ -226,8 +230,8 @@ async function listFiles(directory: any): Promise<any> {
       }),
     );
     return files.flat().sort();
-  } catch (error: any) {
-    if (error.code === "ENOENT") {
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return [];
     }
     throw error;

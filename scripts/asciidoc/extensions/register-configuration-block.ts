@@ -90,7 +90,18 @@ const GROOVY_KEYWORDS = new Set([
   "while",
 ]);
 
-function configurationSamples(source: any): any {
+type ConfigurationSample = {
+  language: string;
+  highlighterLanguage: string;
+  source: string;
+};
+
+type FlattenedConfiguration = {
+  path: string[];
+  value: unknown;
+};
+
+function configurationSamples(source: string): ConfigurationSample[] {
   const parsed = parseConfigurationSource(source);
   return [
     {
@@ -123,10 +134,10 @@ function configurationSamples(source: any): any {
       highlighterLanguage: "json",
       source: parsed === undefined ? source : JSON.stringify(parsed, null, 2),
     },
-  ].filter((sample: any): any => sample.source.trim());
+  ].filter((sample) => sample.source.trim());
 }
 
-function parseConfigurationSource(source: any): any {
+function parseConfigurationSource(source: string): unknown {
   try {
     return yaml.load(source);
   } catch {
@@ -134,22 +145,25 @@ function parseConfigurationSource(source: any): any {
   }
 }
 
-function isPlainObject(value: any): any {
+function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function toJavaProperties(value: any): any {
+function toJavaProperties(value: unknown): string {
   return flattenConfiguration(value)
     .map(
-      ({ path: propertyPath, value: propertyValue }: any): any =>
+      ({ path: propertyPath, value: propertyValue }) =>
         `${propertyPath.join(".")}=${formatPropertiesValue(propertyValue)}`,
     )
     .join("\n");
 }
 
-function flattenConfiguration(value: any, propertyPath: any = []): any {
+function flattenConfiguration(
+  value: unknown,
+  propertyPath: string[] = [],
+): FlattenedConfiguration[] {
   if (Array.isArray(value)) {
-    return value.flatMap((item: any, index: any): any =>
+    return value.flatMap((item, index) =>
       flattenConfiguration(item, [
         ...propertyPath.slice(0, -1),
         `${propertyPath.at(-1) || ""}[${index}]`,
@@ -157,14 +171,14 @@ function flattenConfiguration(value: any, propertyPath: any = []): any {
     );
   }
   if (isPlainObject(value)) {
-    return Object.entries(value).flatMap(([key, item]: any): any =>
+    return Object.entries(value).flatMap(([key, item]) =>
       flattenConfiguration(item, [...propertyPath, key]),
     );
   }
   return propertyPath.length ? [{ path: propertyPath, value }] : [];
 }
 
-function formatPropertiesValue(value: any): any {
+function formatPropertiesValue(value: unknown): string {
   if (value === null || value === undefined) {
     return "";
   }
@@ -174,14 +188,14 @@ function formatPropertiesValue(value: any): any {
   return String(value);
 }
 
-function toTomlSource(value: any): any {
+function toTomlSource(value: unknown): string {
   if (isPlainObject(value)) {
     return stringifyToml(value).trim();
   }
   return formatTomlValue(value);
 }
 
-function formatTomlValue(value: any): any {
+function formatTomlValue(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map(formatTomlValue).join(", ")}]`;
   }
@@ -194,39 +208,38 @@ function formatTomlValue(value: any): any {
   return JSON.stringify(String(value));
 }
 
-function toGroovyConfig(value: any): any {
+function toGroovyConfig(value: unknown): string {
   if (!isPlainObject(value)) {
     return formatGroovyValue(value);
   }
   return Object.entries(value)
-    .map(([key, item]: any): any => formatGroovyEntry(key, item, 0))
+    .map(([key, item]) => formatGroovyEntry(key, item, 0))
     .join("\n");
 }
 
-function formatGroovyEntry(key: any, value: any, depth: any): any {
+function formatGroovyEntry(key: string, value: unknown, depth: number): string {
   const indent = "  ".repeat(depth);
   const token = formatGroovyKey(key);
   if (isPlainObject(value)) {
     const children = Object.entries(value)
-      .map(([childKey, child]: any): any =>
-        formatGroovyEntry(childKey, child, depth + 1),
-      )
+      .map(([childKey, child]) => formatGroovyEntry(childKey, child, depth + 1))
       .join("\n");
     return `${indent}${token} {\n${children}\n${indent}}`;
   }
   return `${indent}${token} = ${formatGroovyValue(value)}`;
 }
 
-function formatGroovyKey(key: any): any {
+function formatGroovyKey(key: string): string {
   if (GROOVY_KEYWORDS.has(key) || /[^\x00-\x7F]/.test(key)) {
     return `'${String(key).replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
   }
-  return String(key).replace(/-([A-Za-z0-9])/g, (_: any, char: any): any =>
-    char.toUpperCase(),
+  return String(key).replace(
+    /-([A-Za-z0-9])/g,
+    (_match: string, char: string): string => char.toUpperCase(),
   );
 }
 
-function formatGroovyValue(value: any): any {
+function formatGroovyValue(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map(formatGroovyValue).join(", ")}]`;
   }
@@ -239,19 +252,19 @@ function formatGroovyValue(value: any): any {
   return `'${String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`;
 }
 
-function toHocon(value: any): any {
+function toHocon(value: unknown): string {
   return formatHoconValue(value, 0);
 }
 
-function formatHoconValue(value: any, depth: any): any {
+function formatHoconValue(value: unknown, depth: number): string {
   if (Array.isArray(value)) {
-    return `[${value.map((item: any): any => formatHoconValue(item, depth)).join(", ")}]`;
+    return `[${value.map((item) => formatHoconValue(item, depth)).join(", ")}]`;
   }
   if (isPlainObject(value)) {
     const indent = "  ".repeat(depth);
     const childIndent = "  ".repeat(depth + 1);
     const entries = Object.entries(value).map(
-      ([key, item]: any): any =>
+      ([key, item]) =>
         `${childIndent}${key} = ${formatHoconValue(item, depth + 1)}`,
     );
     return `{\n${entries.join("\n")}\n${indent}}`;

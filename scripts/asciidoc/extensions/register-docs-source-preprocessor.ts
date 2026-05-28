@@ -4,6 +4,17 @@ import type {
   Registry,
 } from "@asciidoctor/core";
 
+type ConstructableReader = Reader & {
+  constructor: new (
+    document: unknown,
+    lines: string[],
+    cursor: unknown,
+    options: Record<string, unknown>,
+  ) => Reader;
+  cursor: unknown;
+  lines: string[];
+};
+
 export function registerDocsSourcePreprocessor(registry: Registry): void {
   registry.preprocessor(function registerDocsSourcePreprocessor(
     this: DocumentProcessorDslInterface,
@@ -12,8 +23,8 @@ export function registerDocsSourcePreprocessor(registry: Registry): void {
       document: unknown,
       reader: unknown,
     ): Reader {
-      const sourceReader = reader as Reader;
-      return new (sourceReader as any).constructor(
+      const sourceReader = reader as ConstructableReader;
+      return new sourceReader.constructor(
         document,
         rewriteDocsSource(sourceReader.lines.join("\n")).split(/\r?\n/),
         sourceReader.cursor,
@@ -28,7 +39,7 @@ function rewriteDocsSource(source: string): string {
   normalized = removeGeneratedConfigurationPropertyIncludes(normalized);
   normalized = normalized.replace(
     /^([ \t]*(?:include|snippet)::[^\r\n\[]+\[[^\r\n\]]*?\bindent\s*=\s*)(?:"false"|'false'|false)(?=\s*(?:,|\]))/gim,
-    (_: any, prefix: any): any => `${prefix}0`,
+    (_match: string, prefix: string): string => `${prefix}0`,
   );
   normalized = normalized.replace(
     /(snippet::[^\[]+\[[^\]]*?\bindent\s*=\s*-?\d+)\s+(title\s*=)/gi,
@@ -36,7 +47,7 @@ function rewriteDocsSource(source: string): string {
   );
   return normalized.replace(
     /^\s{4,}`([^`\r\n]+)`\s*$/gm,
-    (match: any, code: any): any => {
+    (match: string, code: string): string => {
       const value = code.trim();
       if (!looksLikeJava(value)) {
         return match;

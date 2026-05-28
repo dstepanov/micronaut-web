@@ -89,7 +89,7 @@ export async function readGuides(
   }
 
   return guides.sort(
-    (left: any, right: any): any =>
+    (left, right) =>
       right.publicationDate.localeCompare(left.publicationDate) ||
       left.title.localeCompare(right.title),
   );
@@ -103,7 +103,7 @@ export function selectGuides(
     return guides;
   }
   const selected = new Set(selectedSlugs);
-  return guides.filter((guide: any): any => selected.has(guide.slug));
+  return guides.filter((guide) => selected.has(guide.slug));
 }
 
 export function guideOptions(guide: Guide): GuideOption[] {
@@ -133,12 +133,9 @@ export function guideOptions(guide: Guide): GuideOption[] {
 export function defaultGuideOption(guide: Guide): GuideOption | undefined {
   return (
     guideOptions(guide).find(
-      (option: any): any =>
-        option.buildTool === "gradle" && option.language === "java",
+      (option) => option.buildTool === "gradle" && option.language === "java",
     ) ||
-    guideOptions(guide).find(
-      (option: any): any => option.language === "java",
-    ) ||
+    guideOptions(guide).find((option) => option.language === "java") ||
     guideOptions(guide)[0]
   );
 }
@@ -192,11 +189,10 @@ export function languageSourceDirectory(
 export function appFeatures(
   guide: Guide,
   option: GuideOption,
-  appName: any = "default",
+  appName = "default",
 ): string[] {
   const app =
-    guide.apps.find((candidate: any): any => candidate.name === appName) ||
-    guide.apps[0];
+    guide.apps.find((candidate) => candidate.name === appName) || guide.apps[0];
   if (!app) {
     return [];
   }
@@ -211,7 +207,7 @@ export function appFeatures(
 }
 
 export function featuresWords(features: string[]): string {
-  const formatted = features.map((feature: any): any => `\`${feature}\``);
+  const formatted = features.map((feature) => `\`${feature}\``);
   if (formatted.length <= 1) {
     return formatted[0] || "";
   }
@@ -230,7 +226,7 @@ export function cliCommandForApp(app?: GuideApp): string {
 }
 
 function normalizeGuideMetadata(
-  metadata: Record<string, any>,
+  metadata: Record<string, unknown>,
   directory: string,
   fallbackSlug: string,
 ): Guide {
@@ -264,8 +260,11 @@ function normalizeGuideMetadata(
             groovyFeatures: [],
           },
         ],
-    minimumJavaVersion: metadata.minimumJavaVersion || metadata.minJdk || 21,
-    maximumJavaVersion: metadata.maximumJavaVersion,
+    minimumJavaVersion: stringOrNumber(
+      metadata.minimumJavaVersion || metadata.minJdk,
+      21,
+    ),
+    maximumJavaVersion: optionalStringOrNumber(metadata.maximumJavaVersion),
   };
 }
 
@@ -273,14 +272,17 @@ function normalizeApps(value: unknown): GuideApp[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.map((app: any): any => ({
-    name: string(app?.name, "default"),
-    applicationType: string(app?.applicationType, "DEFAULT"),
-    features: strings(app?.features),
-    javaFeatures: strings(app?.javaFeatures),
-    kotlinFeatures: strings(app?.kotlinFeatures),
-    groovyFeatures: strings(app?.groovyFeatures),
-  }));
+  return value.map((item) => {
+    const app = record(item);
+    return {
+      name: string(app?.name, "default"),
+      applicationType: string(app?.applicationType, "DEFAULT"),
+      features: strings(app?.features),
+      javaFeatures: strings(app?.javaFeatures),
+      kotlinFeatures: strings(app?.kotlinFeatures),
+      groovyFeatures: strings(app?.groovyFeatures),
+    };
+  });
 }
 
 function testFrameworkFor(guide: Guide, language: string): string {
@@ -314,9 +316,7 @@ function lowerList(value: unknown, fallback: string[]): string[] {
   if (!values.length) {
     return fallback;
   }
-  return values.map((item: any): any =>
-    item.toLowerCase().replaceAll("_", "-"),
-  );
+  return values.map((item) => item.toLowerCase().replaceAll("_", "-"));
 }
 
 function strings(value: unknown): string[] {
@@ -324,10 +324,34 @@ function strings(value: unknown): string[] {
     return [];
   }
   return value
-    .filter((item: any): any => item !== undefined && item !== null)
+    .filter(
+      (item): item is NonNullable<unknown> =>
+        item !== undefined && item !== null,
+    )
     .map(String);
 }
 
 function string(value: unknown, fallback: string): string {
   return value === undefined || value === null ? fallback : String(value);
+}
+
+function stringOrNumber(
+  value: unknown,
+  fallback: string | number,
+): string | number {
+  return typeof value === "string" || typeof value === "number"
+    ? value
+    : fallback;
+}
+
+function optionalStringOrNumber(value: unknown): string | number | undefined {
+  return typeof value === "string" || typeof value === "number"
+    ? value
+    : undefined;
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

@@ -29,14 +29,14 @@ if (selectedTasks.length === 0) {
 }
 
 function run(label: string, command: string, args: string[]): Promise<void> {
-  return new Promise<void>((resolve: any, reject: any): any => {
+  return new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: projectDirectory,
       env: process.env,
       stdio: "inherit",
     });
     child.on("error", reject);
-    child.on("exit", (code: any, signal: any): any => {
+    child.on("exit", (code, signal) => {
       if (code === 0) {
         resolve();
         return;

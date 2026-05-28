@@ -6,7 +6,14 @@ import { isRegularFile } from "../shared/files.ts";
 
 type TocMap = Record<string, unknown>;
 
-export async function readGuideToc(guideSourceDirectory: string): Promise<any> {
+export type GuideToc = {
+  title: string;
+  children: TocNode[];
+};
+
+export async function readGuideToc(
+  guideSourceDirectory: string,
+): Promise<GuideToc> {
   const tocFile = path.join(guideSourceDirectory, "toc.yml");
   const parsed = yaml.load(await fs.readFile(tocFile, "utf8"));
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
@@ -22,7 +29,7 @@ export async function readGuideToc(guideSourceDirectory: string): Promise<any> {
   };
 }
 
-type TocNode = {
+export type TocNode = {
   level: number;
   number: string;
   id: string;
@@ -38,7 +45,7 @@ async function appendTocNodes(
   toc: TocMap,
   level: number,
   numberPrefix: string,
-): Promise<any> {
+): Promise<void> {
   let index = 1;
   for (const [rawId, value] of Object.entries(toc)) {
     const id = tocKey(rawId);
@@ -69,7 +76,7 @@ async function appendTocNodes(
   }
 }
 
-function tocKey(value: any): any {
+function tocKey(value: unknown): string {
   if (typeof value === "string" && value.trim()) {
     return value.trim();
   }
@@ -91,10 +98,10 @@ function tocTitle(id: string, value: unknown): string {
 }
 
 async function determineFilePath(
-  guideSourceDirectory: any,
-  parentIds: any,
-  id: any,
-): Promise<any> {
+  guideSourceDirectory: string,
+  parentIds: string[],
+  id: string,
+): Promise<string> {
   let filePath = `${id}.adoc`;
   if (await isRegularFile(path.join(guideSourceDirectory, filePath))) {
     return filePath;

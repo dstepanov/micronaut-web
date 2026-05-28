@@ -11,19 +11,23 @@ export type DocsProjectCatalog = {
     description?: string;
     projectSlugs?: string[];
   }>;
-  projects: Array<
-    DocsProject &
-      Properties & {
-        shortName: string;
-        version: string;
-        icon: string;
-        primaryCategory: string;
-        categorySlugs: string[];
-        shortDescription: string;
-        longDescription: string;
-      }
-  >;
+  projects: DocsCatalogProject[];
 };
+
+type DocsCatalogProject = DocsProject & {
+  shortName: string;
+  version: string;
+  icon: string;
+  primaryCategory: string;
+  categorySlugs: string[];
+  shortDescription: string;
+  longDescription: string;
+};
+
+type ExistingDocsProjectCatalog = Partial<
+  Pick<DocsProjectCatalog, "categories" | "projects">
+> &
+  Record<string, unknown>;
 
 export function buildDocsProjectCatalog({
   projects,
@@ -34,7 +38,7 @@ export function buildDocsProjectCatalog({
 }: {
   projects: DocsProject[];
   platformVersions: Properties;
-  existingCatalog: Record<string, any>;
+  existingCatalog: ExistingDocsProjectCatalog;
   source: string;
   publishedSource: string;
 }): DocsProjectCatalog {
@@ -43,29 +47,32 @@ export function buildDocsProjectCatalog({
     DocsProjectCatalog["projects"][number]
   >(
     ((existingCatalog.projects || []) as DocsProjectCatalog["projects"]).map(
-      (project: any): any => [project.slug, project],
+      (project): [string, DocsProjectCatalog["projects"][number]] => [
+        project.slug,
+        project,
+      ],
     ),
   );
   const existingProjectOrder = new Map<string, number>(
     ((existingCatalog.projects || []) as Array<{ slug: string }>).map(
-      (project: any, index: any): any => [project.slug, index],
+      (project, index): [string, number] => [project.slug, index],
     ),
   );
   const categories = (existingCatalog.categories ||
     []) as DocsProjectCatalog["categories"];
 
   const catalogProjects = projects
-    .map((project: any): any => {
+    .map((project) => {
       const existingProject =
         existingProjectsBySlug.get(project.slug) ||
         ({} as DocsProjectCatalog["projects"][number]);
       const categorySlugs =
         existingProject.categorySlugs ||
         categories
-          .filter((category: any): any =>
+          .filter((category) =>
             (category.projectSlugs || []).includes(project.slug),
           )
-          .map((category: any): any => category.slug);
+          .map((category) => category.slug);
       const primaryCategory =
         existingProject.primaryCategory || categorySlugs[0] || "other";
 
@@ -99,7 +106,7 @@ export function buildDocsProjectCatalog({
       };
     })
     .sort(
-      (left: DocsProject, right: DocsProject): any =>
+      (left, right) =>
         projectOrder(left, existingProjectOrder) -
           projectOrder(right, existingProjectOrder) ||
         left.displayName.localeCompare(right.displayName),

@@ -37,6 +37,18 @@ type GuideSnippetPayloadResolver = (
   payload: GuideMacroPayload,
 ) => Promise<Record<string, unknown>>;
 
+type GuideSnippetPayload = {
+  kind: "code";
+  title: string;
+  samples: Array<{
+    language: string;
+    source: string;
+  }>;
+};
+
+type SourceSnippetKind = "main" | "test" | "raw-test";
+type ResourceSourceSet = "main" | "test";
+
 export function registerGuideSnippetBlocks(
   registry: Registry,
   context: GuideRenderContext,
@@ -137,11 +149,11 @@ function guideMacroPayloadFromValue(value: unknown): GuideMacroPayload {
 }
 
 async function sourceSnippetPayload(
-  target: any,
-  attributes: any,
+  target: string,
+  attributes: Record<string, string>,
   context: GuideRenderContext,
-  kind: any,
-): Promise<any> {
+  kind: SourceSnippetKind,
+): Promise<GuideSnippetPayload> {
   const file = await findSourceFile(target.trim(), attributes, context, kind);
   if (!file) {
     return missingNotePayload(`Missing source \`${target.trim()}\`.`);
@@ -170,11 +182,11 @@ async function sourceSnippetPayload(
 }
 
 async function resourceSnippetPayload(
-  target: any,
-  attributes: any,
+  target: string,
+  attributes: Record<string, string>,
   context: GuideRenderContext,
-  sourceSet: any,
-): Promise<any> {
+  sourceSet: ResourceSourceSet,
+): Promise<GuideSnippetPayload> {
   const file = await findResourceFile(
     target.trim(),
     attributes,
@@ -205,10 +217,10 @@ async function resourceSnippetPayload(
 }
 
 async function zipIncludeSnippetPayload(
-  target: any,
-  attributes: any,
+  target: string,
+  attributes: Record<string, string>,
   context: GuideRenderContext,
-): Promise<any> {
+): Promise<GuideSnippetPayload> {
   const file = await findFileInSourceRoots(target.trim(), attributes, context);
   if (!file) {
     return missingNotePayload(`Missing zip include \`${target.trim()}\`.`);
@@ -229,7 +241,7 @@ async function zipIncludeSnippetPayload(
   };
 }
 
-function missingNotePayload(message: string): any {
+function missingNotePayload(message: string): GuideSnippetPayload {
   return {
     kind: "code",
     samples: [
@@ -243,11 +255,11 @@ function missingNotePayload(message: string): any {
 }
 
 async function findSourceFile(
-  target: any,
-  attributes: any,
-  context: any,
-  kind: any,
-): Promise<any> {
+  target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+  kind: SourceSnippetKind,
+): Promise<string | undefined> {
   const app = attributes.app || "";
   const sourceSet = kind === "main" ? "main" : "test";
   const extension =
@@ -280,7 +292,7 @@ async function findSourceFile(
         sourcePath,
       ),
       path.join(context.guide.directory, context.option.language, sourcePath),
-      ...guideSourceRoots(context).flatMap((root: any): any => [
+      ...guideSourceRoots(context).flatMap((root) => [
         path.join(root, relativePath),
         path.join(root, app, context.option.language, sourcePath),
         path.join(root, context.option.language, sourcePath),
@@ -292,11 +304,11 @@ async function findSourceFile(
 }
 
 async function findResourceFile(
-  target: any,
-  attributes: any,
-  context: any,
-  sourceSet: any,
-): Promise<any> {
+  target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+  sourceSet: ResourceSourceSet,
+): Promise<string | undefined> {
   const app = attributes.app || "";
   const resourcePathWithoutApp = target.startsWith("../")
     ? path.join(`src/${sourceSet}`, target.slice("../".length))
@@ -319,7 +331,7 @@ async function findResourceFile(
         context.option.language,
         resourcePathWithoutApp,
       ),
-      ...guideSourceRoots(context).flatMap((root: any): any => [
+      ...guideSourceRoots(context).flatMap((root) => [
         path.join(root, resourcePath),
         path.join(root, app, context.option.language, resourcePathWithoutApp),
         path.join(root, context.option.language, resourcePathWithoutApp),
@@ -331,17 +343,17 @@ async function findResourceFile(
 }
 
 async function findFileInSourceRoots(
-  target: any,
-  attributes: any,
-  context: any,
-): Promise<any> {
+  target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+): Promise<string | undefined> {
   const app = attributes.app || "";
   return findExisting(
     context,
     [
       path.join(context.guide.directory, app, target),
       path.join(context.guide.directory, target),
-      ...guideSourceRoots(context).flatMap((root: any): any => [
+      ...guideSourceRoots(context).flatMap((root) => [
         path.join(root, app, target),
         path.join(root, target),
       ]),
@@ -351,11 +363,11 @@ async function findFileInSourceRoots(
 }
 
 async function findExisting(
-  context: any,
-  candidates: any,
-  fallbackName: any,
-  requiredSegment: any = "",
-): Promise<any> {
+  context: GuideRenderContext,
+  candidates: string[],
+  fallbackName: string,
+  requiredSegment = "",
+): Promise<string | undefined> {
   for (const candidate of candidates) {
     try {
       const stat = await fs.stat(candidate);
@@ -377,10 +389,10 @@ async function findExisting(
 }
 
 async function findByName(
-  root: any,
-  name: any,
-  requiredSegment: any = "",
-): Promise<any> {
+  root: string,
+  name: string,
+  requiredSegment = "",
+): Promise<string | undefined> {
   let entries;
   try {
     entries = await fs.readdir(root, { withFileTypes: true });
@@ -404,40 +416,43 @@ async function findByName(
   return undefined;
 }
 
-function guideSourceRoots(context: any): any {
+function guideSourceRoots(context: GuideRenderContext): string[] {
   if (!context.guide.base) {
     return [];
   }
   return [path.join(context.guidesDirectory, "guides", context.guide.base)];
 }
 
-export function normalizeSourceCalloutMarkers(source: any): any {
+export function normalizeSourceCalloutMarkers(source: unknown): string {
   return String(source || "").replace(
     /(^|[ \t])((?:\/\/|#|;)[ \t]*)(\d+)>$/gm,
     "$1$2<$3>",
   );
 }
 
-function tagSelection(attributes: any): any {
+function tagSelection(attributes: Record<string, string>): string {
   return (attributes.tags || attributes.tag || "").replaceAll("|", ",");
 }
 
-function rawTestExtension(testFramework: any): any {
+function rawTestExtension(testFramework: string): string {
   return testFramework === "spock" ? "groovy" : "java";
 }
 
-function rawTestSourceDirectory(testFramework: any): any {
+function rawTestSourceDirectory(testFramework: string): string {
   return testFramework === "spock" ? "src/test/groovy" : "src/test/java";
 }
 
-function stripLicenseHeader(source: any): any {
+function stripLicenseHeader(source: string): string {
   return source.replace(
     /^\/\*[\s\S]*?Licensed under the Apache License[\s\S]*?\*\/\s*/i,
     "",
   );
 }
 
-function normalizeIndent(source: any, indentValue: any): any {
+function normalizeIndent(
+  source: string,
+  indentValue: string | undefined,
+): string {
   const indent = Number.parseInt(indentValue || "0", 10);
   if (!Number.isFinite(indent) || indent <= 0) {
     return source.trim();
@@ -446,11 +461,11 @@ function normalizeIndent(source: any, indentValue: any): any {
   return source
     .trim()
     .split(/\r?\n/)
-    .map((line: any): any => `${prefix}${line}`)
+    .map((line) => `${prefix}${line}`)
     .join("\n");
 }
 
-function languageForFile(file: any, fallback: any = "text"): any {
+function languageForFile(file: string, fallback = "text"): string {
   const extension = path.extname(file).toLowerCase().slice(1);
   return (
     {

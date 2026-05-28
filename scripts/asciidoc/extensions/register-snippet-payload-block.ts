@@ -6,7 +6,10 @@ import type {
   Section,
 } from "@asciidoctor/core";
 
-import { renderSnippetBlock } from "./snippet-block-renderer.ts";
+import {
+  type SnippetPayload,
+  renderSnippetBlock,
+} from "./snippet-block-renderer.ts";
 
 export function registerSnippetPayloadBlock(
   registry: Registry,
@@ -34,8 +37,8 @@ export function registerSnippetPayloadBlock(
   });
 }
 
-function snippetPayloadFromValue(value: unknown): any {
+function snippetPayloadFromValue(value: unknown): SnippetPayload {
   return JSON.parse(
     Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  );
+  ) as SnippetPayload;
 }

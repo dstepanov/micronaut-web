@@ -2,15 +2,36 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { extractTaggedSource } from "../shared/tagged-source.ts";
+import type { Properties } from "./project-manifest.ts";
 
-export function docsSnippetSamples(target: any, attrs: any, context: any): any {
+type MacroAttributes = Record<string, unknown> & {
+  text?: unknown;
+  $positional?: unknown;
+};
+
+type SnippetContext = {
+  submoduleDirectory: string;
+  attributes: Properties;
+};
+
+type SnippetLanguage = [language: string, extension: string];
+
+type SnippetSample = {
+  language: string;
+  source: string;
+};
+
+export function docsSnippetSamples(
+  target: string,
+  attrs: MacroAttributes,
+  context: SnippetContext,
+): SnippetSample[] {
   const baseDirectories = snippetBaseDirectoriesSync(attrs, context);
-  const sources = macroAttribute(attrs, "source")
-    ? [macroAttribute(attrs, "source")]
-    : ["test", "main"];
+  const source = macroAttribute(attrs, "source");
+  const sources = source ? [source] : ["test", "main"];
   const explicit = explicitSnippetLanguage(target);
   const languages = explicit ? [explicit] : languagesToRender(context);
-  const samples = [];
+  const samples: SnippetSample[] = [];
   for (const baseDirectory of baseDirectories) {
     for (const sourceSet of sources) {
       for (const [language, extension] of languages) {
@@ -42,20 +63,20 @@ export function docsSnippetSamples(target: any, attrs: any, context: any): any {
   return samples;
 }
 
-function languagesToRender(context: any): any {
+function languagesToRender(context: SnippetContext): SnippetLanguage[] {
   const defaultLanguage = context.attributes["default-language"];
-  const languages = [
+  const languages: SnippetLanguage[] = [
     ["java", "java"],
     ["python", "py"],
     ["kotlin", "kt"],
     ["groovy", "groovy"],
   ];
   return defaultLanguage
-    ? languages.filter(([language]: any): any => language === defaultLanguage)
+    ? languages.filter(([language]) => language === defaultLanguage)
     : languages;
 }
 
-function explicitSnippetLanguage(target: any): any {
+function explicitSnippetLanguage(target: string): SnippetLanguage | undefined {
   if (target.endsWith(".java")) return ["java", "java"];
   if (target.endsWith(".py")) return ["python", "py"];
   if (target.endsWith(".kt")) return ["kotlin", "kt"];
@@ -63,7 +84,7 @@ function explicitSnippetLanguage(target: any): any {
   return undefined;
 }
 
-function snippetPathTarget(target: any, extension: any): any {
+function snippetPathTarget(target: string, extension: string): string {
   const suffix = `.${extension}`;
   const normalized = target.endsWith(suffix)
     ? target.slice(0, -suffix.length)
@@ -71,7 +92,10 @@ function snippetPathTarget(target: any, extension: any): any {
   return normalized.replaceAll(".", path.sep);
 }
 
-function snippetBaseDirectoriesSync(attrs: any, context: any): any {
+function snippetBaseDirectoriesSync(
+  attrs: MacroAttributes,
+  context: SnippetContext,
+): string[] {
   const project = macroAttribute(attrs, "project");
   if (project) {
     return [path.join(context.submoduleDirectory, project)];
@@ -79,7 +103,7 @@ function snippetBaseDirectoriesSync(attrs: any, context: any): any {
   const projectBase = macroAttribute(attrs, "project-base");
   if (projectBase) {
     const requested = path.join(context.submoduleDirectory, projectBase);
-    const directories = [];
+    const directories: string[] = [];
     if (existsSync(requested) && statSync(requested).isDirectory()) {
       directories.push(requested);
     }
@@ -101,8 +125,8 @@ function snippetBaseDirectoriesSync(attrs: any, context: any): any {
   ];
 }
 
-function sortSnippetDirectories(directories: any): any {
-  const rank = (value: any): any => {
+function sortSnippetDirectories(directories: string[]): string[] {
+  const rank = (value: string): number => {
     if (value.endsWith("-java")) return 0;
     if (value.endsWith("-python")) return 1;
     if (value.endsWith("-kotlin")) return 2;
@@ -111,19 +135,21 @@ function sortSnippetDirectories(directories: any): any {
     return 5;
   };
   return directories.sort(
-    (left: any, right: any): any =>
-      rank(left) - rank(right) || left.localeCompare(right),
+    (left, right) => rank(left) - rank(right) || left.localeCompare(right),
   );
 }
 
-function normalizeSnippetIndent(source: any, indentValue: any): any {
+function normalizeSnippetIndent(
+  source: string,
+  indentValue: string | undefined,
+): string {
   const lines = source.replace(/\s+$/, "").split(/\r?\n/);
-  const nonBlank = lines.filter((line: any): any => line.trim());
+  const nonBlank = lines.filter((line) => line.trim());
   const commonIndent = nonBlank.length
     ? Math.min(
         ...nonBlank.map(
-          (line: any): any =>
-            line.match(/^[ \t]*/)[0].replaceAll("\t", "    ").length,
+          (line) =>
+            (line.match(/^[ \t]*/)?.[0] ?? "").replaceAll("\t", "    ").length,
         ),
       )
     : 0;
@@ -131,18 +157,21 @@ function normalizeSnippetIndent(source: any, indentValue: any): any {
   const prefix =
     Number.isFinite(indent) && indent > 0 ? " ".repeat(indent) : "";
   return lines
-    .map(
-      (line: any): any =>
-        prefix + line.slice(Math.min(commonIndent, line.length)),
-    )
+    .map((line) => prefix + line.slice(Math.min(commonIndent, line.length)))
     .join("\n");
 }
 
-function macroAttribute(attrs: any, name: string): any {
+function macroAttribute(
+  attrs: MacroAttributes | undefined,
+  name: string,
+): string | undefined {
   if (attrs?.[name] !== undefined) {
     return cleanMacroAttributeValue(String(attrs[name]), name);
   }
-  const text = attrs?.text || attrs?.$positional?.join(",");
+  const positional = Array.isArray(attrs?.$positional)
+    ? attrs.$positional.join(",")
+    : undefined;
+  const text = attrs?.text || positional;
   if (typeof text === "string") {
     const match = new RegExp(
       `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,

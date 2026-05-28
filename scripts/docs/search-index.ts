@@ -169,7 +169,7 @@ function extractPropertyItems(
   for (const match of html.matchAll(rowPattern)) {
     const cells = Array.from(
       match[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/g),
-      (cell: RegExpMatchArray): any => cleanText(cell[1]),
+      (cell: RegExpMatchArray): string => cleanText(cell[1]),
     );
     if (cells.length < 2) {
       continue;
