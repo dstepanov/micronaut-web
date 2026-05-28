@@ -41,6 +41,12 @@ const primaryLinks: Array<{ href: string; label: string; surface: SurfaceId }> =
     { href: "/launch/", label: "Launch", surface: "launch" },
   ];
 
+type MobileMenuLink = {
+  href: string;
+  label: string;
+  surface?: SurfaceId;
+};
+
 const menuGroups = [
   {
     label: "Learn",
@@ -177,13 +183,14 @@ const menuGroups = [
   },
 ];
 
-const mobileGroups = [
+const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
   {
-    label: "Primary",
+    label: "Browse",
     links: [
-      { href: "/docs/", label: "Docs" },
-      { href: "/guides/", label: "Guides" },
-      { href: "/launch/", label: "Launch" },
+      { href: "/docs/", label: "Docs", surface: "docs" },
+      { href: "/guides/", label: "Guides", surface: "guides" },
+      { href: "/blog/", label: "Blog", surface: "main" },
+      { href: "/launch/", label: "Launch", surface: "launch" },
     ],
   },
   ...menuGroups.map((group) => ({
@@ -215,6 +222,16 @@ function MobileColorModeSwitch() {
   );
 }
 
+function mobileHref(link: MobileMenuLink) {
+  return withSurfacePath(link.surface || "main", link.href);
+}
+
+function isActiveMobileLink(link: MobileMenuLink, surface: SurfaceId) {
+  return Boolean(
+    link.surface && link.surface !== "main" && link.surface === surface,
+  );
+}
+
 export function SiteHeader({
   surface = "main",
   hideBrand = false,
@@ -233,14 +250,14 @@ export function SiteHeader({
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-4 px-5 sm:px-6 xl:px-0">
+      <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-2 px-4 sm:px-6 lg:gap-4 xl:px-0">
         {!hideBrand ? (
           <a
             href={withSurfacePath("main", "/")}
             aria-label="Micronaut home"
             className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline"
           >
-            <MicronautLogo className="h-11 w-[192px]" />
+            <MicronautLogo className="h-9 w-[156px] sm:h-11 sm:w-[192px]" />
           </a>
         ) : null}
         <NavigationMenu viewport={false} className="hidden lg:flex">
@@ -304,60 +321,77 @@ export function SiteHeader({
           <Button
             variant="outline"
             size="sm"
-            className="hidden h-9 md:inline-flex"
+            className="hidden h-9 lg:inline-flex"
             asChild
           >
             <a href={withSurfacePath("launch", "/launch/")}>Launch</a>
           </Button>
-          <ThemeModeSwitch className="hidden sm:inline-flex" />
+          <ThemeModeSwitch className="hidden lg:inline-flex" />
           <Sheet>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="md:hidden"
+                className="lg:hidden"
                 aria-label="Open navigation"
               >
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[320px]">
+            <SheetContent className="w-[calc(100vw-1rem)] max-w-sm overflow-hidden">
               <SheetHeader>
                 <SheetTitle>Micronaut</SheetTitle>
                 <SheetDescription>
                   Navigate main-site pages, documentation, guides, and Launch.
                 </SheetDescription>
               </SheetHeader>
-              <nav className="grid gap-5 overflow-y-auto px-4 pb-6">
-                {mobileGroups.map((group) => (
-                  <div className="grid gap-2" key={group.label}>
-                    <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {group.label}
-                    </p>
-                    {group.links.map((link) => (
-                      <SheetClose asChild key={link.href}>
-                        <a
-                          href={withSurfacePath(
-                            primaryLinks.find(
-                              (primaryLink) => primaryLink.href === link.href,
-                            )?.surface || "main",
-                            link.href,
-                          )}
-                          className={cn(
-                            "rounded-md px-3 py-2 text-[0.92rem] font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                            primaryLinks.some(
-                              (primaryLink) =>
-                                primaryLink.href === link.href &&
-                                primaryLink.surface === surface,
-                            ) && "bg-accent",
-                          )}
-                        >
-                          {link.label}
-                        </a>
-                      </SheetClose>
-                    ))}
-                  </div>
-                ))}
+              <nav
+                className="grid gap-5 overflow-y-auto px-4 pb-6"
+                data-mobile-navigation
+              >
+                {mobileGroups.map((group) => {
+                  const isBrowseGroup = group.label === "Browse";
+                  return (
+                    <div
+                      className="grid gap-2"
+                      key={group.label}
+                      data-mobile-navigation-group={group.label}
+                    >
+                      <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {group.label}
+                      </p>
+                      <div
+                        className={cn(
+                          "grid gap-2",
+                          isBrowseGroup && "grid-cols-2",
+                        )}
+                      >
+                        {group.links.map((link) => (
+                          <SheetClose asChild key={link.href}>
+                            <a
+                              href={mobileHref(link)}
+                              aria-current={
+                                isActiveMobileLink(link, surface)
+                                  ? "page"
+                                  : undefined
+                              }
+                              className={cn(
+                                "rounded-md text-[0.92rem] font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                                isBrowseGroup
+                                  ? "flex min-h-14 items-center border bg-card px-3 py-3"
+                                  : "px-3 py-2",
+                                isActiveMobileLink(link, surface) &&
+                                  "bg-accent",
+                              )}
+                            >
+                              {link.label}
+                            </a>
+                          </SheetClose>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
                 <MobileColorModeSwitch />
               </nav>
             </SheetContent>

@@ -133,6 +133,27 @@ test("main route redirects to the canonical homepage", async (): Promise<any> =>
   assert.doesNotMatch(source, /import MainPage/);
 });
 
+test("main-site browser tests are wired through a surface-aware runner", async (): Promise<any> => {
+  const packageJson = JSON.parse(
+    await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
+  );
+  const runner = await fs.readFile(
+    path.join(projectDirectory, "scripts", "run-main-site-browser-tests.ts"),
+    "utf8",
+  );
+
+  assert.equal(
+    packageJson.scripts["test:main-site"],
+    "node --test scripts/main-site*.test.ts && node scripts/run-main-site-browser-tests.ts",
+  );
+  assert.equal(
+    packageJson.scripts["test:main-site:browser"],
+    "playwright test --config playwright.config.ts tests/playwright/main-site.spec.ts",
+  );
+  assert.match(runner, /MICRONAUT_DEPLOY_SURFACE/);
+  assert.match(runner, /surface !== "all" && surface !== "main"/);
+});
+
 test("meeting minutes index does not duplicate dated minutes", async (): Promise<any> => {
   const index = await fs.readFile(
     path.join(

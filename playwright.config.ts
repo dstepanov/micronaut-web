@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 const port = Number(process.env.PLAYWRIGHT_PORT || 4339);
 const baseURL = `http://127.0.0.1:${port}`;
+const webServerPath = normalizeBasePath(
+  process.env.PLAYWRIGHT_BASE_PATH || process.env.ASTRO_BASE,
+);
 
 export default defineConfig({
   testDir: "./tests/playwright",
@@ -28,8 +31,16 @@ export default defineConfig({
   ],
   webServer: {
     command: `ASTRO_TELEMETRY_DISABLED=1 astro dev --host 127.0.0.1 --port ${port}`,
-    url: `${baseURL}/`,
+    url: `${baseURL}${webServerPath}`,
     reuseExistingServer: false,
     timeout: 120_000,
   },
 });
+
+function normalizeBasePath(path: string | undefined): string {
+  if (!path || path === "/") {
+    return "/";
+  }
+  const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
+}
