@@ -318,7 +318,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides"],
-    "node --test scripts/guides/*.test.ts && npm run test:guides:browser",
+    "node --test scripts/guides/*.test.ts && node scripts/run-guides-browser-tests.ts",
   );
   assert.equal(
     packageJson.scripts["test:guides:browser"],

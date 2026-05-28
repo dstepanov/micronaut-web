@@ -18,7 +18,7 @@
     "test:main-site": "node --test scripts/main-site*.test.ts",
     "test:asciidoc": "node --test scripts/asciidoc/tests/*.test.ts",
     "test:docs": "node --test scripts/docs/*.test.ts",
-    "test:guides": "node --test scripts/guides/*.test.ts && npm run test:guides:browser",
+    "test:guides": "node --test scripts/guides/*.test.ts && node scripts/run-guides-browser-tests.ts",
     "test:guides:browser": "playwright test --config playwright.config.ts",
     "test:deployment": "node --test scripts/deployment*.test.ts",
     "typecheck": "tsc --noEmit --pretty false",
