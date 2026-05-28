@@ -63,6 +63,8 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 ## Blog Authoring
 
+### Blog Posts
+
 Blog posts are Astro Markdown content entries under `src/content/main-site/blog`. Use a dated path that mirrors the public slug, for example `src/content/main-site/blog/2026/06/01/example-post.md`. The `slug` frontmatter field is the canonical route without leading or trailing slashes; `href` defaults to `/${slug}/`, so set `href` only when a post needs an explicit canonical override.
 
 Use this shape for a normal post:
@@ -101,6 +103,38 @@ The Markdown body is rendered through Astro and then passed through the main-sit
 
 Use root-relative links for internal routes, such as `/docs/`, `/guides/`, or `/2026/06/01/example-post/`. Links and images pointing at `https://micronaut.io/...` or root-relative Micronaut paths are rewritten through the deployment base-path helpers during rendering. For local images and downloads, put source files under `public/micronaut-assets/main-site/...` and reference them from Markdown with `/micronaut-assets/main-site/...`. Image Markdown should include useful alt text.
 
+### Main-Site Pages
+
+Main-site pages are Markdown content entries under `src/content/main-site/pages`. The route is derived from the file path under that directory: `support.md` becomes `/support/`, `foundation/sponsors.md` becomes `/foundation/sponsors/`, `category/release-announcements.md` becomes `/category/release-announcements/`, and an `index.md` file drops the final `index` segment.
+
+Use this shape for a normal page:
+
+```md
+---
+order: 12
+title: Example Page
+eyebrow: Resources
+description: One or two sentences used in cards, metadata, and search previews.
+sourceUrl: https://micronaut.io/example/
+intro: Optional short lead text for the page header.
+sections:
+  - title: Section title
+    body: Section summary used by the shared page layout.
+    icon: route
+redirectFrom:
+  - /old-example/
+contentSource: authored
+---
+
+# Example Page
+
+Normal Markdown page content.
+```
+
+Required page fields are `order`, `title`, `eyebrow`, `description`, and `sourceUrl`. `intro` and `sections` feed the shared main-site page layout; body Markdown is rendered as page content for normal pages. `redirectFrom` lists old paths that should redirect to the new route. Adding a page makes the route available and searchable, but it does not automatically add the page to the header or footer; update the relevant navigation data when a new page should be linked globally.
+
+### Blog Categories and Archives
+
 `category` is the primary category slug. It is shown on blog cards and is used by `/category/<slug>/` archive pages. `categories` is an additional list of category slugs; include the primary category there as well so archive membership stays consistent with older imported posts. Category slugs are lower-case kebab-case strings. Existing category pages are:
 
 - `case-studies`
@@ -116,7 +150,14 @@ Use root-relative links for internal routes, such as `/docs/`, `/guides/`, or `/
 - `uncategorized`
 - `webinar`
 
-Category archive routes are not generated from post metadata alone. To introduce a new public category, also add `src/content/main-site/pages/category/<slug>.md` with the normal main-site page frontmatter so `/category/<slug>/` has title, intro, sections, and archive content. The archive lists posts whose primary `category` matches the slug or whose `categories` array contains it.
+Category archive routes are page-backed. Post metadata decides membership, but it does not create the public category page by itself. To introduce a new public category:
+
+1. Choose a lower-case kebab-case slug, for example `micronaut-6`.
+2. Set the post `category` to that slug and include the same slug in `categories`.
+3. Add `src/content/main-site/pages/category/<slug>.md` with the normal main-site page frontmatter so `/category/<slug>/` has a title, intro, sections, metadata, and archive content.
+4. Add the page to footer or header navigation only when it should be linked globally.
+
+The category archive lists posts whose primary `category` matches the slug or whose `categories` array contains it. The `/blog/` page lists the first 24 regular posts, `/blog/page/<n>/` pages are generated from the post count, and the `success-story` category is excluded from the regular blog archive.
 
 `tags` are lower-case kebab-case slugs used for `/tag/<tag>/` archive routes. Tag archive routes are generated from post metadata and do not require separate page files. The global search dialog indexes main-site pages, docs, guides, and guide tags; blog category and tag archives are normal static routes rather than a separate external search service.
 
