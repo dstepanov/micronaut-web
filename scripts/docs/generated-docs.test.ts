@@ -37,6 +37,14 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
     "node scripts/prepare-generated-content.ts",
   );
   assert.equal(
+    packageJson.scripts["test:docs"],
+    "node --test scripts/docs/*.test.ts && node scripts/run-docs-browser-tests.ts",
+  );
+  assert.equal(
+    packageJson.scripts["test:docs:browser"],
+    "node scripts/prepare-playwright-generated-content.ts docs && playwright test --config playwright.config.ts tests/playwright/docs.spec.ts",
+  );
+  assert.equal(
     packageJson.scripts["extract:inline-assets"],
     "node scripts/extract-inline-assets.ts",
   );
@@ -803,6 +811,83 @@ test("docs search index includes generated headings, properties, classes, projec
   );
 });
 
+test("docs search index covers several generated docs fragments", (): any => {
+  const projects = [
+    searchProject("core", "Micronaut Core", "Core Framework"),
+    searchProject("data", "Micronaut Data", "Data Access"),
+    searchProject("serde", "Micronaut Serialization", "Serialization"),
+  ];
+  const htmlBySlug = {
+    core: [
+      '<div class="guide-section-heading">',
+      '  <h1 id="core-introduction"><a class="anchor" href="#core-introduction"></a>1 Introduction</h1>',
+      "</div>",
+      '<p>Use <a href="../assets/core/docs/api/io/micronaut/context/BeanContext.html">BeanContext</a>.</p>',
+    ].join("\n"),
+    data: [
+      '<div class="guide-section-heading">',
+      '  <h2 id="data-repositories"><a class="anchor" href="#data-repositories"></a>1.1 Repositories</h2>',
+      "</div>",
+      '<div class="docs-properties-template">',
+      "  <table><tbody>",
+      "    <tr><td><p><code>micronaut.data.default-schema</code></p></td><td><p>String</p></td><td><p>Default schema.</p></td></tr>",
+      "  </tbody></table>",
+      "</div>",
+    ].join("\n"),
+    serde: [
+      '<div class="guide-section-heading">',
+      '  <h2 id="serde-jackson"><a class="anchor" href="#serde-jackson"></a>1.2 Jackson Interop</h2>',
+      "</div>",
+      '<p>Use <a href="../assets/serde/docs/api/io/micronaut/serde/ObjectMapper.html">ObjectMapper</a>.</p>',
+    ].join("\n"),
+  };
+
+  const index = buildDocsSearchIndex(projects, htmlBySlug);
+
+  for (const project of projects) {
+    assert.ok(
+      index.some(
+        (item: any): any =>
+          item.scope === "Projects" && item.href === project.href,
+      ),
+      `${project.slug} project should be indexed`,
+    );
+  }
+  assert.ok(
+    index.some(
+      (item: any): any =>
+        item.scope === "Docs" &&
+        item.title.includes("Repositories") &&
+        item.href === "/docs/data/#data-repositories",
+    ),
+  );
+  assert.ok(
+    index.some(
+      (item: any): any =>
+        item.scope === "Properties" &&
+        item.title === "micronaut.data.default-schema",
+    ),
+  );
+  assert.ok(
+    index.some(
+      (item: any): any =>
+        item.scope === "Classes" &&
+        item.title === "BeanContext" &&
+        item.href ===
+          "/docs/assets/core/docs/api/io/micronaut/context/BeanContext.html",
+    ),
+  );
+  assert.ok(
+    index.some(
+      (item: any): any =>
+        item.scope === "Classes" &&
+        item.title === "ObjectMapper" &&
+        item.href ===
+          "/docs/assets/serde/docs/api/io/micronaut/serde/ObjectMapper.html",
+    ),
+  );
+});
+
 test("docs renderer can render every project in a manifest", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-generated-docs-"),
@@ -860,6 +945,139 @@ test("docs renderer can render every project in a manifest", async (t: any): Pro
       .sort(),
     ["alpha.html", "beta.html"],
   );
+});
+
+test("docs renderer writes several generated project fragments and catalog entries", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-generated-docs-projects-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const projects = [
+    {
+      body: [
+        "Core generated docs body.",
+        "",
+        "[source,java]",
+        "----",
+        "class CoreExample {}",
+        "----",
+      ].join("\n"),
+      displayName: "Micronaut Core",
+      repositoryName: "micronaut-core",
+      slug: "core",
+      version: "5.0.0",
+    },
+    {
+      body: [
+        "Data generated docs body.",
+        "",
+        "[source,kotlin]",
+        "----",
+        "class DataExample",
+        "----",
+      ].join("\n"),
+      displayName: "Micronaut Data",
+      repositoryName: "micronaut-data",
+      slug: "data",
+      version: "4.14.3",
+    },
+    {
+      body: [
+        "Serialization generated docs body.",
+        "",
+        "[source,groovy]",
+        "----",
+        "class SerdeExample {}",
+        "----",
+      ].join("\n"),
+      displayName: "Micronaut Serialization",
+      repositoryName: "micronaut-serde",
+      slug: "serde",
+      version: "2.15.0",
+    },
+  ];
+
+  await writeDocsProjectCatalog(docsDirectory, projects);
+  await writePlatformVersionCatalog(
+    docsDirectory,
+    Object.fromEntries(
+      projects.map((project): [string, string] => [
+        project.slug,
+        project.version,
+      ]),
+    ),
+  );
+  await Promise.all(
+    projects.map(
+      (project): Promise<any> =>
+        writeGuide(
+          docsDirectory,
+          project.repositoryName,
+          project.displayName,
+          project.body,
+        ),
+    ),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--all",
+      "--strict",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  assert.deepEqual(
+    (await fs.readdir(outputDirectory))
+      .filter((file: any): any => file.endsWith(".html"))
+      .sort(),
+    ["core.html", "data.html", "serde.html"],
+  );
+
+  const catalog = JSON.parse(
+    await fs.readFile(
+      path.join(outputDirectory, "project-catalog.json"),
+      "utf8",
+    ),
+  );
+  const catalogProjectsBySlug = new Map<string, any>(
+    catalog.projects.map((project: any): any => [project.slug, project]),
+  );
+  assert.equal(catalog.projectCount, 3);
+
+  for (const project of projects) {
+    const generatedHtml = await fs.readFile(
+      path.join(outputDirectory, `${project.slug}.html`),
+      "utf8",
+    );
+    assert.match(generatedHtml, new RegExp(`id="${project.slug}-docs"`));
+    assert.match(
+      generatedHtml,
+      new RegExp(`${project.displayName.replace("Micronaut ", "")}`),
+    );
+    assert.match(generatedHtml, /docs-code-snippet-template/);
+    assert.match(generatedHtml, new RegExp(`${project.slug}-introduction`));
+    assert.equal(
+      catalogProjectsBySlug.get(project.slug)?.version,
+      project.version,
+    );
+    assert.equal(
+      catalogProjectsBySlug.get(project.slug)?.repositoryName,
+      project.repositoryName,
+    );
+  }
 });
 
 test("docs project manifest can be derived from Micronaut Platform libraries", async (t: any): Promise<any> => {
@@ -1266,6 +1484,36 @@ async function writeDocsProjectCatalog(
   );
 }
 
+async function writePlatformVersionCatalog(
+  docsDirectory: string,
+  versionsBySlug: Record<string, string>,
+): Promise<void> {
+  const catalogFile = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-platform",
+    "gradle",
+    "libs.versions.toml",
+  );
+  await fs.mkdir(path.dirname(catalogFile), { recursive: true });
+  await fs.writeFile(
+    catalogFile,
+    [
+      "[versions]",
+      ...Object.entries(versionsBySlug).map(
+        ([slug, version]): string => `managed-micronaut-${slug} = "${version}"`,
+      ),
+      "",
+      "[libraries]",
+      ...Object.keys(versionsBySlug).map(
+        (slug): string =>
+          `boms-micronaut-${slug} = { module = "io.micronaut.${slug}:micronaut-${slug}-bom", version.ref = "managed-micronaut-${slug}" }`,
+      ),
+    ].join("\n"),
+    "utf8",
+  );
+}
+
 async function writeGuide(
   docsDirectory: any,
   repositoryName: any,
@@ -1292,6 +1540,34 @@ async function writeGuide(
     body,
     "utf8",
   );
+}
+
+function searchProject(
+  slug: string,
+  displayName: string,
+  sectionTitle: string,
+) {
+  return {
+    slug,
+    displayName,
+    shortName: displayName.replace(/^Micronaut\s+/i, ""),
+    projectKey: slug,
+    module: `io.micronaut.${slug}:micronaut-${slug}-bom`,
+    repositoryName: `micronaut-${slug}`,
+    repositoryUrl: `https://github.com/micronaut-projects/micronaut-${slug}.git`,
+    href: `/docs/${slug}/`,
+    shortDescription: sectionTitle,
+    longDescription: `${displayName} generated docs test project.`,
+    searchTerms: [slug],
+    sections: [
+      {
+        id: `${slug}-overview`,
+        number: "1",
+        title: sectionTitle,
+        summary: `${sectionTitle} fallback.`,
+      },
+    ],
+  };
 }
 
 function lines(value: any): any {

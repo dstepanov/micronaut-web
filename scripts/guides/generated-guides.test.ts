@@ -322,7 +322,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides:browser"],
-    "playwright test --config playwright.config.ts",
+    "node scripts/prepare-playwright-generated-content.ts guides && playwright test --config playwright.config.ts tests/playwright/guides.spec.ts",
   );
   assert.match(prepareScript, /Promise\.all/);
   assert.match(prepareScript, /render-docs\.ts/);

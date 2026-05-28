@@ -435,6 +435,7 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   assert.match(docsWorkflow, /default:\s*dstepanov\/micronaut-docs/);
   assert.match(docsWorkflow, /path:\s*published-docs/);
   assert.match(docsWorkflow, /working-directory:\s*published-docs/);
+  assert.match(docsWorkflow, /npx playwright install --with-deps chromium/);
   assert.match(guidesWorkflow, /default:\s*dstepanov\/micronaut-guides/);
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);

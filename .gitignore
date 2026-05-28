@@ -3,6 +3,7 @@
 # Editors and local tool state
 .idea/
 .vscode/
+.playwright/
 .playwright-mcp/
 .docs/
 

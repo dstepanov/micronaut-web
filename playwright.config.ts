@@ -28,7 +28,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `ASTRO_TELEMETRY_DISABLED=1 astro dev --host 127.0.0.1 --port ${port}`,
-    url: `${baseURL}/guides/`,
+    url: `${baseURL}/`,
     reuseExistingServer: false,
     timeout: 120_000,
   },
