@@ -12,6 +12,7 @@ const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
   "..",
+  "..",
 );
 
 test("generated guides fragments, manifest, and assets are ignored", async (): Promise<void> => {
@@ -324,7 +325,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides"],
-    "node --test scripts/guides/*.test.ts && node scripts/run-guides-browser-tests.ts",
+    "node --test scripts/tests/guides/*.test.ts && node scripts/run-guides-browser-tests.ts",
   );
   assert.equal(
     packageJson.scripts["test:guides:browser"],

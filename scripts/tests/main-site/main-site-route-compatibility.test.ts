@@ -7,6 +7,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
+  "..",
+  "..",
 );
 const routeCompatibility = importRouteCompatibility();
 

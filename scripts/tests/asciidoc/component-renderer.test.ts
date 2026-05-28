@@ -5,8 +5,8 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { micronautExtensionRegistry } from "../extensions/index.ts";
-import { renderAsciiDoc } from "../rendering.ts";
+import { micronautExtensionRegistry } from "../../asciidoc/extensions/index.ts";
+import { renderAsciiDoc } from "../../asciidoc/rendering.ts";
 import { guideExtensionRegistry } from "../../guides/extensions/index.ts";
 import type { GuideRenderContext } from "../../guides/model.ts";
 
@@ -19,6 +19,7 @@ const projectDirectory = path.resolve(
 const fixtureDirectory = path.join(
   projectDirectory,
   "scripts",
+  "tests",
   "asciidoc",
   "fixtures",
 );

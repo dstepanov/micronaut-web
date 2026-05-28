@@ -10,6 +10,8 @@ import * as ts from "typescript";
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
+  "..",
+  "..",
 );
 const sourceDirectory = path.join(projectDirectory, "src");
 const hydratedDirectivePattern =

@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
 
-import { extractInlineAssets } from "./shared/inline-assets.ts";
+import { extractInlineAssets } from "../../shared/inline-assets.ts";
 
 test("inline asset extraction externalizes executable scripts and styles", async (t) => {
   const dist = await temporaryDirectory(t);

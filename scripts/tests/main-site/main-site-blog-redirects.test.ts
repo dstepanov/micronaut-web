@@ -9,6 +9,8 @@ import * as ts from "typescript";
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
+  "..",
+  "..",
 );
 const blogRedirects = importBlogRedirects();
 
@@ -144,7 +146,7 @@ test("main-site browser tests are wired through a surface-aware runner", async (
 
   assert.equal(
     packageJson.scripts["test:main-site"],
-    "node --test scripts/main-site*.test.ts && node scripts/run-main-site-browser-tests.ts",
+    "node --test scripts/tests/main-site/*.test.ts && node scripts/run-main-site-browser-tests.ts",
   );
   assert.equal(
     packageJson.scripts["test:main-site:browser"],

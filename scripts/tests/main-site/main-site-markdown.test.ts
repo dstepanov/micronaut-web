@@ -13,6 +13,8 @@ import { build } from "esbuild";
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
+  "..",
+  "..",
 );
 const require = createRequire(import.meta.url);
 const modules = importSnippetModules();

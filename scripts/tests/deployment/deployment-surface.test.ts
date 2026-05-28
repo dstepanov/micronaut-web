@@ -5,12 +5,14 @@ import path from "node:path";
 import test, { type TestContext } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { publishDocsSurface } from "./publish-docs-surface.ts";
-import { pruneSurface } from "./prune-surface.ts";
-import { updateDocsVersionManifest } from "./update-docs-version-manifest.ts";
+import { pruneSurface } from "../../prune-surface.ts";
+import { publishDocsSurface } from "../../publish-docs-surface.ts";
+import { updateDocsVersionManifest } from "../../update-docs-version-manifest.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
   "..",
 );
 const deploymentConfigFile = path.join(
@@ -767,14 +769,14 @@ test("docs publish merge preserves shared assets and updates version roots", asy
 async function importDeploymentConfig(
   scenario: string,
   env: Record<string, string | undefined>,
-): Promise<typeof import("../src/lib/deployment-config.ts")> {
+): Promise<typeof import("../../../src/lib/deployment-config.ts")> {
   return importWithEnv(deploymentConfigFile, scenario, env);
 }
 
 async function importSurfaceRoutes(
   scenario: string,
   env: Record<string, string | undefined>,
-): Promise<typeof import("../src/lib/surface-routes.ts")> {
+): Promise<typeof import("../../../src/lib/surface-routes.ts")> {
   return importWithEnv(surfaceRoutesFile, scenario, env);
 }
 

@@ -8,17 +8,21 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { highlightListingBlocks, shikiLanguage } from "../shared/highlight.ts";
-import { readPlatformCatalogProjects } from "./project-manifest.ts";
+import { readPlatformCatalogProjects } from "../../docs/project-manifest.ts";
 import {
   buildDocsSearchIndex,
   extractGeneratedDocSearchItems,
-} from "./search-index.ts";
-import { isFatalDocsDiagnostic } from "./renderer.ts";
+} from "../../docs/search-index.ts";
+import { isFatalDocsDiagnostic } from "../../docs/renderer.ts";
+import {
+  highlightListingBlocks,
+  shikiLanguage,
+} from "../../shared/highlight.ts";
 
 const execFile = promisify(execFileCallback);
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
+  "..",
   "..",
   "..",
 );
@@ -38,7 +42,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   );
   assert.equal(
     packageJson.scripts["test:docs"],
-    "node --test scripts/docs/*.test.ts && node scripts/run-docs-browser-tests.ts",
+    "node --test scripts/tests/docs/*.test.ts && node scripts/run-docs-browser-tests.ts",
   );
   assert.equal(
     packageJson.scripts["test:docs:browser"],
