@@ -23,7 +23,42 @@ npm run build:guides
 
 ## Script Development
 
-All repository scripts under `scripts/` must be TypeScript files. Add new scripts as `.ts`, import other local script modules with `.ts` extensions, invoke them from `package.json` with `node scripts/...ts` or `node --test scripts/...test.ts`, and keep the full `npm run typecheck:scripts` TypeScript check passing. The script check uses strict TypeScript settings and non-pretty compiler output for CI logs. TypeScript script style is checked separately with `npm run style:scripts`, which is scoped to `scripts/**/*.ts` only. Node 24 or newer is assumed for direct TypeScript script execution, matching CI.
+All repository scripts under `scripts/` must be TypeScript files. Add new scripts as `.ts`, import other local script modules with `.ts` extensions, invoke them from `package.json` with `node scripts/...ts` or `node --test scripts/tests/...test.ts`, and keep the full `npm run typecheck:scripts` TypeScript check passing. The script check uses strict TypeScript settings and non-pretty compiler output for CI logs. TypeScript script style is checked separately with `npm run style:scripts`, which is scoped to `scripts/**/*.ts` only. Node 24 or newer is assumed for direct TypeScript script execution, matching CI.
+
+### Package Scripts
+
+| Script                              | Purpose                                                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                     | Runs TypeScript checks, script formatting, script tests, browser-backed surface tests, and snippet style validation. |
+| `npm run snippet-styles`            | Verifies generated docs snippet styles stay shared instead of copied into runtime layout code.                       |
+| `npm run sync:docs-projects`        | Refreshes `src/data/docs-projects.fixture.json` from a local Micronaut Platform checkout.                            |
+| `npm run extract:inline-assets`     | Externalizes inline executable scripts and styles from built HTML.                                                   |
+| `npm run render:docs`               | Renders generated docs fragments and the docs project catalog.                                                       |
+| `npm run render:guides`             | Renders generated guide fragments and the guide manifest.                                                            |
+| `npm run prepare:generated-docs`    | Alias for `render:docs`, used by docs preparation flows.                                                             |
+| `npm run prepare:generated-content` | Renders docs and guides generated content together.                                                                  |
+| `npm run test:main-site`            | Runs main-site script tests and the main-site Playwright wrapper.                                                    |
+| `npm run test:main-site:browser`    | Runs the main-site Playwright spec directly.                                                                         |
+| `npm run test:asciidoc`             | Runs shared Asciidoc renderer and macro tests.                                                                       |
+| `npm run test:docs`                 | Runs docs script tests and the docs Playwright wrapper.                                                              |
+| `npm run test:docs:browser`         | Prepares docs generated content and runs the docs Playwright spec.                                                   |
+| `npm run test:guides`               | Runs guides script tests and the guides Playwright wrapper.                                                          |
+| `npm run test:guides:browser`       | Prepares guides generated content and runs the guides Playwright spec.                                               |
+| `npm run test:deployment`           | Runs deployment, pruning, publishing, and surface-routing script tests.                                              |
+| `npm run typecheck`                 | Runs the main TypeScript project check.                                                                              |
+| `npm run typecheck:scripts`         | Runs the strict TypeScript check for files under `scripts/`.                                                         |
+| `npm run style:scripts`             | Checks TypeScript script formatting with Prettier.                                                                   |
+| `npm run dev`                       | Runs the full check, prepares generated content, and starts Astro dev on `127.0.0.1`.                                |
+| `npm run build:site`                | Runs checks, prepares generated content, builds Astro, externalizes inline assets, and prepares template artifacts.  |
+| `npm run build`                     | Same as `build:site`; kept as the default full-site build command.                                                   |
+| `npm run build:surface`             | Builds and prunes a selected deployment surface.                                                                     |
+| `npm run build:main`                | Builds the standalone main surface.                                                                                  |
+| `npm run build:docs`                | Builds the standalone docs surface.                                                                                  |
+| `npm run build:guides`              | Builds the standalone guides surface.                                                                                |
+| `npm run prune:surface`             | Prunes an existing `dist` output for the selected surface.                                                           |
+| `npm run update:docs-versions`      | Rebuilds the published docs version manifest.                                                                        |
+| `npm run publish:docs-surface`      | Merges a docs surface build into an existing published docs tree.                                                    |
+| `npm run preview`                   | Runs `astro preview` on `127.0.0.1`.                                                                                 |
 
 ## Design Tokens
 

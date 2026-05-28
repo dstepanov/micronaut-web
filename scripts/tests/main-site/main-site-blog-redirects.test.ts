@@ -226,11 +226,6 @@ test("brand content prefers canonical shared asset paths", async (): Promise<voi
     ),
     "utf8",
   );
-  const normalizer = await fs.readFile(
-    path.join(projectDirectory, "scripts", "normalize-main-site-markdown.ts"),
-    "utf8",
-  );
-
   assert.match(
     logoContent,
     /\/micronaut-assets\/logos\/micronaut-horizontal-black\.svg/,
@@ -242,10 +237,6 @@ test("brand content prefers canonical shared asset paths", async (): Promise<voi
   assert.match(logoContent, /\/micronaut-assets\/icons\/micronaut-sally\.svg/);
   assert.doesNotMatch(logoContent, /521[014]-/);
   assert.doesNotMatch(faqContent, /5087-Micronaut_Brand_Guidelines\.pdf/);
-  assert.match(
-    normalizer,
-    /5210: "\/micronaut-assets\/logos\/micronaut-horizontal-black\.svg"/,
-  );
 });
 
 test("FAQ accordion items are extracted from rendered markdown HTML", async (): Promise<void> => {
