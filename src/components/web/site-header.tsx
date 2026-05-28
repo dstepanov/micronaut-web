@@ -23,7 +23,11 @@ import {
 import { MicronautLogo } from "@/components/web/micronaut-logo";
 import { SearchDialog } from "@/components/web/search-dialog";
 import { ThemeModeSwitch } from "@/components/web/theme-toggle";
-import { withBasePath, withSurfacePath } from "@/lib/base-path";
+import {
+  withConfiguredBasePath,
+  withConfiguredSurfacePath,
+  type SiteSurfaceUrls,
+} from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
 type SurfaceId = "main" | "docs" | "guides" | "launch";
@@ -222,10 +226,6 @@ function MobileColorModeSwitch() {
   );
 }
 
-function mobileHref(link: MobileMenuLink) {
-  return withSurfacePath(link.surface || "main", link.href);
-}
-
 function isActiveMobileLink(link: MobileMenuLink, surface: SurfaceId) {
   return Boolean(
     link.surface && link.surface !== "main" && link.surface === surface,
@@ -233,14 +233,26 @@ function isActiveMobileLink(link: MobileMenuLink, surface: SurfaceId) {
 }
 
 export function SiteHeader({
+  docsSearchIndexUrl,
   surface = "main",
   hideBrand = false,
   mainSitePages = [],
+  navigationUrls,
 }: {
+  docsSearchIndexUrl?: string;
   surface?: SurfaceId;
   hideBrand?: boolean;
   mainSitePages?: MainSiteSearchPage[];
+  navigationUrls?: SiteSurfaceUrls;
 }) {
+  const surfaceHref = (targetSurface: SurfaceId, href: string) =>
+    withConfiguredSurfacePath(targetSurface, href, navigationUrls);
+  const mobileLinkHref = (link: MobileMenuLink) =>
+    withConfiguredSurfacePath(
+      link.surface || "main",
+      link.href,
+      navigationUrls,
+    );
   const desktopPrimaryLinks = primaryLinks.filter(
     (link) => link.surface !== "main" && link.surface !== "launch",
   );
@@ -253,11 +265,14 @@ export function SiteHeader({
       <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-2 px-4 sm:px-6 lg:gap-4 xl:px-0">
         {!hideBrand ? (
           <a
-            href={withSurfacePath("main", "/")}
+            href={surfaceHref("main", "/")}
             aria-label="Micronaut home"
             className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground no-underline"
           >
-            <MicronautLogo className="h-9 w-[156px] sm:h-11 sm:w-[192px]" />
+            <MicronautLogo
+              assetBaseUrl={navigationUrls?.main}
+              className="h-9 w-[156px] sm:h-11 sm:w-[192px]"
+            />
           </a>
         ) : null}
         <NavigationMenu viewport={false} className="hidden lg:flex">
@@ -265,7 +280,7 @@ export function SiteHeader({
             {desktopPrimaryLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
-                  href={withSurfacePath(link.surface, link.href)}
+                  href={surfaceHref(link.surface, link.href)}
                   active={surface === link.surface}
                   className={cn(
                     "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -296,7 +311,10 @@ export function SiteHeader({
                       {group.links.map((link) => (
                         <NavigationMenuLink
                           key={link.href}
-                          href={withBasePath(link.href)}
+                          href={withConfiguredBasePath(
+                            link.href,
+                            navigationUrls,
+                          )}
                           className="min-h-20 rounded-md p-3"
                         >
                           <span className="font-medium">{link.label}</span>
@@ -317,6 +335,8 @@ export function SiteHeader({
             className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]"
             mainSitePages={mainSitePages}
             mode={surface === "docs" ? "docs" : "site"}
+            navigationUrls={navigationUrls}
+            docsSearchIndexUrl={docsSearchIndexUrl}
           />
           <Button
             variant="outline"
@@ -324,7 +344,7 @@ export function SiteHeader({
             className="hidden h-9 lg:inline-flex"
             asChild
           >
-            <a href={withSurfacePath("launch", "/launch/")}>Launch</a>
+            <a href={surfaceHref("launch", "/launch/")}>Launch</a>
           </Button>
           <ThemeModeSwitch className="hidden lg:inline-flex" />
           <Sheet>
@@ -369,7 +389,7 @@ export function SiteHeader({
                         {group.links.map((link) => (
                           <SheetClose asChild key={link.href}>
                             <a
-                              href={mobileHref(link)}
+                              href={mobileLinkHref(link)}
                               aria-current={
                                 isActiveMobileLink(link, surface)
                                   ? "page"

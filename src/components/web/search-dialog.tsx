@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, FileCode2, FileText, FolderGit2, Package, Rocket, Search, SlidersHorizontal, Tag } from "lucide-react";
+import {
+  BookOpen,
+  FileCode2,
+  FileText,
+  FolderGit2,
+  Package,
+  Rocket,
+  Search,
+  SlidersHorizontal,
+  Tag,
+} from "lucide-react";
 
 import {
   CommandDialog,
@@ -10,11 +20,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator
+  CommandSeparator,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { withBasePath } from "@/lib/base-path";
+import {
+  withConfiguredBasePath,
+  withBasePath,
+  type SiteSurfaceUrls,
+} from "@/lib/base-path";
 import {
   docsSearchItems,
   searchItems,
@@ -38,7 +52,14 @@ function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
   return <FileText />;
 }
 
-const docsScopes = ["All", "Projects", "Docs", "Properties", "Classes", "Repos"] as const;
+const docsScopes = [
+  "All",
+  "Projects",
+  "Docs",
+  "Properties",
+  "Classes",
+  "Repos",
+] as const;
 type DocsScope = (typeof docsScopes)[number];
 
 function scopeForItem(item: SearchItem): Exclude<DocsScope, "All"> {
@@ -63,27 +84,44 @@ function matchesSearchItem(item: SearchItem, query: string) {
 
 export function SearchDialog({
   className,
+  docsSearchIndexUrl,
   mainSitePages = [],
   mode = "site",
-  buttonLabel
+  navigationUrls,
+  buttonLabel,
 }: {
   className?: string;
+  docsSearchIndexUrl?: string;
   mainSitePages?: MainSiteSearchPage[];
   mode?: "site" | "docs";
+  navigationUrls?: SiteSurfaceUrls;
   buttonLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [docsScope, setDocsScope] = useState<DocsScope>("All");
-  const [generatedDocsItems, setGeneratedDocsItems] = useState<SearchItem[]>([]);
+  const [generatedDocsItems, setGeneratedDocsItems] = useState<SearchItem[]>(
+    [],
+  );
   const items = useMemo(() => searchItems(), []);
   const fallbackDocsItems = useMemo(() => docsSearchItems(), []);
-  const docs = useMemo(() => items.filter((item) => item.href.startsWith("/docs/")).slice(0, 80), [items]);
-  const guides = useMemo(() => items.filter((item) => item.href.startsWith("/guides/")).slice(0, 80), [items]);
-  const tags = useMemo(() => items.filter((item) => item.kind === "Tag").slice(0, 40), [items]);
+  const docs = useMemo(
+    () => items.filter((item) => item.href.startsWith("/docs/")).slice(0, 80),
+    [items],
+  );
+  const guides = useMemo(
+    () => items.filter((item) => item.href.startsWith("/guides/")).slice(0, 80),
+    [items],
+  );
+  const tags = useMemo(
+    () => items.filter((item) => item.kind === "Tag").slice(0, 40),
+    [items],
+  );
   const pages = useMemo(() => mainSitePages.slice(0, 80), [mainSitePages]);
   const docsModeItems = useMemo(() => {
-    const source = generatedDocsItems.length ? generatedDocsItems : fallbackDocsItems;
+    const source = generatedDocsItems.length
+      ? generatedDocsItems
+      : fallbackDocsItems;
     return source
       .filter((item) => docsScope === "All" || scopeForItem(item) === docsScope)
       .filter((item) => matchesSearchItem(item, searchQuery))
@@ -92,7 +130,10 @@ export function SearchDialog({
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if ((event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey)) {
+      if (
+        (event.key === "k" || event.key === "K") &&
+        (event.metaKey || event.ctrlKey)
+      ) {
         event.preventDefault();
         setOpen((current) => !current);
       }
@@ -106,8 +147,8 @@ export function SearchDialog({
       return;
     }
     let cancelled = false;
-    fetch(withBasePath("/docs/search-index.json"))
-      .then((response) => response.ok ? response.json() : undefined)
+    fetch(docsSearchIndexUrl || withBasePath("/docs/search-index.json"))
+      .then((response) => (response.ok ? response.json() : undefined))
       .then((payload) => {
         if (!cancelled && Array.isArray(payload?.items)) {
           setGeneratedDocsItems(payload.items);
@@ -119,20 +160,23 @@ export function SearchDialog({
     return () => {
       cancelled = true;
     };
-  }, [generatedDocsItems.length, mode, open]);
+  }, [docsSearchIndexUrl, generatedDocsItems.length, mode, open]);
 
   const navigateTo = (href: string) => {
-    window.location.href = withBasePath(href);
+    window.location.href = withConfiguredBasePath(href, navigationUrls);
     setOpen(false);
   };
 
-  const dialogTitle = mode === "docs" ? "Search Micronaut Docs" : "Search Micronaut";
-  const dialogDescription = mode === "docs"
-    ? "Search projects, classes, properties, docs, and repositories."
-    : "Search projects, guides, sections, and tags.";
-  const placeholder = mode === "docs"
-    ? "Search projects, classes, properties, docs..."
-    : "Search projects, guides, sections, and tags...";
+  const dialogTitle =
+    mode === "docs" ? "Search Micronaut Docs" : "Search Micronaut";
+  const dialogDescription =
+    mode === "docs"
+      ? "Search projects, classes, properties, docs, and repositories."
+      : "Search projects, guides, sections, and tags.";
+  const placeholder =
+    mode === "docs"
+      ? "Search projects, classes, properties, docs..."
+      : "Search projects, guides, sections, and tags...";
   const resolvedButtonLabel = buttonLabel || "Search docs...";
 
   return (
@@ -145,11 +189,15 @@ export function SearchDialog({
         onClick={() => setOpen(true)}
       >
         <Search />
-        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">{resolvedButtonLabel}</span>
-        <kbd className={cn(
-          "ml-auto hidden rounded border px-1.5 py-0.5 text-[0.7rem] text-muted-foreground md:inline",
-          buttonLabel ? "border-mn-border bg-mn-surface-raised" : "bg-muted"
-        )}>
+        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">
+          {resolvedButtonLabel}
+        </span>
+        <kbd
+          className={cn(
+            "ml-auto hidden rounded border px-1.5 py-0.5 text-[0.7rem] text-muted-foreground md:inline",
+            buttonLabel ? "border-mn-border bg-mn-surface-raised" : "bg-muted",
+          )}
+        >
           ⌘K
         </kbd>
       </Button>
@@ -160,7 +208,11 @@ export function SearchDialog({
         description={dialogDescription}
         className="max-w-2xl"
       >
-        <CommandInput placeholder={placeholder} value={searchQuery} onValueChange={setSearchQuery} />
+        <CommandInput
+          placeholder={placeholder}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
         <CommandList className="max-h-[28rem]">
           <CommandEmpty>No results found.</CommandEmpty>
           {mode === "docs" ? (
@@ -172,7 +224,7 @@ export function SearchDialog({
                     type="button"
                     className={cn(
                       "rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-accent-foreground",
-                      docsScope === scope && "bg-accent text-accent-foreground"
+                      docsScope === scope && "bg-accent text-accent-foreground",
                     )}
                     aria-pressed={docsScope === scope}
                     onClick={() => setDocsScope(scope)}
@@ -181,30 +233,38 @@ export function SearchDialog({
                   </button>
                 ))}
               </div>
-              {docsScopes.filter((scope) => scope !== "All").map((scope) => {
-                const scopedItems = docsModeItems.filter((item) => scopeForItem(item) === scope);
-                if (!scopedItems.length) return null;
-                return (
-                  <CommandGroup key={scope} heading={scope}>
-                    {scopedItems.map((item) => (
-                      <CommandItem
-                        key={`${item.scope}-${item.kind}-${item.href}-${item.title}`}
-                        value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
-                        onSelect={() => navigateTo(item.href)}
-                      >
-                        <ResultIcon kind={item.kind} />
-                        <span className="grid min-w-0 gap-0.5">
-                          <span className="truncate font-medium">{item.title}</span>
-                          <span className="truncate text-xs text-muted-foreground">{item.description}</span>
-                        </span>
-                        <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                          {scope}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                );
-              })}
+              {docsScopes
+                .filter((scope) => scope !== "All")
+                .map((scope) => {
+                  const scopedItems = docsModeItems.filter(
+                    (item) => scopeForItem(item) === scope,
+                  );
+                  if (!scopedItems.length) return null;
+                  return (
+                    <CommandGroup key={scope} heading={scope}>
+                      {scopedItems.map((item) => (
+                        <CommandItem
+                          key={`${item.scope}-${item.kind}-${item.href}-${item.title}`}
+                          value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
+                          onSelect={() => navigateTo(item.href)}
+                        >
+                          <ResultIcon kind={item.kind} />
+                          <span className="grid min-w-0 gap-0.5">
+                            <span className="truncate font-medium">
+                              {item.title}
+                            </span>
+                            <span className="truncate text-xs text-muted-foreground">
+                              {item.description}
+                            </span>
+                          </span>
+                          <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
+                            {scope}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  );
+                })}
             </>
           ) : (
             <>
@@ -215,8 +275,12 @@ export function SearchDialog({
                 >
                   <Rocket />
                   <span className="grid min-w-0 gap-0.5">
-                    <span className="truncate font-medium">Launch a project</span>
-                    <span className="truncate text-xs text-muted-foreground">Choose features and generate a Micronaut application.</span>
+                    <span className="truncate font-medium">
+                      Launch a project
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      Choose features and generate a Micronaut application.
+                    </span>
                   </span>
                 </CommandItem>
               </CommandGroup>
@@ -231,7 +295,9 @@ export function SearchDialog({
                     <FileText />
                     <span className="grid min-w-0 gap-0.5">
                       <span className="truncate font-medium">{page.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">{page.description}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {page.description}
+                      </span>
                     </span>
                     <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
                       Page
@@ -250,7 +316,9 @@ export function SearchDialog({
                     <ResultIcon kind={item.kind} />
                     <span className="grid min-w-0 gap-0.5">
                       <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">{item.description}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {item.description}
+                      </span>
                     </span>
                     <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
                       Docs
@@ -269,7 +337,9 @@ export function SearchDialog({
                     <ResultIcon kind={item.kind} />
                     <span className="grid min-w-0 gap-0.5">
                       <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">{item.description}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {item.description}
+                      </span>
                     </span>
                     <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
                       Guide
@@ -288,7 +358,9 @@ export function SearchDialog({
                     <ResultIcon kind={item.kind} />
                     <span className="grid min-w-0 gap-0.5">
                       <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">{item.description}</span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {item.description}
+                      </span>
                     </span>
                     <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
                       Tag

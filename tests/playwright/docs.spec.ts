@@ -9,7 +9,7 @@ const docsProjects = [
 test("docs catalog lays out generated project cards", async ({ page }) => {
   const failures = collectBrowserFailures(page);
 
-  await page.goto("/docs/");
+  await page.goto(appPath("/docs/"));
 
   await expect(page.locator("[data-docs-shell]")).toBeVisible();
   await expect(
@@ -23,7 +23,7 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
     await expect(card).toBeVisible();
     await expect(card.getByRole("link", { name: "Docs" })).toHaveAttribute(
       "href",
-      new RegExp(`/docs/${projectSlug(projectName)}/$`),
+      docsProjectHrefPattern(projectSlug(projectName)),
     );
   }
 
@@ -36,7 +36,7 @@ test("generated docs page renders desktop content and sidebars without overlap",
 }) => {
   const failures = collectBrowserFailures(page);
 
-  await page.goto("/docs/core/");
+  await page.goto(appPath("/docs/core/"));
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Micronaut Core" }),
@@ -76,7 +76,7 @@ test("generated docs page fits the mobile viewport", async ({ page }) => {
   const failures = collectBrowserFailures(page);
   await page.setViewportSize({ width: 390, height: 860 });
 
-  await page.goto("/docs/data/");
+  await page.goto(appPath("/docs/data/"));
 
   await expect(page.locator("[data-generated-docs]")).toBeVisible();
   await expect(
@@ -129,6 +129,17 @@ function projectSlug(projectName: string): string {
     .replace("serialization", "serde");
 }
 
+function docsProjectHrefPattern(slug: string): RegExp {
+  if (process.env.MICRONAUT_DEPLOY_SURFACE === "docs") {
+    return new RegExp(`${escapeRegExp(appPath(`/latest/${slug}/`))}$`);
+  }
+  return new RegExp(`/docs/${slug}/$`);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(
     () =>
@@ -167,4 +178,22 @@ function assertBox(
   selector: string,
 ): asserts box is NonNullable<typeof box> {
   expect(box, `${selector} should have a layout box`).not.toBeNull();
+}
+
+function appPath(path: string): string {
+  const basePath = normalizeBasePath(
+    process.env.PLAYWRIGHT_BASE_PATH || process.env.ASTRO_BASE,
+  );
+  if (path === "/") {
+    return basePath;
+  }
+  return `${basePath}${path.replace(/^\/+/, "")}`;
+}
+
+function normalizeBasePath(path: string | undefined): string {
+  if (!path || path === "/") {
+    return "/";
+  }
+  const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
 }

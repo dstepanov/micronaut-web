@@ -233,6 +233,11 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   assert.equal(await exists(path.join(dist, "docs")), false);
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
+  assert.equal(await exists(path.join(dist, "shell", "site-header.js")), false);
+  assert.equal(
+    await exists(path.join(dist, "shell", "site-header.css")),
+    false,
+  );
   assert.equal(await exists(path.join(dist, "latest", "assets")), false);
   const assetFile = await singleProjectHashedAssetFile(
     dist,
@@ -304,6 +309,11 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
   assert.equal(await exists(path.join(dist, "docs")), false);
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
+  assert.equal(await exists(path.join(dist, "shell", "site-header.js")), false);
+  assert.equal(
+    await exists(path.join(dist, "shell", "site-header.css")),
+    false,
+  );
   assert.equal(await exists(path.join(dist, "latest", "assets")), false);
   const assetFile = await singleProjectHashedAssetFile(
     dist,
@@ -365,6 +375,8 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   assert.equal(await exists(path.join(dist, "_astro", "app.js")), true);
   assert.equal(await exists(path.join(dist, "_astro", "app.css")), true);
   assert.equal(await exists(path.join(dist, "_astro", "chunk.js")), true);
+  assert.equal(await exists(path.join(dist, "shell", "site-header.js")), true);
+  assert.equal(await exists(path.join(dist, "shell", "site-header.css")), true);
   assert.equal(
     await exists(path.join(dist, "_astro", "fonts", "code.woff2")),
     true,
@@ -376,6 +388,32 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   assert.equal(await exists(path.join(dist, "latest")), false);
   assert.equal(await exists(path.join(dist, "micronaut-web")), false);
   assert.equal(await exists(path.join(dist, "versions.json")), false);
+});
+
+test("docs and guides production layouts load the shared header shell from the main site", async () => {
+  const layout = await fs.readFile(
+    path.join(projectDirectory, "src", "layouts", "WebLayout.astro"),
+    "utf8",
+  );
+  const shell = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "src",
+      "components",
+      "web",
+      "site-header-shell.tsx",
+    ),
+    "utf8",
+  );
+
+  assert.match(layout, /data-micronaut-site-header/);
+  assert.match(layout, /externalSurfaceUrls\.main/);
+  assert.match(layout, /shell\/site-header\.js/);
+  assert.match(layout, /shell\/site-header\.css/);
+  assert.match(layout, /!import\.meta\.env\.DEV/);
+  assert.match(shell, /createRoot/);
+  assert.match(shell, /@\/styles\/globals\.css/);
+  assert.match(shell, /SiteHeader/);
 });
 
 test("web workflow deploys the main surface through GitHub Pages Actions", async () => {
@@ -796,6 +834,8 @@ async function fakeDist(t: TestContext) {
     "latest/micronaut-http-client/index.html",
     "latest/assets/micronaut-http-client/images/client.png",
     "micronaut-assets/logo.svg",
+    "shell/site-header.js",
+    "shell/site-header.css",
     "micronaut-web/templates/docs/docs-page.html",
   ];
   await writeFiles(dist, files);

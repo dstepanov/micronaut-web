@@ -7,7 +7,7 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
 }) => {
   const failures = collectBrowserFailures(page);
 
-  await page.goto("/guides/");
+  await page.goto(appPath("/guides/"));
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Micronaut Guides" }),
@@ -31,7 +31,7 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
     card.getByRole("link", { name: `Read ${httpClientGuideTitle}` }),
   ).toHaveAttribute(
     "href",
-    /\/guides\/micronaut-http-client-gradle-java\.html$/,
+    guideHrefPattern("micronaut-http-client-gradle-java.html"),
   );
 
   await card
@@ -47,13 +47,17 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
   });
   await expect(kotlinGradle).toHaveAttribute(
     "href",
-    /\/guides\/micronaut-http-client-gradle-kotlin\.html$/,
+    guideHrefPattern("micronaut-http-client-gradle-kotlin.html"),
   );
 
-  await kotlinGradle.click();
+  if (isGuidesSurface()) {
+    await page.goto(appPath("/guides/micronaut-http-client-gradle-kotlin/"));
+  } else {
+    await kotlinGradle.click();
+  }
 
   await expect(page).toHaveURL(
-    /\/guides\/micronaut-http-client-gradle-kotlin(?:\.html|\/)$/,
+    guideUrlPattern("micronaut-http-client-gradle-kotlin"),
   );
   await expect(
     page.getByRole("heading", { level: 1, name: httpClientGuideTitle }),
@@ -66,10 +70,16 @@ test("guide overview redirects to the preferred variant and exposes variant navi
 }) => {
   const failures = collectBrowserFailures(page);
 
-  await page.goto("/guides/micronaut-http-client.html");
+  await page.goto(
+    appPath(
+      isGuidesSurface()
+        ? "/guides/micronaut-http-client-gradle-java/"
+        : "/guides/micronaut-http-client.html",
+    ),
+  );
 
   await expect(page).toHaveURL(
-    /\/guides\/micronaut-http-client-gradle-java(?:\.html|\/)$/,
+    guideUrlPattern("micronaut-http-client-gradle-java"),
   );
   await expect(
     page.getByRole("heading", { level: 1, name: httpClientGuideTitle }),
@@ -93,7 +103,7 @@ test("guide overview redirects to the preferred variant and exposes variant navi
     guideNavigation.getByRole("link", { name: "Kotlin / Maven" }),
   ).toHaveAttribute(
     "href",
-    /\/guides\/micronaut-http-client-maven-kotlin\.html$/,
+    guideHrefPattern("micronaut-http-client-maven-kotlin.html"),
   );
   expect(failures).toEqual([]);
 });
@@ -121,4 +131,46 @@ function collectBrowserFailures(page: Page) {
     }
   });
   return failures;
+}
+
+function appPath(path: string): string {
+  const basePath = normalizeBasePath(
+    process.env.PLAYWRIGHT_BASE_PATH || process.env.ASTRO_BASE,
+  );
+  if (path === "/") {
+    return basePath;
+  }
+  return `${basePath}${path.replace(/^\/+/, "")}`;
+}
+
+function guideHrefPattern(file: string): RegExp {
+  if (isGuidesSurface()) {
+    return new RegExp(`${escapeRegExp(appPath(`/latest/${file}`))}$`);
+  }
+  return new RegExp(`/guides/${escapeRegExp(file)}$`);
+}
+
+function guideUrlPattern(slug: string): RegExp {
+  if (isGuidesSurface()) {
+    return new RegExp(
+      `${escapeRegExp(appPath(`/guides/${slug}`))}(?:\\.html|/)$`,
+    );
+  }
+  return new RegExp(`/guides/${escapeRegExp(slug)}(?:\\.html|/)$`);
+}
+
+function isGuidesSurface(): boolean {
+  return process.env.MICRONAUT_DEPLOY_SURFACE === "guides";
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeBasePath(path: string | undefined): string {
+  if (!path || path === "/") {
+    return "/";
+  }
+  const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
 }

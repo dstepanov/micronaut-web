@@ -61,6 +61,11 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   assertScriptOrder(
     packageJson.scripts.build,
     "astro build",
+    "node scripts/build-site-header-shell.ts",
+  );
+  assertScriptOrder(
+    packageJson.scripts.build,
+    "node scripts/build-site-header-shell.ts",
     "npm run extract:inline-assets",
   );
   assertScriptOrder(
@@ -71,6 +76,11 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   assertScriptOrder(
     packageJson.scripts["build:site"],
     "astro build",
+    "node scripts/build-site-header-shell.ts",
+  );
+  assertScriptOrder(
+    packageJson.scripts["build:site"],
+    "node scripts/build-site-header-shell.ts",
     "npm run extract:inline-assets",
   );
 });

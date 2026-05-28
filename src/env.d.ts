@@ -26,3 +26,10 @@ declare const __MICRONAUT_DEPLOYMENT__:
       readonly guidesSiteUrl?: string;
     }
   | undefined;
+
+interface Window {
+  MicronautSiteHeader?: {
+    mount(element: HTMLElement): void;
+    mountAll(): void;
+  };
+}

@@ -4,6 +4,11 @@ import { SiteHeader } from "@/components/web/site-header";
 import { LEGACY_THEME_STORAGE_KEY, THEME_MODE_STORAGE_KEY } from "@/lib/experience-theme";
 import { getMainSitePageSummaries } from "@/lib/main-site-content";
 import { withBasePath } from "@/lib/base-path";
+import {
+  deploySurface,
+  externalSurfacePath,
+  externalSurfaceUrls
+} from "@/lib/deployment-config";
 
 interface Props {
   title: string;
@@ -20,7 +25,31 @@ const {
   surface = "main",
   hideHeader = false
 } = Astro.props;
-const mainSitePages = await getMainSitePageSummaries();
+const shouldUseRemoteHeader =
+  !import.meta.env.DEV &&
+  (deploySurface === "docs" || deploySurface === "guides") &&
+  (surface === "docs" || surface === "guides");
+const mainSitePages = shouldUseRemoteHeader
+  ? []
+  : await getMainSitePageSummaries();
+const remoteHeaderScriptUrl = new URL(
+  "shell/site-header.js",
+  externalSurfaceUrls.main
+).toString();
+const remoteHeaderStyleUrl = new URL(
+  "shell/site-header.css",
+  externalSurfaceUrls.main
+).toString();
+const docsSearchIndexUrl = externalSurfacePath(
+  "docs",
+  "/docs/search-index.json"
+);
+const remoteHeaderLinks = [
+  { label: "Docs", href: externalSurfacePath("docs", "/docs/") },
+  { label: "Guides", href: externalSurfacePath("guides", "/guides/") },
+  { label: "Blog", href: externalSurfacePath("main", "/blog/") },
+  { label: "Launch", href: externalSurfacePath("main", "/launch/") }
+];
 ---
 
 <!doctype html>
@@ -67,11 +96,56 @@ const mainSitePages = await getMainSitePageSummaries();
       })();
     </script>
     <link rel="icon" href={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")} />
+    {!hideHeader && shouldUseRemoteHeader && (
+      <link
+        rel="stylesheet"
+        href={remoteHeaderStyleUrl}
+        data-micronaut-site-header-style
+      />
+    )}
     <title>{title}</title>
   </head>
   <body>
     <div class="min-h-screen bg-background text-foreground">
-      {!hideHeader && (
+      {!hideHeader && shouldUseRemoteHeader && (
+        <>
+          <div
+            id="micronaut-site-header"
+            data-micronaut-site-header
+            data-surface={surface}
+            data-main-url={externalSurfaceUrls.main}
+            data-docs-url={externalSurfaceUrls.docs}
+            data-guides-url={externalSurfaceUrls.guides}
+            data-docs-search-index-url={docsSearchIndexUrl}
+          >
+            <nav
+              class="border-b bg-card/95 px-4 py-3 text-sm"
+              aria-label="Micronaut navigation"
+            >
+              <div class="mx-auto flex max-w-[var(--page-max)] flex-wrap items-center gap-3">
+                <a
+                  class="font-semibold text-foreground no-underline"
+                  href={externalSurfaceUrls.main}
+                >
+                  Micronaut
+                </a>
+                <span class="ml-auto flex flex-wrap items-center gap-3">
+                  {remoteHeaderLinks.map((link) => (
+                    <a
+                      class="text-muted-foreground no-underline hover:text-foreground"
+                      href={link.href}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </span>
+              </div>
+            </nav>
+          </div>
+          <script src={remoteHeaderScriptUrl} defer></script>
+        </>
+      )}
+      {!hideHeader && !shouldUseRemoteHeader && (
         <SiteHeader surface={surface} mainSitePages={mainSitePages} client:load />
       )}
       <slot />
