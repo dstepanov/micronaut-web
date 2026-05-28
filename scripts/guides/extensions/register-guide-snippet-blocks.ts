@@ -3,16 +3,18 @@ import path from "node:path";
 
 import type {
   Block,
+  BlockMacroProcessor,
   BlockProcessor,
   BlockProcessorDslInterface,
+  MacroProcessorDslInterface,
   Reader,
   Registry,
   Section,
 } from "@asciidoctor/core";
 
 import {
+  renderSnippetBlock,
   renderSnippetBlockWithCalloutReader,
-  type CalloutLineResolver,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import { extractTaggedSource } from "../../shared/tagged-source.ts";
 import {
@@ -52,24 +54,16 @@ type ResourceSourceSet = "main" | "test";
 export function registerGuideSnippetBlocks(
   registry: Registry,
   context: GuideRenderContext,
-  resolveCalloutLines: CalloutLineResolver,
 ): void {
-  registerGuideSnippetBlock(
-    registry,
-    GUIDE_SOURCE_BLOCK,
-    (payload) =>
-      sourceSnippetPayload(payload.target, payload.attributes, context, "main"),
-    resolveCalloutLines,
+  registerGuideSnippetBlock(registry, "source", GUIDE_SOURCE_BLOCK, (payload) =>
+    sourceSnippetPayload(payload.target, payload.attributes, context, "main"),
+  );
+  registerGuideSnippetBlock(registry, "test", GUIDE_TEST_BLOCK, (payload) =>
+    sourceSnippetPayload(payload.target, payload.attributes, context, "test"),
   );
   registerGuideSnippetBlock(
     registry,
-    GUIDE_TEST_BLOCK,
-    (payload) =>
-      sourceSnippetPayload(payload.target, payload.attributes, context, "test"),
-    resolveCalloutLines,
-  );
-  registerGuideSnippetBlock(
-    registry,
+    "rawTest",
     GUIDE_RAW_TEST_BLOCK,
     (payload) =>
       sourceSnippetPayload(
@@ -78,10 +72,10 @@ export function registerGuideSnippetBlocks(
         context,
         "raw-test",
       ),
-    resolveCalloutLines,
   );
   registerGuideSnippetBlock(
     registry,
+    "resource",
     GUIDE_RESOURCE_BLOCK,
     (payload) =>
       resourceSnippetPayload(
@@ -90,10 +84,10 @@ export function registerGuideSnippetBlocks(
         context,
         "main",
       ),
-    resolveCalloutLines,
   );
   registerGuideSnippetBlock(
     registry,
+    "testResource",
     GUIDE_TEST_RESOURCE_BLOCK,
     (payload) =>
       resourceSnippetPayload(
@@ -102,23 +96,42 @@ export function registerGuideSnippetBlocks(
         context,
         "test",
       ),
-    resolveCalloutLines,
   );
   registerGuideSnippetBlock(
     registry,
+    "zipInclude",
     GUIDE_ZIP_INCLUDE_BLOCK,
     (payload) =>
       zipIncludeSnippetPayload(payload.target, payload.attributes, context),
-    resolveCalloutLines,
   );
 }
 
 function registerGuideSnippetBlock(
   registry: Registry,
+  macroName: string,
   blockName: string,
   resolvePayload: GuideSnippetPayloadResolver,
-  resolveCalloutLines: CalloutLineResolver,
 ): void {
+  registry.blockMacro(
+    macroName,
+    function registerGuideSnippetMacro(this: MacroProcessorDslInterface): void {
+      this.process(async function processGuideSnippetMacro(
+        this: BlockMacroProcessor,
+        parent: unknown,
+        target: unknown,
+        attrs: unknown,
+      ): Promise<Block> {
+        return renderSnippetBlock(
+          this,
+          parent as Block | Section,
+          await resolvePayload(guideMacroPayload(String(target), attrs)),
+          undefined,
+          { collectManualCallouts: true },
+        );
+      });
+    },
+  );
+
   registry.block(function registerGuideSnippetBlock(
     this: BlockProcessorDslInterface,
   ): void {
@@ -136,7 +149,7 @@ function registerGuideSnippetBlock(
         parent as Block | Section,
         await resolvePayload(guideMacroPayloadFromValue(attributes.payload)),
         reader as Reader,
-        { collectManualCallouts: true, resolveCalloutLines },
+        { collectManualCallouts: true },
       );
     });
   });
@@ -146,6 +159,21 @@ function guideMacroPayloadFromValue(value: unknown): GuideMacroPayload {
   return JSON.parse(
     Buffer.from(String(value || ""), "base64url").toString("utf8"),
   ) as GuideMacroPayload;
+}
+
+function guideMacroPayload(target: string, attrs: unknown): GuideMacroPayload {
+  return {
+    attributes: guideMacroAttributes(attrs),
+    target,
+  };
+}
+
+function guideMacroAttributes(attrs: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries((attrs || {}) as Record<string, unknown>).map(
+      ([key, value]) => [key, String(value)],
+    ),
+  );
 }
 
 async function sourceSnippetPayload(

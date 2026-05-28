@@ -109,6 +109,10 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   );
   assertMicronautHttpClientGuideHasProperSnippets(html);
   assert.match(html, /Adds HTTP client dependency/);
+  assert.match(html, /Kotlin-only guide text remains for Java/);
+  assert.match(html, /Gradle-only guide text remains for Gradle/);
+  assert.doesNotMatch(html, /Java and Groovy guide text should not render/);
+  assert.doesNotMatch(html, /Maven-only guide text remains for Maven/);
   assert.match(html, /Manual callout keeps its place/);
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
@@ -138,7 +142,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   );
   assert.doesNotMatch(
     html,
-    /source:|common-template:|callout:|dependency:|diffLink:/,
+    /source:{1,2}|common-template:{1,2}|callout:{1,2}|dependency:{1,2}|diffLink:{1,2}|exclude-for-languages:{1,2}|exclude-for-build:{1,2}/,
   );
   assertNoRuntimeGeneratedRendering("generated guide HTML", html);
   const mavenHtml = await fs.readFile(
@@ -152,6 +156,8 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assertMicronautHttpClientGuideHasProperSnippets(mavenHtml);
   assert.match(mavenHtml, /Maven/);
   assert.match(mavenHtml, /io\.micronaut/);
+  assert.match(mavenHtml, /Maven-only guide text remains for Maven/);
+  assert.doesNotMatch(mavenHtml, /Gradle-only guide text remains for Gradle/);
   assert.doesNotMatch(mavenHtml, /<!--1-->|<!--2-->/);
 });
 
@@ -628,29 +634,43 @@ async function writeGuideFixture(
   await fs.writeFile(
     path.join(guideDirectory, `${slug}.adoc`),
     [
-      "common-template:template.adoc[arg0=default]",
-      "callout:fixture[arg0=World]",
+      "common-template::template.adoc[arg0=default]",
+      "callout::fixture[arg0=World]",
       "guideLink:another-guide[Another Guide]",
       "https://guides.micronaut.io/latest/legacy-guide.html[Legacy Guide]",
       "link:@sourceDir@.zip[Download]",
-      "diffLink:[]",
+      "",
+      "diffLink::[]",
+      "",
       ":dependencies:",
-      "dependency:micronaut-http-client[groupId=io.micronaut,callout=1]",
-      "dependency:micronaut-validation[groupId=io.micronaut.validation,callout=2]",
+      "dependency::micronaut-http-client[groupId=io.micronaut,callout=1]",
+      "dependency::micronaut-validation[groupId=io.micronaut.validation,callout=2]",
       ":dependencies:",
       "<1> Adds HTTP client dependency.",
       "<2> Adds validation dependency.",
-      "source:ExampleController[tags=package|hello]",
-      "resource:application.properties[tag=config]",
+      ":exclude-for-languages:java,groovy",
+      "Java and Groovy guide text should not render.",
+      ":exclude-for-languages:",
+      ":exclude-for-languages:kotlin",
+      "Kotlin-only guide text remains for Java.",
+      ":exclude-for-languages:",
+      ":exclude-for-build:gradle",
+      "Maven-only guide text remains for Maven.",
+      ":exclude-for-build:",
+      ":exclude-for-build:maven",
+      "Gradle-only guide text remains for Gradle.",
+      ":exclude-for-build:",
+      "source::ExampleController[tags=package|hello]",
+      "resource::application.properties[tag=config]",
       "<1> Properties comment callout attaches to the property line.",
-      "source:MarkedController[]",
-      "callout:generated-one[]",
+      "source::MarkedController[]",
+      "callout::generated-one[]",
       "<2> Manual callout keeps its place.",
-      "callout:generated-three[]",
-      "source:PartiallyMarkedController[]",
-      "callout:generated-one[]",
+      "callout::generated-three[]",
+      "source::PartiallyMarkedController[]",
+      "callout::generated-one[]",
       "<2> Missing source marker becomes manual.",
-      "source:GappedController[]",
+      "source::GappedController[]",
       "<1> Gapped first real callout.",
       "<2> Gapped missing marker becomes manual.",
       "<3> Gapped second real callout.",

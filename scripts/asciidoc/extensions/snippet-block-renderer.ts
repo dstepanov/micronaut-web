@@ -68,7 +68,6 @@ type ComponentRenderer = {
 
 type SnippetRenderOptions = {
   collectManualCallouts?: boolean;
-  resolveCalloutLines?: CalloutLineResolver;
 };
 
 type ComponentBlockProcessor = Pick<
@@ -93,10 +92,6 @@ export type CalloutReader = {
   readLine(): Promise<string | undefined>;
   unshiftLines(lines: string[]): void;
 };
-
-export type CalloutLineResolver = (
-  line: string,
-) => Promise<string[] | undefined>;
 
 export async function renderSnippetBlock(
   processor: ComponentBlockProcessor,
@@ -131,7 +126,6 @@ export async function renderSnippetBlockWithCalloutReader(
             manualCalloutLines.push(...lines);
           }
         : undefined,
-      resolveCalloutLines: options.resolveCalloutLines,
     },
   );
   const rendered = await renderSnippetPayloadCards({
@@ -516,7 +510,6 @@ async function absorbFollowingCalloutLines(
   options: {
     collectManualCallouts?: (lines: string[]) => void;
     manualCalloutsClass?: string;
-    resolveCalloutLines?: CalloutLineResolver;
   } = {},
 ): Promise<SnippetPayload> {
   if (!reader) {
@@ -526,7 +519,7 @@ async function absorbFollowingCalloutLines(
     options.manualCalloutsClass || MANUAL_CALLOUTS_CLASS;
   await consumeSnippetCalloutValidationListing(reader);
   const leadingBlankLines = await readLeadingBlankLines(reader);
-  const items = await readCalloutListItems(reader, options.resolveCalloutLines);
+  const items = await readCalloutListItems(reader);
 
   if (!items.length) {
     reader.unshiftLines(leadingBlankLines);
@@ -614,7 +607,6 @@ async function readLeadingBlankLines(reader: CalloutReader): Promise<string[]> {
 
 async function readCalloutListItems(
   reader: CalloutReader,
-  resolveCalloutLines?: CalloutLineResolver,
 ): Promise<CalloutItem[]> {
   const items: CalloutItem[] = [];
   let nextCallout = 1;
@@ -622,14 +614,6 @@ async function readCalloutListItems(
     const line = await reader.peekLine();
     if (line === undefined) {
       return items;
-    }
-    const resolvedLines = resolveCalloutLines
-      ? await resolveCalloutLines(line)
-      : undefined;
-    if (resolvedLines?.length) {
-      await reader.readLine();
-      reader.unshiftLines(resolvedLines);
-      continue;
     }
     const match = /^<(\.|\d+)>\s*(.*)$/.exec(line);
     if (match) {
@@ -647,7 +631,7 @@ async function readCalloutListItems(
     if (
       items.length &&
       !line.trim() &&
-      (await nextNonBlankLineIsCallout(reader, resolveCalloutLines))
+      (await nextNonBlankLineIsCallout(reader))
     ) {
       await reader.readLine();
       continue;
@@ -705,7 +689,6 @@ function manualCalloutBlockLines(
 
 async function nextNonBlankLineIsCallout(
   reader: CalloutReader,
-  resolveCalloutLines?: CalloutLineResolver,
 ): Promise<boolean> {
   const consumed = [];
   for (;;) {
@@ -719,10 +702,7 @@ async function nextNonBlankLineIsCallout(
       continue;
     }
     reader.unshiftLines(consumed);
-    return (
-      isCalloutListItem(line) ||
-      Boolean(resolveCalloutLines && (await resolveCalloutLines(line)))
-    );
+    return isCalloutListItem(line);
   }
 }
 

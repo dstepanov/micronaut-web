@@ -1,9 +1,9 @@
 import type {
   Block,
+  BlockMacroProcessor,
   BlockProcessor,
   BlockProcessorDslInterface,
-  DocumentProcessorDslInterface,
-  Reader,
+  MacroProcessorDslInterface,
   Registry,
   Section,
 } from "@asciidoctor/core";
@@ -11,7 +11,6 @@ import type {
 import { renderSnippetBlock } from "./snippet-block-renderer.ts";
 
 const DEPENDENCY_BLOCK = "dependency";
-const SNIPPET_CALLOUT_VALIDATION_CLASS = "docs-snippet-callout-validation";
 
 type DependencyContext = Record<string, unknown> & {
   attributes?: Record<string, string | undefined>;
@@ -47,40 +46,30 @@ type Dependency = {
   description: string;
 };
 
-type ConstructableReader = Reader & {
-  constructor: new (
-    document: unknown,
-    lines: string[],
-    cursor: unknown,
-    options: Record<string, unknown>,
-  ) => Reader;
-  cursor: unknown;
-  lines: string[];
-};
-
 export function registerDependencyBlock(
   registry: Registry,
   context: DependencyContext,
 ): void {
-  registry.preprocessor(function registerDependencyMacroPreprocessor(
-    this: DocumentProcessorDslInterface,
-  ): void {
-    this.process(function processDependencyMacroPreprocessor(
-      document: unknown,
-      reader: unknown,
-    ): Reader {
-      const sourceReader = reader as ConstructableReader;
-      return new sourceReader.constructor(
-        document,
-        rewriteDependencyMacrosForExtension(
-          sourceReader.lines.join("\n"),
-          context,
-        ).split(/\r?\n/),
-        sourceReader.cursor,
-        {},
-      );
-    });
-  });
+  registry.blockMacro(
+    "dependency",
+    function registerDependencyMacro(this: MacroProcessorDslInterface): void {
+      this.process(async function processDependencyMacro(
+        this: BlockMacroProcessor,
+        parent: unknown,
+        target: unknown,
+        attrs: unknown,
+      ): Promise<Block> {
+        return renderSnippetBlock(this, parent as Block | Section, {
+          ...dependencyPayload(
+            String(target),
+            attrs as MacroAttributes,
+            context,
+          ),
+          kind: "dependency",
+        });
+      });
+    },
+  );
 
   registry.block(function registerDependencyBlock(
     this: BlockProcessorDslInterface,
@@ -110,52 +99,6 @@ export function registerDependencyBlock(
   });
 }
 
-function rewriteDependencyMacrosForExtension(
-  source: string,
-  context: DependencyContext,
-): string {
-  const lines = source.split(/\r?\n/);
-  const output: string[] = [];
-  let delimiter: string | undefined;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (delimiter) {
-      output.push(line);
-      if (trimmed === delimiter) {
-        delimiter = undefined;
-      }
-      continue;
-    }
-
-    const delimiterMatch = /^(-{4,}|\.{4,}|\+{4,}|_{4,})$/.exec(trimmed);
-    if (delimiterMatch) {
-      delimiter = delimiterMatch[1];
-      output.push(line);
-      continue;
-    }
-
-    const macroMatch = /^dependency:([^\[]+)\[(.*)]\s*$/.exec(line);
-    if (!macroMatch) {
-      output.push(line);
-      continue;
-    }
-
-    const attrs = parseAttributeList(macroMatch[2], {
-      includeText: true,
-      positionalKey: "$positional",
-    });
-    output.push(
-      snippetBlock(
-        "dependency",
-        dependencyPayload(macroMatch[1], attrs, context),
-      ),
-    );
-  }
-
-  return output.join("\n");
-}
-
 function blockTarget(attrs: Record<string, unknown>): string {
   const positional = Array.isArray(attrs._positional) ? attrs._positional : [];
   const dollarPositional = Array.isArray(attrs.$positional)
@@ -171,69 +114,10 @@ function blockTarget(attrs: Record<string, unknown>): string {
   );
 }
 
-function snippetBlock(kind: string, payload: DependencyPayload): string {
-  return snippetBlockLines(kind, payload, {
-    surroundWithBlankLines: false,
-  }).join("\n");
-}
-
-function snippetBlockLines(
-  kind: string,
-  payload: DependencyPayload,
-  options: { surroundWithBlankLines?: boolean } = {},
-): string[] {
-  const normalized = normalizeSnippetPayload(payload);
-  const lines: string[] = [];
-  if (options.surroundWithBlankLines !== false) {
-    lines.push("");
-  }
-  lines.push(snippetBlockAttributeLine(kind, normalized));
-  lines.push("--");
-  lines.push("--");
-  lines.push(...snippetCalloutValidationLines(normalized.samples));
-  if (options.surroundWithBlankLines !== false) {
-    lines.push("");
-  }
-  return lines;
-}
-
-function snippetBlockAttributeLine(
-  kind: string,
-  payload: DependencyPayload,
-): string {
-  return `[${kind === DEPENDENCY_BLOCK ? DEPENDENCY_BLOCK : "snippet"},payload=${encodePayload(
-    {
-      ...payload,
-      kind,
-    },
-  )}]`;
-}
-
 function snippetPayloadFromValue(value: unknown): DependencyPayload {
   return JSON.parse(
     Buffer.from(String(value || ""), "base64url").toString("utf8"),
   ) as DependencyPayload;
-}
-
-function encodePayload(payload: Record<string, unknown>): string {
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
-}
-
-function snippetCalloutValidationLines(samples: SnippetSample[]): string[] {
-  const source = (Array.isArray(samples) ? samples : [])
-    .map((sample) => sample.source || "")
-    .filter((sampleSource) => snippetSourceHasCallouts(sampleSource))
-    .join("\n");
-  if (!source) {
-    return [];
-  }
-  const delimiter = sourceBlockDelimiter(source);
-  return [
-    `[.${SNIPPET_CALLOUT_VALIDATION_CLASS}]`,
-    delimiter,
-    source,
-    delimiter,
-  ];
 }
 
 function normalizeSnippetPayload(
@@ -262,93 +146,6 @@ function normalizeSnippetSamples(samples: unknown): SnippetSample[] {
     }
     return normalized;
   });
-}
-
-function snippetSourceHasCallouts(source: string): boolean {
-  return /<\d+>|<!--\d+-->/.test(String(source || ""));
-}
-
-function sourceBlockDelimiter(source: string): string {
-  const longestHyphenRun = Math.max(
-    3,
-    ...Array.from(String(source).matchAll(/^-{4,}$/gm)).map(
-      (match) => match[0].length,
-    ),
-  );
-  return "-".repeat(longestHyphenRun + 1);
-}
-
-function parseAttributeList(
-  value: string,
-  options: {
-    includeText?: boolean;
-    positionalKey?: "$positional" | "_positional";
-  } = {},
-): MacroAttributes {
-  const attributes: MacroAttributes = {};
-  const positional: string[] = [];
-  if (options.includeText) {
-    attributes.text = value;
-  }
-  for (const item of splitAttributeList(value)) {
-    const separator = item.indexOf("=");
-    if (separator < 0) {
-      const positionalValue = stripQuotes(item);
-      if (positionalValue) {
-        positional.push(positionalValue);
-      }
-      continue;
-    }
-    const key = item.slice(0, separator).trim();
-    const raw = item.slice(separator + 1).trim();
-    if (key) {
-      attributes[key] = stripQuotes(raw);
-    }
-  }
-  if (options.positionalKey && positional.length) {
-    attributes[options.positionalKey] = positional;
-  }
-  return attributes;
-}
-
-function splitAttributeList(value: string): string[] {
-  const items = [];
-  let current = "";
-  let quote = "";
-  for (const char of value || "") {
-    if (quote) {
-      if (char === quote) {
-        quote = "";
-      }
-      current += char;
-      continue;
-    }
-    if (char === '"' || char === "'") {
-      quote = char;
-      current += char;
-      continue;
-    }
-    if (char === ",") {
-      items.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  if (current.trim()) {
-    items.push(current.trim());
-  }
-  return items;
-}
-
-function stripQuotes(value: string): string {
-  if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
-  ) {
-    return value.slice(1, -1);
-  }
-  return value;
 }
 
 function macroAttribute(

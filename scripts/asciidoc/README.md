@@ -41,7 +41,7 @@ The docs registry registers:
   `reactor:`
 - the `pkg:` inline macro
 - the `snippet::target[]` block macro
-- the `dependency:target[]` block macro
+- the `dependency::target[]` block macro
 - shared component rendering extensions for `[snippet]`, `[dependency]`, and
   `[configuration]` blocks
 
@@ -57,19 +57,21 @@ guide-specific Asciidoctor behavior.
 The guide registry registers:
 
 - `registerGuidePreprocessor(...)`, which replaces guide placeholders, appends
-  the license include, rewrites include targets, applies language/build/JDK
-  exclusions, rewrites guide macros into internal blocks, and groups
-  `:dependencies:` sections.
-- `registerGuideSnippetBlocks(...)`, which resolves `source:`, `test:`,
-  `rawTest:`, `resource:`, `testResource:`, and `zipInclude:` payloads and
-  renders them as snippet cards.
-- `registerGuideDependenciesBlock(...)`, which renders single `dependency:`
-  macros and grouped `:dependencies:` blocks as Gradle or Maven snippets.
-- `registerGuideCalloutMacro(...)` and `guideCalloutLineResolver(...)`, which
-  resolve shared guide callout includes.
-- `registerGuideContentBlocks(...)`, which resolves `common:`,
-  `common-template:`, `external:`, `external-template:`, `rocker:`, and
-  `diffLink:` content.
+  the license include, rewrites include targets, and groups `:dependencies:`
+  sections. Legacy guide exclude directives such as
+  `:exclude-for-languages:groovy` are syntax-rewritten into exclude macros so
+  the exclude processors own the filtering behavior.
+- `registerGuideSnippetBlocks(...)`, which registers `source::`, `test::`,
+  `rawTest::`, `resource::`, `testResource::`, and `zipInclude::` block macros
+  and renders them as snippet cards.
+- `registerGuideDependenciesBlock(...)`, which registers the `dependency::`
+  block macro and renders grouped `:dependencies:` blocks as Gradle or Maven
+  snippets.
+- `registerGuideExcludeBlocks(...)`, which registers official Asciidoctor
+  extension blocks and block macros for language/build/JDK exclusions.
+- `registerGuideContentBlocks(...)`, which registers `common::`,
+  `common-template::`, `external::`, `external-template::`, `rocker::`,
+  `diffLink::`, and `callout::` block macros.
 - `registerGuideLinkMacro(...)`, which handles guide links.
 
 There is no `scripts/guides/preprocessor.ts` or `scripts/guides/guide-blocks.ts`

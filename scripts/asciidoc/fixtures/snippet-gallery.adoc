@@ -96,7 +96,7 @@ snippet::controller[title=Controller variants,description=Rendered from snippet 
 
 snippet::event-listener,event-listener-spec[title=Listening for Events with `ApplicationEventListener`]
 
-dependency:micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]
+dependency::micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]
 
 [configuration,title=Application configuration]
 ----
@@ -120,41 +120,41 @@ This fixture exercises guide macro rendering through Asciidoctor extension proce
 
 == Content Macros
 
-common:gallery-common.adoc[]
+common::gallery-common.adoc[]
 
-common-template:gallery-template.adoc[arg0=common]
+common-template::gallery-template.adoc[arg0=common]
 
-external:gallery-external[]
+external::gallery-external[]
 
-external-template:gallery-external-template[arg0=external]
+external-template::gallery-external-template[arg0=external]
 
-rocker:gallery[]
+rocker::gallery[]
 
 guideLink:gallery-linked[Linked Guide]
 
-diffLink:[]
+diffLink::[]
 
 == Snippet Macros
 
-source:GalleryController[]
-callout:gallery-source[]
+source::GalleryController[]
+callout::gallery-source[]
 
-test:GalleryControllerTest[]
+test::GalleryControllerTest[]
 
-rawTest:GalleryRawTest[]
+rawTest::GalleryRawTest[]
 
-resource:application.yml[]
+resource::application.yml[]
 
-testResource:application-test.yml[]
+testResource::application-test.yml[]
 
-zipInclude:build.gradle[]
+zipInclude::build.gradle[]
 
-dependency:micronaut-serde-jackson[groupId=io.micronaut.serde,callout=1]
+dependency::micronaut-serde-jackson[groupId=io.micronaut.serde,callout=1]
 <1> Single dependency callout.
 
 :dependencies:
-dependency:micronaut-http-client[groupId=io.micronaut,callout=1]
-dependency:micronaut-validation[groupId=io.micronaut.validation,callout=2]
+dependency::micronaut-http-client[groupId=io.micronaut,callout=1]
+dependency::micronaut-validation[groupId=io.micronaut.validation,callout=2]
 :dependencies:
 <1> Grouped HTTP client dependency.
 <2> Grouped validation dependency.
@@ -165,8 +165,25 @@ dependency:micronaut-validation[groupId=io.micronaut.validation,callout=2]
 Java excluded text should not render.
 :exclude-for-languages:
 
+:exclude-for-languages:java,groovy
+Comma-separated language excluded text should not render.
+:exclude-for-languages:
+
+:exclude-for-languages:kotlin
+Kotlin-only excluded text should render for Java.
+:exclude-for-languages:
+
+:exclude-for-languages:java
+:exclude-for-languages:kotlin
+Adjacent language excluded text should not render.
+:exclude-for-languages:
+
 :exclude-for-build:gradle
 Gradle excluded text should not render.
+:exclude-for-build:
+
+:exclude-for-build:maven
+Maven-only excluded text should render for Gradle.
 :exclude-for-build:
 
 :exclude-for-jdk-lower-than:21

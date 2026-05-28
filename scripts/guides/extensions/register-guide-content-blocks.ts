@@ -1,7 +1,13 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import type { Registry } from "@asciidoctor/core";
+import type {
+  Block,
+  BlockMacroProcessor,
+  MacroProcessorDslInterface,
+  Registry,
+  Section,
+} from "@asciidoctor/core";
 import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
 import { registerGuideContentBlock } from "./register-guide-content-block.ts";
 import { prepareGuideSourceForExtensions } from "./register-guide-preprocessor.ts";
@@ -13,11 +19,18 @@ const GUIDE_EXTERNAL_BLOCK = "guide-external";
 const GUIDE_EXTERNAL_TEMPLATE_BLOCK = "guide-external-template";
 const GUIDE_ROCKER_BLOCK = "guide-rocker";
 
+type GuideMacroPayload = {
+  attributes: Record<string, string>;
+  target: string;
+};
+
+type GuideContentResolver = (payload: GuideMacroPayload) => Promise<string[]>;
+
 export function registerGuideContentBlocks(
   registry: Registry,
   context: GuideRenderContext,
 ): void {
-  registerGuideContentBlock(registry, GUIDE_COMMON_BLOCK, (payload) =>
+  registerGuideContent(registry, "common", GUIDE_COMMON_BLOCK, (payload) =>
     payload.target.trim() === "header-top.adoc"
       ? Promise.resolve([])
       : includeGuideAdoc(
@@ -25,21 +38,26 @@ export function registerGuideContentBlocks(
           context,
         ),
   );
-  registerGuideContentBlock(registry, GUIDE_COMMON_TEMPLATE_BLOCK, (payload) =>
-    includeGuideTemplate(
-      commonSnippetPath(context.guidesDirectory, payload.target),
-      payload.attributes,
-      context,
-    ),
+  registerGuideContent(
+    registry,
+    "common-template",
+    GUIDE_COMMON_TEMPLATE_BLOCK,
+    (payload) =>
+      includeGuideTemplate(
+        commonSnippetPath(context.guidesDirectory, payload.target),
+        payload.attributes,
+        context,
+      ),
   );
-  registerGuideContentBlock(registry, GUIDE_EXTERNAL_BLOCK, (payload) =>
+  registerGuideContent(registry, "external", GUIDE_EXTERNAL_BLOCK, (payload) =>
     includeGuideAdoc(
       externalPath(context.guidesDirectory, payload.target),
       context,
     ),
   );
-  registerGuideContentBlock(
+  registerGuideContent(
     registry,
+    "external-template",
     GUIDE_EXTERNAL_TEMPLATE_BLOCK,
     (payload) =>
       includeGuideTemplate(
@@ -48,11 +66,54 @@ export function registerGuideContentBlocks(
         context,
       ),
   );
-  registerGuideContentBlock(registry, GUIDE_ROCKER_BLOCK, (payload) =>
+  registerGuideContent(registry, "rocker", GUIDE_ROCKER_BLOCK, (payload) =>
     includeGuideRocker(payload.target, context),
   );
-  registerGuideContentBlock(registry, GUIDE_DIFF_LINK_BLOCK, (payload) =>
+  registerGuideContent(registry, "diffLink", GUIDE_DIFF_LINK_BLOCK, (payload) =>
     Promise.resolve([diffLink(payload.target, payload.attributes, context)]),
+  );
+  registerGuideContentMacro(registry, "callout", (payload) =>
+    includeGuideCallout(payload.target, payload.attributes, context),
+  );
+}
+
+function registerGuideContent(
+  registry: Registry,
+  macroName: string,
+  blockName: string,
+  resolveLines: GuideContentResolver,
+): void {
+  registerGuideContentBlock(registry, blockName, resolveLines);
+  registerGuideContentMacro(registry, macroName, resolveLines);
+}
+
+function registerGuideContentMacro(
+  registry: Registry,
+  macroName: string,
+  resolveLines: GuideContentResolver,
+): void {
+  registry.blockMacro(
+    macroName,
+    function registerGuideContentMacro(this: MacroProcessorDslInterface): void {
+      this.process(async function processGuideContentMacro(
+        this: BlockMacroProcessor,
+        parent: unknown,
+        target: unknown,
+        attrs: unknown,
+      ): Promise<Block> {
+        const holder = this.createBlock(
+          parent as Block | Section,
+          "open",
+          "",
+          {},
+        );
+        await this.parseContent(
+          holder,
+          await resolveLines(guideMacroPayload(String(target), attrs)),
+        );
+        return holder;
+      });
+    },
   );
 }
 
@@ -105,6 +166,31 @@ async function includeGuideTemplate(
   }
 }
 
+async function includeGuideCallout(
+  target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+): Promise<string[]> {
+  const lines = await includeGuideAdoc(
+    path.join(
+      context.guidesDirectory,
+      "src",
+      "docs",
+      "common",
+      "callouts",
+      `callout-${ensureSuffix(target.trim(), ".adoc")}`,
+    ),
+    context,
+  );
+  const explicitNumber = calloutNumber(attributes);
+  return lines.map((line) => {
+    const replaced = replaceGuideTemplateArguments(line, attributes);
+    return explicitNumber
+      ? replaced.replace(/^<\.>/, `<${explicitNumber}>`)
+      : replaced;
+  });
+}
+
 async function includeGuideRocker(
   target: string,
   context: GuideRenderContext,
@@ -146,6 +232,31 @@ export function replaceGuideTemplateArguments(
     }
     return value;
   });
+}
+
+function guideMacroPayload(target: string, attrs: unknown): GuideMacroPayload {
+  return {
+    attributes: guideMacroAttributes(attrs),
+    target,
+  };
+}
+
+function guideMacroAttributes(attrs: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries((attrs || {}) as Record<string, unknown>).map(
+      ([key, value]) => [key, String(value)],
+    ),
+  );
+}
+
+function calloutNumber(attributes: Record<string, string>): string {
+  const number =
+    attributes.number ||
+    attributes.callout ||
+    attributes[2] ||
+    attributes[1] ||
+    "";
+  return /^\d+$/.test(number) ? number : "";
 }
 
 function prepareIncludedGuideSource(

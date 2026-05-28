@@ -1,15 +1,17 @@
 import type {
   Block,
+  BlockMacroProcessor,
   BlockProcessor,
   BlockProcessorDslInterface,
+  MacroProcessorDslInterface,
   Reader,
   Registry,
   Section,
 } from "@asciidoctor/core";
 
 import {
+  renderSnippetBlock,
   renderSnippetBlockWithCalloutReader,
-  type CalloutLineResolver,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import type { GuideRenderContext } from "../model.ts";
 
@@ -19,8 +21,37 @@ const GUIDE_DEPENDENCY_BLOCK = "guide-dependency";
 export function registerGuideDependenciesBlock(
   registry: Registry,
   context: GuideRenderContext,
-  resolveCalloutLines: CalloutLineResolver,
 ): void {
+  registry.blockMacro(
+    "dependency",
+    function registerGuideDependencyMacro(
+      this: MacroProcessorDslInterface,
+    ): void {
+      this.process(async function processGuideDependencyMacro(
+        this: BlockMacroProcessor,
+        parent: unknown,
+        target: unknown,
+        attrs: unknown,
+      ): Promise<Block> {
+        return renderSnippetBlock(
+          this,
+          parent as Block | Section,
+          dependencySnippetPayload(
+            [
+              {
+                attributes: guideMacroAttributes(attrs),
+                target: String(target),
+              },
+            ],
+            context,
+          ),
+          undefined,
+          { collectManualCallouts: true },
+        );
+      });
+    },
+  );
+
   registry.block(function registerGuideDependencyBlock(
     this: BlockProcessorDslInterface,
   ): void {
@@ -42,7 +73,6 @@ export function registerGuideDependenciesBlock(
           [{ target: payload.target, attributes: payload.attributes }],
           context,
         ),
-        resolveCalloutLines,
       );
     });
   });
@@ -65,7 +95,6 @@ export function registerGuideDependenciesBlock(
         parent as Block | Section,
         reader as Reader,
         dependencySnippetPayload(payload.dependencies, context),
-        resolveCalloutLines,
       );
     });
   });
@@ -76,7 +105,6 @@ function renderGuideDependencyBlock(
   parent: Block | Section,
   reader: Reader,
   payload: Record<string, unknown>,
-  resolveCalloutLines: CalloutLineResolver,
 ): Promise<Block> {
   return renderSnippetBlockWithCalloutReader(
     processor,
@@ -85,7 +113,6 @@ function renderGuideDependencyBlock(
     reader,
     {
       collectManualCallouts: true,
-      resolveCalloutLines,
     },
   );
 }
@@ -224,6 +251,14 @@ function pomDependency(attributes: Record<string, string>): boolean {
 function dependencyCalloutMarker(attributes: Record<string, string>): string {
   const callout = attributes.callout;
   return callout && /^\d+$/.test(callout) ? ` // <${callout}>` : "";
+}
+
+function guideMacroAttributes(attrs: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries((attrs || {}) as Record<string, unknown>).map(
+      ([key, value]) => [key, String(value)],
+    ),
+  );
 }
 
 function toMavenScope(attributes: Record<string, string>): string | undefined {

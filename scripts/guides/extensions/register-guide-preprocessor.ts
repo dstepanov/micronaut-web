@@ -15,24 +15,22 @@ import {
   type GuideRenderContext,
 } from "../model.ts";
 
-const GUIDE_CALLOUT_BLOCK = "guide-callout";
-const GUIDE_COMMON_BLOCK = "guide-common";
-const GUIDE_COMMON_TEMPLATE_BLOCK = "guide-common-template";
 const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
-const GUIDE_DEPENDENCY_BLOCK = "guide-dependency";
-const GUIDE_DIFF_LINK_BLOCK = "guide-diff-link";
-const GUIDE_EXTERNAL_BLOCK = "guide-external";
-const GUIDE_EXTERNAL_TEMPLATE_BLOCK = "guide-external-template";
-const GUIDE_RAW_TEST_BLOCK = "guide-raw-test";
-const GUIDE_RESOURCE_BLOCK = "guide-resource";
-const GUIDE_ROCKER_BLOCK = "guide-rocker";
-const GUIDE_SOURCE_BLOCK = "guide-source";
-const GUIDE_TEST_BLOCK = "guide-test";
-const GUIDE_TEST_RESOURCE_BLOCK = "guide-test-resource";
-const GUIDE_ZIP_INCLUDE_BLOCK = "guide-zip-include";
-const MACRO_LINE = /^([A-Za-z][A-Za-z0-9_-]*):([^\[]*)\[(.*)]\s*$/;
+const DEPENDENCY_LINE = /^dependency:{1,2}([^\[]*)\[(.*)]\s*$/;
+const EXCLUDE_DIRECTIVE_LINE =
+  /^:(exclude-for-languages|exclude-for-build|exclude-for-jdk-lower-than):(.*)$/;
 const DEFAULT_MIN_JDK = 21;
-const LICENSE_INCLUDE = "common:license.adoc[]";
+const LICENSE_INCLUDE = "common::license.adoc[]";
+
+type ExcludeMacroName =
+  | "exclude-for-languages"
+  | "exclude-for-build"
+  | "exclude-for-jdk-lower-than";
+
+type ExcludeDirective = {
+  name: ExcludeMacroName;
+  values: string[];
+};
 
 type ConstructableReader = Reader & {
   constructor: new (
@@ -97,55 +95,15 @@ function rewriteGuideLines(
   context: GuideRenderContext,
 ): string[] {
   const output: string[] = [];
-  let excludeLanguage = false;
-  let excludeBuild = false;
-  let excludeMinJdk = false;
   let dependencyGroup = false;
   let groupedDependencies: string[] = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (line === ":exclude-for-languages:") {
-      excludeLanguage = false;
-      continue;
-    }
-    if (line === ":exclude-for-build:") {
-      excludeBuild = false;
-      continue;
-    }
-    if (line === ":exclude-for-jdk-lower-than:") {
-      excludeMinJdk = false;
-      continue;
-    }
-    if (excludeLanguage || excludeBuild || excludeMinJdk) {
-      continue;
-    }
-    if (line.startsWith(":exclude-for-languages:")) {
-      excludeLanguage = excludes(
-        line,
-        ":exclude-for-languages:",
-        context.option.language,
-      );
-      continue;
-    }
-    if (line.startsWith(":exclude-for-build:")) {
-      excludeBuild = excludes(
-        line,
-        ":exclude-for-build:",
-        context.option.buildTool,
-      );
-      continue;
-    }
-    if (line.startsWith(":exclude-for-jdk-lower-than:")) {
-      const threshold = Number.parseInt(
-        line.slice(":exclude-for-jdk-lower-than:".length).trim(),
-        10,
-      );
-      const guideMinJdk = Number.parseInt(
-        String(context.guide.minimumJavaVersion || DEFAULT_MIN_JDK),
-        10,
-      );
-      excludeMinJdk = Number.isFinite(threshold) && guideMinJdk >= threshold;
+    const excludeBlock = legacyExcludeBlockLines(lines, index, context);
+    if (excludeBlock) {
+      output.push(...excludeBlock.lines);
+      index = excludeBlock.nextIndex - 1;
       continue;
     }
     if (line === ":dependencies:") {
@@ -167,16 +125,7 @@ function rewriteGuideLines(
       groupedDependencies.push(line);
       continue;
     }
-    if (snippetMacroLine(line)) {
-      const { bodyLines, nextIndex } = collectFollowingCalloutLines(
-        lines,
-        index + 1,
-      );
-      output.push(...rewriteMacroLine(line, bodyLines));
-      index = nextIndex - 1;
-      continue;
-    }
-    output.push(...rewriteMacroLine(line));
+    output.push(line);
   }
 
   if (groupedDependencies.length) {
@@ -185,47 +134,90 @@ function rewriteGuideLines(
   return output;
 }
 
-function rewriteMacroLine(line: string, bodyLines: string[] = []): string[] {
-  const match = MACRO_LINE.exec(line);
-  if (!match) {
-    return [line];
+function legacyExcludeBlockLines(
+  lines: string[],
+  startIndex: number,
+  context: GuideRenderContext,
+): { lines: string[]; nextIndex: number } | undefined {
+  const directive = parseExcludeDirective(lines[startIndex]);
+  if (!directive) {
+    return undefined;
+  }
+  if (!directive.values.length) {
+    return { lines: [], nextIndex: startIndex + 1 };
   }
 
-  const [, type, target, rawAttributes] = match;
-  const attributes = parseAttributes(rawAttributes);
-  const payload = { attributes, target };
-  switch (type) {
-    case "callout":
-      return guideMacroLines(GUIDE_CALLOUT_BLOCK, payload);
-    case "common":
-      return guideBlockLines(GUIDE_COMMON_BLOCK, payload);
-    case "common-template":
-      return guideBlockLines(GUIDE_COMMON_TEMPLATE_BLOCK, payload);
-    case "dependency":
-      return guideBlockLines(GUIDE_DEPENDENCY_BLOCK, payload, bodyLines);
-    case "diffLink":
-      return guideBlockLines(GUIDE_DIFF_LINK_BLOCK, payload);
-    case "external":
-      return guideBlockLines(GUIDE_EXTERNAL_BLOCK, payload);
-    case "external-template":
-      return guideBlockLines(GUIDE_EXTERNAL_TEMPLATE_BLOCK, payload);
-    case "rawTest":
-      return guideBlockLines(GUIDE_RAW_TEST_BLOCK, payload, bodyLines);
-    case "resource":
-      return guideBlockLines(GUIDE_RESOURCE_BLOCK, payload, bodyLines);
-    case "rocker":
-      return guideBlockLines(GUIDE_ROCKER_BLOCK, payload);
-    case "source":
-      return guideBlockLines(GUIDE_SOURCE_BLOCK, payload, bodyLines);
-    case "test":
-      return guideBlockLines(GUIDE_TEST_BLOCK, payload, bodyLines);
-    case "testResource":
-      return guideBlockLines(GUIDE_TEST_RESOURCE_BLOCK, payload, bodyLines);
-    case "zipInclude":
-      return guideBlockLines(GUIDE_ZIP_INCLUDE_BLOCK, payload, bodyLines);
-    default:
-      return [line];
+  const values = [...directive.values];
+  let index = startIndex + 1;
+  while (index < lines.length) {
+    const nextDirective = parseExcludeDirective(lines[index]);
+    if (
+      !nextDirective ||
+      nextDirective.name !== directive.name ||
+      !nextDirective.values.length
+    ) {
+      break;
+    }
+    values.push(...nextDirective.values);
+    index += 1;
   }
+
+  const bodyLines: string[] = [];
+  while (index < lines.length) {
+    const nextDirective = parseExcludeDirective(lines[index]);
+    if (
+      nextDirective &&
+      nextDirective.name === directive.name &&
+      !nextDirective.values.length
+    ) {
+      index += 1;
+      break;
+    }
+    bodyLines.push(lines[index]);
+    index += 1;
+  }
+
+  return {
+    lines: excludeMacroLines(
+      directive.name,
+      values,
+      rewriteGuideLines(bodyLines, context),
+    ),
+    nextIndex: index,
+  };
+}
+
+function parseExcludeDirective(line: string): ExcludeDirective | undefined {
+  const match = EXCLUDE_DIRECTIVE_LINE.exec(line);
+  if (!match) {
+    return undefined;
+  }
+  return {
+    name: match[1] as ExcludeMacroName,
+    values: splitExcludeDirectiveValues(match[2]),
+  };
+}
+
+function splitExcludeDirectiveValues(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function excludeMacroLines(
+  macroName: ExcludeMacroName,
+  values: string[],
+  bodyLines: string[],
+): string[] {
+  return [
+    "",
+    `${macroName}::${values.join(",")}[payload=${encodePayload({
+      lines: bodyLines,
+      values,
+    })}]`,
+    "",
+  ];
 }
 
 function dependencyGroupBlockLines(
@@ -233,38 +225,22 @@ function dependencyGroupBlockLines(
   bodyLines: string[] = [],
 ): string[] {
   const dependencies = lines
-    .map((line) => MACRO_LINE.exec(line))
+    .map((line) => DEPENDENCY_LINE.exec(line))
     .filter((match): match is RegExpExecArray => Boolean(match))
     .map((match) => ({
-      attributes: parseAttributes(match[3]),
-      target: match[2].trim(),
+      attributes: parseAttributes(match[2]),
+      target: match[1].trim(),
     }));
   return dependencies.length
     ? guideBlockLines(GUIDE_DEPENDENCIES_BLOCK, { dependencies }, bodyLines)
     : [];
 }
 
-function snippetMacroLine(line: string): boolean {
-  const match = MACRO_LINE.exec(line);
-  return Boolean(
-    match &&
-    new Set([
-      "dependency",
-      "rawTest",
-      "resource",
-      "source",
-      "test",
-      "testResource",
-      "zipInclude",
-    ]).has(match[1]),
-  );
-}
-
 function collectFollowingCalloutLines(
   lines: string[],
   startIndex: number,
 ): { bodyLines: string[]; nextIndex: number } {
-  const bodyLines = [];
+  const bodyLines: string[] = [];
   let index = startIndex;
   let found = false;
   while (index < lines.length) {
@@ -279,12 +255,6 @@ function collectFollowingCalloutLines(
     }
     if (isCalloutListLine(line)) {
       bodyLines.push(line);
-      found = true;
-      index += 1;
-      continue;
-    }
-    if (isCalloutMacroLine(line)) {
-      bodyLines.push(...rewriteMacroLine(line));
       found = true;
       index += 1;
       continue;
@@ -306,17 +276,13 @@ function nextNonBlankLineStartsCallout(
     if (!line.trim()) {
       continue;
     }
-    return isCalloutListLine(line) || isCalloutMacroLine(line);
+    return isCalloutListLine(line);
   }
   return false;
 }
 
 function isCalloutListLine(line: string): boolean {
   return /^<(\.|\d+)>/.test(line);
-}
-
-function isCalloutMacroLine(line: string): boolean {
-  return MACRO_LINE.exec(line)?.[1] === "callout";
 }
 
 function guideBlockLines(
@@ -332,10 +298,6 @@ function guideBlockLines(
     "--",
     "",
   ];
-}
-
-function guideMacroLines(blockName: string, payload: unknown): string[] {
-  return ["", `${blockName}::${encodePayload(payload)}[]`, ""];
 }
 
 function encodePayload(payload: unknown): string {
@@ -564,13 +526,4 @@ function findApp(
   appName: string,
 ): GuideRenderContext["guide"]["apps"][number] | undefined {
   return guide.apps.find((app) => app.name === appName) || guide.apps[0];
-}
-
-function excludes(line: string, prefix: string, selected: string): boolean {
-  return line
-    .slice(prefix.length)
-    .split(",")
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean)
-    .includes(String(selected || "").toLowerCase());
 }

@@ -533,7 +533,7 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
       "}",
       "----",
       "",
-      "dependency:micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]",
+      "dependency::micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]",
       "",
       "[configuration,title=Configuration snippet]",
       "----",

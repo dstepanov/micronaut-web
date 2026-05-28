@@ -169,7 +169,7 @@ test("snippet, dependency, and configuration block processors render React snipp
 
   assert.match(converted, /docs-code-snippet-template/);
   assert.match(converted, /docs-dependency-template/);
-  assert.doesNotMatch(converted, /snippet::|dependency:/);
+  assert.doesNotMatch(converted, /snippet::|dependency::/);
   assert.match(text, /Controller Block/);
   assert.match(text, /HTTP Client Block/);
   assert.match(text, /Configuration Block/);
@@ -291,22 +291,161 @@ test("guide macro block processors render snippet gallery macros", async (): Pro
   assert.match(text, /Grouped HTTP client dependency/);
   assert.match(text, /Grouped validation dependency/);
   assert.match(text, /Visible after exclude directives/);
+  assert.match(text, /Kotlin-only excluded text should render for Java/);
+  assert.match(text, /Maven-only excluded text should render for Gradle/);
   assert.doesNotMatch(text, /Java excluded text should not render/);
+  assert.doesNotMatch(
+    text,
+    /Comma-separated language excluded text should not render/,
+  );
+  assert.doesNotMatch(
+    text,
+    /Adjacent language excluded text should not render/,
+  );
   assert.doesNotMatch(text, /Gradle excluded text should not render/);
   assert.doesNotMatch(text, /JDK excluded text should not render/);
   assert.doesNotMatch(
     converted,
-    /source:|test:|rawTest:|resource:|testResource:|zipInclude:|common-template:|external-template:|rocker:|diffLink:|callout:/,
+    /source:{1,2}|test:{1,2}|rawTest:{1,2}|resource:{1,2}|testResource:{1,2}|zipInclude:{1,2}|common-template:{1,2}|external-template:{1,2}|rocker:{1,2}|diffLink:{1,2}|callout:{1,2}|exclude-for-languages:{1,2}|exclude-for-build:{1,2}|exclude-for-jdk-lower-than:{1,2}/,
   );
+});
+
+test("legacy guide exclude directives rewrite to exclude macros", async (): Promise<void> => {
+  const source = [
+    ":exclude-for-languages:groovy",
+    "Groovy excluded text.",
+    ":exclude-for-languages:",
+    ":exclude-for-languages:java,groovy",
+    "Java and Groovy excluded text.",
+    ":exclude-for-languages:",
+    ":exclude-for-languages:kotlin",
+    "Kotlin excluded text.",
+    ":exclude-for-languages:",
+    ":exclude-for-languages:java",
+    ":exclude-for-languages:kotlin",
+    "Adjacent Java and Kotlin excluded text.",
+    ":exclude-for-languages:",
+    ":exclude-for-languages:groovy,kotlin",
+    "Groovy and Kotlin excluded text.",
+    ":exclude-for-languages:",
+    ":exclude-for-build:maven",
+    "Maven excluded text.",
+    ":exclude-for-build:",
+    ":exclude-for-build:gradle",
+    "Gradle excluded text.",
+    ":exclude-for-build:",
+    ":exclude-for-jdk-lower-than:21",
+    "JDK excluded text.",
+    ":exclude-for-jdk-lower-than:",
+    "Always visible text.",
+  ].join("\n");
+
+  const javaGradleText = textOnly(
+    await renderGuideSource(source, { buildTool: "gradle", language: "java" }),
+  );
+  assert.match(javaGradleText, /Always visible text/);
+  assert.match(javaGradleText, /Groovy excluded text/);
+  assert.match(javaGradleText, /Kotlin excluded text/);
+  assert.match(javaGradleText, /Groovy and Kotlin excluded text/);
+  assert.match(javaGradleText, /Maven excluded text/);
+  assert.doesNotMatch(javaGradleText, /Java and Groovy excluded text/);
+  assert.doesNotMatch(javaGradleText, /Adjacent Java and Kotlin excluded text/);
+  assert.doesNotMatch(javaGradleText, /Gradle excluded text/);
+  assert.doesNotMatch(javaGradleText, /JDK excluded text/);
+
+  const groovyMavenText = textOnly(
+    await renderGuideSource(source, { buildTool: "maven", language: "groovy" }),
+  );
+  assert.match(groovyMavenText, /Always visible text/);
+  assert.match(groovyMavenText, /Kotlin excluded text/);
+  assert.match(groovyMavenText, /Adjacent Java and Kotlin excluded text/);
+  assert.match(groovyMavenText, /Gradle excluded text/);
+  assert.doesNotMatch(groovyMavenText, /Groovy excluded text/);
+  assert.doesNotMatch(groovyMavenText, /Java and Groovy excluded text/);
+  assert.doesNotMatch(groovyMavenText, /Groovy and Kotlin excluded text/);
+  assert.doesNotMatch(groovyMavenText, /Maven excluded text/);
+  assert.doesNotMatch(groovyMavenText, /JDK excluded text/);
+});
+
+test("nested legacy guide exclude directives stay macro-owned", async (): Promise<void> => {
+  const source = [
+    ":exclude-for-languages:groovy",
+    "Native intro text.",
+    ":exclude-for-build:maven",
+    "Gradle native text.",
+    ":exclude-for-build:",
+    ":exclude-for-build:gradle",
+    "Maven native text.",
+    ":exclude-for-build:",
+    ":exclude-for-languages:",
+    "After native text.",
+  ].join("\n");
+
+  const javaGradleText = textOnly(
+    await renderGuideSource(source, { buildTool: "gradle", language: "java" }),
+  );
+  assert.match(javaGradleText, /Native intro text/);
+  assert.match(javaGradleText, /Gradle native text/);
+  assert.match(javaGradleText, /After native text/);
+  assert.doesNotMatch(javaGradleText, /Maven native text/);
+
+  const javaMavenText = textOnly(
+    await renderGuideSource(source, { buildTool: "maven", language: "java" }),
+  );
+  assert.match(javaMavenText, /Native intro text/);
+  assert.match(javaMavenText, /Maven native text/);
+  assert.match(javaMavenText, /After native text/);
+  assert.doesNotMatch(javaMavenText, /Gradle native text/);
+
+  const groovyGradleText = textOnly(
+    await renderGuideSource(source, {
+      buildTool: "gradle",
+      language: "groovy",
+    }),
+  );
+  assert.match(groovyGradleText, /After native text/);
+  assert.doesNotMatch(groovyGradleText, /Native intro text/);
+  assert.doesNotMatch(groovyGradleText, /Gradle native text/);
+  assert.doesNotMatch(groovyGradleText, /Maven native text/);
+});
+
+test("unmatched legacy guide exclude resets and starts match guide sources", async (): Promise<void> => {
+  const source = [
+    ":exclude-for-build:",
+    "Visible after unmatched build reset.",
+    ":exclude-for-languages:groovy",
+    "First Groovy-gated text.",
+    ":exclude-for-languages:groovy",
+    "Second Groovy-gated text.",
+  ].join("\n");
+
+  const javaText = textOnly(
+    await renderGuideSource(source, { buildTool: "gradle", language: "java" }),
+  );
+  assert.match(javaText, /Visible after unmatched build reset/);
+  assert.match(javaText, /First Groovy-gated text/);
+  assert.match(javaText, /Second Groovy-gated text/);
+  assert.doesNotMatch(javaText, /:exclude-for/);
+
+  const groovyText = textOnly(
+    await renderGuideSource(source, {
+      buildTool: "gradle",
+      language: "groovy",
+    }),
+  );
+  assert.match(groovyText, /Visible after unmatched build reset/);
+  assert.doesNotMatch(groovyText, /First Groovy-gated text/);
+  assert.doesNotMatch(groovyText, /Second Groovy-gated text/);
+  assert.doesNotMatch(groovyText, /:exclude-for/);
 });
 
 test("guide dependencies group renders DependencyMacroSubstitution-compatible snippets", async (): Promise<void> => {
   const source = [
     ":dependencies:",
-    "dependency:micronaut-http-client[groupId=io.micronaut,callout=1]",
-    "dependency:micronaut-validation[groupId=io.micronaut.validation,scope=test,callout=2]",
-    "dependency:micronaut-bom[groupId=io.micronaut.platform,pom=true,version=4.9.0]",
-    "dependency:micronaut-inject-java[groupId=io.micronaut,scope=annotationProcessor,versionProperty=${micronaut.version}]",
+    "dependency::micronaut-http-client[groupId=io.micronaut,callout=1]",
+    "dependency::micronaut-validation[groupId=io.micronaut.validation,scope=test,callout=2]",
+    "dependency::micronaut-bom[groupId=io.micronaut.platform,pom=true,version=4.9.0]",
+    "dependency::micronaut-inject-java[groupId=io.micronaut,scope=annotationProcessor,versionProperty=${micronaut.version}]",
     ":dependencies:",
     "<1> Adds HTTP client dependency.",
     "<2> Adds validation dependency.",
@@ -354,7 +493,7 @@ test("guide dependencies group renders DependencyMacroSubstitution-compatible sn
   assert.match(mavenConverted, /data-value="1"/);
   assert.match(mavenConverted, /data-value="2"/);
   assert.doesNotMatch(mavenConverted, /<!--1-->|<!--2-->/);
-  assert.doesNotMatch(mavenConverted, /:dependencies:|dependency:/);
+  assert.doesNotMatch(mavenConverted, /:dependencies:|dependency:{1,2}/);
 });
 
 async function renderSnippetGalleryFixture(): Promise<{
