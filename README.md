@@ -61,6 +61,67 @@ Tailwind can access the extra Micronaut-specific variables through the `@theme i
 
 `src/data/generated-guides.fixture.json` contains the checked-in guide catalog subset used when generated guide output is unavailable. `src/content/generated-guides/manifest.json` is produced by `npm run render:guides` and ignored as generated content.
 
+## Blog Authoring
+
+Blog posts are Astro Markdown content entries under `src/content/main-site/blog`. Use a dated path that mirrors the public slug, for example `src/content/main-site/blog/2026/06/01/example-post.md`. The `slug` frontmatter field is the canonical route without leading or trailing slashes; `href` defaults to `/${slug}/`, so set `href` only when a post needs an explicit canonical override.
+
+Use this shape for a normal post:
+
+````md
+---
+slug: 2026/06/01/example-post
+title: Example Post Title
+description: One or two sentences used in cards, metadata, and search previews.
+date: '2026-06-01T09:00:00'
+modified: '2026-06-01T09:00:00'
+contentSource: authored
+category: release-announcements
+categories:
+  - release-announcements
+tags:
+  - release
+href: /2026/06/01/example-post/
+---
+
+Opening paragraph for the post.
+
+## Section Heading
+
+Body copy can use normal Markdown.
+
+```java
+class Example {
+}
+```
+````
+
+Required blog fields are `slug`, `title`, and `description`. Dates are optional in the schema, but new posts should set `date` so sorting is predictable; set `modified` when the published content changes after the initial date. `order` is an optional tie-breaker when posts have the same date. `sourceUrl`, `wordpressId`, and `contentSource: wordpress-post` are migration metadata for imported posts and are not required for newly authored content.
+
+The Markdown body is rendered through Astro and then passed through the main-site Markdown renderer. Headings, paragraphs, links, lists, blockquotes, tables, horizontal rules, images, inline code, and fenced code blocks are supported. Fenced code blocks are converted to the shared docs snippet card style; prefer a language marker such as `java`, `kotlin`, `groovy`, `bash`, `xml`, `yaml`, or `gradle`. Some obvious Java, Gradle, and XML snippets can be inferred when the fence has no language, but explicit language markers are easier to maintain.
+
+Use root-relative links for internal routes, such as `/docs/`, `/guides/`, or `/2026/06/01/example-post/`. Links and images pointing at `https://micronaut.io/...` or root-relative Micronaut paths are rewritten through the deployment base-path helpers during rendering. For local images and downloads, put source files under `public/micronaut-assets/main-site/...` and reference them from Markdown with `/micronaut-assets/main-site/...`. Image Markdown should include useful alt text.
+
+`category` is the primary category slug. It is shown on blog cards and is used by `/category/<slug>/` archive pages. `categories` is an additional list of category slugs; include the primary category there as well so archive membership stays consistent with older imported posts. Category slugs are lower-case kebab-case strings. Existing category pages are:
+
+- `case-studies`
+- `guest-post`
+- `microcast`
+- `micronaut-4`
+- `micronaut-5`
+- `micronaut-framework-2`
+- `release-announcements`
+- `security-announcements`
+- `sponsor`
+- `town-hall-meetings`
+- `uncategorized`
+- `webinar`
+
+Category archive routes are not generated from post metadata alone. To introduce a new public category, also add `src/content/main-site/pages/category/<slug>.md` with the normal main-site page frontmatter so `/category/<slug>/` has title, intro, sections, and archive content. The archive lists posts whose primary `category` matches the slug or whose `categories` array contains it.
+
+`tags` are lower-case kebab-case slugs used for `/tag/<tag>/` archive routes. Tag archive routes are generated from post metadata and do not require separate page files. The global search dialog indexes main-site pages, docs, guides, and guide tags; blog category and tag archives are normal static routes rather than a separate external search service.
+
+Dated blog slugs automatically get legacy redirects from `/blog/YYYY-MM-DD-post-slug.html` to the canonical dated route. Explicit historical aliases live in `src/lib/blog-redirects.ts`; add there only when an old WordPress URL does not match the generated dated redirect. The `success-story` category is special-cased out of the regular `/blog/` listing; new production stories should normally be authored as pages under `src/content/main-site/pages/micronaut-success-stories/` instead of as blog posts.
+
 ## Search
 
 Search is static and catalog-backed. There is no external search service; the UI searches data already shipped in the current surface artifact.
