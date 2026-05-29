@@ -650,6 +650,10 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
     ),
   );
   assert.ok(generatedHtml.includes("[&amp;_td:first-child_.conum+b]:hidden"));
+  assert.ok(generatedHtml.includes("[&amp;_tr+tr_td]:pt-[0.55rem]"));
+  assert.ok(
+    generatedHtml.includes("[&amp;_tr+tr_td:first-child]:pt-[0.75rem]"),
+  );
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
   assert.match(generatedText, /Snippet callout follows the generated card/);

@@ -59,6 +59,8 @@ const calloutFooterRuntimeClasses = [
   "[&_td:first-child]:w-[1.15rem]",
   "[&_td:first-child]:pr-[0.7rem]",
   "[&_td:first-child]:pt-[0.2rem]",
+  "[&_tr+tr_td]:pt-[0.55rem]",
+  "[&_tr+tr_td:first-child]:pt-[0.75rem]",
   "[&_td:first-child_.conum]:ml-0",
   "[&_td:first-child_.conum]:inline-flex",
   "[&_td:first-child_.conum]:h-[1.15rem]",
