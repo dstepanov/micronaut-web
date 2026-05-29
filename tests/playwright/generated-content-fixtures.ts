@@ -21,6 +21,7 @@ const fixtureDirectory = path.join(
 type DocsProjectSource = {
   displayName: string;
   docExampleDirectories?: string[];
+  fallbackLanguage: string;
   guideFiles: string[];
   module: string;
   projectKey: string;
@@ -35,6 +36,7 @@ type DocsProjectSource = {
 const docsProjects: DocsProjectSource[] = [
   {
     displayName: "Micronaut Core",
+    fallbackLanguage: "java",
     guideFiles: ["introduction.adoc", "quickStart.adoc"],
     module: "io.micronaut:micronaut-core-bom",
     projectKey: "core",
@@ -58,6 +60,7 @@ const docsProjects: DocsProjectSource[] = [
       "hibernate-example-kotlin",
       "hibernate-example-groovy",
     ],
+    fallbackLanguage: "kotlin",
     guideFiles: ["introduction.adoc"],
     module: "io.micronaut.data:micronaut-data-bom",
     projectKey: "data",
@@ -71,6 +74,7 @@ const docsProjects: DocsProjectSource[] = [
   {
     displayName: "Micronaut Serialization",
     docExampleDirectories: ["example-java", "example-kotlin", "example-groovy"],
+    fallbackLanguage: "groovy",
     guideFiles: ["quickStart.adoc", "quickStart/jacksonQuick.adoc"],
     module: "io.micronaut.serde:micronaut-serde-bom",
     projectKey: "serialization",
@@ -166,12 +170,15 @@ async function prepareGuidesContent(): Promise<void> {
     "generated-guides",
   );
 
-  await assertDirectory(
-    sourceGuidesDirectory,
-    `Missing micronaut-guides checkout at ${sourceGuidesDirectory}. Set MICRONAUT_GUIDES_DIR to a real guides checkout.`,
-  );
   await fs.rm(guidesDirectory, { force: true, recursive: true });
-  await copyGuideRepositorySubset(sourceGuidesDirectory, guidesDirectory);
+  if (await isDirectory(sourceGuidesDirectory)) {
+    await copyGuideRepositorySubset(sourceGuidesDirectory, guidesDirectory);
+  } else {
+    console.warn(
+      `Missing micronaut-guides checkout at ${sourceGuidesDirectory}; using checked-in Playwright guide fixtures.`,
+    );
+    await writeFallbackGuideRepository(guidesDirectory);
+  }
   await copySnippetGalleryGuide(guidesDirectory);
 
   await execFile(
@@ -293,11 +300,6 @@ async function copyDocsProjectSources(
         process.env[environmentName] ||
           path.join(sourceRoot, project.sourceDirectoryName),
       );
-      await assertDirectory(
-        sourceDirectory,
-        `Missing ${project.displayName} checkout at ${sourceDirectory}. Set ${environmentName} or MICRONAUT_DOCS_PROJECTS_DIR to real docs project sources.`,
-      );
-
       const targetDirectory = path.join(
         docsDirectory,
         "repos",
@@ -311,6 +313,14 @@ async function copyDocsProjectSources(
         "guide",
       );
       await fs.mkdir(targetGuideDirectory, { recursive: true });
+      if (!(await isDirectory(sourceDirectory))) {
+        console.warn(
+          `Missing ${project.displayName} checkout at ${sourceDirectory}; using checked-in Playwright docs fixture.`,
+        );
+        await writeFallbackDocsProject(targetDirectory, project);
+        return;
+      }
+
       await copyIfExists(
         path.join(sourceDirectory, "gradle.properties"),
         path.join(targetDirectory, "gradle.properties"),
@@ -347,6 +357,69 @@ async function copyDocsProjectSources(
   );
 }
 
+async function writeFallbackDocsProject(
+  targetDirectory: string,
+  project: DocsProjectSource,
+): Promise<void> {
+  const targetGuideDirectory = path.join(
+    targetDirectory,
+    "src",
+    "main",
+    "docs",
+    "guide",
+  );
+  await fs.mkdir(targetGuideDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(targetDirectory, "gradle.properties"),
+    [`projectVersion=${project.version}`, ""].join("\n"),
+    "utf8",
+  );
+  await Promise.all(
+    project.guideFiles.map(async (file): Promise<void> => {
+      const targetFile = path.join(targetGuideDirectory, file);
+      await fs.mkdir(path.dirname(targetFile), { recursive: true });
+      await fs.writeFile(targetFile, fallbackDocsSource(project, file), "utf8");
+    }),
+  );
+  if (project.slug === "core") {
+    await copyFile(
+      path.join(fixtureDirectory, "snippet-gallery.adoc"),
+      path.join(targetGuideDirectory, "snippetGallery.adoc"),
+    );
+  }
+  await fs.writeFile(path.join(targetGuideDirectory, "toc.yml"), project.toc);
+}
+
+function fallbackDocsSource(project: DocsProjectSource, file: string): string {
+  return [
+    `${project.displayName} copied fixture content for ${file}.`,
+    "",
+    `[source,${project.fallbackLanguage}]`,
+    "----",
+    ...fallbackSourceLines(project),
+    "----",
+    "<1> The copied docs fixture callout is rendered below the snippet card.",
+    "",
+    "This fixture is used when the external docs project checkout is not available.",
+  ].join("\n");
+}
+
+function fallbackSourceLines(project: DocsProjectSource): string[] {
+  const className = `${pascalCase(project.projectKey)}PlaywrightFixture`;
+  if (project.fallbackLanguage === "kotlin") {
+    return [`class ${className} {`, "    fun run() { // <1>", "    }", "}"];
+  }
+  if (project.fallbackLanguage === "groovy") {
+    return [`class ${className} {`, "    void run() { // <1>", "    }", "}"];
+  }
+  return [
+    `final class ${className} {`,
+    "    void run() { // <1>",
+    "    }",
+    "}",
+  ];
+}
+
 async function copyGuideRepositorySubset(
   sourceDirectory: string,
   targetDirectory: string,
@@ -371,6 +444,238 @@ async function copyGuideRepositorySubset(
     path.join(sourceDirectory, "guides", "hello-base"),
     path.join(targetDirectory, "guides", "hello-base"),
   );
+}
+
+async function writeFallbackGuideRepository(
+  guidesDirectory: string,
+): Promise<void> {
+  await fs.mkdir(guidesDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(guidesDirectory, "version.txt"),
+    "4.9.0\n",
+    "utf8",
+  );
+  await fs.mkdir(
+    path.join(guidesDirectory, "src", "docs", "common", "snippets"),
+    { recursive: true },
+  );
+  await fs.writeFile(
+    path.join(
+      guidesDirectory,
+      "src",
+      "docs",
+      "common",
+      "snippets",
+      "common-license.adoc",
+    ),
+    "",
+    "utf8",
+  );
+  await Promise.all([
+    writeFallbackGuide(guidesDirectory, {
+      buildTools: ["gradle", "maven"],
+      languages: ["java", "kotlin"],
+      slug: "micronaut-http-client",
+      title: "Micronaut HTTP Client",
+    }),
+    writeFallbackGuide(guidesDirectory, {
+      buildTools: ["gradle"],
+      languages: ["java"],
+      slug: "creating-your-first-micronaut-app",
+      title: "Creating your first Micronaut application",
+    }),
+    writeFallbackGuide(guidesDirectory, {
+      buildTools: ["gradle"],
+      languages: ["java"],
+      slug: "micronaut-data-jdbc-repository",
+      title: "Access a database with Micronaut Data JDBC",
+    }),
+  ]);
+}
+
+async function writeFallbackGuide(
+  guidesDirectory: string,
+  guide: {
+    buildTools: string[];
+    languages: string[];
+    slug: string;
+    title: string;
+  },
+): Promise<void> {
+  const guideDirectory = path.join(guidesDirectory, "guides", guide.slug);
+  await fs.mkdir(guideDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(guideDirectory, "metadata.json"),
+    `${JSON.stringify(
+      {
+        title: guide.title,
+        intro: "Copied Playwright guide fixture.",
+        authors: ["Micronaut"],
+        categories: ["Test"],
+        publicationDate: "2026-01-01",
+        tags: ["test"],
+        languages: guide.languages,
+        buildTools: guide.buildTools,
+        testFramework: "junit",
+        apps: [
+          {
+            name: "default",
+            applicationType: "DEFAULT",
+            features: ["http-client"],
+            javaFeatures: [],
+            kotlinFeatures: [],
+            groovyFeatures: [],
+          },
+        ],
+        minimumJavaVersion: "21",
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, `${guide.slug}.adoc`),
+    fallbackGuideSource(),
+    "utf8",
+  );
+  await writeFallbackGuideSources(guideDirectory, guide.languages);
+}
+
+function fallbackGuideSource(): string {
+  return [
+    "== What you will need",
+    "",
+    "Download and unzip the source.",
+    "",
+    "== Solution",
+    "",
+    "In this guide, we will create a Micronaut application written in @language@.",
+    "",
+    "[source,bash]",
+    "----",
+    "./gradlew test",
+    "----",
+    "",
+    "source::ExampleController[]",
+    "",
+    "resource::application.properties[tag=config]",
+    "",
+    "[source,java]",
+    "----",
+    "final class InlineJavaFixture {",
+    "}",
+    "----",
+    "",
+    "[source,kotlin]",
+    "----",
+    "class InlineKotlinFixture",
+    "----",
+    "",
+    "[source,groovy]",
+    "----",
+    "class InlineGroovyFixture {",
+    "}",
+    "----",
+    "",
+    "== Writing the Application",
+    "",
+    "dependency::micronaut-http-client[groupId=io.micronaut,callout=1]",
+    "<1> Adds HTTP client dependency.",
+    "",
+    ".Configuration Properties",
+    "|===",
+    "|Property |Type |Description",
+    "|micronaut.server.port |Integer |Server port.",
+    "|micronaut.application.name |String |Application name.",
+    "|===",
+  ].join("\n");
+}
+
+async function writeFallbackGuideSources(
+  guideDirectory: string,
+  languages: string[],
+): Promise<void> {
+  await fs.mkdir(path.join(guideDirectory, "src", "main", "resources"), {
+    recursive: true,
+  });
+  await fs.writeFile(
+    path.join(
+      guideDirectory,
+      "src",
+      "main",
+      "resources",
+      "application.properties",
+    ),
+    [
+      "# tag::config[]",
+      "micronaut.application.name=playwright-fixture",
+      "micronaut.server.port=8080",
+      "# end::config[]",
+    ].join("\n"),
+    "utf8",
+  );
+  await Promise.all(
+    languages.map(async (language): Promise<void> => {
+      const extension =
+        language === "kotlin"
+          ? "kt"
+          : language === "groovy"
+            ? "groovy"
+            : "java";
+      const sourceDirectory = path.join(
+        guideDirectory,
+        language,
+        "src",
+        "main",
+        language === "kotlin"
+          ? "kotlin"
+          : language === "groovy"
+            ? "groovy"
+            : "java",
+        "example",
+        "micronaut",
+      );
+      await fs.mkdir(sourceDirectory, { recursive: true });
+      await fs.writeFile(
+        path.join(sourceDirectory, `ExampleController.${extension}`),
+        fallbackGuideSourceFile(language),
+        "utf8",
+      );
+    }),
+  );
+}
+
+function fallbackGuideSourceFile(language: string): string {
+  if (language === "kotlin") {
+    return [
+      "package example.micronaut",
+      "",
+      "class ExampleController {",
+      '    fun index(): String = "Hello"',
+      "}",
+    ].join("\n");
+  }
+  if (language === "groovy") {
+    return [
+      "package example.micronaut",
+      "",
+      "class ExampleController {",
+      "    String index() {",
+      '        "Hello"',
+      "    }",
+      "}",
+    ].join("\n");
+  }
+  return [
+    "package example.micronaut;",
+    "",
+    "final class ExampleController {",
+    "    String index() {",
+    '        return "Hello";',
+    "    }",
+    "}",
+  ].join("\n");
 }
 
 async function copySnippetGalleryGuide(guidesDirectory: string): Promise<void> {
@@ -451,6 +756,14 @@ function docsProjectDirectoryEnvName(project: DocsProjectSource): string {
   return `MICRONAUT_DOCS_${project.projectKey.toUpperCase().replaceAll("-", "_")}_DIR`;
 }
 
+function pascalCase(value: string): string {
+  return value
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() || ""}${part.slice(1)}`)
+    .join("");
+}
+
 async function copyIfExists(source: string, target: string): Promise<void> {
   try {
     const stats = await fs.stat(source);
@@ -481,6 +794,15 @@ async function copyDirectory(source: string, target: string): Promise<void> {
 async function copyFile(source: string, target: string): Promise<void> {
   await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.copyFile(source, target);
+}
+
+async function isDirectory(directory: string): Promise<boolean> {
+  try {
+    const stats = await fs.stat(directory);
+    return stats.isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 async function assertDirectory(
