@@ -6,7 +6,7 @@ import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
 import {
   renderGeneratedPropertiesCard,
-  renderGeneratedSnippetCard,
+  renderGeneratedSnippet,
   renderSnippetVariant,
 } from "./extensions/snippet-block-renderer.ts";
 
@@ -189,7 +189,7 @@ async function renderListingSnippetCard({
   source: string;
   titleHtml?: string;
 }): Promise<string> {
-  return renderGeneratedSnippetCard({
+  return renderGeneratedSnippet({
     copyLabel: "Copy code",
     descriptionHtml,
     footerHtml,

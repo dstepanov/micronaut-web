@@ -141,14 +141,15 @@ The browser enhancer does not perform syntax highlighting.
 ## Browser Enhancement
 
 Generated fragments are usable as static HTML. The browser script in
-`src/components/web/generated-docs-enhancer.astro` progressively adds:
+`src/components/web/generated-docs-static-enhancer.astro` progressively adds:
 
 - snippet language or dependency-format tab switching
 - active-panel copy buttons
-- copy controls for plain Shiki blocks
+- generated image loading stabilization
 
 The enhancement script expects the static markup shape emitted by the AsciiDoc
-pipeline. It should not be used as a replacement rendering path.
+pipeline. It does not render snippets, wrap configuration property tables, or
+act as a fallback for raw Asciidoctor HTML.
 
 ## Removed Legacy Paths
 
@@ -156,6 +157,8 @@ The current pipeline does not use:
 
 - `<micronaut-snippet>` marker elements
 - `static-snippets.ts`
+- `generated-docs-enhancer.astro`
+- `generated-docs-properties-fallback.astro`
 - `micronaut-snippet` wrapper parsing
 - `normalizeAsciiDocSource(...)`
 - `scripts/guides/preprocessor.ts`

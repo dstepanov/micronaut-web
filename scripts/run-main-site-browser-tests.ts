@@ -1,11 +1,12 @@
 import { spawn } from "node:child_process";
 
 const surface = process.env.MICRONAUT_DEPLOY_SURFACE;
+const npmCommand = process.env.npm_execpath ?? "npm";
 
 if (surface && surface !== "all" && surface !== "main") {
   console.log(`Skipping main-site browser tests for ${surface} surface.`);
 } else {
-  await run("npm", ["run", "test:main-site:browser"]);
+  await run(npmCommand, ["run", "test:main-site:browser"]);
 }
 
 function run(command: string, args: string[]): Promise<void> {

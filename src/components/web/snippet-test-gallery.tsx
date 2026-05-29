@@ -1,21 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 import {
   DocsCodeSnippet,
-  ShikiCodeBlock,
   type CodeSnippetExample,
   type CodeSnippetVariant,
 } from "@/components/web/docs-code-snippet";
-import {
-  CopyIcon,
-  DocsSnippetCodeLanguageIcon,
-  DocsPropertiesSnippetCard,
-  DocsSnippetCard,
-  DocsSnippetCopyButton,
-  DocsSnippetLanguageButton,
-} from "@/components/web/docs-snippet-card";
+import { DocsPropertiesSnippetCard } from "@/components/web/docs-snippet-card";
 import {
   componentCodeVariants,
   componentTerminalVariants,
@@ -58,6 +48,15 @@ const componentTerminalExampleBase: CodeSnippetExample = {
   variants: componentTerminalVariants,
 };
 
+const componentDependencyExampleBase: CodeSnippetExample = {
+  id: "snippet-test-dependency",
+  label: "Dependency",
+  title: "HTTP client dependency",
+  description:
+    "Gradle and Maven dependency variants rendered through the shared dependency snippet card.",
+  variants: dependencyVariants,
+};
+
 function exampleWithHighlightedHtml(
   example: CodeSnippetExample,
   highlightedHtmlByKey: Record<string, string> | undefined,
@@ -97,6 +96,10 @@ export function SnippetTestGallery({
     componentTerminalExampleBase,
     highlightedHtmlByKey,
   );
+  const componentDependencyExample = exampleWithHighlightedHtml(
+    componentDependencyExampleBase,
+    highlightedHtmlByKey,
+  );
 
   return (
     <div className="grid gap-8">
@@ -106,7 +109,7 @@ export function SnippetTestGallery({
             Component code snippet
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Rendered through DocsCodeSnippet and DocsSnippetCard.
+            Rendered through the shared snippet component.
           </p>
         </div>
         <DocsCodeSnippet example={componentCodeExample} className="m-0" />
@@ -137,8 +140,12 @@ export function SnippetTestGallery({
             Uses the dependency variant of the shared snippet card.
           </p>
         </div>
-        <ComponentDependencySnippet
-          highlightedHtmlByKey={highlightedHtmlByKey}
+        <DocsCodeSnippet
+          example={componentDependencyExample}
+          kind="dependency"
+          title={componentDependencyExample.title}
+          description={componentDependencyExample.description}
+          className="m-0"
         />
       </section>
 
@@ -189,119 +196,4 @@ export function SnippetTestGallery({
       </section>
     </div>
   );
-}
-
-function ComponentDependencySnippet({
-  highlightedHtmlByKey,
-}: SnippetTestGalleryProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const highlightedDependencyVariants = variantsWithHighlightedHtml(
-    "snippet-test-dependency",
-    dependencyVariants,
-    highlightedHtmlByKey,
-  );
-  const activeVariant =
-    highlightedDependencyVariants[activeIndex] ||
-    highlightedDependencyVariants[0];
-  if (!activeVariant) {
-    return null;
-  }
-
-  async function copyActiveSnippet() {
-    try {
-      await navigator.clipboard.writeText(activeVariant.code);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = activeVariant.code;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.append(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
-  }
-
-  return (
-    <DocsSnippetCard
-      kind="dependency"
-      title="HTTP client dependency"
-      description="Gradle and Maven dependency variants rendered through the shared dependency snippet card."
-      className="m-0"
-      controls={
-        <div
-          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
-          role="tablist"
-          aria-label="Dependency format"
-        >
-          {highlightedDependencyVariants.map((variant, index) => {
-            const active = index === activeIndex;
-            return (
-              <DocsSnippetLanguageButton
-                key={variant.language}
-                active={active}
-                id={`snippet-test-dependency-${variant.language}-tab`}
-                type="button"
-                role="tab"
-                aria-controls={`snippet-test-dependency-${variant.language}-panel`}
-                aria-selected={active}
-                data-lang={variant.language}
-                tabIndex={active ? 0 : -1}
-                onClick={() => {
-                  setActiveIndex(index);
-                  setCopied(false);
-                }}
-              >
-                <SnippetTestLanguageIcon language={variant.language} />
-                <span className="docs-code-language-text inline-flex items-center leading-none">
-                  {variant.label}
-                </span>
-              </DocsSnippetLanguageButton>
-            );
-          })}
-        </div>
-      }
-      action={
-        <DocsSnippetCopyButton
-          aria-label={copied ? "Copied" : `Copy ${activeVariant.fileName}`}
-          title={copied ? "Copied" : `Copy ${activeVariant.fileName}`}
-          onClick={copyActiveSnippet}
-        >
-          <CopyIcon />
-          <span className="sr-only" aria-live="polite">
-            {copied ? "Copied" : "Copy code"}
-          </span>
-        </DocsSnippetCopyButton>
-      }
-    >
-      {highlightedDependencyVariants.map((variant, index) => {
-        const active = index === activeIndex;
-        return (
-          <div
-            key={variant.language}
-            id={`snippet-test-dependency-${variant.language}-panel`}
-            role="tabpanel"
-            aria-labelledby={`snippet-test-dependency-${variant.language}-tab`}
-            aria-hidden={!active}
-            hidden={!active}
-            className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
-          >
-            <ShikiCodeBlock
-              code={variant.code}
-              highlightedHtml={variant.highlightedHtml}
-              language={variant.language}
-            />
-          </div>
-        );
-      })}
-    </DocsSnippetCard>
-  );
-}
-
-function SnippetTestLanguageIcon({ language }: { language: string }) {
-  return <DocsSnippetCodeLanguageIcon language={language} />;
 }

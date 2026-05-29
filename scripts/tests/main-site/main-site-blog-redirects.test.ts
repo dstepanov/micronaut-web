@@ -154,6 +154,7 @@ test("main-site browser tests are wired through a surface-aware runner", async (
   );
   assert.match(runner, /MICRONAUT_DEPLOY_SURFACE/);
   assert.match(runner, /surface !== "all" && surface !== "main"/);
+  assert.match(runner, /npm_execpath/);
 });
 
 test("meeting minutes index does not duplicate dated minutes", async (): Promise<void> => {
