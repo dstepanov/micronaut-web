@@ -76,6 +76,8 @@ test("main-site runtime scripts do not include build-time content processors", a
 
   await page.goto(appPath("/"));
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expectNoForbiddenRuntimeLibraries(runtimeScripts);
+
   await page.goto(appPath("/launch/"));
   await expect(
     page.getByRole("heading", {
