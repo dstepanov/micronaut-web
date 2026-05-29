@@ -1,7 +1,29 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const httpClientGuideTitle = "Micronaut HTTP Client";
 const generatedGuidePages = [
+  {
+    dependencyLanguage: "gradle",
+    expectedAbsentText: ["== Gradle Git Properties Plugin"],
+    expectedCallouts: [
+      ["1", "Annotate the class"],
+      ["2", "Inject the"],
+      ["3", "Creating HTTP Requests"],
+      ["4", "Use"],
+    ],
+    expectedHeadings: [
+      "What you will need",
+      "Solution",
+      "Gradle Git Properties Plugin",
+      "Test",
+    ],
+    expectedText: "add git commit info",
+    requireDependency: true,
+    requireProperties: true,
+    sourceLanguage: "java",
+    slug: "adding-commit-info-gradle-java",
+    title: "Adding Commit Info to your Micronaut Application",
+  },
   {
     dependencyLanguage: "gradle",
     expectedHeadings: [
@@ -57,6 +79,27 @@ const generatedGuidePages = [
     sourceLanguage: "java",
     slug: "micronaut-data-jdbc-repository-gradle-java",
     title: "Access a database with Micronaut Data JDBC",
+  },
+  {
+    dependencyLanguage: "gradle",
+    expectedAbsentText: ["=== Native Executable Generation"],
+    expectedCallouts: [
+      ["1", "Use"],
+      ["2", "Inject a Logger"],
+      ["3", "Create trigger every 10 seconds"],
+      ["4", "Create another trigger every 45 seconds"],
+    ],
+    expectedHeadings: [
+      "Creating a Job",
+      "Scheduling a Job Manually",
+      "Native Executable Generation",
+    ],
+    expectedText: "schedule periodic tasks",
+    requireDependency: false,
+    requireProperties: false,
+    sourceLanguage: "java",
+    slug: "micronaut-scheduled-gradle-java",
+    title: "Schedule periodic tasks inside your Micronaut applications",
   },
   {
     dependencyLanguage: "gradle",
@@ -209,11 +252,38 @@ test("generated guide pages are rendered from real sources with converted snippe
     for (const text of guide.expectedRenderedText || []) {
       await expect(content.getByText(text).first()).toBeVisible();
     }
+    for (const text of guide.expectedAbsentText || []) {
+      await expect(content.getByText(text, { exact: true })).toHaveCount(0);
+    }
+    if (guide.expectedCallouts) {
+      await expectGuideCallouts(content, guide.expectedCallouts);
+    }
     await expectConvertedGuideSnippets(page, guide);
   }
 
   expect(failures).toEqual([]);
 });
+
+async function expectGuideCallouts(
+  content: Locator,
+  expectedCallouts: string[][],
+): Promise<void> {
+  const firstCalloutText = expectedCallouts[0]?.[1] || "";
+  const callouts = content
+    .locator(".docs-code-callouts")
+    .filter({ hasText: firstCalloutText })
+    .first();
+  await expect(callouts).toBeVisible();
+
+  for (const [, text] of expectedCallouts) {
+    await expect(callouts.getByText(text).first()).toBeVisible();
+  }
+
+  const values = await callouts.locator(".conum").evaluateAll((nodes) =>
+    nodes.map((node) => node.getAttribute("data-value")),
+  );
+  expect(values).toEqual(expectedCallouts.map(([value]) => value));
+}
 
 function collectBrowserFailures(page: Page) {
   const failures: string[] = [];

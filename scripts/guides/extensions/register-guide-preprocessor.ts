@@ -17,6 +17,7 @@ import {
 
 const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
 const DEPENDENCY_LINE = /^dependency:{1,2}([^\[]*)\[(.*)]\s*$/;
+const CALLOUT_LINE_MACRO = /^callout:{1,2}([^\[]+)\[([^\]]*)]\s*$/;
 const EXCLUDE_DIRECTIVE_LINE =
   /^:(exclude-for-languages|exclude-for-build|exclude-for-jdk-lower-than):(.*)$/;
 const DEFAULT_MIN_JDK = 21;
@@ -123,6 +124,11 @@ function rewriteGuideLines(
       output.push(...expandedContent);
       continue;
     }
+    const expandedCallout = expandedGuideCalloutLines(line, context);
+    if (expandedCallout) {
+      output.push(...expandedCallout);
+      continue;
+    }
     const legacyBlockMacro = legacyLineBlockMacro(line);
     if (legacyBlockMacro) {
       output.push(legacyBlockMacro);
@@ -199,6 +205,48 @@ function expandedGuideContentLines(
   }
 }
 
+function expandedGuideCalloutLines(
+  line: string,
+  context: GuideRenderContext,
+): string[] | undefined {
+  const match = CALLOUT_LINE_MACRO.exec(line);
+  if (!match) {
+    return undefined;
+  }
+
+  const [, target, rawAttributes] = match;
+  const attributes = parseAttributes(rawAttributes);
+  const file = path.join(
+    context.guidesDirectory,
+    "src",
+    "docs",
+    "common",
+    "callouts",
+    `callout-${ensureSuffix(target.trim(), ".adoc")}`,
+  );
+  try {
+    const explicitNumber = calloutNumber(attributes);
+    return prepareGuideSourceForExtensions(
+      readFileSync(file, "utf8"),
+      context,
+      {
+        appendLicense: false,
+      },
+    )
+      .split(/\r?\n/)
+      .map((sourceLine) =>
+        replaceGuideTemplateArguments(sourceLine, attributes),
+      )
+      .map((sourceLine) => {
+        return explicitNumber
+          ? sourceLine.replace(/^<\.>/, `<${explicitNumber}>`)
+          : sourceLine;
+      });
+  } catch {
+    return [`NOTE: Missing include \`${path.basename(file)}\`.`];
+  }
+}
+
 function legacyLineBlockMacro(line: string): string | undefined {
   const match = /^([A-Za-z][\w-]*):([^:]*\[[^\]]*])\s*$/.exec(line);
   return match && LEGACY_LINE_BLOCK_MACROS.has(match[1])
@@ -250,13 +298,36 @@ function legacyExcludeBlockLines(
   }
 
   return {
-    lines: excludeMacroLines(
-      directive.name,
-      values,
-      rewriteGuideLines(bodyLines, context),
-    ),
+    lines: shouldExcludeDirective(directive.name, values, context)
+      ? []
+      : ["", ...rewriteGuideLines(bodyLines, context), ""],
     nextIndex: index,
   };
+}
+
+function shouldExcludeDirective(
+  name: ExcludeMacroName,
+  values: string[],
+  context: GuideRenderContext,
+): boolean {
+  if (name === "exclude-for-languages") {
+    return values.some(
+      (value) =>
+        value.toLowerCase() === context.option.language.toLowerCase(),
+    );
+  }
+  if (name === "exclude-for-build") {
+    return values.some(
+      (value) =>
+        value.toLowerCase() === context.option.buildTool.toLowerCase(),
+    );
+  }
+  const threshold = Number.parseInt(values[0] || "", 10);
+  const guideMinJdk = Number.parseInt(
+    String(context.guide.minimumJavaVersion || DEFAULT_MIN_JDK),
+    10,
+  );
+  return Number.isFinite(threshold) && guideMinJdk >= threshold;
 }
 
 function parseExcludeDirective(line: string): ExcludeDirective | undefined {
@@ -275,21 +346,6 @@ function splitExcludeDirectiveValues(value: string): string[] {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-}
-
-function excludeMacroLines(
-  macroName: ExcludeMacroName,
-  values: string[],
-  bodyLines: string[],
-): string[] {
-  return [
-    "",
-    `${macroName}::${values.join(",")}[payload=${encodePayload({
-      lines: bodyLines,
-      values,
-    })}]`,
-    "",
-  ];
 }
 
 function dependencyGroupBlockLines(
@@ -478,6 +534,18 @@ function replaceGuideTemplateArguments(
     }
     return value;
   });
+}
+
+function calloutNumber(
+  attributes: Record<string, string> & { _positional?: string[] },
+): string {
+  const number =
+    attributes.number ||
+    attributes.callout ||
+    attributes._positional?.[1] ||
+    attributes._positional?.[0] ||
+    "";
+  return /^\d+$/.test(number) ? number : "";
 }
 
 function commonSnippetPath(guidesDirectory: string, target: string): string {

@@ -112,8 +112,19 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Adds HTTP client dependency/);
   assert.match(html, /Kotlin-only guide text remains for Java/);
   assert.match(html, /Gradle-only guide text remains for Gradle/);
+  assert.match(
+    html,
+    /<h([1-6])\b[^>]*>Gradle-only fixture heading<\/h\1>/,
+  );
+  assert.doesNotMatch(html, /<p>== Gradle-only fixture heading<\/p>/);
   assert.doesNotMatch(html, /Java and Groovy guide text should not render/);
   assert.doesNotMatch(html, /Maven-only guide text remains for Maven/);
+  assert.match(html, /Generated callout two/);
+  assert.match(html, /Generated callout four/);
+  assert.match(
+    html,
+    /Generated callout one[\s\S]*Generated callout two[\s\S]*Generated callout three[\s\S]*Generated callout four/,
+  );
   assert.match(html, /Manual callout keeps its place/);
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
@@ -737,9 +748,33 @@ async function writeGuideFixture(
       "docs",
       "common",
       "callouts",
+      "callout-generated-two.adoc",
+    ),
+    "<.> Generated callout two.\n",
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(
+      guidesDirectory,
+      "src",
+      "docs",
+      "common",
+      "callouts",
       "callout-generated-three.adoc",
     ),
     "<.> Generated callout three.\n",
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(
+      guidesDirectory,
+      "src",
+      "docs",
+      "common",
+      "callouts",
+      "callout-generated-four.adoc",
+    ),
+    "<.> Generated callout four.\n",
     "utf8",
   );
   await fs.writeFile(
@@ -800,11 +835,17 @@ async function writeGuideFixture(
       "Maven-only guide text remains for Maven.",
       ":exclude-for-build:",
       ":exclude-for-build:maven",
+      "== Gradle-only fixture heading",
       "Gradle-only guide text remains for Gradle.",
       ":exclude-for-build:",
       "source::ExampleController[tags=package|hello]",
       "resource::application.properties[tag=config]",
       "<1> Properties comment callout attaches to the property line.",
+      "source::SequentialCalloutController[]",
+      "callout::generated-one[]",
+      "callout::generated-two[]",
+      "callout::generated-three[]",
+      "callout::generated-four[]",
       "source::MarkedController[]",
       "callout::generated-one[]",
       "<2> Manual callout keeps its place.",
@@ -883,6 +924,36 @@ async function writeGuideFixture(
       "final class ExampleController {",
       "}",
       "// end::hello[]",
+    ].join("\n"),
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(
+      guideDirectory,
+      "java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "micronaut",
+      "SequentialCalloutController.java",
+    ),
+    [
+      "package example.micronaut;",
+      "",
+      "final class SequentialCalloutController {",
+      "    void one() { // <1>",
+      "    }",
+      "",
+      "    void two() { // <2>",
+      "    }",
+      "",
+      "    void three() { // <3>",
+      "    }",
+      "",
+      "    void four() { // <4>",
+      "    }",
+      "}",
     ].join("\n"),
     "utf8",
   );

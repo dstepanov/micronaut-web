@@ -17,9 +17,11 @@ const generatedContentFixtureDirectory = path.join(
 );
 const docsProjectSlugs = ["core", "data", "serde"];
 const guideSlugs = [
+  "adding-commit-info",
   "creating-your-first-micronaut-app",
   "micronaut-http-client",
   "micronaut-data-jdbc-repository",
+  "micronaut-scheduled",
   "snippet-gallery",
 ];
 

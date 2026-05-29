@@ -129,8 +129,19 @@ async function renderExcludeLines(
   }
 
   const holder = processor.createBlock(parent, "open", "", {});
-  await processor.parseContent(holder, lines);
+  await processor.parseContent(
+    guideContentParseTarget(parent, holder, lines),
+    lines,
+  );
   return holder;
+}
+
+function guideContentParseTarget(
+  parent: Block | Section,
+  holder: Block,
+  lines: string[],
+): Block | Section {
+  return lines.some((line) => /^={1,6}\s+\S/.test(line)) ? parent : holder;
 }
 
 function blockValues(attributes: Record<string, unknown>): string[] {
