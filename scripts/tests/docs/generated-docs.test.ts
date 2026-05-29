@@ -655,9 +655,9 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   );
   assert.ok(generatedHtml.includes("[&amp;_td:first-child_.conum+b]:hidden"));
   assert.ok(generatedHtml.includes("[&amp;_tr+tr_td]:pt-[0.55rem]"));
-  assert.ok(
-    generatedHtml.includes("[&amp;_tr+tr_td:first-child]:pt-[0.75rem]"),
-  );
+  assert.ok(generatedHtml.includes("[&amp;_td:first-child]:align-middle"));
+  assert.ok(generatedHtml.includes("[&amp;_td:first-child]:pt-0"));
+  assert.ok(generatedHtml.includes("[&amp;_tr+tr_td:first-child]:pt-0"));
   assert.ok(generatedHtml.includes("[&amp;_.colist]:!m-0"));
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
