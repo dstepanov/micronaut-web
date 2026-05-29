@@ -197,6 +197,7 @@ const requiredRuntimeClassFragments = [
   "[&_td:first-child_.conum]:inline-flex",
   "[&_td:first-child_.conum::before]:content-[attr(data-value)]",
   "[&_td:first-child_.conum+b]:hidden",
+  "[&_.colist]:!m-0",
   "[&_table.tableblock]:border-collapse",
   "[&_table.tableblock_:where(th,td)]:border",
 ];

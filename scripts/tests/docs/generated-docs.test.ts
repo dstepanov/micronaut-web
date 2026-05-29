@@ -643,6 +643,10 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assertSnippetLanguageIcon(generatedHtml, "json-config", "json");
   assertNoRuntimeGeneratedRendering("generated docs HTML", generatedHtml);
   assert.match(generatedHtml, /docs-code-callouts/);
+  assert.ok(
+    generatedHtml.includes("px-6 pt-3 pb-2 text-sm leading-5"),
+    "snippet callout footers should keep tighter bottom padding",
+  );
   assert.match(generatedHtml, /<i class="conum" data-value="1"><\/i>/);
   assert.ok(
     generatedHtml.includes(
@@ -654,6 +658,7 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.ok(
     generatedHtml.includes("[&amp;_tr+tr_td:first-child]:pt-[0.75rem]"),
   );
+  assert.ok(generatedHtml.includes("[&amp;_.colist]:!m-0"));
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
   assert.match(generatedText, /Snippet callout follows the generated card/);

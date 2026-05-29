@@ -78,6 +78,7 @@ const calloutFooterRuntimeClasses = [
   "[&_td:first-child_.conum]:not-italic",
   "[&_td:first-child_.conum::before]:content-[attr(data-value)]",
   "[&_td:first-child_.conum+b]:hidden",
+  "[&_.colist]:!m-0",
   "[&_p]:!m-0"
 ].join(" ");
 const propertiesTableRuntimeClasses = [
@@ -115,7 +116,7 @@ export const docsSnippetStyles = {
   panel: "docs-code-content docs-snippet-card-content bg-code text-code-foreground",
   codePre: "shiki shiki-themes github-light-default github-dark-default !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground",
   codeElement: `shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] ${codeRuntimeClasses}`,
-  footer: `docs-snippet-card-footer docs-code-callouts block border-t border-code-border bg-code-tab px-6 py-3 text-sm leading-5 text-code-foreground [&_code]:!rounded-none [&_code]:!bg-code-foreground/10 [&_code]:!p-0 [&_code]:!text-[1em] [&_code]:!leading-[inherit] [&_code]:!text-code-foreground ${calloutFooterRuntimeClasses}`,
+  footer: `docs-snippet-card-footer docs-code-callouts block border-t border-code-border bg-code-tab px-6 pt-3 pb-2 text-sm leading-5 text-code-foreground [&_code]:!rounded-none [&_code]:!bg-code-foreground/10 [&_code]:!p-0 [&_code]:!text-[1em] [&_code]:!leading-[inherit] [&_code]:!text-code-foreground ${calloutFooterRuntimeClasses}`,
   heading: "docs-snippet-heading flex min-w-0 items-center gap-2 text-sm leading-5 font-semibold text-code-foreground",
   propertiesHeading: "docs-properties-heading flex min-w-0 items-center gap-2 text-sm leading-5 font-semibold",
   description: "docs-snippet-description text-xs leading-5 text-code-muted",
