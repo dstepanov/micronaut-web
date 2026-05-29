@@ -81,25 +81,52 @@ test("generated docs page renders desktop content and sidebars without overlap",
     docsSidebar.getByRole("link", { name: "Micronaut Core" }),
   ).toHaveAttribute("aria-current", "page");
 
-  const sectionNav = page.locator('aside[aria-label="In this section"]');
+  const sectionNav = page.locator("[data-docs-current-section-index]");
+  await expect(sectionNav).toBeHidden();
+  for (const rootLabel of [
+    "1 Introduction",
+    "2 Quick Start",
+    "3 Snippet Gallery",
+  ]) {
+    await expect(
+      sectionNav
+        .locator("[data-docs-current-section-link]")
+        .getByText(rootLabel, { exact: true }),
+    ).toHaveCount(0);
+  }
+
+  await scrollToGeneratedHeading(page, "2 Quick Start");
   await expect(sectionNav).toBeVisible();
+  const createApplication = sectionNav.getByRole("link", {
+    includeHidden: true,
+    name: "Create an Application",
+  });
+  await expect(createApplication).toHaveCount(1);
+  await expect(createApplication).toBeVisible();
   await expect(
-    sectionNav.getByRole("link", { name: "1 Introduction" }),
-  ).toBeVisible();
-  await expect(
-    sectionNav.getByRole("link", { name: "2 Quick Start" }),
-  ).toBeVisible();
+    docsSidebar.getByRole("link", { name: "2 Quick Start" }),
+  ).toHaveAttribute("data-active", "true");
   const ordinarySourceBlocks = sectionNav.getByRole("link", {
+    includeHidden: true,
     name: "Ordinary Source Blocks",
   });
+  await expect(ordinarySourceBlocks).toHaveCount(1);
+  await expect(ordinarySourceBlocks).toBeHidden();
+
+  await scrollToGeneratedHeading(page, "Create an Application");
+  await expect(createApplication).toHaveAttribute("data-active", "true");
+  await expect(createApplication).toHaveAttribute("aria-current", "location");
+
+  await scrollToGeneratedHeading(page, "Ordinary Source Blocks");
   await expect(ordinarySourceBlocks).toBeVisible();
+  await expect(createApplication).toBeHidden();
   await expect(
     sectionNav.getByRole("link", { name: "Generated Snippet Macros" }),
   ).toBeVisible();
-  await page.evaluate(() =>
-    document.getElementById("core-_ordinary_source_blocks")?.scrollIntoView(),
-  );
   await expect(ordinarySourceBlocks).toHaveAttribute("data-active", "true");
+  await expect(
+    docsSidebar.getByRole("link", { name: "3 Snippet Gallery" }),
+  ).toHaveAttribute("data-active", "true");
   await expect(ordinarySourceBlocks).toHaveAttribute(
     "aria-current",
     "location",
@@ -324,6 +351,29 @@ async function expectTopHeaderPinned(page: Page): Promise<void> {
   await expect
     .poll(async () => Math.round((await banner.boundingBox())?.y ?? -1))
     .toBe(0);
+}
+
+async function scrollToGeneratedHeading(
+  page: Page,
+  headingName: string,
+): Promise<void> {
+  await page.evaluate((name) => {
+    const headings = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "[data-generated-docs] h1, [data-generated-docs] h2, [data-generated-docs] h3, [data-generated-docs] h4, [data-generated-docs] h5, [data-generated-docs] h6",
+      ),
+    );
+    const heading = headings.find(
+      (element) =>
+        element.textContent?.replace(/\s+/g, " ").trim() === name,
+    );
+    if (heading) {
+      const targetTop = heading.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: Math.max(targetTop - 160, 0),
+      });
+    }
+  }, headingName);
 }
 
 function assertBox(

@@ -83,12 +83,19 @@ let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
 let pageIndexSections: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
 let guideSectionLinks: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
+let currentGuideSectionLinks: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
 if (props.kind === "variant") {
   fragmentHtml = await readGeneratedGuideFragment(props.option);
   sections = fragmentHtml ? extractSections(fragmentHtml) : [];
   pageIndexSections = buildGuidePageIndexSections(sections);
   guideSectionLinks = pageIndexSections.filter((section) => section.level === 0).slice(0, 30);
+  currentGuideSectionLinks = pageIndexSections.filter((section) => section.level > 0);
 }
+
+const initialGuideRootId = guideSectionLinks[0]?.id || currentGuideSectionLinks[0]?.rootId;
+const initialGuideSectionIndexHidden =
+  !initialGuideRootId ||
+  currentGuideSectionLinks.every((section) => section.rootId !== initialGuideRootId);
 
 function extractSections(html: string) {
   const found: Array<{ id: string; label: string; depth: number }> = [];
@@ -139,7 +146,7 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
   <WebLayout title={`${props.guide.title} | ${props.option.label}`} surface="guides">
     <main class:list={[
       "mx-auto grid max-w-[1480px] gap-8 px-4 py-8 md:px-6",
-      pageIndexSections.length > 0 ? "lg:grid-cols-[220px_minmax(0,1fr)_250px]" : "lg:grid-cols-[220px_minmax(0,1fr)]"
+      currentGuideSectionLinks.length > 0 ? "lg:grid-cols-[220px_minmax(0,1fr)_250px]" : "lg:grid-cols-[220px_minmax(0,1fr)]"
     ]}>
       <aside class="hidden min-w-0 lg:block" aria-label="On this guide">
         <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pr-2 text-[0.82rem] [scrollbar-width:thin]">
@@ -254,8 +261,13 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
           </Card>
         )}
       </article>
-      {pageIndexSections.length > 0 && (
-        <aside class="hidden min-w-0 lg:block" aria-label="In this section" data-guide-page-index>
+      {currentGuideSectionLinks.length > 0 && (
+        <aside
+          class="hidden min-w-0 lg:block"
+          aria-label="In this section"
+          data-guide-page-index
+          hidden={initialGuideSectionIndexHidden}
+        >
           <div
             class="sticky top-[calc(var(--topbar-height)+24px)] max-h-[calc(100vh-var(--topbar-height)-48px)] overflow-y-auto pb-7 pr-6 font-[var(--shell-font)] [scrollbar-width:thin]"
             data-guide-page-index-inner
@@ -273,20 +285,20 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
               </a>
             </div>
             <nav class="grid gap-px border-l border-border pl-2.5" aria-label="Current guide sections" data-guide-page-index-nav>
-              {pageIndexSections.map((section) => (
+              {currentGuideSectionLinks.map((section) => (
                 <a
                   href={`#${section.id}`}
                   aria-label={section.label}
                   class:list={[
                     "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
-                    section.level === 0 && "pl-2",
-                    section.level === 1 && "pl-3.5",
-                    section.level === 2 && "pl-5",
-                    section.level >= 3 && "pl-[1.625rem]"
+                    section.level === 1 && "pl-2",
+                    section.level === 2 && "pl-3.5",
+                    section.level >= 3 && "pl-5"
                   ]}
                   data-guide-page-index-link
                   data-root-id={section.rootId}
                   data-section-id={section.id}
+                  hidden={section.rootId !== initialGuideRootId}
                 >
                   {section.label}
                 </a>

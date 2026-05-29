@@ -62,8 +62,12 @@ const contentSections = generatedDocSections.length ? generatedDocSections : pro
   depth: 1,
   parentId: undefined
 }));
-const sidebarSections = contentSections;
 const activeProjectSections = contentSections.filter((section) => section.depth === 1);
+const currentSectionLinks = contentSections.filter((section) => section.depth > 1 && section.parentId);
+const initialRootId = activeProjectSections[0]?.id || currentSectionLinks[0]?.parentId;
+const initialCurrentSectionIndexHidden =
+  !initialRootId ||
+  currentSectionLinks.every((section) => section.parentId !== initialRootId);
 
 function extractGeneratedDocSections(html: string) {
   const sections: Array<{ id: string; label: string; depth: number; parentId?: string }> = [];
@@ -146,21 +150,28 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
           </div>
         )}
       </div>
-      {sidebarSections.length > 0 && (
-        <aside class="hidden xl:block" aria-label="In this section">
+      {currentSectionLinks.length > 0 && (
+        <aside
+          class="hidden xl:block"
+          aria-label="In this section"
+          data-docs-current-section-index
+          hidden={initialCurrentSectionIndexHidden}
+        >
           <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]" data-docs-scroll-container>
             <h2 class="font-medium">In this section</h2>
             <Separator className="opacity-70" />
-            {sidebarSections.map((section) => (
+            {currentSectionLinks.map((section) => (
               <a
                 href={`#${section.id}`}
+                data-docs-current-section-link
                 data-docs-scroll-link
+                data-docs-section-root-id={section.parentId}
+                hidden={section.parentId !== initialRootId}
                 class:list={[
                   "relative rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground data-[active=true]:before:absolute data-[active=true]:before:bottom-[7px] data-[active=true]:before:left-[-11px] data-[active=true]:before:top-[7px] data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-brand data-[active=true]:before:content-['']",
-                  section.depth <= 1 && "pl-2",
-                  section.depth === 2 && "pl-4 text-[0.8rem]",
-                  section.depth === 3 && "pl-6 text-[0.78rem]",
-                  section.depth >= 4 && "pl-8 text-[0.76rem]"
+                  section.depth === 2 && "pl-2 text-[0.8rem]",
+                  section.depth === 3 && "pl-4 text-[0.78rem]",
+                  section.depth >= 4 && "pl-6 text-[0.76rem]"
                 ]}
               >
                 {section.label}

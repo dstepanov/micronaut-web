@@ -231,20 +231,50 @@ test("guide overview redirects to the preferred variant and exposes variant navi
   );
 
   const guidePageIndex = page.locator('aside[aria-label="In this section"]');
+  await expect(guidePageIndex).toBeHidden();
+  for (const rootLabel of [
+    "Getting Started",
+    "Writing the Application",
+    "HTTP Client Filter",
+  ]) {
+    await expect(
+      guidePageIndex
+        .locator("[data-guide-page-index-link]")
+        .getByText(rootLabel, { exact: true }),
+    ).toHaveCount(0);
+  }
+
+  await scrollToGeneratedHeading(page, "Writing the Application");
   await expect(guidePageIndex).toBeVisible();
-  await expect(
-    guidePageIndex.getByRole("link", { name: "Dependency" }),
-  ).toBeVisible();
+  const dependencyLink = guidePageIndex.getByRole("link", {
+    includeHidden: true,
+    name: "Dependency",
+  });
+  await expect(dependencyLink).toHaveCount(1);
+  await expect(dependencyLink).toBeVisible();
   await expect(
     guidePageIndex.getByRole("link", { name: "JSON Codec Configuration" }),
   ).toBeVisible();
+  const configurationParametersLink = guidePageIndex.getByRole("link", {
+    includeHidden: true,
+    name: "Configuration Parameters",
+  });
+  await expect(configurationParametersLink).toHaveCount(1);
+  await expect(configurationParametersLink).toBeHidden();
+
   const controllerLink = guidePageIndex.getByRole("link", {
+    includeHidden: true,
     name: "Controller",
   });
-  await page.evaluate(() =>
-    document.getElementById("controller")?.scrollIntoView(),
-  );
+  await scrollToGeneratedHeading(page, "Controller");
   await expect(controllerLink).toHaveAttribute("aria-current", "location");
+  await expect(
+    guideNavigation.getByRole("link", { name: "Writing the Application" }),
+  ).toHaveClass(/active/);
+
+  await scrollToGeneratedHeading(page, "HTTP Client Filter");
+  await expect(configurationParametersLink).toBeVisible();
+  await expect(dependencyLink).toBeHidden();
   expect(failures).toEqual([]);
 });
 
@@ -413,6 +443,29 @@ async function expectConvertedGuideSnippets(
   expect(await root.innerHTML()).not.toMatch(
     /\b(?:common|source|dependency|zipInclude|diffLink):{1,2}[^<\[]*\[[^\]]*]/,
   );
+}
+
+async function scrollToGeneratedHeading(
+  page: Page,
+  headingName: string,
+): Promise<void> {
+  await page.evaluate((name) => {
+    const headings = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".generated-guides-content h1, .generated-guides-content h2, .generated-guides-content h3, .generated-guides-content h4, .generated-guides-content h5, .generated-guides-content h6",
+      ),
+    );
+    const heading = headings.find(
+      (element) =>
+        element.textContent?.replace(/\s+/g, " ").trim() === name,
+    );
+    if (heading) {
+      const targetTop = heading.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: Math.max(targetTop - 160, 0),
+      });
+    }
+  }, headingName);
 }
 
 function appPath(path: string): string {

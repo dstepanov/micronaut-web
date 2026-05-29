@@ -495,6 +495,10 @@ test("latest guide replacement routes and parallel generated-content preparation
     ),
     "utf8",
   );
+  const sectionPageIndexSource = await fs.readFile(
+    path.join(projectDirectory, "src", "scripts", "section-page-index.ts"),
+    "utf8",
+  );
   const guidesLegacyRoute = await fs.readFile(
     path.join(projectDirectory, "src", "pages", "guides", "[slug].html.ts"),
     "utf8",
@@ -619,6 +623,10 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.match(
     guidesRoute,
+    /currentGuideSectionLinks = pageIndexSections\.filter\(\(section\) => section\.level > 0\)/,
+  );
+  assert.match(
+    guidesRoute,
     /guideSectionLinks\.map\(\(section\)[\s\S]*Different variants[\s\S]*props\.guide\.options\.map\(\(option\)/,
   );
   assert.equal(guidesRoute.match(/aria-label=\{section\.label\}/g)?.length, 4);
@@ -645,13 +653,16 @@ test("latest guide replacement routes and parallel generated-content preparation
     guidesRoute,
     /requestAnimationFrame\(updateActiveSection\)/,
   );
-  assert.match(guidesPageIndexSource, /guideSectionLinksById/);
-  assert.match(
-    guidesPageIndexSource,
-    /requestAnimationFrame\(updateActiveSection\)/,
-  );
+  assert.doesNotMatch(guidesPageIndexSource, /guideSectionLinksById/);
+  assert.match(guidesPageIndexSource, /enhanceSectionPageIndex/);
+  assert.match(guidesPageIndexSource, /currentLinkSelector/);
+  assert.match(guidesPageIndexSource, /rootLinkSelector/);
   assert.match(guidesPageIndexSource, /data-guide-page-index/);
+  assert.match(guidesPageIndexSource, /data-guide-page-index-link/);
   assert.match(guidesPageIndexSource, /data-guide-section-link/);
+  assert.match(sectionPageIndexSource, /syncCurrentSectionLinks/);
+  assert.match(sectionPageIndexSource, /requestAnimationFrame/);
+  assert.match(sectionPageIndexSource, /setActiveIdFromHash/);
   assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
   assert.doesNotMatch(guidesRoute, /legacyGuidesBase/);
   assert.match(guidesRoute, /GeneratedDocsStaticEnhancer/);
