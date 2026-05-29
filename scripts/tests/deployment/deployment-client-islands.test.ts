@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import { promises as fs } from "node:fs";
 import { builtinModules } from "node:module";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import * as ts from "typescript";
+
+import {
+  forbiddenBrowserRuntimeAssetMatches,
+  forbiddenBrowserRuntimeTextMatches,
+} from "../../shared/browser-runtime-assets.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -23,6 +29,11 @@ const nodeBuiltins = new Set(
   }),
 );
 const localScriptExtensions = [".ts", ".tsx", ".js", ".jsx", ".astro"];
+const forbiddenRuntimeContentProcessors = [
+  /^(?:shiki|@shikijs\/)/,
+  /^(?:asciidoctor|@asciidoctor\/)/,
+  /^(?:js-yaml|smol-toml)$/,
+];
 
 type HydratedIsland = {
   astroFile: string;
@@ -56,6 +67,74 @@ test("hydrated Astro islands do not import server-only Node modules", async (): 
   }
 
   assert.deepEqual(failures, []);
+});
+
+test("browser runtime entrypoints do not import build-time content processors", async (): Promise<void> => {
+  const hydratedIslands = await findHydratedIslands();
+  const browserScripts = await listFiles(path.join(sourceDirectory, "scripts"));
+  const failures: string[] = [];
+
+  for (const island of hydratedIslands) {
+    failures.push(
+      ...(await forbiddenRuntimeImportFailures({
+        file: island.componentFile,
+        label: `${relativePath(island.astroFile)} hydrates <${island.componentName}>`,
+      })),
+    );
+  }
+  for (const script of browserScripts) {
+    failures.push(
+      ...(await forbiddenRuntimeImportFailures({
+        file: script,
+        label: `${relativePath(script)} is loaded as a browser script`,
+      })),
+    );
+  }
+
+  assert.deepEqual(failures, []);
+});
+
+test("built browser runtime asset guard rejects build-time content processors", async (): Promise<void> => {
+  assert.deepEqual(
+    forbiddenBrowserRuntimeTextMatches(
+      "dist/_astro/safe.js",
+      "const label = 'plain browser runtime';",
+    ),
+    [],
+  );
+  assert.deepEqual(
+    forbiddenBrowserRuntimeTextMatches(
+      "dist/_astro/highlighter.js",
+      "import { codeToHtml } from 'shiki';",
+    ),
+    [
+      {
+        file: "dist/_astro/highlighter.js",
+        label: "Shiki highlighter",
+      },
+    ],
+  );
+
+  const tempDirectory = await fs.mkdtemp(
+    path.join(tmpdir(), "micronaut-runtime-asset-test-"),
+  );
+  const assetsDirectory = path.join(tempDirectory, "_astro");
+  await fs.mkdir(assetsDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(assetsDirectory, "safe.js"),
+    "const ready = true;",
+  );
+  await fs.writeFile(
+    path.join(assetsDirectory, "configuration.js"),
+    "const converter = 'parseToml';",
+  );
+
+  assert.deepEqual(await forbiddenBrowserRuntimeAssetMatches(tempDirectory), [
+    {
+      file: path.join(assetsDirectory, "configuration.js"),
+      label: "generated-content configuration conversion helper",
+    },
+  ]);
 });
 
 async function findHydratedIslands(): Promise<HydratedIsland[]> {
@@ -123,6 +202,54 @@ async function nodeBuiltinImportFailures(
       if (isNodeBuiltin(importSource)) {
         failures.push(
           `${[...current.chain, relativePath(current.file)].join(" -> ")} imports ${importSource}`,
+        );
+        continue;
+      }
+      const resolved = await resolveLocalModule(importSource, current.file);
+      if (resolved) {
+        pending.push({
+          file: resolved,
+          chain: [...current.chain, relativePath(current.file)],
+        });
+      }
+    }
+  }
+
+  return failures;
+}
+
+async function forbiddenRuntimeImportFailures({
+  file,
+  label,
+}: {
+  file: string;
+  label: string;
+}): Promise<string[]> {
+  const failures: string[] = [];
+  const visited = new Set<string>();
+  const pending: PendingModule[] = [{ file, chain: [label] }];
+
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (!current || visited.has(current.file)) {
+      continue;
+    }
+    visited.add(current.file);
+
+    if (!localScriptExtensions.includes(path.extname(current.file))) {
+      continue;
+    }
+
+    const source = await fs.readFile(current.file, "utf8");
+    const imports = valueModuleSpecifiers(current.file, source);
+    for (const importSource of imports) {
+      if (
+        forbiddenRuntimeContentProcessors.some((pattern) =>
+          pattern.test(importSource),
+        )
+      ) {
+        failures.push(
+          `${[...current.chain, relativePath(current.file)].join(" -> ")} imports build-time-only ${importSource}`,
         );
         continue;
       }

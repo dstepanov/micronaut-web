@@ -501,6 +501,7 @@ test("docs renderer writes generated HTML and page-relative docs asset links", a
     generatedHtml,
     /This generated fixture body should render into the docs page\./,
   );
+  assert.doesNotMatch(generatedHtml, /<style\b[^>]*data-docs-shiki/i);
   assert.match(generatedHtml, /id="fixture-introduction"/);
   assert.match(
     generatedHtml,
@@ -1233,6 +1234,7 @@ test("docs renderer writes several generated project fragments and catalog entri
       new RegExp(`${project.displayName.replace("Micronaut ", "")}`),
     );
     assert.match(generatedHtml, /docs-code-snippet-template/);
+    assert.doesNotMatch(generatedHtml, /<style\b[^>]*data-docs-shiki/i);
     assert.match(generatedHtml, new RegExp(`${project.slug}-introduction`));
     assert.equal(
       catalogProjectsBySlug.get(project.slug)?.version,
@@ -1446,7 +1448,8 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(docsPageSource, /data-generated-docs/);
   assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
-  assert.match(docsPageSource, /generatedDocsHashAlignerUrl/);
+  assert.match(docsPageSource, /@\/scripts\/generated-docs-hash-aligner/);
+  assert.doesNotMatch(docsPageSource, /generatedDocsHashAlignerUrl|\?url/);
   assert.doesNotMatch(docsPageSource, /<script is:inline>/);
   assert.doesNotMatch(docsPageSource, /alignHash|window\.scrollTo/);
   assertNoRuntimeGeneratedRendering("docs route", docsPageSource);
@@ -1474,6 +1477,10 @@ test("docs routes render generated fragments and serve generated assets", async 
     generatedDocsStaticEnhancerSource,
   );
   assert.doesNotMatch(generatedDocsStaticEnhancerSource, /define:vars/);
+  assert.match(
+    generatedDocsStaticEnhancerSource,
+    /@\/scripts\/generated-docs-static-enhancer/,
+  );
   assert.match(
     assetsRouteSource,
     /"src", "content", "generated-docs", "assets"/,
@@ -1580,7 +1587,7 @@ function assertNoRuntimeGeneratedRendering(label: string, source: string) {
   );
   assert.doesNotMatch(
     source,
-    /codeToHtml|createHighlighter|getHighlighter|from ["']shiki["']|import\(["']shiki["']\)/,
+    /codeToHtml|createHighlighter|getHighlighter|codeToTokens|from ["'](?:shiki|@shikijs\/[^"']+)["']|import\(["'](?:shiki|@shikijs\/[^"']+)["']\)/,
     `${label} must not highlight generated code at runtime`,
   );
 }

@@ -472,7 +472,7 @@ For small native controls, use an Astro component plus a processed `<script>` in
 
 When adding, removing, or changing an island, inspect built HTML for `<astro-island>` markers and update tests that encode the expected island inventory. A docs page should not include `DocsVersionSwitcher` in `component-export`, `component-url`, or bundled source output.
 
-Avoid broad browser-side dynamic imports. Syntax highlighting, especially Shiki, should run at build time where possible or use a constrained language/theme bundle. Do not ship full highlighter language catalogs to the browser for small preview panes or generated content.
+Run generated-content processing at build time. Syntax highlighting, Asciidoctor rendering, properties/YAML/TOML/config conversion, and generated-content transformations must not ship to the browser runtime. Do not include `shiki`, `@shikijs/*`, `asciidoctor`, `@asciidoctor/*`, or config conversion/parsing libraries in public client bundles.
 
 Use `is:inline` only for intentional critical scripts, such as the early theme script that prevents a visible color-mode flash. Non-critical scripts should be processed by Astro so they can be bundled, deduplicated, and cached.
 

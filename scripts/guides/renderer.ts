@@ -3,7 +3,6 @@ import path from "node:path";
 
 import { renderAsciiDoc } from "../asciidoc/rendering.ts";
 import { optimizeImages as optimizeGeneratedGuideHtml } from "../shared/generated-html.ts";
-import { shikiStyle } from "../shared/highlight.ts";
 import { guideExtensionRegistry } from "./extensions/index.ts";
 import type { Guide, GuideOption, GuideRenderContext } from "./model.ts";
 import { productionUrl } from "../../src/lib/route-compatibility.ts";
@@ -47,7 +46,7 @@ export async function renderGuideOption(
 
   html = rewriteGuideUrls(html, guide.slug);
   html = optimizeGeneratedGuideHtml(html);
-  return `${shikiStyle()}\n${html.trim()}`;
+  return html.trim();
 }
 
 export function isFatalGuideDiagnostic(diagnostic: string): boolean {

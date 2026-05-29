@@ -314,14 +314,6 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
   </div>
 </main>
 
-<script is:inline>
-  (() => {
-    const selector = document.querySelector("[data-guides-version-selector]");
-    selector?.addEventListener("change", (event) => {
-      const select = event.currentTarget;
-      if (select instanceof HTMLSelectElement && select.value) {
-        window.location.href = select.value;
-      }
-    });
-  })();
+<script>
+  import "@/scripts/guides-version-selector";
 </script>

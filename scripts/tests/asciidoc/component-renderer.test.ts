@@ -53,7 +53,7 @@ test("AsciiDoc snippets render directly through generated React components", asy
   assert.match(html, /data-slot="card-content"/);
   assert.match(html, /role="tablist" aria-label="Code language"/);
   assert.match(html, /class="[^"]*docs-code-content docs-snippet-card-content/);
-  assert.match(html, /class="[^"]*shiki-code grid min-w-max/);
+  assert.match(html, /class="[^"]*docs-highlighted-code grid min-w-max/);
   assert.match(html, /<i class="conum" data-value="1"><\/i>/);
 
   for (const language of [

@@ -260,8 +260,10 @@ test("docs pruning publishes docs at the repository root", async (t) => {
     "utf8",
   );
   assertNoDocsVersionSwitcherIsland(docsCoreHtml);
-  assert.match(docsCoreHtml, /<style\b[^>]*data-docs-shiki/i);
-  assert.match(docsCoreHtml, /window\.docsSnippetRuntime/);
+  assert.doesNotMatch(docsCoreHtml, /<style\b[^>]*data-docs-shiki/i);
+  assert.doesNotMatch(docsCoreHtml, /window\.docsSnippetRuntime/);
+  assert.match(docsCoreHtml, /_astro\/generated-code\.css/);
+  assert.match(docsCoreHtml, /_astro\/snippet-runtime\.js/);
   assert.match(
     docsCoreHtml,
     new RegExp(
@@ -330,8 +332,10 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     path.join(dist, "latest", "micronaut-http-client", "index.html"),
     "utf8",
   );
-  assert.match(guideHtml, /<style\b[^>]*data-docs-shiki/i);
-  assert.match(guideHtml, /window\.docsSnippetRuntime/);
+  assert.doesNotMatch(guideHtml, /<style\b[^>]*data-docs-shiki/i);
+  assert.doesNotMatch(guideHtml, /window\.docsSnippetRuntime/);
+  assert.match(guideHtml, /_astro\/generated-code\.css/);
+  assert.match(guideHtml, /_astro\/snippet-runtime\.js/);
   assert.match(
     guideHtml,
     new RegExp(
@@ -823,6 +827,8 @@ async function fakeDist(t: TestContext) {
     "_astro/app.css",
     "_astro/chunk.js",
     "_astro/fonts/code.woff2",
+    "_astro/generated-code.css",
+    "_astro/snippet-runtime.js",
     "_astro/unused.css",
     "_astro/unused.js",
     "index.html",
@@ -857,6 +863,16 @@ async function fakeDist(t: TestContext) {
   );
   await writeTextFile(
     dist,
+    "_astro/generated-code.css",
+    ".generated-docs-content .shiki { color: red; }",
+  );
+  await writeTextFile(
+    dist,
+    "_astro/snippet-runtime.js",
+    "globalThis.docsSnippetRuntimeLoaded = true;",
+  );
+  await writeTextFile(
+    dist,
     "index.html",
     '<link rel="stylesheet" href="/_astro/app.css"><script type="module" src="/_astro/app.js"></script>',
   );
@@ -874,8 +890,8 @@ async function fakeDist(t: TestContext) {
     dist,
     "docs/core/index.html",
     [
-      "<style data-docs-shiki>.shiki { color: red; }</style>",
-      "<script data-docs-runtime>window.docsSnippetRuntime = true;</script>",
+      '<link rel="stylesheet" href="/micronaut-docs/_astro/generated-code.css">',
+      '<script type="module" src="/micronaut-docs/_astro/snippet-runtime.js"></script>',
       '<img src="../assets/core/docs/img/diagram.svg?cache=1#diagram">',
     ].join("\n"),
   );
@@ -883,8 +899,8 @@ async function fakeDist(t: TestContext) {
     dist,
     "guides/micronaut-http-client/index.html",
     [
-      "<style data-docs-shiki>.shiki { color: blue; }</style>",
-      "<script data-guides-runtime>window.docsSnippetRuntime = true;</script>",
+      '<link rel="stylesheet" href="/micronaut-guides/_astro/generated-code.css">',
+      '<script type="module" src="/micronaut-guides/_astro/snippet-runtime.js"></script>',
       '<img src="../assets/micronaut-http-client/images/client.png">',
     ].join("\n"),
   );

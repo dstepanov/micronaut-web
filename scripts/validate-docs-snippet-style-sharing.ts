@@ -54,9 +54,8 @@ const inlineConsumers = [
     requiredUses: [
       "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
       "docs-code-content docs-snippet-card-content",
-      "shiki shiki-themes github-light-default github-dark-default !m-0",
-      "shiki-code grid min-w-max font-mono",
-      "dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))]",
+      "docs-highlighted-pre !m-0",
+      "docs-highlighted-code grid min-w-max font-mono",
       "[&_.conum::before]:content-[attr(data-value)]",
       "docs-code-language-text inline-flex",
       "staticEnhancement",
@@ -172,6 +171,17 @@ if (webLayout.includes("@/styles/generated/docs-snippet-runtime.css")) {
   failures.push(
     "src/layouts/WebLayout.astro: remove the copied snippet runtime CSS import.",
   );
+}
+
+for (const fragment of [
+  ".dark .docs-highlighted-code span[style]",
+  "--shiki-dark",
+]) {
+  if (!globalsCss.includes(fragment)) {
+    failures.push(
+      `src/styles/globals.css: expected generated snippet token styling fragment "${fragment}".`,
+    );
+  }
 }
 
 for (const fragment of [

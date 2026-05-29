@@ -187,20 +187,21 @@ test("meeting minutes index does not duplicate dated minutes", async (): Promise
   assert.match(aprilMinutes, /## Board Members In Attendance/);
 });
 
-test("runtime code block uses a constrained client highlighter", async (): Promise<void> => {
+test("runtime code block does not ship client highlighter libraries", async (): Promise<void> => {
   const codeBlock = await fs.readFile(
     path.join(projectDirectory, "src", "components", "ui", "code-block.tsx"),
     "utf8",
   );
-  const clientHighlighter = await fs.readFile(
-    path.join(projectDirectory, "src", "lib", "client-shiki.ts"),
-    "utf8",
-  );
 
-  assert.doesNotMatch(codeBlock, /import\("shiki"\)/);
-  assert.match(codeBlock, /import\("@\/lib\/client-shiki"\)/);
-  assert.match(clientHighlighter, /from "@shikijs\/langs\/java"/);
-  assert.doesNotMatch(clientHighlighter, /from "shiki"/);
+  assert.doesNotMatch(
+    codeBlock,
+    /client-shiki|@shikijs|from ["']shiki["']|import\(["']shiki["']\)|codeToTokens|createHighlighter/,
+  );
+  await assert.rejects(
+    () =>
+      fs.access(path.join(projectDirectory, "src", "lib", "client-shiki.ts")),
+    (error: any): boolean => error?.code === "ENOENT",
+  );
 });
 
 test("brand content prefers canonical shared asset paths", async (): Promise<void> => {

@@ -3,7 +3,6 @@ import path from "node:path";
 
 import { micronautExtensionRegistry } from "../asciidoc/extensions/index.ts";
 import { renderAsciiDoc } from "../asciidoc/rendering.ts";
-import { shikiStyle } from "../shared/highlight.ts";
 import { optimizeImages } from "../shared/generated-html.ts";
 import { attribute, html } from "../shared/html.ts";
 import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
@@ -72,7 +71,7 @@ export async function renderProject(
   content = prefixIds(content, project.slug);
   content = rewriteUrls(content, project);
   content = optimizeImages(content);
-  return `${shikiStyle()}\n${content.trim()}`;
+  return content.trim();
 }
 
 async function renderNode(

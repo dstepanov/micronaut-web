@@ -37,6 +37,11 @@ Use the current repository structure as the source of truth. Do not apply Gradle
 - Keep docs content, generated HTML, and static navigation markup outside large React islands where possible.
 - Prefer `client:load` only for controls that must be interactive immediately. Use `client:idle` or `client:visible` for lower-priority UI.
 
+## Generated Content
+
+- Syntax highlighting, Asciidoctor rendering, properties/YAML/TOML/config conversion, and generated-content transformations must run at build time.
+- Do not ship `shiki`, `@shikijs/*`, `asciidoctor`, `@asciidoctor/*`, or config conversion/parsing libraries to the browser runtime.
+
 ## Code Style
 
 - Prefer small, focused components over broad layout islands.

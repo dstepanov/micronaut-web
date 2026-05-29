@@ -17,36 +17,6 @@ export async function highlightListingBlocks(input: string): Promise<string> {
   return current;
 }
 
-export function shikiStyle(): string {
-  return `<style data-docs-shiki>
-.shiki {
-  overflow: auto;
-  border-radius: 0.5rem;
-  border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%));
-  padding: 1rem;
-  background-color: var(--shiki-light-bg);
-  color: var(--shiki-light);
-}
-.shiki code {
-  display: grid;
-  min-width: max-content;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-.dark .shiki {
-  background-color: var(--shiki-dark-bg);
-  color: var(--shiki-dark);
-}
-.dark .shiki span {
-  color: var(--shiki-dark);
-  font-style: var(--shiki-dark-font-style);
-  font-weight: var(--shiki-dark-font-weight);
-  text-decoration: var(--shiki-dark-text-decoration);
-}
-</style>`;
-}
-
 async function highlightListingBlocksOnce(input: string): Promise<string> {
   const pattern =
     /<div class="listingblock([^"]*)"(?![^>]*\sdata-lang=)([^>]*)>\s*(<div class="title">(?:(?!<\/div>)[\s\S])*<\/div>\s*)?<div class="content">\s*<pre([^>]*)>(?:<code([^>]*)>([\s\S]*?)<\/code>|([\s\S]*?))<\/pre>\s*<\/div>\s*<\/div>/g;

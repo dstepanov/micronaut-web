@@ -88,6 +88,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
     "utf8",
   );
   assert.match(html, /Hello DEFAULT from template/);
+  assert.doesNotMatch(html, /<style\b[^>]*data-docs-shiki/i);
   assert.match(html, /Injected value: World/);
   assert.match(html, /ExampleController/);
   assert.match(html, /message[\s\S]*=Hello/);
@@ -442,6 +443,7 @@ test("guide renderer surfaces missing snippet sources and requested tags", async
   );
   const generatedText = textOnly(generatedHtml);
 
+  assert.doesNotMatch(generatedHtml, /<style\b[^>]*data-docs-shiki/i);
   assert.match(generatedText, /package example\.micronaut/);
   assert.match(generatedText, /Missing tag[\s\S]*missing/);
   assert.match(generatedText, /ExampleController\.java/);
@@ -630,7 +632,8 @@ test("latest guide replacement routes and parallel generated-content preparation
     /Different variants[\s\S]{0,500}All variants/,
   );
   assert.match(guidesRoute, /data-guide-section-link/);
-  assert.match(guidesRoute, /generatedGuidesPageIndexUrl/);
+  assert.match(guidesRoute, /@\/scripts\/generated-guides-page-index/);
+  assert.doesNotMatch(guidesRoute, /generatedGuidesPageIndexUrl|\?url/);
   assert.doesNotMatch(guidesRoute, /<script is:inline>/);
   assert.doesNotMatch(guidesRoute, /guideSectionLinksById/);
   assert.match(guidesRoute, /data-guide-page-index/);
@@ -745,7 +748,7 @@ function assertNoRuntimeGeneratedRendering(label: string, source: string) {
   );
   assert.doesNotMatch(
     source,
-    /codeToHtml|createHighlighter|getHighlighter|from ["']shiki["']|import\(["']shiki["']\)/,
+    /codeToHtml|createHighlighter|getHighlighter|codeToTokens|from ["'](?:shiki|@shikijs\/[^"']+)["']|import\(["'](?:shiki|@shikijs\/[^"']+)["']\)/,
     `${label} must not highlight generated code at runtime`,
   );
 }

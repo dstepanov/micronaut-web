@@ -1,4 +1,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  collectRuntimeScriptAssertions,
+  expectClipboardText,
+  expectNoForbiddenRuntimeLibraries,
+  installClipboardMock,
+} from "./runtime-script-assertions";
 
 const httpClientGuideTitle = "Micronaut HTTP Client";
 const generatedGuidePages = [
@@ -239,6 +245,37 @@ test("guide overview redirects to the preferred variant and exposes variant navi
     document.getElementById("controller")?.scrollIntoView(),
   );
   await expect(controllerLink).toHaveAttribute("aria-current", "location");
+  expect(failures).toEqual([]);
+});
+
+test("guides runtime scripts do not include build-time content processors", async ({
+  page,
+}) => {
+  const runtimeScripts = collectRuntimeScriptAssertions(page);
+  const failures = collectBrowserFailures(page);
+  await installClipboardMock(page);
+
+  await page.goto(appPath("/guides/micronaut-http-client-gradle-java/"));
+
+  await expect(
+    page.locator(".docs-code-snippet-template").first(),
+  ).toBeVisible();
+  await expect(
+    page.locator(".docs-code-snippet-template code span[style]").first(),
+  ).toBeVisible();
+  const firstSnippet = page.locator(".docs-code-snippet-template").first();
+  const tabs = firstSnippet.locator(".docs-snippet-tabs button[role='tab']");
+  if ((await tabs.count()) > 1) {
+    await tabs.nth(1).click();
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  }
+  await firstSnippet.locator("[data-copy-active-snippet]").click();
+  await expect(
+    firstSnippet.locator("[data-copy-active-snippet]"),
+  ).toHaveAttribute("aria-label", "Copied");
+  await expectClipboardText(page);
+
+  await expectNoForbiddenRuntimeLibraries(runtimeScripts);
   expect(failures).toEqual([]);
 });
 

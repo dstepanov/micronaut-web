@@ -43,7 +43,7 @@ export type CodeSnippetExample = {
   variants: CodeSnippetVariant[];
 };
 
-export function ShikiCodeBlock({
+export function HighlightedCodeBlock({
   code,
   highlightedHtml,
   language,
@@ -56,18 +56,18 @@ export function ShikiCodeBlock({
 
   return (
     <pre
-      className="shiki shiki-themes github-light-default github-dark-default !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground"
+      className="docs-highlighted-pre !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground"
       tabIndex={0}
     >
       {highlightedHtml ? (
         <code
-          className={`language-${normalizedLanguage} shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))] dark:[&_span[style]]:![font-style:var(--shiki-dark-font-style,var(--shiki-light-font-style,inherit))] dark:[&_span[style]]:![font-weight:var(--shiki-dark-font-weight,var(--shiki-light-font-weight,inherit))] dark:[&_span[style]]:![text-decoration:var(--shiki-dark-text-decoration,var(--shiki-light-text-decoration,inherit))] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
+          className={`language-${normalizedLanguage} docs-highlighted-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
           data-lang={normalizedLanguage}
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
         />
       ) : (
         <code
-          className={`language-${normalizedLanguage} shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))] dark:[&_span[style]]:![font-style:var(--shiki-dark-font-style,var(--shiki-light-font-style,inherit))] dark:[&_span[style]]:![font-weight:var(--shiki-dark-font-weight,var(--shiki-light-font-weight,inherit))] dark:[&_span[style]]:![text-decoration:var(--shiki-dark-text-decoration,var(--shiki-light-text-decoration,inherit))] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
+          className={`language-${normalizedLanguage} docs-highlighted-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
           data-lang={normalizedLanguage}
         >
           {code}
@@ -290,7 +290,7 @@ export function DocsCodeSnippet({
             hidden={!active}
             className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
           >
-            <ShikiCodeBlock
+            <HighlightedCodeBlock
               code={variant.code}
               highlightedHtml={variant.highlightedHtml}
               language={variant.language}

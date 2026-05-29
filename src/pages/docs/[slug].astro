@@ -27,8 +27,8 @@ import {
   generatedHtmlLabel,
 } from "@/lib/generated-docs-html";
 import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
+import "@/styles/generated-code-highlighting.css";
 import "@/styles/generated-docs-content.css";
-import generatedDocsHashAlignerUrl from "@/scripts/generated-docs-hash-aligner.ts?url";
 
 export async function getStaticPaths() {
   if (!shouldBuildDocsRoutes()) {
@@ -174,5 +174,7 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
 </WebLayout>
 
 {generatedDocHtml && (
-  <script type="module" src={generatedDocsHashAlignerUrl}></script>
+  <script>
+    import "@/scripts/generated-docs-hash-aligner";
+  </script>
 )}

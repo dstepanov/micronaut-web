@@ -47,6 +47,9 @@ const deploymentConfig = {
 
 export default defineConfig({
   base,
+  build: {
+    inlineStylesheets: "never"
+  },
   devToolbar: {
     enabled: true
   },
@@ -54,6 +57,9 @@ export default defineConfig({
   output: "static",
   trailingSlash: "ignore",
   vite: {
+    build: {
+      assetsInlineLimit: 0
+    },
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client"]
     },

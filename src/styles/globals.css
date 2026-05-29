@@ -322,3 +322,21 @@
     }
   }
 }
+
+@layer components {
+  .dark .docs-highlighted-code span[style] {
+    color: var(--shiki-dark, var(--shiki-light, currentColor)) !important;
+    font-style: var(
+      --shiki-dark-font-style,
+      var(--shiki-light-font-style, inherit)
+    ) !important;
+    font-weight: var(
+      --shiki-dark-font-weight,
+      var(--shiki-light-font-weight, inherit)
+    ) !important;
+    text-decoration: var(
+      --shiki-dark-text-decoration,
+      var(--shiki-light-text-decoration, inherit)
+    ) !important;
+  }
+}

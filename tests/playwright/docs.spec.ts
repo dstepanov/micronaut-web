@@ -1,4 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import {
+  collectRuntimeScriptAssertions,
+  expectClipboardText,
+  expectNoForbiddenRuntimeLibraries,
+  installClipboardMock,
+} from "./runtime-script-assertions";
 
 const docsProjects = [
   {
@@ -106,6 +112,37 @@ test("generated docs page renders desktop content and sidebars without overlap",
     "[data-generated-docs]",
     'aside[aria-label="In this section"]',
   );
+  expect(failures).toEqual([]);
+});
+
+test("docs runtime scripts do not include build-time content processors", async ({
+  page,
+}) => {
+  const runtimeScripts = collectRuntimeScriptAssertions(page);
+  const failures = collectBrowserFailures(page);
+  await installClipboardMock(page);
+
+  await page.goto(appPath("/docs/core/"));
+
+  await expect(
+    page.locator(".docs-code-snippet-template").first(),
+  ).toBeVisible();
+  await expect(
+    page.locator(".docs-code-snippet-template code span[style]").first(),
+  ).toBeVisible();
+  const firstSnippet = page.locator(".docs-code-snippet-template").first();
+  const tabs = firstSnippet.locator(".docs-snippet-tabs button[role='tab']");
+  if ((await tabs.count()) > 1) {
+    await tabs.nth(1).click();
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  }
+  await firstSnippet.locator("[data-copy-active-snippet]").click();
+  await expect(
+    firstSnippet.locator("[data-copy-active-snippet]"),
+  ).toHaveAttribute("aria-label", "Copied");
+  await expectClipboardText(page);
+
+  await expectNoForbiddenRuntimeLibraries(runtimeScripts);
   expect(failures).toEqual([]);
 });
 

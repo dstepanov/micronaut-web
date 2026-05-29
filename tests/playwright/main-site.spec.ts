@@ -1,4 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
+import {
+  collectRuntimeScriptAssertions,
+  expectNoForbiddenRuntimeLibraries,
+} from "./runtime-script-assertions";
 
 const deploySurface = process.env.MICRONAUT_DEPLOY_SURFACE;
 
@@ -61,6 +65,26 @@ test("tablet navigation stays collapsed and can select docs, guides, and blog", 
     page.getByRole("heading", { level: 1, name: "Micronaut Blog" }),
   ).toBeVisible();
   await expectNoHorizontalOverflow(page);
+  expect(failures).toEqual([]);
+});
+
+test("main-site runtime scripts do not include build-time content processors", async ({
+  page,
+}) => {
+  const runtimeScripts = collectRuntimeScriptAssertions(page);
+  const failures = collectBrowserFailures(page);
+
+  await page.goto(appPath("/"));
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.goto(appPath("/launch/"));
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Build a Micronaut project",
+    }),
+  ).toBeVisible();
+
+  await expectNoForbiddenRuntimeLibraries(runtimeScripts);
   expect(failures).toEqual([]);
 });
 
