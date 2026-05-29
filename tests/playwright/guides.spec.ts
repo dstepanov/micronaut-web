@@ -304,7 +304,9 @@ function appPath(path: string): string {
 
 function guideHrefPattern(file: string): RegExp {
   if (isGuidesSurface()) {
-    return new RegExp(`${escapeRegExp(appPath(`/latest/${file}`))}$`);
+    return new RegExp(
+      `${escapeRegExp(appPath(`${configuredGuidesRoot()}${file}`))}$`,
+    );
   }
   return new RegExp(`/guides/${escapeRegExp(file)}$`);
 }
@@ -322,6 +324,10 @@ function isGuidesSurface(): boolean {
   return process.env.MICRONAUT_DEPLOY_SURFACE === "guides";
 }
 
+function configuredGuidesRoot(): string {
+  return normalizeRoot(process.env.MICRONAUT_GUIDES_ROOT || "/latest");
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -331,5 +337,13 @@ function normalizeBasePath(path: string | undefined): string {
     return "/";
   }
   const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
+}
+
+function normalizeRoot(path: string): string {
+  const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  if (absolutePath === "/") {
+    return "/";
+  }
   return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
 }

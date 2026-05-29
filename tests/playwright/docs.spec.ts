@@ -176,9 +176,15 @@ function collectBrowserFailures(page: Page) {
 
 function docsProjectHrefPattern(slug: string): RegExp {
   if (process.env.MICRONAUT_DEPLOY_SURFACE === "docs") {
-    return new RegExp(`${escapeRegExp(appPath(`/latest/${slug}/`))}$`);
+    return new RegExp(
+      `${escapeRegExp(appPath(`${configuredDocsRoot()}${slug}/`))}$`,
+    );
   }
   return new RegExp(`/docs/${slug}/$`);
+}
+
+function configuredDocsRoot(): string {
+  return normalizeRoot(process.env.MICRONAUT_DOCS_ROOT || "/latest");
 }
 
 function escapeRegExp(value: string): string {
@@ -281,5 +287,13 @@ function normalizeBasePath(path: string | undefined): string {
     return "/";
   }
   const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
+}
+
+function normalizeRoot(path: string): string {
+  const absolutePath = path.startsWith("/") ? path : `/${path}`;
+  if (absolutePath === "/") {
+    return "/";
+  }
   return absolutePath.endsWith("/") ? absolutePath : `${absolutePath}/`;
 }
