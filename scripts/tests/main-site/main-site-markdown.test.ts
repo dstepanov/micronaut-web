@@ -193,6 +193,22 @@ test("main-site Markdown snippets infer Gradle and XML when fences have no langu
   assert.match(html, /<code class="language-xml [^"]*shiki-code/);
 });
 
+test("main-site Markdown uses the static generated-docs enhancer", async (): Promise<void> => {
+  const catchallPageSource = await fs.readFile(
+    path.join(projectDirectory, "src", "pages", "[...slug].astro"),
+    "utf8",
+  );
+
+  assert.match(
+    catchallPageSource,
+    /from "@\/components\/web\/generated-docs-static-enhancer\.astro"/,
+  );
+  assert.doesNotMatch(
+    catchallPageSource,
+    /GeneratedDocsEnhancer|GeneratedDocsPropertiesFallback|generated-docs-enhancer|generated-docs-properties-fallback/,
+  );
+});
+
 test("main-site Markdown uses local copies of micronaut.io upload resources", async (): Promise<void> => {
   const contentDirectory = path.join(
     projectDirectory,

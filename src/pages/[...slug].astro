@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/card";
 import { IconGlyph } from "@/components/web/icon-glyph";
 import { FaqAccordion } from "@/components/web/faq-accordion";
-import GeneratedDocsEnhancer from "@/components/web/generated-docs-enhancer.astro";
-import GeneratedDocsPropertiesFallback from "@/components/web/generated-docs-properties-fallback.astro";
+import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
 import { withBasePath } from "@/lib/base-path";
@@ -344,12 +343,7 @@ const outcomeGroups = [
         ) : (
           <>
             <MainSiteMarkdown html={contentHtml} />
-            {contentHtml && (
-              <>
-                <GeneratedDocsEnhancer />
-                <GeneratedDocsPropertiesFallback />
-              </>
-            )}
+            {contentHtml && <GeneratedDocsStaticEnhancer />}
           </>
         )}
 

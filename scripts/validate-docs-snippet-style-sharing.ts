@@ -10,11 +10,16 @@ const removedRegistryName = ["docs", "SnippetStyles"].join("");
 const removedStaticSupportName = ["renderDocsSnippet", "StaticSupport"].join(
   "",
 );
+const removedGeneratedOnlyCardName = ["Generated", "Snippet", "Card"].join("");
 const removedRuntimeCssPaths = [
   "scripts/generate-docs-snippet-css.ts",
   "src/components/web/docs-snippet-styles.ts",
   "src/styles/docs-snippet-runtime.source.css",
   "src/styles/generated/docs-snippet-runtime.css",
+];
+const removedRuntimeComponentPaths = [
+  "src/components/web/generated-docs-enhancer.astro",
+  "src/components/web/generated-docs-properties-fallback.astro",
 ];
 
 const sourceRoots = ["src", "scripts", "tests"];
@@ -54,17 +59,19 @@ const inlineConsumers = [
       "dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))]",
       "[&_.conum::before]:content-[attr(data-value)]",
       "docs-code-language-text inline-flex",
+      "staticEnhancement",
+      "showSingleVariantAsTabs",
+      "title docs-snippet-external-title",
     ],
   },
   {
     file: "src/components/web/docs-generated-snippet.tsx",
     requiredUses: [
       "renderToStaticMarkup",
-      "DocsSnippetCard",
+      "DocsCodeSnippet",
       "DocsPropertiesSnippetCard",
-      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
-      "docs-code-content docs-snippet-card-content",
-      "title docs-snippet-external-title",
+      "staticEnhancement",
+      "showSingleVariantAsTabs",
     ],
   },
   {
@@ -84,42 +91,8 @@ const inlineConsumers = [
     file: "src/components/web/snippet-test-gallery.tsx",
     requiredUses: [
       "DocsCodeSnippet",
-      "DocsSnippetCard",
       "DocsPropertiesSnippetCard",
-      "ShikiCodeBlock",
-      "DocsSnippetCodeLanguageIcon",
-      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
-      "docs-code-content docs-snippet-card-content",
-      "docs-code-language-text inline-flex",
-    ],
-  },
-  {
-    file: "src/components/web/generated-docs-enhancer.astro",
-    requiredUses: [
-      "renderDocsSnippetTemplates",
-      "define:vars={{",
-      "docsSnippetTemplates",
-      "sharedCodeLanguageIcons",
-      "renderSharedSnippetCard",
-      "docs-code-toolbar docs-snippet-card-header",
-      "docs-code-block docs-snippet-card my-5",
-      "docs-snippet-copy docs-code-copy",
-      "docs-snippet-card-footer docs-code-callouts",
-      "docs-code-content docs-snippet-card-content",
-      "shiki shiki-themes github-light-default github-dark-default !m-0",
-      "shiki-code grid min-w-max font-mono",
-      "[&_td:first-child_.conum+b]:hidden",
-      "docs-code-language-text inline-flex",
-      "docs-code-language-icon inline-flex size-3.5",
-      "docs-snippet-kind-icon",
-    ],
-  },
-  {
-    file: "src/components/web/generated-docs-properties-fallback.astro",
-    requiredUses: [
-      "renderDocsSnippetTemplates",
-      "define:vars={{ docsPropertiesTemplate }}",
-      "renderSharedPropertiesCard",
+      'kind="dependency"',
     ],
   },
   {
@@ -138,6 +111,9 @@ const inlineConsumers = [
 ];
 
 const failures: string[] = [];
+const generatedSnippetRenderer = await readProjectFile(
+  "src/components/web/docs-generated-snippet.tsx",
+);
 const globalsCss = await readProjectFile("src/styles/globals.css");
 const webLayout = await readProjectFile("src/layouts/WebLayout.astro");
 
@@ -172,6 +148,24 @@ for (const removedPath of removedRuntimeCssPaths) {
       `${removedPath}: snippet runtime styling should stay in inline Tailwind classes.`,
     );
   }
+}
+
+for (const removedPath of removedRuntimeComponentPaths) {
+  if (await projectFileExists(removedPath)) {
+    failures.push(
+      `${removedPath}: generated snippets should be rendered statically instead of restored through runtime component wrappers.`,
+    );
+  }
+}
+
+if (
+  new RegExp(
+    `function\\s+${removedGeneratedOnlyCardName}\\b|<${removedGeneratedOnlyCardName}\\b`,
+  ).test(generatedSnippetRenderer)
+) {
+  failures.push(
+    "src/components/web/docs-generated-snippet.tsx: render generated snippets through DocsCodeSnippet instead of restoring a generated-only card component.",
+  );
 }
 
 if (webLayout.includes("@/styles/generated/docs-snippet-runtime.css")) {

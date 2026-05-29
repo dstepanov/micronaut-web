@@ -7,6 +7,7 @@ import {
   DocsSnippetCard,
   DocsSnippetCodeLanguageIcon,
   DocsSnippetCopyButton,
+  type DocsSnippetKind,
   DocsSnippetLanguageButton,
   DocsSnippetStaticLanguage,
 } from "@/components/web/docs-snippet-card";
@@ -18,22 +19,26 @@ export type CodeSnippetLanguage =
   | "bash"
   | "gradle"
   | "maven"
-  | "text";
+  | "text"
+  | (string & {});
 
 export type CodeSnippetVariant = {
   language: CodeSnippetLanguage;
   label: string;
-  fileName: string;
   code: string;
+  active?: boolean;
+  fileName?: string;
   highlightedHtml?: string;
   highlighterLanguage?: string;
+  panelId?: string;
+  tabId?: string;
 };
 
 export type CodeSnippetExample = {
   id: string;
   label: string;
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   callouts?: ReactNode[];
   variants: CodeSnippetVariant[];
 };
@@ -76,28 +81,68 @@ type DocsCodeSnippetProps = {
   example: CodeSnippetExample;
   activeLanguage?: CodeSnippetLanguage;
   className?: string;
+  copyLabel?: string;
+  description?: ReactNode;
+  externalHeader?: boolean;
+  footer?: ReactNode;
+  kind?: DocsSnippetKind;
   onLanguageChange?: (language: CodeSnippetLanguage) => void;
+  optionsLabel?: string;
+  showSingleVariantAsTabs?: boolean;
+  staticEnhancement?: boolean;
+  title?: ReactNode;
 };
 
 export function DocsCodeSnippet({
   example,
   activeLanguage,
   className,
+  copyLabel = "Copy code",
+  description,
+  externalHeader = false,
+  footer,
+  kind = "code",
   onLanguageChange,
+  optionsLabel,
+  showSingleVariantAsTabs = false,
+  staticEnhancement = false,
+  title,
 }: DocsCodeSnippetProps) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const defaultActiveIndex = Math.max(
+    0,
+    example.variants.findIndex((variant) => variant.active),
+  );
   const [internalActiveLanguage, setInternalActiveLanguage] =
-    useState<CodeSnippetLanguage>(example.variants[0]?.language || "text");
+    useState<CodeSnippetLanguage>(
+      example.variants[defaultActiveIndex]?.language ||
+        example.variants[0]?.language ||
+        "text",
+    );
   const [copied, setCopied] = useState(false);
   const currentLanguage = activeLanguage || internalActiveLanguage;
-  const activeIndex = Math.max(
-    0,
-    example.variants.findIndex(
-      (variant) => variant.language === currentLanguage,
-    ),
-  );
+  const activeIndex = staticEnhancement
+    ? defaultActiveIndex
+    : Math.max(
+        0,
+        example.variants.findIndex(
+          (variant) => variant.language === currentLanguage,
+        ),
+      );
   const activeVariant = example.variants[activeIndex] || example.variants[0];
-  const hasLanguageOptions = example.variants.length > 1;
+  const hasLanguageOptions =
+    showSingleVariantAsTabs || example.variants.length > 1;
+  const renderedFooter =
+    footer ||
+    (example.callouts?.length ? (
+      <ol>
+        {example.callouts.map((callout, index) => (
+          <li key={index}>
+            <p>{callout}</p>
+          </li>
+        ))}
+      </ol>
+    ) : undefined);
 
   function activate(index: number, focus = false) {
     const variant = example.variants[index];
@@ -139,23 +184,27 @@ export function DocsCodeSnippet({
     return null;
   }
 
-  return (
+  const card = (
     <DocsSnippetCard
+      id={example.id}
       className={className}
+      kind={kind}
+      title={externalHeader ? undefined : title}
+      description={externalHeader ? undefined : description}
       controls={
         hasLanguageOptions ? (
           <div
             className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
             role="tablist"
-            aria-label={`${example.label} language`}
+            aria-label={optionsLabel || `${example.label} language`}
           >
             {example.variants.map((variant, index) => {
               const active = index === activeIndex;
-              const tabId = `${example.id}-${variant.language}-tab`;
-              const panelId = `${example.id}-${variant.language}-panel`;
+              const tabId = snippetTabId(example.id, variant);
+              const panelId = snippetPanelId(example.id, variant);
               return (
                 <DocsSnippetLanguageButton
-                  key={variant.language}
+                  key={`${variant.language}-${index}`}
                   ref={(node) => {
                     tabRefs.current[index] = node;
                   }}
@@ -167,21 +216,27 @@ export function DocsCodeSnippet({
                   aria-selected={active}
                   data-lang={variant.language}
                   tabIndex={active ? 0 : -1}
-                  onClick={() => activate(index)}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key !== "ArrowRight" &&
-                      event.key !== "ArrowLeft"
-                    ) {
-                      return;
-                    }
-                    event.preventDefault();
-                    const offset = event.key === "ArrowRight" ? 1 : -1;
-                    const nextIndex =
-                      (index + offset + example.variants.length) %
-                      example.variants.length;
-                    activate(nextIndex, true);
-                  }}
+                  onClick={
+                    staticEnhancement ? undefined : () => activate(index)
+                  }
+                  onKeyDown={
+                    staticEnhancement
+                      ? undefined
+                      : (event) => {
+                          if (
+                            event.key !== "ArrowRight" &&
+                            event.key !== "ArrowLeft"
+                          ) {
+                            return;
+                          }
+                          event.preventDefault();
+                          const offset = event.key === "ArrowRight" ? 1 : -1;
+                          const nextIndex =
+                            (index + offset + example.variants.length) %
+                            example.variants.length;
+                          activate(nextIndex, true);
+                        }
+                  }
                 >
                   <DocsSnippetCodeLanguageIcon language={variant.language} />
                   <span className="docs-code-language-text inline-flex items-center leading-none">
@@ -204,36 +259,33 @@ export function DocsCodeSnippet({
       }
       action={
         <DocsSnippetCopyButton
-          aria-label={copied ? "Copied" : `Copy ${activeVariant.fileName}`}
-          title={copied ? "Copied" : `Copy ${activeVariant.fileName}`}
-          onClick={copyActiveSnippet}
+          aria-label={
+            copied ? "Copied" : `Copy ${activeVariant.fileName || copyLabel}`
+          }
+          title={
+            copied ? "Copied" : `Copy ${activeVariant.fileName || copyLabel}`
+          }
+          onClick={staticEnhancement ? undefined : copyActiveSnippet}
+          {...(staticEnhancement ? { "data-copy-active-snippet": "" } : {})}
         >
           <CopyIcon />
           <span className="sr-only" aria-live="polite">
-            {copied ? "Copied" : "Copy code"}
+            {copied ? "Copied" : copyLabel}
           </span>
         </DocsSnippetCopyButton>
       }
-      footer={
-        example.callouts?.length ? (
-          <ol>
-            {example.callouts.map((callout, index) => (
-              <li key={index}>
-                <p>{callout}</p>
-              </li>
-            ))}
-          </ol>
-        ) : undefined
-      }
+      footer={renderedFooter}
     >
       {example.variants.map((variant, index) => {
         const active = index === activeIndex;
+        const tabId = snippetTabId(example.id, variant);
+        const panelId = snippetPanelId(example.id, variant);
         return (
           <div
-            key={variant.language}
-            id={`${example.id}-${variant.language}-panel`}
+            key={`${variant.language}-${index}`}
+            id={panelId}
             role="tabpanel"
-            aria-labelledby={`${example.id}-${variant.language}-tab`}
+            aria-labelledby={tabId}
             aria-hidden={!active}
             hidden={!active}
             className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
@@ -248,4 +300,51 @@ export function DocsCodeSnippet({
       })}
     </DocsSnippetCard>
   );
+
+  if (externalHeader) {
+    return (
+      <>
+        {renderSnippetExternalHeader(title, description)}
+        {card}
+      </>
+    );
+  }
+
+  return card;
+}
+
+function renderSnippetExternalHeader(
+  title?: ReactNode,
+  description?: ReactNode,
+) {
+  if (!title && !description) {
+    return null;
+  }
+  if (description) {
+    return (
+      <div className="docs-snippet-external-header my-0 mt-[1.35rem] mb-[0.45rem]">
+        {title ? (
+          <div className="docs-snippet-external-header-title my-0 text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal">
+            {title}
+          </div>
+        ) : null}
+        <div className="docs-snippet-external-header-description mt-1 text-sm leading-6 text-muted-foreground">
+          {description}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="title docs-snippet-external-title my-0 mt-[1.35rem] mb-[0.45rem] text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal">
+      {title}
+    </div>
+  );
+}
+
+function snippetTabId(exampleId: string, variant: CodeSnippetVariant) {
+  return variant.tabId || `${exampleId}-${variant.language}-tab`;
+}
+
+function snippetPanelId(exampleId: string, variant: CodeSnippetVariant) {
+  return variant.panelId || `${exampleId}-${variant.language}-panel`;
 }

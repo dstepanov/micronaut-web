@@ -40,6 +40,10 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
     ),
     "utf8",
   );
+  const browserTestRunner = await fs.readFile(
+    path.join(projectDirectory, "scripts", "run-docs-browser-tests.ts"),
+    "utf8",
+  );
 
   assert.equal(
     packageJson.scripts["prepare:generated-docs"],
@@ -57,6 +61,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
     packageJson.scripts["test:docs:browser"],
     "node tests/playwright/generated-content-fixtures.ts docs && playwright test --config playwright.config.ts tests/playwright/docs.spec.ts",
   );
+  assert.match(browserTestRunner, /npm_execpath/);
   assert.equal(
     await fileExists(
       path.join(

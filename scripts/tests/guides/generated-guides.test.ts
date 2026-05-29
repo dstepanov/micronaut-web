@@ -536,6 +536,10 @@ test("latest guide replacement routes and parallel generated-content preparation
     ),
     "utf8",
   );
+  const browserTestRunner = await fs.readFile(
+    path.join(projectDirectory, "scripts", "run-guides-browser-tests.ts"),
+    "utf8",
+  );
 
   assert.equal(
     packageJson.scripts["render:guides"],
@@ -549,6 +553,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     packageJson.scripts["test:guides:browser"],
     "node tests/playwright/generated-content-fixtures.ts guides && playwright test --config playwright.config.ts tests/playwright/guides.spec.ts",
   );
+  assert.match(browserTestRunner, /npm_execpath/);
   assert.match(prepareScript, /Promise\.all/);
   assert.match(prepareScript, /render-docs\.ts/);
   assert.match(prepareScript, /render-guides\.ts/);

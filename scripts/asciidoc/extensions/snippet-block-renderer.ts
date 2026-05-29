@@ -58,7 +58,7 @@ type SnippetVariant = {
 };
 
 type ComponentRenderer = {
-  renderGeneratedSnippetCard(
+  renderGeneratedSnippet(
     input: Record<string, unknown>,
   ): Promise<string> | string;
   renderGeneratedPropertiesCard(
@@ -188,11 +188,11 @@ export async function renderSnippetPayloadCards({
   };
 }
 
-export async function renderGeneratedSnippetCard(
+export async function renderGeneratedSnippet(
   input: Record<string, unknown>,
 ): Promise<string> {
   const renderer = await loadComponentRenderer();
-  return renderer.renderGeneratedSnippetCard(input);
+  return renderer.renderGeneratedSnippet(input);
 }
 
 export async function renderGeneratedPropertiesCard(
@@ -320,7 +320,7 @@ async function renderSnippetCard({
   samples: NormalizedSnippetSample[];
   title: unknown;
 }): Promise<string> {
-  return renderGeneratedSnippetCard({
+  return renderGeneratedSnippet({
     copyLabel: "Copy code",
     descriptionHtml: description ? inlineTitleHtml(description) : "",
     footerHtml,

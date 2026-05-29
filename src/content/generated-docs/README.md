@@ -33,9 +33,10 @@ extension-created snippet nodes, listing blocks, and configuration property
 tables into shared component markup during conversion.
 
 The direct converter renders snippet cards with
-`src/components/web/docs-generated-snippet.tsx`, which server-renders the same
-React primitives used by the hand-authored docs snippet components. The legacy
-template fallback has been removed from the AsciiDoc pipeline.
+`src/components/web/docs-generated-snippet.tsx`, which server-renders
+`DocsCodeSnippet` so generated and hand-authored code/dependency snippets use
+the same component behavior and markup. The legacy template fallback has been
+removed from the AsciiDoc pipeline.
 
 The renderer splits snippet types by source shape:
 `scripts/asciidoc/snippets/macro-snippets.ts` handles extension-created snippet
@@ -55,23 +56,19 @@ panels and ordinary listing blocks are highlighted by the component renderer.
 React is used only to render static markup for these generated fragments;
 snippets are not hydrated React islands.
 
-`src/components/web/generated-docs-enhancer.astro` adds progressive behavior in
-the browser: language tabs, active-panel copy buttons, and copy controls for
-plain Shiki blocks. The baseline HTML remains useful without that script because
-the snippet cards, highlighted code, and property tables are already present in
-the generated fragment.
+`src/components/web/generated-docs-static-enhancer.astro` adds progressive
+browser behavior for static snippet cards: language tabs, active-panel copy
+buttons, and generated image loading stabilization. The baseline HTML remains
+useful without that script because the snippet cards, highlighted code, and
+property tables are already present in the generated fragment.
 
 ## Style Ownership
 
-Tailwind class ownership for snippet cards is centralized in
-`src/components/web/docs-snippet-styles.ts`. Keep generated-template classes,
-browser enhancement classes, and test/gallery snippet classes aligned there
-instead of duplicating class strings in the renderer.
-
-Runtime snippet styling for Shiki spans, callout badges, callout footers, and
-configuration-property table internals also lives in `docs-snippet-styles.ts`.
-Astro/Tailwind emits the actual CSS from those shared class strings during the
-normal site build; there is no copied snippet runtime stylesheet.
+Tailwind class ownership for snippet cards lives directly in the shared snippet
+components and generated template helpers under `src/components/web`. Keep
+generated-template classes, static enhancer hooks, and test/gallery snippet
+classes aligned there instead of restoring a separate snippet style registry or
+copied runtime stylesheet.
 
 ## Useful Commands
 
