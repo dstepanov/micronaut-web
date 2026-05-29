@@ -4,16 +4,16 @@ import {
   CopyIcon,
   DocsPropertiesSnippetCard,
   DocsSnippetCard,
-  DocsSnippetCopyButton
+  DocsSnippetCopyButton,
+  docsSnippetStyles,
 } from "@/components/web/docs-snippet-card";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
 const codeSnippetPlaceholders = [
   "snippetId",
   "optionsLabel",
   "optionButtonsHtml",
   "copyLabel",
-  "snippetPanelsHtml"
+  "snippetPanelsHtml",
 ];
 
 const propertiesSnippetPlaceholders = [
@@ -22,7 +22,7 @@ const propertiesSnippetPlaceholders = [
   "propertiesEyebrow",
   "propertiesTitle",
   "propertiesCountLabel",
-  "propertiesTableHtml"
+  "propertiesTableHtml",
 ];
 
 function CodeSnippetTemplate({ dependency = false }: { dependency?: boolean }) {
@@ -68,21 +68,30 @@ function PropertiesSnippetTemplate() {
 function template(html: string, placeholders: string[]) {
   return {
     html: `${html}\n`,
-    placeholders
+    placeholders,
   };
 }
 
 export function renderDocsSnippetTemplates() {
   return {
-    "docs/snippets/code-snippet.html": template(renderToStaticMarkup(<CodeSnippetTemplate />), codeSnippetPlaceholders),
-    "docs/snippets/dependency-snippet.html": template(renderToStaticMarkup(<CodeSnippetTemplate dependency />), codeSnippetPlaceholders),
-    "docs/snippets/properties-snippet.html": template(renderToStaticMarkup(<PropertiesSnippetTemplate />), propertiesSnippetPlaceholders)
+    "docs/snippets/code-snippet.html": template(
+      renderToStaticMarkup(<CodeSnippetTemplate />),
+      codeSnippetPlaceholders,
+    ),
+    "docs/snippets/dependency-snippet.html": template(
+      renderToStaticMarkup(<CodeSnippetTemplate dependency />),
+      codeSnippetPlaceholders,
+    ),
+    "docs/snippets/properties-snippet.html": template(
+      renderToStaticMarkup(<PropertiesSnippetTemplate />),
+      propertiesSnippetPlaceholders,
+    ),
   };
 }
 
 export function renderDocsSnippetStaticSupport() {
   return {
     styles: docsSnippetStyles,
-    templates: renderDocsSnippetTemplates()
+    templates: renderDocsSnippetTemplates(),
   };
 }

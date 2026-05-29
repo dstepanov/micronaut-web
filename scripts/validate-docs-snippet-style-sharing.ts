@@ -6,9 +6,10 @@ const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const sharedStylesPath = "src/components/web/docs-snippet-styles.ts";
+const sharedStylesPath = "src/components/web/docs-snippet-card.tsx";
 const removedRuntimeCssPaths = [
   "scripts/generate-docs-snippet-css.ts",
+  "src/components/web/docs-snippet-styles.ts",
   "src/styles/docs-snippet-runtime.source.css",
   "src/styles/generated/docs-snippet-runtime.css",
 ];
@@ -235,6 +236,9 @@ for (const consumer of consumers) {
     }
   }
   for (const fragment of guardedClassFragments) {
+    if (consumer.file === sharedStylesPath) {
+      continue;
+    }
     for (const lineNumber of matchingLineNumbers(source, fragment)) {
       failures.push(
         `${consumer.file}:${lineNumber}: move "${fragment}" to docsSnippetStyles instead of duplicating snippet classes.`,

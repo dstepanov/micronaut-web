@@ -15,8 +15,8 @@ import {
   DocsSnippetCard,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
+  docsSnippetStyles,
 } from "@/components/web/docs-snippet-card";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 import {
   componentCodeVariants,
   componentTerminalVariants,

@@ -8,7 +8,7 @@ import {
   type CodeSnippetExample,
   type CodeSnippetLanguage,
 } from "@/components/web/docs-code-snippet";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-card";
 
 type MainCodeShowcaseProps = {
   examples: CodeSnippetExample[];

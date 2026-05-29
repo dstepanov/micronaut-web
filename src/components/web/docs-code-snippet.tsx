@@ -8,11 +8,18 @@ import {
   DocsSnippetCodeLanguageIcon,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
-  DocsSnippetStaticLanguage
+  DocsSnippetStaticLanguage,
 } from "@/components/web/docs-snippet-card";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-card";
 
-export type CodeSnippetLanguage = "java" | "kotlin" | "groovy" | "bash" | "gradle" | "maven" | "text";
+export type CodeSnippetLanguage =
+  | "java"
+  | "kotlin"
+  | "groovy"
+  | "bash"
+  | "gradle"
+  | "maven"
+  | "text";
 
 export type CodeSnippetVariant = {
   language: CodeSnippetLanguage;
@@ -35,7 +42,7 @@ export type CodeSnippetExample = {
 export function ShikiCodeBlock({
   code,
   highlightedHtml,
-  language
+  language,
 }: {
   code: string;
   highlightedHtml?: string;
@@ -52,7 +59,10 @@ export function ShikiCodeBlock({
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
         />
       ) : (
-        <code className={`language-${normalizedLanguage} ${docsSnippetStyles.codeElement}`} data-lang={normalizedLanguage}>
+        <code
+          className={`language-${normalizedLanguage} ${docsSnippetStyles.codeElement}`}
+          data-lang={normalizedLanguage}
+        >
           {code}
         </code>
       )}
@@ -67,14 +77,22 @@ type DocsCodeSnippetProps = {
   onLanguageChange?: (language: CodeSnippetLanguage) => void;
 };
 
-export function DocsCodeSnippet({ example, activeLanguage, className, onLanguageChange }: DocsCodeSnippetProps) {
+export function DocsCodeSnippet({
+  example,
+  activeLanguage,
+  className,
+  onLanguageChange,
+}: DocsCodeSnippetProps) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const [internalActiveLanguage, setInternalActiveLanguage] = useState<CodeSnippetLanguage>(example.variants[0]?.language || "text");
+  const [internalActiveLanguage, setInternalActiveLanguage] =
+    useState<CodeSnippetLanguage>(example.variants[0]?.language || "text");
   const [copied, setCopied] = useState(false);
   const currentLanguage = activeLanguage || internalActiveLanguage;
   const activeIndex = Math.max(
     0,
-    example.variants.findIndex((variant) => variant.language === currentLanguage)
+    example.variants.findIndex(
+      (variant) => variant.language === currentLanguage,
+    ),
   );
   const activeVariant = example.variants[activeIndex] || example.variants[0];
   const hasLanguageOptions = example.variants.length > 1;
@@ -124,7 +142,11 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
       className={className}
       controls={
         hasLanguageOptions ? (
-          <div className={docsSnippetStyles.tabs} role="tablist" aria-label={`${example.label} language`}>
+          <div
+            className={docsSnippetStyles.tabs}
+            role="tablist"
+            aria-label={`${example.label} language`}
+          >
             {example.variants.map((variant, index) => {
               const active = index === activeIndex;
               const tabId = `${example.id}-${variant.language}-tab`;
@@ -145,25 +167,36 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
                   tabIndex={active ? 0 : -1}
                   onClick={() => activate(index)}
                   onKeyDown={(event) => {
-                    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
+                    if (
+                      event.key !== "ArrowRight" &&
+                      event.key !== "ArrowLeft"
+                    ) {
                       return;
                     }
                     event.preventDefault();
                     const offset = event.key === "ArrowRight" ? 1 : -1;
-                    const nextIndex = (index + offset + example.variants.length) % example.variants.length;
+                    const nextIndex =
+                      (index + offset + example.variants.length) %
+                      example.variants.length;
                     activate(nextIndex, true);
                   }}
                 >
                   <DocsSnippetCodeLanguageIcon language={variant.language} />
-                  <span className={docsSnippetStyles.languageText}>{variant.label}</span>
+                  <span className={docsSnippetStyles.languageText}>
+                    {variant.label}
+                  </span>
                 </DocsSnippetLanguageButton>
               );
             })}
           </div>
         ) : (
-          <DocsSnippetStaticLanguage aria-label={`${activeVariant.label} snippet`}>
+          <DocsSnippetStaticLanguage
+            aria-label={`${activeVariant.label} snippet`}
+          >
             <DocsSnippetCodeLanguageIcon language={activeVariant.language} />
-            <span className={docsSnippetStyles.languageText}>{activeVariant.label}</span>
+            <span className={docsSnippetStyles.languageText}>
+              {activeVariant.label}
+            </span>
           </DocsSnippetStaticLanguage>
         )
       }
@@ -179,15 +212,17 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
           </span>
         </DocsSnippetCopyButton>
       }
-      footer={example.callouts?.length ? (
-        <ol>
-          {example.callouts.map((callout, index) => (
-            <li key={index}>
-              <p>{callout}</p>
-            </li>
-          ))}
-        </ol>
-      ) : undefined}
+      footer={
+        example.callouts?.length ? (
+          <ol>
+            {example.callouts.map((callout, index) => (
+              <li key={index}>
+                <p>{callout}</p>
+              </li>
+            ))}
+          </ol>
+        ) : undefined
+      }
     >
       {example.variants.map((variant, index) => {
         const active = index === activeIndex;
@@ -201,7 +236,11 @@ export function DocsCodeSnippet({ example, activeLanguage, className, onLanguage
             hidden={!active}
             className={docsSnippetStyles.panel}
           >
-            <ShikiCodeBlock code={variant.code} highlightedHtml={variant.highlightedHtml} language={variant.language} />
+            <ShikiCodeBlock
+              code={variant.code}
+              highlightedHtml={variant.highlightedHtml}
+              language={variant.language}
+            />
           </div>
         );
       })}

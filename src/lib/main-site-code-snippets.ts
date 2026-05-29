@@ -1,6 +1,6 @@
 import { docsSnippetCodeLanguageIcon } from "@/components/web/docs-snippet-icons";
 import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
+import { docsSnippetStyles } from "@/components/web/docs-snippet-card";
 import {
   codeLanguageFromFenceInfo,
   formatCodeLanguage,

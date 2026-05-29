@@ -8,8 +8,8 @@ import {
   DocsSnippetCodeLanguageIcon,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
+  docsSnippetStyles,
 } from "./docs-snippet-card";
-import { docsSnippetStyles } from "./docs-snippet-styles";
 
 type GeneratedSnippetKind = "code" | "dependency";
 

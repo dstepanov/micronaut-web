@@ -7,9 +7,8 @@ import {
   docsSnippetLanguageAliases,
   docsSnippetLanguageLabels
 } from "@/components/web/docs-snippet-icons";
-import { CopyIcon } from "@/components/web/docs-snippet-card";
+import { CopyIcon, docsSnippetStyles } from "@/components/web/docs-snippet-card";
 import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-styles";
 
 const docsSnippetTemplates = Object.fromEntries(
   Object.entries(renderDocsSnippetTemplates()).filter(([name]) => name !== "docs/snippets/properties-snippet.html")
