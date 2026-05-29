@@ -1,0 +1,196 @@
+:guide-macro-gallery:
+
+ifndef::guide-macro-gallery[]
+= Snippet Gallery Fixture
+
+This fixture exercises generated snippet rendering across source blocks, snippet macros, dependencies, configuration samples, and configuration property tables.
+
+== Ordinary Source Blocks
+
+[source,bash]
+----
+$ curl http://localhost:8080/hello
+Hello World
+----
+
+.Terminal command with title
+[source,bash]
+----
+./gradlew test
+----
+
+.Java source with callouts
+[source,java]
+----
+class HelloController { // <1>
+}
+----
+<1> The controller source callout is rendered inside the card footer.
+
+.Properties source with standalone callout marker
+[source,properties]
+----
+# <1>
+micronaut.server.port=8080
+----
+<1> The property callout marker moves to the property line.
+
+[source,kotlin]
+----
+class HelloController {
+    fun index(): String = "Hello World"
+}
+----
+
+[source,groovy]
+----
+class HelloController {
+    String index() {
+        'Hello World'
+    }
+}
+----
+
+[source,gradle]
+----
+implementation("io.micronaut:micronaut-http-client")
+----
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.micronaut</groupId>
+    <artifactId>micronaut-http-client</artifactId>
+</dependency>
+----
+
+[source,yaml]
+----
+micronaut:
+  application:
+    name: demo
+----
+
+[source,toml]
+----
+[versions]
+micronaut = "4.0.0"
+----
+
+[source,json]
+----
+{"micronaut": {"application": {"name": "demo"}}}
+----
+
+[source,hocon]
+----
+micronaut.application.name = demo
+----
+
+----
+plain listing output
+----
+
+== Generated Snippet Macros
+
+snippet::controller[title=Controller variants,description=Rendered from snippet macro]
+<1> The snippet macro callout is attached to the shared snippet card.
+
+snippet::event-listener,event-listener-spec[title=Listening for Events with `ApplicationEventListener`]
+
+dependency::micronaut-http-client[groupId=io.micronaut,title=HTTP Client dependency,description=Rendered from dependency macro]
+
+[configuration,title=Application configuration]
+----
+micronaut:
+  server:
+    port: 8080
+----
+
+.Configuration Properties
+|===
+|Property |Type |Description
+|micronaut.server.port |Integer |Server port
+|micronaut.application.name |String |Application name
+|===
+endif::[]
+
+ifdef::guide-macro-gallery[]
+= Guide Macro Gallery Fixture
+
+This fixture exercises guide macro rendering through Asciidoctor extension processors.
+
+== Content Macros
+
+common::gallery-common.adoc[]
+
+common-template::gallery-template.adoc[arg0=common]
+
+external::gallery-external[]
+
+external-template::gallery-external-template[arg0=external]
+
+rocker::gallery[]
+
+guideLink:gallery-linked[Linked Guide]
+
+diffLink::[]
+
+== Snippet Macros
+
+source::GalleryController[]
+callout::gallery-source[]
+
+test::GalleryControllerTest[]
+
+rawTest::GalleryRawTest[]
+
+resource::application.yml[]
+
+testResource::application-test.yml[]
+
+zipInclude::build.gradle[]
+
+dependency::micronaut-serde-jackson[groupId=io.micronaut.serde,callout=1]
+<1> Single dependency callout.
+
+:dependencies:
+dependency::micronaut-http-client[groupId=io.micronaut,callout=1]
+dependency::micronaut-validation[groupId=io.micronaut.validation,callout=2]
+:dependencies:
+<1> Grouped HTTP client dependency.
+<2> Grouped validation dependency.
+
+== Excludes
+
+:exclude-for-languages:java
+Java excluded text should not render.
+:exclude-for-languages:
+
+:exclude-for-languages:java,groovy
+Comma-separated language excluded text should not render.
+:exclude-for-languages:
+
+:exclude-for-languages:kotlin
+Kotlin-only excluded text should render for Java.
+:exclude-for-languages:
+
+:exclude-for-languages:java
+:exclude-for-languages:kotlin
+Adjacent language excluded text should not render.
+:exclude-for-languages:
+
+:exclude-for-build:gradle
+Gradle excluded text should not render.
+:exclude-for-build:
+
+:exclude-for-build:maven
+Maven-only excluded text should render for Gradle.
+:exclude-for-build:
+
+:exclude-for-jdk-lower-than:21
+JDK excluded text should not render.
+:exclude-for-jdk-lower-than:
+
+Visible after exclude directives.
+endif::[]

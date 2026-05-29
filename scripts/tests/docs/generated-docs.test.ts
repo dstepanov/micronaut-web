@@ -31,6 +31,15 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );
+  const playwrightFixtureScript = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "tests",
+      "playwright",
+      "generated-content-fixtures.ts",
+    ),
+    "utf8",
+  );
 
   assert.equal(
     packageJson.scripts["prepare:generated-docs"],
@@ -68,6 +77,35 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
       ),
     ),
     true,
+  );
+  assert.equal(
+    await fileExists(
+      path.join(
+        projectDirectory,
+        "fixtures",
+        "generated-content",
+        "docs",
+        "docs-projects.fixture.json",
+      ),
+    ),
+    true,
+  );
+  assert.equal(
+    await fileExists(
+      path.join(
+        projectDirectory,
+        "fixtures",
+        "generated-content",
+        "guides",
+        "version.txt",
+      ),
+    ),
+    true,
+  );
+  assert.match(playwrightFixtureScript, /fixtures[\s\S]*generated-content/);
+  assert.doesNotMatch(
+    playwrightFixtureScript,
+    /MICRONAUT_DOCS_PROJECTS_DIR|MICRONAUT_GUIDES_DIR|writeFallback|fallback/i,
   );
   assertScriptOrder(
     packageJson.scripts.dev,

@@ -1,0 +1,3 @@
+common:flyway-configuration-intro-end.adoc[]
+
+Create the following migration files with the database schema creation:

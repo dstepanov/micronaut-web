@@ -1,0 +1,12 @@
+https://micronaut-projects.github.io/micronaut-validation/snapshot/guide/[Micronaut validation] is built on the standard framework – https://www.jcp.org/en/jsr/detail?id=380[JSR 380], also known as Bean Validation 2.0. Micronaut Validation has built-in support for validation of beans that are annotated with `jakarta.validation` annotations.
+
+To use Micronaut Validation, you need the following dependencies:
+
+:dependencies:
+
+dependency:micronaut-validation-processor[groupId=io.micronaut.validation,scope=annotationProcessor]
+dependency:micronaut-validation[groupId=io.micronaut.validation]
+
+:dependencies:
+
+Alternatively, you can use https://micronaut-projects.github.io/micronaut-hibernate-validator/latest/guide/[Micronaut Hibernate Validator], which uses https://hibernate.org/validator/[Hibernate Validator]; a reference implementation of the validation API.

@@ -1,0 +1,34 @@
+plugins {
+    id "org.jetbrains.kotlin.plugin.jpa"
+    id "io.micronaut.build.internal.data-kotlin-example"
+}
+
+application {
+    mainClass = "example.ApplicationKt"
+}
+
+micronaut {
+    version libs.versions.micronaut.platform.get()
+    runtime "netty"
+    testRuntime "junit5"
+}
+
+dependencies {
+    implementation(mnRxjava3.micronaut.rxjava3)
+    implementation mn.micronaut.http.client
+    implementation projects.micronautDataHibernateJpa
+    implementation projects.micronautDataTx
+    implementation mnKotlin.micronaut.kotlin.runtime
+    implementation mnValidation.micronaut.validation
+    implementation(mn.kotlinx.coroutines.core)
+    implementation(mn.kotlinx.coroutines.reactive)
+
+    kapt mnValidation.micronaut.validation
+    kapt projects.micronautDataProcessor
+
+    runtimeOnly mnSql.micronaut.jdbc.tomcat
+    runtimeOnly mnLogging.logback.classic
+    runtimeOnly mnSql.h2
+
+    runtimeOnly libs.kotlin.reflect
+}

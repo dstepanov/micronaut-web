@@ -1,0 +1,12 @@
+We also use https://gebish.org[Geb], a browser automation solution.
+
+To use Geb, add these dependencies:
+
+:dependencies:
+
+dependency:geb-spock[groupId=org.gebish,scope=testImplementation,version=@geb-spockVersion@]
+dependency:htmlunit-driver[groupId=org.seleniumhq.selenium,scope=testImplementation,version=@htmlunit-driverVersion@]
+
+:dependencies:
+
+Geb uses the Page concept pattern; the Page Object Pattern gives us a common sense way to model content in a reusable and maintainable way.

@@ -1,0 +1,9 @@
+[versions]
+managed-micronaut-core = "5.0.0"
+managed-micronaut-data = "5.0.1"
+managed-micronaut-serialization = "3.0.0"
+
+[libraries]
+boms-micronaut-core = { module = "io.micronaut:micronaut-core-bom", version.ref = "managed-micronaut-core" }
+boms-micronaut-data = { module = "io.micronaut.data:micronaut-data-bom", version.ref = "managed-micronaut-data" }
+boms-micronaut-serialization = { module = "io.micronaut.serde:micronaut-serde-bom", version.ref = "managed-micronaut-serialization" }

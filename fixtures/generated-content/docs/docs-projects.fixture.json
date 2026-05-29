@@ -1,0 +1,83 @@
+{
+  "source": "playwright copied docs",
+  "publishedSource": "",
+  "projectCount": 3,
+  "categories": [
+    {
+      "slug": "playwright",
+      "name": "Playwright Copied Docs",
+      "icon": "lucide:book-open",
+      "description": "Copied generated-docs source folders used by browser tests.",
+      "projectSlugs": [
+        "core",
+        "data",
+        "serde"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "slug": "core",
+      "displayName": "Micronaut Core",
+      "shortName": "Core",
+      "projectKey": "core",
+      "module": "io.micronaut:micronaut-core-bom",
+      "repositoryName": "micronaut-core",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-core.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-core/latest/guide/",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-core",
+      "platformVersionKey": "managed-micronaut-core",
+      "version": "5.0.0",
+      "icon": "lucide:book-open",
+      "primaryCategory": "playwright",
+      "categorySlugs": [
+        "playwright"
+      ],
+      "shortDescription": "Micronaut Core",
+      "longDescription": "Micronaut Core copied browser layout fixture."
+    },
+    {
+      "slug": "data",
+      "displayName": "Micronaut Data",
+      "shortName": "Data",
+      "projectKey": "data",
+      "module": "io.micronaut.data:micronaut-data-bom",
+      "repositoryName": "micronaut-data",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-data.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-data/latest/guide/",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-data",
+      "platformVersionKey": "managed-micronaut-data",
+      "version": "5.0.1",
+      "icon": "lucide:book-open",
+      "primaryCategory": "playwright",
+      "categorySlugs": [
+        "playwright"
+      ],
+      "shortDescription": "Micronaut Data",
+      "longDescription": "Micronaut Data copied browser layout fixture."
+    },
+    {
+      "slug": "serde",
+      "displayName": "Micronaut Serialization",
+      "shortName": "Serialization",
+      "projectKey": "serialization",
+      "module": "io.micronaut.serde:micronaut-serde-bom",
+      "repositoryName": "micronaut-serialization",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-serialization.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-serialization/latest/guide/",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-serialization",
+      "platformVersionKey": "managed-micronaut-serialization",
+      "version": "3.0.0",
+      "icon": "lucide:book-open",
+      "primaryCategory": "playwright",
+      "categorySlugs": [
+        "playwright"
+      ],
+      "shortDescription": "Micronaut Serialization",
+      "longDescription": "Micronaut Serialization copied browser layout fixture."
+    }
+  ]
+}

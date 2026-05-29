@@ -1,0 +1,20 @@
+:exclude-for-build:maven
+
+[source,bash]
+----
+./gradlew shadowJar
+----
+
+The https://gradleup.com/shadow/[Shadow Gradle plugin] contributes the `shadowJar` task.
+
+
+:exclude-for-build:
+
+:exclude-for-build:gradle
+
+[source,bash]
+----
+mvn package -Dpackaging=jar
+----
+
+:exclude-for-build:

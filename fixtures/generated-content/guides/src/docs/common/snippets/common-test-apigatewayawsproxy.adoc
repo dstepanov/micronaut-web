@@ -1,0 +1,20 @@
+=== Test
+
+You can test it easily.
+
+image::test-event.png[]
+
+[source, json]
+----
+{
+  "path": "/",
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "application/json"
+  }
+}
+----
+
+You should see a 200 response:
+
+image::aws-lambda-function-graalvm-warm-startup.png[]

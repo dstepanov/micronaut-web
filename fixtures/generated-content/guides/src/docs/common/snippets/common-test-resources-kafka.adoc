@@ -1,0 +1,12 @@
+== Test Resources
+
+common:test-resources-kafka-test-or-dev.adoc[]
+
+When running under production, you should replace this property with the location of your production Kafka instance via an environment variable.
+
+[source,shell]
+----
+KAFKA_BOOTSTRAP_SERVERS=production-server:9092
+----
+
+For more information, see the https://micronaut-projects.github.io/micronaut-test-resources/snapshot/guide/#modules-kafka[Kafka section of the Test Resources documentation].

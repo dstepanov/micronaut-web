@@ -1,0 +1,46 @@
+== Google Cloud Platform
+
+Signup for the https://console.cloud.google.com/[Google Cloud Platform]
+
+=== Cloud SDK
+
+Install the https://cloud.google.com/sdk/docs/install[Cloud SDK CLI] for your operating system.
+
+Cloud SDK includes the `gcloud` command-line tool. Run the `init` command in your terminal:
+
+[source,bash]
+----
+gcloud init
+----
+
+Log in to your Google Cloud Platform:
+
+[source,bash]
+----
+gcloud auth login
+----
+
+=== Google Cloud Platform Project
+
+Create a new project with a unique name (replace `xxxxxx` with alphanumeric characters of your choice):
+
+[source,bash]
+----
+gcloud projects create micronaut-guides-xxxxxx
+----
+
+NOTE: In GCP, project ids are globally unique, so the id you used above is the one you should use in the rest of this guide.
+
+Change your project:
+
+[source,bash]
+----
+gcloud config set project micronaut-guides-xxxxxx
+----
+
+If you forget the project id, you can list all projects:
+
+[source,bash]
+----
+gcloud projects list
+----

@@ -1,0 +1,37 @@
+{
+  "title": "Snippet Gallery",
+  "intro": "Snippet gallery guide macro fixture.",
+  "authors": [
+    "Micronaut"
+  ],
+  "categories": [
+    "Test"
+  ],
+  "publicationDate": "2026-01-01",
+  "tags": [
+    "test"
+  ],
+  "languages": [
+    "java"
+  ],
+  "buildTools": [
+    "gradle"
+  ],
+  "testFramework": "junit",
+  "cloud": "",
+  "publish": true,
+  "asciidoctor": "snippet-gallery.adoc",
+  "apps": [
+    {
+      "name": "default",
+      "applicationType": "DEFAULT",
+      "features": [
+        "http-client"
+      ],
+      "javaFeatures": [],
+      "kotlinFeatures": [],
+      "groovyFeatures": []
+    }
+  ],
+  "minimumJavaVersion": "21"
+}

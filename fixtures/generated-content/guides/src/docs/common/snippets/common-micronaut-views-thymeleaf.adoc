@@ -1,0 +1,5 @@
+== Views
+
+To use the https://www.thymeleaf.org/[Thymeleaf] Java template engine to render views in a Micronaut application, add the following dependency on your classpath.
+
+dependency:micronaut-views-thymeleaf[groupId=io.micronaut.views]

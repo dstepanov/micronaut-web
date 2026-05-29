@@ -1,0 +1,14 @@
+// Define this variable if need mysql:
+// :database:mysql
+
+=== Database Migration with Flyway
+
+common:flyway-intro.adoc[]
+
+Add the following snippet to include the necessary dependencies:
+
+:dependencies:
+dependency:micronaut-flyway[groupId=io.micronaut.flyway]
+:dependencies:
+
+common:flyway-configuration-intro-start.adoc[]

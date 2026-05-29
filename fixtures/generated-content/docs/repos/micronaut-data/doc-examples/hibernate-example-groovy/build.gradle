@@ -1,0 +1,29 @@
+plugins {
+    id "groovy"
+    id "io.micronaut.build.internal.data-example"
+}
+
+application {
+    mainClass = "example.Application"
+}
+
+micronaut {
+    version libs.versions.micronaut.platform.get()
+    runtime "netty"
+    testRuntime "spock"
+}
+
+dependencies {
+    compileOnly projects.micronautDataProcessor
+    compileOnly mnValidation.micronaut.validation.processor
+
+    implementation projects.micronautDataModel
+    implementation mnValidation.micronaut.validation
+    implementation projects.micronautDataHibernateJpa
+    implementation mn.micronaut.http.client
+    implementation(mnRxjava3.micronaut.rxjava3)
+
+    runtimeOnly mnSql.micronaut.jdbc.tomcat
+    runtimeOnly mnLogging.logback.classic
+    runtimeOnly mnSql.h2
+}

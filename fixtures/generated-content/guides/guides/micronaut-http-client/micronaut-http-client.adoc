@@ -1,0 +1,207 @@
+common:header-top.adoc[]
+
+== Getting Started
+
+In this guide, we will create a Micronaut application written in @language@ to consume the GitHub API with the Micronaut HTTP Client.
+
+common:requirements.adoc[]
+
+common:completesolution.adoc[]
+
+common:create-app-features.adoc[]
+
+=== Dependency
+
+To use the https://docs.micronaut.io/snapshot/guide/#nettyHttpClient[Micronaut HTTP Client based on Netty], add the following dependency:
+
+dependency:micronaut-http-client[groupId=io.micronaut]
+
+To use the https://docs.micronaut.io/snapshot/guide/#jdkHttpClient[Micronaut HTTP Client based on Java HTTP Client], add the following dependency:
+
+dependency:micronaut-http-client-jdk[groupId=io.micronaut]
+
+=== GitHub API
+
+In this guide, you will consume the https://docs.github.com/en/rest[GitHub API] from a Micronaut application.
+
+In this guide, you will fetch https://github.com/micronaut-projects/micronaut-core/releases[Micronaut Core releases] via the https://docs.github.com/en/rest/reference/repos#list-releases[List releases] endpoint.
+
+____
+This returns a list of releases, which does not include regular Git tags that have not been associated with a release.
+____
+
+This API resource can be consumed by both authenticated and anonymous clients. Initially, you will consume it anonymously, later we will discuss authentication.
+
+Create a record to parse the JSON response into an object:
+
+source:GithubRelease[]
+
+=== Configuration
+
+Modify `src/main/resources/application.properties` to create some configuration parameters.
+
+resource:application.properties[tag=githubconfig]
+
+To encapsulate type-safe configuration retrieval, we use a https://docs.micronaut.io/latest/guide/#configurationProperties[`@ConfigurationProperties`] object:
+
+source:GithubConfiguration[]
+
+==== JSON Codec Configuration
+
+Add configuration to treat `application/vnd.github.v3+json` as JSON.
+
+resource:application.properties[tag=jsoncodec]
+
+==== HTTP Client Service Configuration
+
+Add configuration to associate a service identifier to the GitHub API URL.
+
+resource:application.properties[tag=githubapi]
+
+
+=== Low Level Client
+
+Initially, you will create a Bean which uses the low-level Client API.
+
+Create `GithubLowLevelClient`:
+
+source:GithubLowLevelClient[]
+
+callout:singleton[]
+<.> Inject `HttpClient` via constructor injection. The `@Client` `id` member uses `github`; the service identifier set in the configuration.
+<.> Inject the previously defined configuration parameters.
+callout:http-request[]
+<.> GitHub API requires to set the `User-Agent` header.
+<.> GitHub encourages to explicitly request the version 3 via the `Accept` header. With `@Header`, you add the `Accept: application/vnd.github.v3+json` HTTP header to every request.
+<.> Use `retrieve` to perform an HTTP request for the given request object and convert the full HTTP response's body into the specified type. e.g. `List<GithubRelease>`.
+
+=== Declarative Client
+
+It is time to take a look at support for declarative clients via the Client annotation.
+
+Create `GithubApiClient` which clearly illustrates how a declarative Micronaut HTTP Client, which is generated at compile-time, simplifies our code.
+
+source:GithubApiClient[]
+
+<.> URL of the remote service
+<.> GitHub API requires to set the `User-Agent` header.
+<.> GitHub encourages to explicitly request the version 3 via the `Accept` header. With `@Header`, you add the `Accept: application/vnd.github.v3+json` HTTP header to every request.
+<.> You can use configuration parameter interpolation when you define the path of the GET endpoint.
+callout:singleresult[]
+<.> You can return any reactive type of any implementation (RxJava, Reactor...), but it's better to use the Reactive Streams public interfaces like `Publisher`.
+
+=== Controller
+
+Create a Controller. It uses both (low-level and declarative clients). The Micronaut framework supports Reactive Streams implementations such as https://micronaut-projects.github.io/micronaut-rxjava3/latest/guide/[RxJava] or https://micronaut-projects.github.io/micronaut-reactor/latest/guide/[Project Reactor]. Thus, you can efficiently compose multiple HTTP client calls without blocking (which will limit the throughput and scalability of your application).
+
+source:GithubController[]
+
+callout:controller[arg0=/github]
+<.> Inject beans via constructor injection.
+<.> The @api@/io/micronaut/http/annotation/Get.html[@Get] annotation maps the `index` method to all requests that use an HTTP GET
+callout:singleresult[]
+callout:get[arg0=fetchReleases,arg1=/releases]
+
+=== Tests
+
+We will mock the GitHub API with some releases
+
+NOTE: Here we only show a single release.
+      If you download the complete solution, you will find a file with multiple releases.
+
+[source, json]
+.src/test/resources/releases.json
+----
+include::{sourceDir}/micronaut-http-client/@sourceDir@/src/test/resources/single-release.json[]
+----
+
+Create a test to verify that both clients work as expected, and the controller echoes the output of the GitHub API in a Reactive way.
+
+test:GithubControllerTest[]
+
+callout:spec-name[]
+callout:mock-http-server[arg0=GitHub]
+<.> Create a sample `releases.json` file in `src/test/resources` directory. To get some test data call GitHub API with curl or provide a few entries yourself.
+<.> Sometimes, receiving just the object is not enough, and you need information about the response. In this case, instead of `retrieve` you should use the `exchange` method.
+callout:binding-json-array[]
+<.> Use `status` to check the HTTP status code.
+callout:body-method[]
+
+
+common:testApp.adoc[]
+
+== HTTP Client Filter
+
+Often, you need to include the same HTTP headers or URL parameters in a set of requests against a third-party API or when calling another Microservice. To simplify this, the Micronaut framework includes the ability to define `HttpClientFilter` classes that are applied to all matching HTTP clients.
+
+For a real world example, let us provide GitHub Authentication via an `HttpClientFilter`. Follow the steps in
+https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token[to create your own Personal Token].
+Then you can use those credentials to access the GitHub API
+https://docs.github.com/en/rest/overview/other-authentication-methods#via-oauth-and-personal-access-tokens[using Basic Auth].
+
+Create a Filter:
+
+source:GithubFilter[]
+
+callout:client-filter[]
+:exclude-for-languages:kotlin
+<.> The Micronaut framework will not load the bean unless configuration properties are set.
+:exclude-for-languages:
+
+:exclude-for-languages:java,groovy
+<.> Kotlin doesn't support runtime repeatable annotations (see https://youtrack.jetbrains.com/issue/KT-12794[KT-12794]. We use a custom condition to enable the bean where appropriate.
+:exclude-for-languages:
+
+<.> Constructor injection of the configuration parameters.
+callout:request-filter[]
+<.> Enhance every request sent to GitHub API providing Basic Authentication.
+
+:exclude-for-languages:java,groovy
+
+Create a custom Condition:
+
+source:GithubFilterCondition[]
+
+<1> Implement Micronaut `Condition`.
+<2> Get the `GithubConfiguration` bean from the application context.
+<3> Only return `true` when the `token` and the `username` exist.
+
+:exclude-for-languages:
+
+=== Configuration Parameters
+
+Add your GitHub `username` and `token` to `src/main/resources/application.properties`
+
+[source, properties]
+----
+github.organization=micronaut-projects
+github.repo=micronaut-core
+github.username=yourgithubusername
+github.token=xxxxxxxxxxxx
+----
+
+Add a logger to `src/main/resources/logback.xml` to see the HTTP client output.
+
+[source, xml]
+----
+<logger name="io.micronaut.http.client" level="TRACE"/>
+----
+
+If you run again the tests, you will see the that the Filter is invoked and HTTP Basic Auth is used against GitHub API.
+
+[source, bash]
+-----
+13:09:56.662 [default-nioEventLoopGroup-1-4] DEBUG i.m.h.client.netty.DefaultHttpClient - Sending HTTP GET to https://api.github.com/repos/micronaut-projects/micronaut-core/releases
+13:09:56.663 [default-nioEventLoopGroup-1-4] TRACE i.m.h.client.netty.DefaultHttpClient - User-Agent: Micronaut HTTP Client
+13:09:56.663 [default-nioEventLoopGroup-1-4] TRACE i.m.h.client.netty.DefaultHttpClient - Accept: application/json
+13:09:56.663 [default-nioEventLoopGroup-1-4] TRACE i.m.h.client.netty.DefaultHttpClient - Authorization: MASKED
+13:09:56.664 [default-nioEventLoopGroup-1-4] TRACE i.m.h.client.netty.DefaultHttpClient - host: api.github.com
+-----
+
+common:graal-with-plugins.adoc[]
+
+== Next Steps
+
+Visit https://docs.micronaut.io/latest/guide/#httpClient[Micronaut HTTP Client documentation] to learn more.
+
+common:helpWithMicronaut.adoc[]

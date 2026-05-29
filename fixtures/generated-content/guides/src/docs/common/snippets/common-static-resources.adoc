@@ -1,0 +1,9 @@
+=== Static Resources
+
+Update `application.properties` to add static resource configuration:
+
+common:yaml-dependency.adoc[]
+
+resource:application.properties[tag=static-resources]
+
+callout:static-resources[1]

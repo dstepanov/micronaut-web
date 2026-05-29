@@ -1,0 +1,102 @@
+
+package example;
+
+import io.micronaut.data.annotation.Join;
+import io.micronaut.data.annotation.Repository;
+import io.micronaut.data.annotation.sql.Procedure;
+import io.micronaut.data.jpa.annotation.EntityGraph;
+import io.micronaut.data.repository.CrudRepository;
+import io.micronaut.data.repository.jpa.JpaSpecificationExecutor;
+import io.micronaut.data.repository.jpa.criteria.QuerySpecification;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
+
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+// tag::join[]
+// tag::async[]
+// tag::specifications[]
+// tag::procedure[]
+@Repository
+public interface ProductRepository extends CrudRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+// end::join[]
+// end::async[]
+// end::specifications[]
+// end::procedure[]
+
+    // tag::join[]
+    @Join(value = "manufacturer", type = Join.Type.FETCH) // <1>
+    List<Product> list();
+    // end::join[]
+
+    // tag::entitygraph[]
+    @Override
+    @EntityGraph(attributePaths = {"manufacturer", "title"}) // <1>
+    List<Product> findAll();
+    // end::entitygraph[]
+
+    // tag::async[]
+    @Join("manufacturer")
+    CompletableFuture<Product> findByNameContains(String str);
+
+    CompletableFuture<Long> countByManufacturerName(String name);
+    // end::async[]
+    // tag::reactive[]
+    @Join("manufacturer")
+    Maybe<Product> queryByNameContains(String str);
+
+    Single<Long> countDistinctByManufacturerName(String name);
+    // end::reactive[]
+
+    // tag::procedure[]
+    @Procedure(named = "calculateSum")
+    long calculateSum(Long productId); // <1>
+
+    @Procedure("calculateSumInternal")
+    long calculateSumCustom(Long productId); // <2>
+    // end::procedure[]
+
+    // tag::specifications[]
+
+    @Transactional
+    default List<Product> findByName(String name, boolean caseInsensitive, boolean includeBlank) {
+        QuerySpecification<Product> specification;
+        if (caseInsensitive) {
+            specification = Specifications.nameEqualsCaseInsensitive(name);
+        } else {
+            specification = Specifications.nameEquals(name);
+        }
+        if (includeBlank) {
+            specification = specification.or(Specifications.nameEquals(""));
+        }
+        return findAll(specification);
+    }
+
+    // tag::spec[]
+    class Specifications {
+
+        public static QuerySpecification<Product> nameEquals(String name) {
+            return (root, query, criteriaBuilder)
+                    -> criteriaBuilder.equal(root.get("name"), name);
+        }
+
+        public static QuerySpecification<Product> nameEqualsCaseInsensitive(String name) {
+            return (root, query, criteriaBuilder)
+                    -> criteriaBuilder.equal(criteriaBuilder.lower(root.get("name")), name.toLowerCase());
+        }
+    }
+    // end::spec[]
+
+    // end::specifications[]
+
+// tag::join[]
+// tag::async[]
+// tag::specifications[]
+// tag::procedure[]
+}
+// end::join[]
+// end::async[]
+// end::specifications[]
+// end::procedure[]

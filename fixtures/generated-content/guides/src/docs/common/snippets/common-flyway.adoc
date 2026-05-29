@@ -1,0 +1,5 @@
+common:flyway-header.adoc[]
+
+resource:application.properties[tag=flyway]
+
+common:flyway-footer.adoc[]

@@ -1,0 +1,4 @@
+title: Micronaut Serialization
+quickStart:
+  title: Quick Start
+  jacksonQuick: Jackson Annotations & Jackson Core
