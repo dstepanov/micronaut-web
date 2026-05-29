@@ -7,7 +7,7 @@ import {
   docsSnippetLanguageAliases,
   docsSnippetLanguageLabels
 } from "@/components/web/docs-snippet-icons";
-import { CopyIcon, docsSnippetStyles } from "@/components/web/docs-snippet-card";
+import { CopyIcon } from "@/components/web/docs-snippet-card";
 import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
 
 const docsSnippetTemplates = Object.fromEntries(
@@ -18,7 +18,6 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
 
 <script is:inline define:vars={{
   copyButtonIconHtml,
-  docsSnippetStyles,
   docsSnippetTemplates,
   sharedCodeLanguageAliases: docsSnippetLanguageAliases,
   sharedCodeLanguageIcons: docsSnippetCodeLanguageIcons,
@@ -96,11 +95,31 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
         .replaceAll(">", "&gt;")
         .replaceAll("\"", "&quot;");
 
-    const snippetToolbarClass = docsSnippetStyles.toolbarHeader;
-    const toolbarActionClass = docsSnippetStyles.toolbarAction;
-    const cardFooterClass = docsSnippetStyles.footer;
-    const copyButtonClass = docsSnippetStyles.copyButton;
-    const staticLanguageClass = docsSnippetStyles.staticLanguage;
+    const cardWithFooterClass = "docs-code-block-with-footer";
+    const standaloneCardClass = "docs-code-block docs-snippet-card my-5 flex flex-col gap-0 overflow-hidden rounded-xl border border-code-border bg-code-tab py-0 text-code-foreground shadow-sm shadow-black/[0.03] dark:shadow-black/20";
+    const snippetToolbarClass = "docs-code-toolbar docs-snippet-card-header !flex min-h-10 items-center justify-between gap-3 border-b border-code-border bg-code-tab px-3 py-2 [.border-b]:!pb-2";
+    const toolbarActionClass = "ml-auto self-center justify-self-auto";
+    const panelClass = "docs-code-content docs-snippet-card-content bg-code text-code-foreground";
+    const codePreClass = "shiki shiki-themes github-light-default github-dark-default !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground";
+    const codeElementClass = "shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))] dark:[&_span[style]]:![font-style:var(--shiki-dark-font-style,var(--shiki-light-font-style,inherit))] dark:[&_span[style]]:![font-weight:var(--shiki-dark-font-weight,var(--shiki-light-font-weight,inherit))] dark:[&_span[style]]:![text-decoration:var(--shiki-dark-text-decoration,var(--shiki-light-text-decoration,inherit))] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]";
+    const cardFooterClass = "docs-snippet-card-footer docs-code-callouts block border-t border-code-border bg-code-tab px-6 pt-3 pb-2 text-sm leading-5 text-code-foreground [&_code]:!rounded-none [&_code]:!bg-code-foreground/10 [&_code]:!p-0 [&_code]:!text-[1em] [&_code]:!leading-[inherit] [&_code]:!text-code-foreground [&_ol]:grid [&_ol]:gap-[0.35rem] [&_ol]:!m-0 [&_ol]:!p-0 [&_ol]:list-none [&_ol]:[counter-reset:docs-code-callout] [&_li]:grid [&_li]:grid-cols-[auto_minmax(0,1fr)] [&_li]:items-start [&_li]:gap-[0.7rem] [&_li]:[counter-increment:docs-code-callout] [&_li+li]:!mt-0 [&_li::before]:mt-[0.2rem] [&_li::before]:inline-flex [&_li::before]:h-[1.15rem] [&_li::before]:w-[1.15rem] [&_li::before]:items-center [&_li::before]:justify-center [&_li::before]:rounded-full [&_li::before]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_li::before]:bg-code-foreground [&_li::before]:text-code [&_li::before]:text-[0.72rem] [&_li::before]:leading-none [&_li::before]:font-bold [&_li::before]:content-[counter(docs-code-callout)] [&_table]:w-full [&_table]:border-collapse [&_td]:align-top [&_td:first-child]:w-[1.15rem] [&_td:first-child]:align-middle [&_td:first-child]:pr-[0.7rem] [&_td:first-child]:pt-0 [&_tr+tr_td]:pt-[0.55rem] [&_tr+tr_td:first-child]:pt-0 [&_td:first-child_.conum]:ml-0 [&_td:first-child_.conum]:inline-flex [&_td:first-child_.conum]:h-[1.15rem] [&_td:first-child_.conum]:w-[1.15rem] [&_td:first-child_.conum]:items-center [&_td:first-child_.conum]:justify-center [&_td:first-child_.conum]:rounded-full [&_td:first-child_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_td:first-child_.conum]:bg-code-foreground [&_td:first-child_.conum]:text-code [&_td:first-child_.conum]:[font-family:var(--shell-font)] [&_td:first-child_.conum]:text-[0.72rem] [&_td:first-child_.conum]:leading-none [&_td:first-child_.conum]:font-bold [&_td:first-child_.conum]:not-italic [&_td:first-child_.conum::before]:content-[attr(data-value)] [&_td:first-child_.conum+b]:hidden [&_.colist]:!m-0 [&_p]:!m-0";
+    const snippetHeadingClass = "docs-snippet-heading flex min-w-0 items-center gap-2 text-sm leading-5 font-semibold text-code-foreground";
+    const externalHeaderClass = "docs-snippet-external-header my-0 mt-[1.35rem] mb-[0.45rem]";
+    const externalTitleClass = "title docs-snippet-external-title my-0 mt-[1.35rem] mb-[0.45rem] text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal";
+    const externalHeaderTitleClass = "docs-snippet-external-header-title my-0 text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal";
+    const externalHeaderDescriptionClass = "docs-snippet-external-header-description mt-1 text-sm leading-6 text-muted-foreground";
+    const buttonGhostXsClass = "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3";
+    const buttonGhostIconXsClass = "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-6 rounded-md [&_svg:not([class*='size-'])]:size-3";
+    const copyButtonClass = `docs-snippet-copy docs-code-copy ${buttonGhostIconXsClass} text-code-muted hover:bg-code-border hover:text-code-foreground dark:hover:bg-code-border`;
+    const languageButtonClass = "docs-code-language language-option inline-flex h-6 items-center gap-1 align-middle leading-none text-code-muted aria-selected:font-semibold aria-selected:text-code-foreground";
+    const languageButtonActiveClass = "selected font-semibold text-code-foreground";
+    const languageButtonInactiveClass = "text-code-muted";
+    const staticLanguageClass = "docs-code-language docs-code-language-static inline-flex h-6 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs leading-none font-medium whitespace-nowrap text-code-muted";
+    const languageTextClass = "docs-code-language-text inline-flex items-center leading-none";
+    const languageTextSelector = ".docs-code-language-text";
+    const languageIconClass = "docs-code-language-icon inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none [&_svg]:block [&_svg]:size-full";
+    const languageIconFillClass = "docs-code-language-icon-fill";
+    const kindIconClass = "docs-snippet-kind-icon";
     const sharedTemplateHtml = Object.fromEntries(
       Object.entries(docsSnippetTemplates).map(([name, template]) => [name, template.html])
     );
@@ -136,7 +155,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
         }
       );
       if (hasCallouts) {
-        element?.classList.add(docsSnippetStyles.cardWithFooter);
+        element?.classList.add(cardWithFooterClass);
       }
       return element;
     };
@@ -145,7 +164,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
       button.setAttribute("data-slot", "button");
       button.dataset.variant = variant;
       button.dataset.size = size;
-      setClassName(button, size === "icon-xs" ? docsSnippetStyles.buttonGhostIconXs : docsSnippetStyles.buttonGhostXs);
+      setClassName(button, size === "icon-xs" ? buttonGhostIconXsClass : buttonGhostXsClass);
     };
 
     const decorateLanguageButton = (button, active) => {
@@ -154,7 +173,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
       button.dataset.size = "xs";
       setClassName(
         button,
-        `${docsSnippetStyles.buttonGhostXs} ${docsSnippetStyles.languageButton} ${active ? docsSnippetStyles.languageButtonActive : docsSnippetStyles.languageButtonInactive}`
+        `${buttonGhostXsClass} ${languageButtonClass} ${active ? languageButtonActiveClass : languageButtonInactiveClass}`
       );
     };
 
@@ -164,16 +183,16 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
       const svgAttributes = generatedIcon.fill
         ? `fill="currentColor"`
         : `fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-      const fillClass = generatedIcon.fill ? ` ${docsSnippetStyles.languageIconFill}` : "";
-      return `<span class="${docsSnippetStyles.languageIcon} docs-code-language-icon-${key}${fillClass}${extraClass ? ` ${extraClass}` : ""}" aria-hidden="true"><svg viewBox="${generatedIcon.viewBox}" ${svgAttributes} focusable="false">${generatedIcon.body}</svg></span>`;
+      const fillClass = generatedIcon.fill ? ` ${languageIconFillClass}` : "";
+      return `<span class="${languageIconClass} docs-code-language-icon-${key}${fillClass}${extraClass ? ` ${extraClass}` : ""}" aria-hidden="true"><svg viewBox="${generatedIcon.viewBox}" ${svgAttributes} focusable="false">${generatedIcon.body}</svg></span>`;
     };
 
     const codeLanguageTabHtml = (language, label) =>
-      `${codeLanguageIcon(language)}<span class="${docsSnippetStyles.languageText}">${escapeHtml(label)}</span>`;
+      `${codeLanguageIcon(language)}<span class="${languageTextClass}">${escapeHtml(label)}</span>`;
 
     const snippetKindIcon = (kind) => {
       const language = kind === "properties" ? "properties" : kind === "dependency" ? "gradle" : "text";
-      return codeLanguageIcon(language, docsSnippetStyles.kindIcon);
+      return codeLanguageIcon(language, kindIconClass);
     };
 
     const normalizeOptionLanguage = (option) => {
@@ -217,7 +236,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
       }
       footer.setAttribute("data-slot", "card-footer");
       footer.className = cardFooterClass;
-      addClassName(block, docsSnippetStyles.cardWithFooter);
+      addClassName(block, cardWithFooterClass);
       block.append(footer);
       return true;
     };
@@ -289,23 +308,23 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
 
     const makeExternalSnippetTitle = (titleHtml) => {
       const title = document.createElement("div");
-      title.className = docsSnippetStyles.externalTitle;
+      title.className = externalTitleClass;
       title.innerHTML = titleHtml;
       return title;
     };
 
     const makeExternalSnippetHeader = (titleHtml, descriptionHtml) => {
       const header = document.createElement("div");
-      header.className = docsSnippetStyles.externalHeader;
+      header.className = externalHeaderClass;
       if (titleHtml) {
         const title = document.createElement("div");
-        title.className = docsSnippetStyles.externalHeaderTitle;
+        title.className = externalHeaderTitleClass;
         title.innerHTML = titleHtml;
         header.append(title);
       }
       if (descriptionHtml) {
         const description = document.createElement("div");
-        description.className = docsSnippetStyles.externalHeaderDescription;
+        description.className = externalHeaderDescriptionClass;
         description.innerHTML = descriptionHtml;
         header.append(description);
       }
@@ -347,11 +366,11 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
 
     const decorateCodeSurface = (root) => {
       root.querySelectorAll("pre.shiki").forEach((pre) => {
-        setClassName(pre, docsSnippetStyles.codePre);
+        setClassName(pre, codePreClass);
         pre.setAttribute("tabindex", pre.getAttribute("tabindex") || "0");
         const code = pre.querySelector("code");
         if (code) {
-          addClassName(code, docsSnippetStyles.codeElement);
+          addClassName(code, codeElementClass);
         }
       });
     };
@@ -452,7 +471,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
         }
         block.setAttribute("data-slot", "card");
         block.classList.remove("gap-6", "py-6");
-        addClassName(block, docsSnippetStyles.standaloneCard);
+        addClassName(block, standaloneCardClass);
         decorateCodeSurface(block);
         if (!block.dataset.lang) {
           block.dataset.lang = block.querySelector("code")?.dataset.lang || "code";
@@ -469,7 +488,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
         }
         const content = block.querySelector(":scope > [data-slot='card-content'], :scope > .content");
         if (content) {
-          addClassName(content, docsSnippetStyles.panel);
+          addClassName(content, panelClass);
         }
         const header = document.createElement("div");
         header.setAttribute("data-slot", "card-header");
@@ -480,9 +499,9 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
         action.append(copyButton);
         const title = document.createElement("div");
         title.setAttribute("data-slot", "card-title");
-        title.className = docsSnippetStyles.heading;
-        title.innerHTML = `${codeLanguageIcon(block.dataset.lang)}<span class="${docsSnippetStyles.languageText}"></span>`;
-        title.querySelector(docsSnippetStyles.languageTextSelector).textContent = formatLanguage(block.dataset.lang);
+        title.className = snippetHeadingClass;
+        title.innerHTML = `${codeLanguageIcon(block.dataset.lang)}<span class="${languageTextClass}"></span>`;
+        title.querySelector(languageTextSelector).textContent = formatLanguage(block.dataset.lang);
         header.append(title, action);
         block.insertBefore(header, content || block.firstChild);
         attachCalloutFooter(block, nextElement(block));
@@ -524,7 +543,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
             const content = block.querySelector(":scope > [data-slot='card-content'], :scope > .content");
             decorateCodeSurface(block);
             if (content) {
-              addClassName(content, docsSnippetStyles.panel);
+              addClassName(content, panelClass);
             }
 
             const header = document.createElement("div");
@@ -620,7 +639,7 @@ const copyButtonIconHtml = renderToStaticMarkup(createElement(CopyIcon));
             }
             renderedContent.remove();
           }
-          panel.className = docsSnippetStyles.panel;
+          panel.className = panelClass;
           decorateCodeSurface(panel);
         });
 

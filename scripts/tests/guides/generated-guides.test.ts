@@ -689,10 +689,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     "generated guides static enhancer",
     generatedDocsStaticEnhancer,
   );
-  assert.doesNotMatch(
-    generatedDocsStaticEnhancer,
-    /docsSnippetStyles|define:vars/,
-  );
+  assert.doesNotMatch(generatedDocsStaticEnhancer, /define:vars/);
   assert.match(guideCatalog, /version\.current \? rootPath : version\.href/);
 });
 

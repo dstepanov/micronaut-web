@@ -8,7 +8,6 @@ import {
   type CodeSnippetExample,
   type CodeSnippetLanguage,
 } from "@/components/web/docs-code-snippet";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-card";
 
 type MainCodeShowcaseProps = {
   examples: CodeSnippetExample[];
@@ -45,7 +44,7 @@ export function MainCodeShowcase({ examples }: MainCodeShowcaseProps) {
         return (
           <TabsContent key={example.id} value={example.id} className="mt-0">
             <div className="grid gap-2">
-              <div className={docsSnippetStyles.externalTitle}>
+              <div className="title docs-snippet-external-title my-0 mt-[1.35rem] mb-[0.45rem] text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal">
                 {example.title}
               </div>
               <DocsCodeSnippet

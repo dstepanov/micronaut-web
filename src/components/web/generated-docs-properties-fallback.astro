@@ -1,15 +1,11 @@
 ---
 import { renderDocsSnippetTemplates } from "@/components/web/docs-snippet-templates";
-import { docsSnippetStyles } from "@/components/web/docs-snippet-card";
 
 const docsPropertiesTemplate = renderDocsSnippetTemplates()["docs/snippets/properties-snippet.html"];
-const docsPropertiesCardClass = docsSnippetStyles.propertiesCard;
 ---
 
-<script is:inline define:vars={{ docsPropertiesTemplate, docsPropertiesCardClass }}>
+<script is:inline define:vars={{ docsPropertiesTemplate }}>
   (() => {
-    void docsPropertiesCardClass;
-
     const escapeHtml = (value) =>
       String(value)
         .replaceAll("&", "&amp;")

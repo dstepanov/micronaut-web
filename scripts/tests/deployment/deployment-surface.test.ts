@@ -261,7 +261,7 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   );
   assertNoDocsVersionSwitcherIsland(docsCoreHtml);
   assert.match(docsCoreHtml, /<style\b[^>]*data-docs-shiki/i);
-  assert.match(docsCoreHtml, /window\.docsSnippetStyles/);
+  assert.match(docsCoreHtml, /window\.docsSnippetRuntime/);
   assert.match(
     docsCoreHtml,
     new RegExp(
@@ -331,7 +331,7 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     "utf8",
   );
   assert.match(guideHtml, /<style\b[^>]*data-docs-shiki/i);
-  assert.match(guideHtml, /window\.docsSnippetStyles/);
+  assert.match(guideHtml, /window\.docsSnippetRuntime/);
   assert.match(
     guideHtml,
     new RegExp(
@@ -875,7 +875,7 @@ async function fakeDist(t: TestContext) {
     "docs/core/index.html",
     [
       "<style data-docs-shiki>.shiki { color: red; }</style>",
-      "<script data-docs-runtime>window.docsSnippetStyles = true;</script>",
+      "<script data-docs-runtime>window.docsSnippetRuntime = true;</script>",
       '<img src="../assets/core/docs/img/diagram.svg?cache=1#diagram">',
     ].join("\n"),
   );
@@ -884,7 +884,7 @@ async function fakeDist(t: TestContext) {
     "guides/micronaut-http-client/index.html",
     [
       "<style data-docs-shiki>.shiki { color: blue; }</style>",
-      "<script data-guides-runtime>window.docsSnippetStyles = true;</script>",
+      "<script data-guides-runtime>window.docsSnippetRuntime = true;</script>",
       '<img src="../assets/micronaut-http-client/images/client.png">',
     ].join("\n"),
   );

@@ -6,7 +6,10 @@ const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
-const sharedStylesPath = "src/components/web/docs-snippet-card.tsx";
+const removedRegistryName = ["docs", "SnippetStyles"].join("");
+const removedStaticSupportName = ["renderDocsSnippet", "StaticSupport"].join(
+  "",
+);
 const removedRuntimeCssPaths = [
   "scripts/generate-docs-snippet-css.ts",
   "src/components/web/docs-snippet-styles.ts",
@@ -14,79 +17,54 @@ const removedRuntimeCssPaths = [
   "src/styles/generated/docs-snippet-runtime.css",
 ];
 
-const requiredSharedKeys = [
-  "card",
-  "cardWithFooter",
-  "standaloneCard",
-  "propertiesCard",
-  "codeSnippetTemplate",
-  "dependencySnippetTemplate",
-  "toolbarHeader",
-  "textHeader",
-  "content",
-  "panel",
-  "codePre",
-  "codeElement",
-  "footer",
-  "heading",
-  "propertiesHeading",
-  "externalHeader",
-  "externalTitle",
-  "externalHeaderTitle",
-  "externalHeaderDescription",
-  "copyButtonMarker",
-  "copyButton",
-  "buttonGhostXs",
-  "buttonGhostIconXs",
-  "languageButton",
-  "languageButtonActive",
-  "languageButtonInactive",
-  "staticLanguage",
-  "languageText",
-  "languageTextSelector",
-  "languageIcon",
-  "languageIconFill",
-  "kindIcon",
-];
+const sourceRoots = ["src", "scripts", "tests"];
+const sourceExtensions = new Set([
+  ".astro",
+  ".css",
+  ".js",
+  ".jsx",
+  ".md",
+  ".ts",
+  ".tsx",
+]);
 
-const consumers = [
+const inlineConsumers = [
   {
     file: "src/components/web/docs-snippet-card.tsx",
     requiredUses: [
-      "docsSnippetStyles.card",
-      "docsSnippetStyles.cardWithFooter",
-      "docsSnippetStyles.codeSnippetTemplate",
-      "docsSnippetStyles.dependencySnippetTemplate",
-      "docsSnippetStyles.copyButtonMarker",
-      "docsSnippetStyles.externalHeader",
-      "docsSnippetStyles.externalHeaderTitle",
-      "docsSnippetStyles.externalHeaderDescription",
-      "docsSnippetStyles.languageIcon",
-      "docsSnippetStyles.kindIcon",
+      "docs-snippet-template docs-code-block",
+      "docs-code-snippet-template",
+      "docs-properties-template docs-dependency-template",
+      "docs-snippet-panels overflow-hidden bg-code",
+      "docs-snippet-card-footer docs-code-callouts",
+      "docs-properties-scroll overflow-x-auto",
+      "docs-code-language-icon inline-flex size-3.5",
+      "[&_ol]:[counter-reset:docs-code-callout]",
+      "[&_li::before]:content-[counter(docs-code-callout)]",
+      "[&_table.tableblock_:where(th,td)]:border",
     ],
   },
   {
     file: "src/components/web/docs-code-snippet.tsx",
     requiredUses: [
-      "docsSnippetStyles.tabs",
-      "docsSnippetStyles.panel",
-      "docsSnippetStyles.codePre",
-      "docsSnippetStyles.codeElement",
-      "DocsSnippetCodeLanguageIcon",
-      "docsSnippetStyles.languageText",
-      "ShikiCodeBlock",
+      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
+      "docs-code-content docs-snippet-card-content",
+      "shiki shiki-themes github-light-default github-dark-default !m-0",
+      "shiki-code grid min-w-max font-mono",
+      "dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))]",
+      "[&_.conum::before]:content-[attr(data-value)]",
+      "docs-code-language-text inline-flex",
     ],
   },
   {
-    file: "src/components/web/docs-snippet-icons.ts",
-    requiresDocsSnippetStyles: false,
+    file: "src/components/web/docs-generated-snippet.tsx",
     requiredUses: [
-      "docsSnippetLanguageLabels",
-      "docsSnippetLanguageAliases",
-      "docsSnippetCodeLanguageIcons",
-      "docsSnippetLanguageKey",
-      "docsSnippetLanguageLabel",
-      "docsSnippetCodeLanguageIcon",
+      "renderToStaticMarkup",
+      "DocsSnippetCard",
+      "DocsPropertiesSnippetCard",
+      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
+      "docs-code-content docs-snippet-card-content",
+      "title docs-snippet-external-title",
     ],
   },
   {
@@ -94,12 +72,13 @@ const consumers = [
     requiredUses: [
       "DocsSnippetCard",
       "DocsPropertiesSnippetCard",
-      "docsSnippetStyles.tabs",
+      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
+      "renderDocsSnippetTemplates",
     ],
   },
   {
     file: "src/components/web/main-code-showcase.tsx",
-    requiredUses: ["DocsCodeSnippet", "docsSnippetStyles.externalTitle"],
+    requiredUses: ["DocsCodeSnippet", "title docs-snippet-external-title"],
   },
   {
     file: "src/components/web/snippet-test-gallery.tsx",
@@ -109,9 +88,9 @@ const consumers = [
       "DocsPropertiesSnippetCard",
       "ShikiCodeBlock",
       "DocsSnippetCodeLanguageIcon",
-      "docsSnippetStyles.tabs",
-      "docsSnippetStyles.panel",
-      "docsSnippetStyles.languageText",
+      "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
+      "docs-code-content docs-snippet-card-content",
+      "docs-code-language-text inline-flex",
     ],
   },
   {
@@ -119,138 +98,70 @@ const consumers = [
     requiredUses: [
       "renderDocsSnippetTemplates",
       "define:vars={{",
-      "docsSnippetStyles",
       "docsSnippetTemplates",
       "sharedCodeLanguageIcons",
       "renderSharedSnippetCard",
-      "docsSnippetStyles.standaloneCard",
-      "docsSnippetStyles.copyButton",
-      "docsSnippetStyles.codePre",
-      "docsSnippetStyles.codeElement",
-      "docsSnippetStyles.externalHeader",
-      "docsSnippetStyles.externalHeaderTitle",
-      "docsSnippetStyles.externalHeaderDescription",
-      "docsSnippetStyles.externalTitle",
-      "docsSnippetStyles.cardWithFooter",
-      "docsSnippetStyles.languageText",
-      "docsSnippetStyles.kindIcon",
+      "docs-code-toolbar docs-snippet-card-header",
+      "docs-code-block docs-snippet-card my-5",
+      "docs-snippet-copy docs-code-copy",
+      "docs-snippet-card-footer docs-code-callouts",
+      "docs-code-content docs-snippet-card-content",
+      "shiki shiki-themes github-light-default github-dark-default !m-0",
+      "shiki-code grid min-w-max font-mono",
+      "[&_td:first-child_.conum+b]:hidden",
+      "docs-code-language-text inline-flex",
+      "docs-code-language-icon inline-flex size-3.5",
+      "docs-snippet-kind-icon",
     ],
   },
   {
     file: "src/components/web/generated-docs-properties-fallback.astro",
     requiredUses: [
       "renderDocsSnippetTemplates",
-      "define:vars={{ docsPropertiesTemplate, docsPropertiesCardClass }}",
+      "define:vars={{ docsPropertiesTemplate }}",
       "renderSharedPropertiesCard",
-      "docsSnippetStyles.propertiesCard",
     ],
   },
   {
     file: "src/lib/main-site-code-snippets.ts",
     requiredUses: [
       "renderDocsSnippetTemplates",
-      "docsSnippetStyles.buttonGhostXs",
-      "docsSnippetStyles.languageButton",
-      "docsSnippetStyles.languageButtonActive",
-      "docsSnippetStyles.languageButtonInactive",
-      "docsSnippetStyles.languageText",
-      "docsSnippetStyles.panel",
-      "docsSnippetStyles.codePre",
-      "docsSnippetStyles.codeElement",
+      "buttonGhostXsClass",
+      "languageButtonClass",
+      "languageTextClass",
+      "panelClass",
+      "codePreClass",
+      "codeElementClass",
       "highlightCodeSnippetHtml",
     ],
   },
 ];
 
-const guardedClassFragments = [
-  "docs-snippet-template docs-code-block",
-  "docs-properties-template my-5 flex",
-  "docs-code-toolbar docs-snippet-card-header",
-  "docs-snippet-panels overflow-hidden bg-code",
-  "docs-code-content docs-snippet-card-content",
-  "docs-snippet-card-footer docs-code-callouts",
-  "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex",
-  "title docs-snippet-external-title",
-  "docs-snippet-copy docs-code-copy",
-  "docs-properties-template docs-dependency-template",
-  "docs-code-snippet-template",
-  "docs-code-language docs-code-language-static",
-  "docs-code-language-text",
-  "docs-code-language-icon block size-3.5",
-  "docs-code-language-icon-fill",
-  "docs-snippet-kind-icon size-3.5",
-  "overflow-x-auto bg-code px-6 py-4 text-sm leading-6 text-code-foreground",
-  "shiki-code grid min-w-max font-mono text-[0.85rem] leading-6",
-  "my-5 flex flex-col gap-0 overflow-hidden rounded-xl",
-  "border border-border bg-card py-0 text-card-foreground",
-  "shadow-sm shadow-black/[0.03] dark:shadow-black/20",
-  "border-b border-code-border bg-code-tab",
-  "text-[0.95rem] leading-[1.45] font-bold",
-];
-
-const requiredRuntimeClassFragments = [
-  "dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))]",
-  "[&_.conum::before]:content-[attr(data-value)]",
-  "[&_ol]:[counter-reset:docs-code-callout]",
-  "[&_li::before]:content-[counter(docs-code-callout)]",
-  "[&_td:first-child]:align-middle",
-  "[&_td:first-child]:pt-0",
-  "[&_tr+tr_td]:pt-[0.55rem]",
-  "[&_tr+tr_td:first-child]:pt-0",
-  "[&_td:first-child_.conum]:inline-flex",
-  "[&_td:first-child_.conum::before]:content-[attr(data-value)]",
-  "[&_td:first-child_.conum+b]:hidden",
-  "[&_.colist]:!m-0",
-  "[&_table.tableblock]:border-collapse",
-  "[&_table.tableblock_:where(th,td)]:border",
-];
-
 const failures: string[] = [];
-const sharedStyles = await readProjectFile(sharedStylesPath);
 const globalsCss = await readProjectFile("src/styles/globals.css");
 const webLayout = await readProjectFile("src/layouts/WebLayout.astro");
 
-for (const key of requiredSharedKeys) {
-  if (!new RegExp(`\\b${escapeRegExp(key)}\\s*(?::|,)`).test(sharedStyles)) {
-    failures.push(
-      `${sharedStylesPath}: expected docsSnippetStyles.${key} to be defined.`,
-    );
-  }
-}
-
-for (const consumer of consumers) {
+for (const consumer of inlineConsumers) {
   const source = await readProjectFile(consumer.file);
-  if (
-    consumer.requiresDocsSnippetStyles !== false &&
-    !source.includes("docsSnippetStyles")
-  ) {
-    failures.push(
-      `${consumer.file}: expected this snippet surface to use docsSnippetStyles.`,
-    );
-  }
   for (const requiredUse of consumer.requiredUses) {
     if (!source.includes(requiredUse)) {
       failures.push(
-        `${consumer.file}: expected ${requiredUse} to keep snippet styling shared.`,
-      );
-    }
-  }
-  for (const fragment of guardedClassFragments) {
-    if (consumer.file === sharedStylesPath) {
-      continue;
-    }
-    for (const lineNumber of matchingLineNumbers(source, fragment)) {
-      failures.push(
-        `${consumer.file}:${lineNumber}: move "${fragment}" to docsSnippetStyles instead of duplicating snippet classes.`,
+        `${consumer.file}: expected inline snippet styling fragment "${requiredUse}".`,
       );
     }
   }
 }
 
-for (const fragment of requiredRuntimeClassFragments) {
-  if (!sharedStyles.includes(fragment)) {
+for (const file of await listSourceFiles(sourceRoots)) {
+  const source = await readProjectFile(file);
+  if (source.includes(removedRegistryName)) {
     failures.push(
-      `${sharedStylesPath}: expected Tailwind runtime snippet styling fragment "${fragment}".`,
+      `${file}: inline snippet Tailwind classes instead of restoring the snippet style registry.`,
+    );
+  }
+  if (source.includes(removedStaticSupportName)) {
+    failures.push(
+      `${file}: remove unused snippet static support wrappers around the inlined templates.`,
     );
   }
 }
@@ -258,7 +169,7 @@ for (const fragment of requiredRuntimeClassFragments) {
 for (const removedPath of removedRuntimeCssPaths) {
   if (await projectFileExists(removedPath)) {
     failures.push(
-      `${removedPath}: snippet runtime styling should be owned by Tailwind classes in ${sharedStylesPath}.`,
+      `${removedPath}: snippet runtime styling should stay in inline Tailwind classes.`,
     );
   }
 }
@@ -276,7 +187,7 @@ for (const fragment of [
 ]) {
   if (globalsCss.includes(fragment)) {
     failures.push(
-      `src/styles/globals.css: move "${fragment}" rules to Tailwind classes in ${sharedStylesPath}.`,
+      `src/styles/globals.css: move "${fragment}" rules to inline Tailwind classes.`,
     );
   }
 }
@@ -288,7 +199,7 @@ if (failures.length) {
 }
 
 console.log(
-  `Validated docs snippet style sharing across ${consumers.length} consumers.`,
+  `Validated inline docs snippet styling across ${inlineConsumers.length} consumers.`,
 );
 
 async function readProjectFile(relativePath: string): Promise<string> {
@@ -307,13 +218,36 @@ async function projectFileExists(relativePath: string): Promise<boolean> {
   }
 }
 
-function matchingLineNumbers(source: string, fragment: string): number[] {
-  return source
-    .split(/\r?\n/)
-    .map((line, index) => (line.includes(fragment) ? index + 1 : undefined))
-    .filter((lineNumber): lineNumber is number => Boolean(lineNumber));
+async function listSourceFiles(roots: string[]): Promise<string[]> {
+  const files: string[] = [];
+  for (const root of roots) {
+    await collectSourceFiles(root, files);
+  }
+  return files;
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+async function collectSourceFiles(
+  relativeDirectory: string,
+  files: string[],
+): Promise<void> {
+  const entries = await fs.readdir(
+    path.join(projectDirectory, relativeDirectory),
+    {
+      withFileTypes: true,
+    },
+  );
+  for (const entry of entries) {
+    const relativePath = path.join(relativeDirectory, entry.name);
+    if (
+      entry.isDirectory() &&
+      !entry.name.startsWith(".") &&
+      !entry.name.startsWith("generated-")
+    ) {
+      await collectSourceFiles(relativePath, files);
+      continue;
+    }
+    if (entry.isFile() && sourceExtensions.has(path.extname(entry.name))) {
+      files.push(relativePath);
+    }
+  }
 }

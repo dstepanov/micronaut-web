@@ -5,7 +5,6 @@ import {
   DocsPropertiesSnippetCard,
   DocsSnippetCard,
   DocsSnippetCopyButton,
-  docsSnippetStyles,
 } from "@/components/web/docs-snippet-card";
 
 const codeSnippetPlaceholders = [
@@ -38,7 +37,7 @@ function CodeSnippetTemplate({ dependency = false }: { dependency?: boolean }) {
       }
       controls={
         <div
-          className={docsSnippetStyles.tabs}
+          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
           role="tablist"
           aria-label="{{optionsLabel}}"
         >
@@ -86,12 +85,5 @@ export function renderDocsSnippetTemplates() {
       renderToStaticMarkup(<PropertiesSnippetTemplate />),
       propertiesSnippetPlaceholders,
     ),
-  };
-}
-
-export function renderDocsSnippetStaticSupport() {
-  return {
-    styles: docsSnippetStyles,
-    templates: renderDocsSnippetTemplates(),
   };
 }

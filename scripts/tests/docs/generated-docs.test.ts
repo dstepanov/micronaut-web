@@ -1468,10 +1468,7 @@ test("docs routes render generated fragments and serve generated assets", async 
     "docs static enhancer",
     generatedDocsStaticEnhancerSource,
   );
-  assert.doesNotMatch(
-    generatedDocsStaticEnhancerSource,
-    /docsSnippetStyles|define:vars/,
-  );
+  assert.doesNotMatch(generatedDocsStaticEnhancerSource, /define:vars/);
   assert.match(
     assetsRouteSource,
     /"src", "content", "generated-docs", "assets"/,

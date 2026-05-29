@@ -8,7 +8,6 @@ import {
   DocsSnippetCodeLanguageIcon,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
-  docsSnippetStyles,
 } from "./docs-snippet-card";
 
 type GeneratedSnippetKind = "code" | "dependency";
@@ -65,7 +64,7 @@ function GeneratedSnippetCard({
 }: GeneratedSnippetCardInput) {
   const controls = (
     <div
-      className={docsSnippetStyles.tabs}
+      className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
       role="tablist"
       aria-label={optionsLabel}
     >
@@ -82,7 +81,7 @@ function GeneratedSnippetCard({
           tabIndex={variant.active ? 0 : -1}
         >
           <DocsSnippetCodeLanguageIcon language={variant.language} />
-          <span className={docsSnippetStyles.languageText}>
+          <span className="docs-code-language-text inline-flex items-center leading-none">
             {variant.label}
           </span>
         </DocsSnippetLanguageButton>
@@ -115,7 +114,7 @@ function GeneratedSnippetCard({
           aria-labelledby={variant.tabId}
           aria-hidden={!variant.active}
           hidden={!variant.active}
-          className={docsSnippetStyles.panel}
+          className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
         >
           <ShikiCodeBlock
             code={variant.source}
@@ -153,15 +152,15 @@ function GeneratedSnippetIntro({
   }
   if (descriptionHtml) {
     return (
-      <div className={docsSnippetStyles.externalHeader}>
+      <div className="docs-snippet-external-header my-0 mt-[1.35rem] mb-[0.45rem]">
         {titleHtml ? (
           <div
-            className={docsSnippetStyles.externalHeaderTitle}
+            className="docs-snippet-external-header-title my-0 text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal"
             dangerouslySetInnerHTML={{ __html: titleHtml }}
           />
         ) : null}
         <div
-          className={docsSnippetStyles.externalHeaderDescription}
+          className="docs-snippet-external-header-description mt-1 text-sm leading-6 text-muted-foreground"
           dangerouslySetInnerHTML={{ __html: descriptionHtml }}
         />
       </div>
@@ -169,7 +168,7 @@ function GeneratedSnippetIntro({
   }
   return (
     <div
-      className={docsSnippetStyles.externalTitle}
+      className="title docs-snippet-external-title my-0 mt-[1.35rem] mb-[0.45rem] text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal"
       dangerouslySetInnerHTML={{ __html: titleHtml }}
     />
   );

@@ -15,7 +15,6 @@ import {
   DocsSnippetCard,
   DocsSnippetCopyButton,
   DocsSnippetLanguageButton,
-  docsSnippetStyles,
 } from "@/components/web/docs-snippet-card";
 import {
   componentCodeVariants,
@@ -235,7 +234,7 @@ function ComponentDependencySnippet({
       className="m-0"
       controls={
         <div
-          className={docsSnippetStyles.tabs}
+          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
           role="tablist"
           aria-label="Dependency format"
         >
@@ -258,7 +257,7 @@ function ComponentDependencySnippet({
                 }}
               >
                 <SnippetTestLanguageIcon language={variant.language} />
-                <span className={docsSnippetStyles.languageText}>
+                <span className="docs-code-language-text inline-flex items-center leading-none">
                   {variant.label}
                 </span>
               </DocsSnippetLanguageButton>
@@ -289,7 +288,7 @@ function ComponentDependencySnippet({
             aria-labelledby={`snippet-test-dependency-${variant.language}-tab`}
             aria-hidden={!active}
             hidden={!active}
-            className={docsSnippetStyles.panel}
+            className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
           >
             <ShikiCodeBlock
               code={variant.code}
