@@ -83,6 +83,7 @@ function deploymentDefines(): Record<string, string> {
   const deployment = deploymentConfig();
   return {
     __MICRONAUT_DEPLOYMENT__: JSON.stringify(deployment),
+    "process.env.NODE_ENV": JSON.stringify("production"),
     "import.meta.env.MICRONAUT_DEPLOY_SURFACE": JSON.stringify(
       deployment.deploySurface,
     ),

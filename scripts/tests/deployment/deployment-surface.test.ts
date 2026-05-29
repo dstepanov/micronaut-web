@@ -390,6 +390,10 @@ test("docs and guides production layouts load the shared header shell from the m
     ),
     "utf8",
   );
+  const shellBuild = await fs.readFile(
+    path.join(projectDirectory, "scripts", "build-site-header-shell.ts"),
+    "utf8",
+  );
 
   assert.match(layout, /data-micronaut-site-header/);
   assert.match(layout, /externalSurfaceUrls\.main/);
@@ -399,6 +403,10 @@ test("docs and guides production layouts load the shared header shell from the m
   assert.match(shell, /createRoot/);
   assert.match(shell, /@\/styles\/globals\.css/);
   assert.match(shell, /SiteHeader/);
+  assert.match(
+    shellBuild,
+    /"process\.env\.NODE_ENV":\s*JSON\.stringify\("production"\)/,
+  );
 });
 
 test("web workflow deploys the main surface through GitHub Pages Actions", async () => {
