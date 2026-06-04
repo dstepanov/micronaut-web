@@ -66,7 +66,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
 
-export type IconThemeTreatment = "auto" | "inverted" | "preserve";
+export type IconThemeTreatment = "auto" | "inverted" | "monochrome" | "preserve";
 
 const icons: Record<string, LucideIcon> = {
   activity: Activity,
@@ -159,23 +159,35 @@ function assetThemeClass(name: string, themeTreatment: IconThemeTreatment) {
   if (themeTreatment === "inverted") {
     return "brightness-0 invert";
   }
+  if (themeTreatment === "monochrome") {
+    return "brightness-0 dark:invert";
+  }
   if (name.startsWith("feature:") || preservedImageIcons.has(name)) {
     return undefined;
   }
   return "dark:brightness-0 dark:invert";
 }
 
+function brandIconColor(brand: string, themeTreatment: IconThemeTreatment) {
+  if (themeTreatment === "monochrome") {
+    return "currentColor";
+  }
+  return brandIconColors[brand] || "currentColor";
+}
+
 function DecorativeBrandGlyph({
   src,
   brand,
+  themeTreatment,
   className
 }: {
   src: string;
   brand: string;
+  themeTreatment: IconThemeTreatment;
   className?: string;
 }) {
   const style: CSSProperties = {
-    backgroundColor: brandIconColors[brand] || "currentColor",
+    backgroundColor: brandIconColor(brand, themeTreatment),
     maskImage: `url(${src})`,
     maskPosition: "center",
     maskRepeat: "no-repeat",
@@ -234,6 +246,7 @@ export function IconGlyph({
       <DecorativeBrandGlyph
         src={withBasePath(`/micronaut-assets/icons/brands/${brand}.svg`)}
         brand={brand}
+        themeTreatment={themeTreatment}
         className={className}
       />
     );

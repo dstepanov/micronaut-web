@@ -48,6 +48,60 @@ const toggleProjectSections = (toggle: HTMLElement) => {
   setProjectSectionsExpanded(slug, sections.some((section) => section.hidden));
 };
 
+const visibleElementRect = (element: HTMLElement) => {
+  const rect = element.getClientRects()[0];
+  if (!rect) {
+    return undefined;
+  }
+  const style = window.getComputedStyle(element);
+  if (style.display === "none" || style.visibility === "hidden") {
+    return undefined;
+  }
+  return rect;
+};
+
+const scrollActiveProjectIntoView = () => {
+  const activeLinks = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "[data-docs-active-project-link='true']",
+    ),
+  );
+  for (const link of activeLinks) {
+    const container = link.closest<HTMLElement>(
+      "[data-docs-sidebar-scroll-container]",
+    );
+    if (!container || container.scrollHeight <= container.clientHeight) {
+      continue;
+    }
+    const containerRect = visibleElementRect(container);
+    const linkRect = visibleElementRect(link);
+    if (!containerRect || !linkRect) {
+      continue;
+    }
+    if (
+      linkRect.top >= containerRect.top &&
+      linkRect.bottom <= containerRect.bottom
+    ) {
+      continue;
+    }
+
+    const offset = Math.min(96, Math.max(24, container.clientHeight * 0.28));
+    const maxScrollTop = container.scrollHeight - container.clientHeight;
+    container.scrollTop = Math.max(
+      0,
+      Math.min(
+        maxScrollTop,
+        container.scrollTop + linkRect.top - containerRect.top - offset,
+      ),
+    );
+  }
+};
+
+const scheduleActiveProjectScroll = () => {
+  window.requestAnimationFrame(scrollActiveProjectIntoView);
+  window.setTimeout(scrollActiveProjectIntoView, 150);
+};
+
 const onProjectSectionToggleClick = (event: MouseEvent) => {
   const target = event.target;
   if (!(target instanceof Element)) {
@@ -69,6 +123,8 @@ const enhanceDocsScrollSpy = () => {
     state.initialized = true;
     document.addEventListener("click", onProjectSectionToggleClick);
   }
+
+  scheduleActiveProjectScroll();
 
   enhanceSectionPageIndex({
     activeDatasetKey: "active",

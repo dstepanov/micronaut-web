@@ -84,6 +84,9 @@ const scrollActiveLinkIntoView = (
   if (!container || container.scrollHeight <= container.clientHeight) {
     return;
   }
+  if (!container.getClientRects().length || !link.getClientRects().length) {
+    return;
+  }
   const containerRect = container.getBoundingClientRect();
   const linkRect = link.getBoundingClientRect();
   const margin = 20;

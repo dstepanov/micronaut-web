@@ -39,6 +39,9 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Playwright Copied Docs" }),
   ).toBeVisible();
+  await expect(
+    page.locator("main section#playwright > div").first().locator("svg"),
+  ).toHaveCount(0);
 
   const cards = page.locator('main [data-slot="card"]');
   await expect(cards).toHaveCount(docsProjects.length);
@@ -80,6 +83,9 @@ test("generated docs page renders desktop content and sidebars without overlap",
   await expect(
     docsSidebar.getByRole("link", { name: "Micronaut Core" }),
   ).toHaveAttribute("aria-current", "page");
+  await expect(
+    docsSidebar.getByRole("link", { name: "Micronaut Core" }),
+  ).toHaveAttribute("data-docs-active-project-link", "true");
 
   const sectionNav = page.locator("[data-docs-current-section-index]");
   await expect(sectionNav).toBeHidden();

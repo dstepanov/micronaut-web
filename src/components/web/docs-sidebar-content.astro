@@ -68,6 +68,7 @@ function docsCatalogProjectsByCategory(
   data-slot="sidebar-content"
   data-sidebar="content"
   data-docs-scroll-container
+  data-docs-sidebar-scroll-container
   class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto px-2 pb-2 pt-2 group-data-[collapsible=icon]:overflow-hidden"
 >
   {projectCatalog.categories.map((category) => {
@@ -94,7 +95,11 @@ function docsCatalogProjectsByCategory(
             data-docs-target-id={category.slug}
             class={categoryHeaderClassName}
           >
-            <IconGlyph name={category.icon} className="size-3.5 shrink-0" />
+            <IconGlyph
+              name={category.icon}
+              className="size-3.5 shrink-0"
+              themeTreatment="monochrome"
+            />
             <span class="truncate">{category.name}</span>
           </a>
         ) : (
@@ -103,7 +108,11 @@ function docsCatalogProjectsByCategory(
             data-sidebar="group-label"
             class={categoryHeaderClassName}
           >
-            <IconGlyph name={category.icon} className="size-3.5 shrink-0" />
+            <IconGlyph
+              name={category.icon}
+              className="size-3.5 shrink-0"
+              themeTreatment="monochrome"
+            />
             <span class="truncate">{category.name}</span>
           </div>
         )}
@@ -126,13 +135,18 @@ function docsCatalogProjectsByCategory(
                   data-active={isActiveProject ? "true" : "false"}
                   data-docs-project-section-toggle={hasActiveSections ? "true" : undefined}
                   data-docs-project-slug={hasActiveSections ? project.slug : undefined}
+                  data-docs-active-project-link={isActiveProject ? "true" : undefined}
                   aria-expanded={hasActiveSections ? "true" : undefined}
                   aria-controls={hasActiveSections ? projectSectionsId : undefined}
                   aria-current={isActiveProject ? "page" : undefined}
                   title={project.displayName}
                   class="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 h-auto min-h-8 whitespace-normal px-2 py-1.5 text-[0.85rem] leading-[1.19rem]"
                 >
-                  <IconGlyph name={project.icon} className="size-4 shrink-0" />
+                  <IconGlyph
+                    name={project.icon}
+                    className="size-4 shrink-0"
+                    themeTreatment="monochrome"
+                  />
                   <span class="whitespace-normal break-words group-data-[collapsible=icon]:sr-only">
                     {project.displayName}
                   </span>
