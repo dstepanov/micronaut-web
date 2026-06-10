@@ -78,8 +78,8 @@ function docsCatalogProjectsByCategory(
     }
     const hasActiveProject = category.slug === activeCategorySlug;
     const categoryHeaderClassName = cn(
-      "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
-      "gap-1.5 px-2 text-[0.78rem] leading-4",
+      "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
+      "text-[0.78rem] leading-4",
       hasActiveProject && "text-sidebar-foreground",
       !activeSlug &&
         "no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
@@ -95,11 +95,6 @@ function docsCatalogProjectsByCategory(
             data-docs-target-id={category.slug}
             class={categoryHeaderClassName}
           >
-            <IconGlyph
-              name={category.icon}
-              className="size-3.5 shrink-0"
-              themeTreatment="monochrome"
-            />
             <span class="truncate">{category.name}</span>
           </a>
         ) : (
@@ -108,11 +103,6 @@ function docsCatalogProjectsByCategory(
             data-sidebar="group-label"
             class={categoryHeaderClassName}
           >
-            <IconGlyph
-              name={category.icon}
-              className="size-3.5 shrink-0"
-              themeTreatment="monochrome"
-            />
             <span class="truncate">{category.name}</span>
           </div>
         )}

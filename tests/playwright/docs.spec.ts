@@ -42,6 +42,11 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
   await expect(
     page.locator("main section#playwright > div").first().locator("svg"),
   ).toHaveCount(0);
+  await expect(
+    page
+      .locator("[data-docs-sidebar] [data-docs-target-id='playwright']")
+      .locator("svg"),
+  ).toHaveCount(0);
 
   const cards = page.locator('main [data-slot="card"]');
   await expect(cards).toHaveCount(docsProjects.length);
