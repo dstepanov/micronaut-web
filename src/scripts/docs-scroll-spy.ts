@@ -45,7 +45,8 @@ const toggleProjectSections = (toggle: HTMLElement) => {
   if (!sections.length) {
     return;
   }
-  setProjectSectionsExpanded(slug, sections.some((section) => section.hidden));
+  const expanded = toggle.getAttribute("aria-expanded") === "true";
+  setProjectSectionsExpanded(slug, !expanded);
 };
 
 const visibleElementRect = (element: HTMLElement) => {
@@ -127,6 +128,7 @@ const enhanceDocsScrollSpy = () => {
   scheduleActiveProjectScroll();
 
   enhanceSectionPageIndex({
+    activeClassName: "active",
     activeDatasetKey: "active",
     currentContainerSelector: "[data-docs-current-section-index]",
     currentLinkSelector: "[data-docs-current-section-link]",

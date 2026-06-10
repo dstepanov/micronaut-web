@@ -96,6 +96,10 @@
         const active = index === activeIndex;
         tab.setAttribute("aria-selected", String(active));
         tab.tabIndex = active ? 0 : -1;
+        tab.classList.toggle("selected", active);
+        tab.classList.toggle("font-semibold", active);
+        tab.classList.toggle("text-code-foreground", active);
+        tab.classList.toggle("text-code-muted", !active);
       });
     };
 

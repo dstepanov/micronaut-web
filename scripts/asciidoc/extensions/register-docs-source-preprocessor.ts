@@ -37,6 +37,7 @@ export function registerDocsSourcePreprocessor(registry: Registry): void {
 function rewriteDocsSource(source: string): string {
   let normalized = source;
   normalized = removeGeneratedConfigurationPropertyIncludes(normalized);
+  normalized = rewriteLegacyDependencyLineMacros(normalized);
   normalized = normalized.replace(
     /^([ \t]*(?:include|snippet)::[^\r\n\[]+\[[^\r\n\]]*?\bindent\s*=\s*)(?:"false"|'false'|false)(?=\s*(?:,|\]))/gim,
     (_match: string, prefix: string): string => `${prefix}0`,
@@ -58,6 +59,14 @@ function rewriteDocsSource(source: string): string {
       }
       return `\n[source,java]\n----\n${value}\n----\n`;
     },
+  );
+}
+
+function rewriteLegacyDependencyLineMacros(source: string): string {
+  return source.replace(
+    /^([ \t]*)dependency:([^:\r\n]*\[[^\]\r\n]*])([ \t]*)$/gm,
+    (_match: string, indent: string, macro: string): string =>
+      `${indent}dependency::${macro}`,
   );
 }
 

@@ -178,6 +178,39 @@ test("snippet, dependency, and configuration block processors render React snipp
   assert.match(text, /micronaut\.application\.name=demo/);
 });
 
+test("docs legacy single-colon dependency line macros render dependency snippets", async (): Promise<void> => {
+  const context = {
+    attributes: {
+      projectGroup: "io.micronaut",
+    },
+  };
+  const converted = await renderAsciiDoc({
+    asciidoctor,
+    source: 'dependency:micronaut-kafka[groupId="io.micronaut.kafka"]',
+    convertOptions: {
+      attributes: {
+        icons: "font",
+        idprefix: "",
+        idseparator: "-",
+      },
+      base_dir: fixtureDirectory,
+      extension_registry: micronautExtensionRegistry(asciidoctor, context, {
+        snippetSamples: fixtureSnippetSamples,
+      }),
+    },
+  });
+  const text = textOnly(converted);
+
+  assert.match(converted, /docs-dependency-template/);
+  assert.doesNotMatch(converted, /dependency:micronaut-kafka/);
+  assert.match(
+    text,
+    /implementation\("io\.micronaut\.kafka:micronaut-kafka"\)/,
+  );
+  assert.match(text, /<groupId>io\.micronaut\.kafka<\/groupId>/);
+  assert.match(text, /<artifactId>micronaut-kafka<\/artifactId>/);
+});
+
 test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<void> => {
   const converted = await renderAsciiDoc({
     asciidoctor,

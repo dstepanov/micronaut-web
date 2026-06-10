@@ -85,12 +85,24 @@ test("generated docs page renders desktop content and sidebars without overlap",
 
   const docsSidebar = page.locator("[data-docs-sidebar]");
   await expect(docsSidebar).toBeVisible();
+  const activeProjectLink = docsSidebar.getByRole("link", {
+    name: "Micronaut Core",
+  });
   await expect(
-    docsSidebar.getByRole("link", { name: "Micronaut Core" }),
+    activeProjectLink,
   ).toHaveAttribute("aria-current", "page");
   await expect(
-    docsSidebar.getByRole("link", { name: "Micronaut Core" }),
+    activeProjectLink,
   ).toHaveAttribute("data-docs-active-project-link", "true");
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
+  const activeProjectSections = page.locator("#docs-desktop-core-sections");
+  await expect(activeProjectSections).toBeVisible();
+  await activeProjectLink.click();
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "false");
+  await expect(activeProjectSections).toBeHidden();
+  await activeProjectLink.click();
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
+  await expect(activeProjectSections).toBeVisible();
 
   const sectionNav = page.locator("[data-docs-current-section-index]");
   await expect(sectionNav).toBeHidden();
@@ -108,15 +120,24 @@ test("generated docs page renders desktop content and sidebars without overlap",
 
   await scrollToGeneratedHeading(page, "2 Quick Start");
   await expect(sectionNav).toBeVisible();
+  const introductionSection = docsSidebar.getByRole("link", {
+    name: "1 Introduction",
+  });
+  const quickStartSection = docsSidebar.getByRole("link", {
+    name: "2 Quick Start",
+  });
+  const snippetGallerySection = docsSidebar.getByRole("link", {
+    name: "3 Snippet Gallery",
+  });
   const createApplication = sectionNav.getByRole("link", {
     includeHidden: true,
     name: "Create an Application",
   });
   await expect(createApplication).toHaveCount(1);
   await expect(createApplication).toBeVisible();
-  await expect(
-    docsSidebar.getByRole("link", { name: "2 Quick Start" }),
-  ).toHaveAttribute("data-active", "true");
+  await expect(quickStartSection).toHaveAttribute("data-active", "true");
+  await expect(quickStartSection).toHaveClass(/(^|\s)active(\s|$)/);
+  await expect(introductionSection).not.toHaveClass(/(^|\s)active(\s|$)/);
   const ordinarySourceBlocks = sectionNav.getByRole("link", {
     includeHidden: true,
     name: "Ordinary Source Blocks",
@@ -126,18 +147,23 @@ test("generated docs page renders desktop content and sidebars without overlap",
 
   await scrollToGeneratedHeading(page, "Create an Application");
   await expect(createApplication).toHaveAttribute("data-active", "true");
+  await expect(createApplication).toHaveClass(/(^|\s)active(\s|$)/);
   await expect(createApplication).toHaveAttribute("aria-current", "location");
 
   await scrollToGeneratedHeading(page, "Ordinary Source Blocks");
   await expect(ordinarySourceBlocks).toBeVisible();
   await expect(createApplication).toBeHidden();
+  await expect(createApplication).toHaveAttribute("data-active", "false");
+  await expect(createApplication).not.toHaveClass(/(^|\s)active(\s|$)/);
   await expect(
     sectionNav.getByRole("link", { name: "Generated Snippet Macros" }),
   ).toBeVisible();
   await expect(ordinarySourceBlocks).toHaveAttribute("data-active", "true");
-  await expect(
-    docsSidebar.getByRole("link", { name: "3 Snippet Gallery" }),
-  ).toHaveAttribute("data-active", "true");
+  await expect(ordinarySourceBlocks).toHaveClass(/(^|\s)active(\s|$)/);
+  await expect(snippetGallerySection).toHaveAttribute("data-active", "true");
+  await expect(snippetGallerySection).toHaveClass(/(^|\s)active(\s|$)/);
+  await expect(quickStartSection).toHaveAttribute("data-active", "false");
+  await expect(quickStartSection).not.toHaveClass(/(^|\s)active(\s|$)/);
   await expect(ordinarySourceBlocks).toHaveAttribute(
     "aria-current",
     "location",
@@ -172,8 +198,14 @@ test("docs runtime scripts do not include build-time content processors", async 
   const firstSnippet = page.locator(".docs-code-snippet-template").first();
   const tabs = firstSnippet.locator(".docs-snippet-tabs button[role='tab']");
   if ((await tabs.count()) > 1) {
+    const initialTab = tabs.nth(0);
+    await expect(initialTab).toHaveAttribute("aria-selected", "true");
+    await expect(initialTab).toHaveClass(/(^|\s)selected(\s|$)/);
     await tabs.nth(1).click();
+    await expect(initialTab).toHaveAttribute("aria-selected", "false");
+    await expect(initialTab).not.toHaveClass(/(^|\s)selected(\s|$)/);
     await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await expect(tabs.nth(1)).toHaveClass(/(^|\s)selected(\s|$)/);
   }
   await firstSnippet.locator("[data-copy-active-snippet]").click();
   await expect(
