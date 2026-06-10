@@ -196,6 +196,18 @@ test("Tailwind does not scan generated docs and guides fragments", async (): Pro
   );
 });
 
+test("generated docs images default to a white surface", async (): Promise<void> => {
+  const generatedDocsCss = await fs.readFile(
+    path.join(projectDirectory, "src", "styles", "generated-docs-content.css"),
+    "utf8",
+  );
+
+  assert.match(
+    generatedDocsCss,
+    /& img \{\s*@apply h-auto max-w-full bg-white;/,
+  );
+});
+
 test("generated docs tooling uses Micronaut Platform catalog instead of the old aggregate docs project", async (): Promise<void> => {
   const checkedFiles = [
     ".github/workflows/deploy-docs.yml",

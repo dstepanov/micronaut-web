@@ -40,7 +40,7 @@ export function collectRuntimeScriptAssertions(
     if (!isInspectableRuntimeScriptResponse(response)) {
       return;
     }
-    assertions.pending.push(inspectScriptResponse(response, assertions));
+    assertions.pending.push(inspectScriptResponse(page, response, assertions));
   });
 
   return assertions;
@@ -96,6 +96,7 @@ export async function expectClipboardText(page: Page): Promise<void> {
 }
 
 async function inspectScriptResponse(
+  page: Page,
   response: Response,
   assertions: RuntimeScriptAssertions,
 ): Promise<void> {
@@ -103,10 +104,14 @@ async function inspectScriptResponse(
   try {
     body = await response.text();
   } catch (error) {
-    assertions.failures.push(
-      `could not inspect script response ${response.url()}: ${errorMessage(error)}`,
-    );
-    return;
+    const fallbackBody = await refetchScriptResponse(page, response);
+    if (fallbackBody === undefined) {
+      assertions.failures.push(
+        `could not inspect script response ${response.url()}: ${errorMessage(error)}`,
+      );
+      return;
+    }
+    body = fallbackBody;
   }
 
   for (const { label, pattern } of forbiddenRuntimeLibraries) {
@@ -115,6 +120,31 @@ async function inspectScriptResponse(
         `${response.url()} contains build-time-only ${label}`,
       );
     }
+  }
+}
+
+async function refetchScriptResponse(
+  page: Page,
+  response: Response,
+): Promise<string | undefined> {
+  if (response.request().method() !== "GET") {
+    return undefined;
+  }
+
+  const refetched = await page.request
+    .get(response.url(), { failOnStatusCode: false })
+    .catch(() => undefined);
+  if (!refetched) {
+    return undefined;
+  }
+
+  try {
+    if (!refetched.ok()) {
+      return undefined;
+    }
+    return await refetched.text();
+  } finally {
+    await refetched.dispose();
   }
 }
 

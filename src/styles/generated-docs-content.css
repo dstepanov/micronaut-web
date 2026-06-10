@@ -183,7 +183,7 @@
   }
 
   & img {
-    @apply h-auto max-w-full;
+    @apply h-auto max-w-full bg-white;
   }
 
   & .colist {
