@@ -13,7 +13,7 @@ const matches = await forbiddenBrowserRuntimeAssetMatches(distDirectory);
 if (matches.length > 0) {
   throw new Error(
     [
-      "Browser runtime assets contain build-time-only generated-content processors:",
+      "Browser runtime assets contain invalid browser payloads:",
       ...matches.map(
         (match) =>
           `- ${path.relative(projectDirectory, match.file)} contains ${match.label}`,

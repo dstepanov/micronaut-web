@@ -36,6 +36,16 @@ export async function forbiddenBrowserRuntimeAssetMatches(
   const files = await listFiles(assetsDirectory);
   const matches: ForbiddenBrowserRuntimeAssetMatch[] = [];
 
+  for (const file of files.filter(
+    (candidate) =>
+      /\.(?:jsx?|tsx?)$/.test(candidate) && !candidate.endsWith(".js"),
+  )) {
+    matches.push({
+      file,
+      label: "uncompiled browser source asset",
+    });
+  }
+
   for (const file of files.filter((candidate) => candidate.endsWith(".js"))) {
     const source = await fs.readFile(file, "utf8");
     matches.push(...forbiddenBrowserRuntimeTextMatches(file, source));

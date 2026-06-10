@@ -128,8 +128,16 @@ test("built browser runtime asset guard rejects build-time content processors", 
     path.join(assetsDirectory, "configuration.js"),
     "const converter = 'parseToml';",
   );
+  await fs.writeFile(
+    path.join(assetsDirectory, "copied-source.ts"),
+    "const ready: boolean = true;",
+  );
 
   assert.deepEqual(await forbiddenBrowserRuntimeAssetMatches(tempDirectory), [
+    {
+      file: path.join(assetsDirectory, "copied-source.ts"),
+      label: "uncompiled browser source asset",
+    },
     {
       file: path.join(assetsDirectory, "configuration.js"),
       label: "generated-content configuration conversion helper",

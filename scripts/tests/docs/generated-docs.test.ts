@@ -1612,7 +1612,11 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(docsVersionSelectorSource, /astro:hydrate/);
   assert.doesNotMatch(docsVersionSelectorSource, /astro-island/);
-  assert.match(docsScrollSpyComponentSource, /docs-scroll-spy\.ts\?url/);
+  assert.match(
+    docsScrollSpyComponentSource,
+    /<script src="\.\.\/\.\.\/scripts\/docs-scroll-spy\.ts"><\/script>/,
+  );
+  assert.doesNotMatch(docsScrollSpyComponentSource, /\?url|type="module"/);
   assert.match(docsScrollSpySource, /enhanceSectionPageIndex/);
   assert.match(docsScrollSpySource, /data-docs-current-section-link/);
   assert.match(docsScrollSpySource, /data-docs-project-section-link/);
