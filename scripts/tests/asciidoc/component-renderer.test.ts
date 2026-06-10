@@ -211,6 +211,41 @@ test("docs legacy single-colon dependency line macros render dependency snippets
   assert.match(text, /<artifactId>micronaut-kafka<\/artifactId>/);
 });
 
+test("properties listing snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
+  const converted = await renderAsciiDoc({
+    asciidoctor,
+    source: [
+      "[source,properties]",
+      "----",
+      "foo.bar.property=",
+      "foo.bar[0]=",
+      "foo.bar<prop>=",
+      "----",
+    ].join("\n"),
+    convertOptions: {
+      attributes: {
+        icons: "font",
+        idprefix: "",
+        idseparator: "-",
+      },
+      base_dir: fixtureDirectory,
+    },
+  });
+
+  const dottedLine = highlightedLineContaining(converted, "foo.bar.property=");
+  const indexedLine = highlightedLineContaining(converted, "foo.bar[0]=");
+  const placeholderLine = highlightedLineContaining(
+    converted,
+    "foo.bar&lt;prop&gt;=",
+  );
+  const dottedStyle = highlightedLineTextStyle(dottedLine);
+
+  assert.notEqual(dottedLine, "");
+  assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
+  assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+});
+
 test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<void> => {
   const converted = await renderAsciiDoc({
     asciidoctor,
@@ -822,6 +857,22 @@ function textOnly(value: string): string {
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function highlightedLineContaining(source: string, text: string): string {
+  return (
+    Array.from(
+      source.matchAll(
+        /<span class="line">[\s\S]*?<\/span>(?=\n<span class="line">|\n?<\/code>|$)/g,
+      ),
+    )
+      .map((match): string => match[0])
+      .find((line): boolean => line.includes(text)) || ""
+  );
+}
+
+function highlightedLineTextStyle(line: string): string {
+  return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
 }
 
 function buttonHtmlForLanguage(value: string, language: string): string {

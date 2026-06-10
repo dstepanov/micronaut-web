@@ -13,6 +13,7 @@ import { codeToHtml } from "shiki";
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
 import { html } from "../../shared/html.ts";
 import {
+  normalizeEmptyPropertiesAssignmentHighlighting,
   normalizeStandaloneCalloutLines,
   shikiLanguage,
 } from "../../shared/highlight.ts";
@@ -484,12 +485,18 @@ async function highlightedCodeInnerHtml(
     });
   }
 
-  return codeElementInnerHtml(highlighted)
-    .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
-    .replace(
-      new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"),
-      '<i class="conum" data-value="$1"></i>',
-    );
+  return normalizeEmptyPropertiesAssignmentHighlighting(
+    codeElementInnerHtml(highlighted)
+      .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
+      .replace(
+        new RegExp(
+          `${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`,
+          "g",
+        ),
+        '<i class="conum" data-value="$1"></i>',
+      ),
+    highlighterLanguage,
+  );
 }
 
 function codeElementInnerHtml(value: string): string {

@@ -1,5 +1,6 @@
 import { codeToHtml } from "shiki";
 
+import { normalizeEmptyPropertiesAssignmentHighlighting as normalizeEmptyPropertiesAssignmentHtml } from "../../src/lib/properties-highlight-normalization.ts";
 import { attribute, decodeHtml, escapeRegExp } from "./html.ts";
 
 const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
@@ -63,6 +64,10 @@ async function highlightListingBlocksOnce(input: string): Promise<string> {
         `<code class="language-${attribute(language)} shiki-code" data-lang="${attribute(language)}">`,
       )
       .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
+    highlighted = normalizeEmptyPropertiesAssignmentHighlighting(
+      highlighted,
+      language,
+    );
     highlighted = decodeCalloutMarkers(highlighted);
     result += `<div class="listingblock${classes ? ` ${classes}` : ""}"${divAttributes} data-lang="${attribute(language)}">\n${title}<div class="content">\n${highlighted}\n</div>\n</div>`;
     position = matchIndex + match[0].length;
@@ -108,6 +113,16 @@ export function normalizeStandaloneCalloutLines(
     output.push(line);
   }
   return output.join("\n");
+}
+
+export function normalizeEmptyPropertiesAssignmentHighlighting(
+  highlightedHtml: string,
+  language: string,
+): string {
+  if (shikiLanguage(language) !== "properties") {
+    return highlightedHtml;
+  }
+  return normalizeEmptyPropertiesAssignmentHtml(highlightedHtml);
 }
 
 function standaloneCalloutLanguage(language: string): boolean {

@@ -159,6 +159,28 @@ String index() {
   assert.doesNotMatch(html, /<pre><code class="language-java">/);
 });
 
+test("main-site Markdown properties snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
+  const { renderMainSiteCodeSnippets } = await modules;
+  const html = await renderMainSiteCodeSnippets(`
+<pre><code class="language-properties">foo.bar.property=
+foo.bar[0]=
+foo.bar&lt;prop&gt;=</code></pre>
+`);
+
+  const dottedLine = highlightedLineContaining(html, "foo.bar.property=");
+  const indexedLine = highlightedLineContaining(html, "foo.bar[0]=");
+  const placeholderLine = highlightedLineContaining(
+    html,
+    "foo.bar&lt;prop&gt;=",
+  );
+  const dottedStyle = highlightedLineTextStyle(dottedLine);
+
+  assert.notEqual(dottedLine, "");
+  assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
+  assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+});
+
 test("main-site Markdown snippets infer language when the fence has no language", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
   const html = await renderMainSiteCodeSnippets(`
@@ -329,6 +351,22 @@ function launchIconAssetPath(icon: string): string | undefined {
     );
   }
   return undefined;
+}
+
+function highlightedLineContaining(source: string, text: string): string {
+  return (
+    Array.from(
+      source.matchAll(
+        /<span class="line">[\s\S]*?<\/span>(?=\n<span class="line">|\n?<\/code>|$)/g,
+      ),
+    )
+      .map((match): string => match[0])
+      .find((line): boolean => line.includes(text)) || ""
+  );
+}
+
+function highlightedLineTextStyle(line: string): string {
+  return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
 }
 
 async function importSnippetModules(): Promise<any> {

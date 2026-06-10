@@ -2,6 +2,8 @@ import * as parse5 from "parse5";
 import { codeToHtml } from "shiki";
 import type { DefaultTreeAdapterMap } from "parse5";
 
+import { normalizeEmptyPropertiesAssignmentHighlighting } from "./properties-highlight-normalization";
+
 type HighlightableVariant = {
   code: string;
   highlightedHtml?: string;
@@ -55,7 +57,8 @@ export async function highlightCodeSnippetHtml(code: string, language: string) {
     });
   }
 
-  return extractCodeHtml(highlighted)
+  const codeHtml = extractCodeHtml(highlighted);
+  return normalizePropertiesHighlighting(codeHtml, language)
     .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
     .replace(new RegExp(`${calloutMarkerPrefix}(\\d+)${calloutMarkerSuffix}`, "g"), '<i class="conum" data-value="$1"></i>');
 }
@@ -84,6 +87,16 @@ export async function highlightCodeSnippetExamples<T extends HighlightableExampl
 function shikiLanguage(language: string) {
   const normalized = language.trim().toLowerCase();
   return shikiLanguageAliases[normalized] || normalized || "text";
+}
+
+function normalizePropertiesHighlighting(
+  highlightedHtml: string,
+  language: string,
+) {
+  if (shikiLanguage(language) !== "properties") {
+    return highlightedHtml;
+  }
+  return normalizeEmptyPropertiesAssignmentHighlighting(highlightedHtml);
 }
 
 function extractCodeHtml(source: string) {

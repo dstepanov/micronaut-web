@@ -1312,6 +1312,33 @@ test("docs commandline source blocks use shell highlighting", (): void => {
   assert.equal(shikiLanguage("mysql"), "sql");
 });
 
+test("properties listings format empty dotted assignments like indexed and placeholder assignments", async (): Promise<void> => {
+  const html = await highlightListingBlocks(
+    [
+      '<div class="listingblock">',
+      '<div class="content">',
+      '<pre><code class="language-properties">foo.bar.property=',
+      "foo.bar[0]=",
+      "foo.bar&lt;prop&gt;=</code></pre>",
+      "</div>",
+      "</div>",
+    ].join("\n"),
+  );
+
+  const dottedLine = highlightedLineContaining(html, "foo.bar.property=");
+  const indexedLine = highlightedLineContaining(html, "foo.bar[0]=");
+  const placeholderLine = highlightedLineContaining(
+    html,
+    "foo.bar&lt;prop&gt;=",
+  );
+  const dottedStyle = highlightedLineTextStyle(dottedLine);
+
+  assert.notEqual(dottedLine, "");
+  assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
+  assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+});
+
 test("properties listings attach standalone callout markers to the next property line", async (): Promise<void> => {
   const html = await highlightListingBlocks(
     [
@@ -1867,6 +1894,22 @@ function escapeRegExp(value: any): any {
 
 function textOnly(value: any): any {
   return value.replace(/<[^>]*>/g, "");
+}
+
+function highlightedLineContaining(source: string, text: string): string {
+  return (
+    Array.from(
+      source.matchAll(
+        /<span class="line">[\s\S]*?<\/span>(?=\n<span class="line">|\n?<\/code>|$)/g,
+      ),
+    )
+      .map((match): string => match[0])
+      .find((line): boolean => line.includes(text)) || ""
+  );
+}
+
+function highlightedLineTextStyle(line: string): string {
+  return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
 }
 
 async function fileExists(file: string): Promise<boolean> {
