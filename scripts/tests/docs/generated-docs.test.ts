@@ -1569,13 +1569,13 @@ test("docs routes render generated fragments and serve generated assets", async 
     docsSidebarContentSource,
     /aria-controls=\{hasActiveSections \? projectSectionsId : undefined\}/,
   );
-  assert.match(
+  assert.doesNotMatch(
     docsSidebarContentSource,
     /data-\[active=true\]:before:bg-brand/,
   );
   assert.match(docsPageSource, /id=\{`\$\{project\.slug\}-docs`\}/);
   assert.match(docsPageSource, /data-docs-scroll-container/);
-  assert.match(docsPageSource, /data-\[active=true\]:before:bg-brand/);
+  assert.doesNotMatch(docsPageSource, /data-\[active=true\]:before:bg-brand/);
   assert.match(docsPageSource, /\{currentSectionLinks\.length > 0 && \(/);
   assert.match(docsPageSource, /\{currentSectionLinks\.map\(\(section\) => \(/);
   assert.match(docsPageSource, /data-docs-current-section-index/);
