@@ -218,6 +218,28 @@ function DecorativeAssetGlyph({
   className?: string;
   themeTreatment: IconThemeTreatment;
 }) {
+  if (themeTreatment === "monochrome") {
+    const style: CSSProperties = {
+      backgroundColor: "currentColor",
+      maskImage: `url(${src})`,
+      maskPosition: "center",
+      maskRepeat: "no-repeat",
+      maskSize: "contain",
+      WebkitMaskImage: `url(${src})`,
+      WebkitMaskPosition: "center",
+      WebkitMaskRepeat: "no-repeat",
+      WebkitMaskSize: "contain"
+    };
+
+    return (
+      <span
+        className={cn("inline-block", className)}
+        style={style}
+        aria-hidden="true"
+      />
+    );
+  }
+
   return (
     <span
       className={cn(
