@@ -97,12 +97,21 @@ test("generated docs page renders desktop content and sidebars without overlap",
   await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
   const activeProjectSections = page.locator("#docs-desktop-core-sections");
   await expect(activeProjectSections).toBeVisible();
+  const projectUrlBeforeToggle = page.url();
+  await activeProjectLink.click();
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "false");
+  await expect(activeProjectSections).toBeHidden();
+  expect(page.url()).toBe(projectUrlBeforeToggle);
+  await activeProjectLink.click();
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
+  await expect(activeProjectSections).toBeVisible();
   await activeProjectLink.click();
   await expect(activeProjectLink).toHaveAttribute("aria-expanded", "false");
   await expect(activeProjectSections).toBeHidden();
   await activeProjectLink.click();
   await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
   await expect(activeProjectSections).toBeVisible();
+  expect(page.url()).toBe(projectUrlBeforeToggle);
 
   const sectionNav = page.locator("[data-docs-current-section-index]");
   await expect(sectionNav).toBeHidden();
@@ -332,6 +341,47 @@ test("generated docs page fits the mobile viewport", async ({ page }) => {
   expect(failures).toEqual([]);
 });
 
+test("expanded docs project link toggles sections inside the mobile sidebar", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+  await page.setViewportSize({ width: 390, height: 860 });
+
+  await page.goto(appPath("/docs/core/"));
+
+  await page.getByRole("button", { name: "Open docs navigation" }).click();
+  const sheet = page.getByRole("dialog", { name: "Docs navigation" });
+  await expect(sheet).toBeVisible();
+
+  const activeProjectLink = sheet.getByRole("link", {
+    name: "Micronaut Core",
+  });
+  const activeProjectSections = sheet.locator("#docs-mobile-core-sections");
+  await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
+  await expect(activeProjectSections).toBeVisible();
+
+  await clickAndExpectProjectSections({
+    container: sheet,
+    link: activeProjectLink,
+    sections: activeProjectSections,
+    expanded: false,
+  });
+  await clickAndExpectProjectSections({
+    container: sheet,
+    link: activeProjectLink,
+    sections: activeProjectSections,
+    expanded: true,
+  });
+  await clickAndExpectProjectSections({
+    container: sheet,
+    link: activeProjectLink,
+    sections: activeProjectSections,
+    expanded: false,
+  });
+
+  expect(failures).toEqual([]);
+});
+
 function collectBrowserFailures(page: Page) {
   const failures: string[] = [];
   page.on("pageerror", (error) => {
@@ -468,6 +518,28 @@ async function expectDocsLinkActive(
   }
   await expect(link).not.toHaveClass(/(^|\s)active(\s|$)/);
   await expect(link).not.toHaveAttribute("aria-current", "location");
+}
+
+async function clickAndExpectProjectSections({
+  container,
+  link,
+  sections,
+  expanded,
+}: {
+  container: Locator;
+  link: Locator;
+  sections: Locator;
+  expanded: boolean;
+}): Promise<void> {
+  await link.click();
+  await expect(container).toBeVisible();
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute("aria-expanded", String(expanded));
+  if (expanded) {
+    await expect(sections).toBeVisible();
+    return;
+  }
+  await expect(sections).toBeHidden();
 }
 
 async function scrollToGeneratedHeading(

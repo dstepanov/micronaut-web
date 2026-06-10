@@ -103,9 +103,18 @@ export function DocsSidebarMobileSheet({
   const [open, setOpen] = React.useState(false);
 
   function onContentClick(event: React.MouseEvent<HTMLDivElement>) {
-    if ((event.target as HTMLElement).closest("a[href]")) {
-      setOpen(false);
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
     }
+    const link = target.closest("a[href]");
+    if (!link) {
+      return;
+    }
+    if (target.closest("[data-docs-project-section-toggle]")) {
+      return;
+    }
+    setOpen(false);
   }
 
   return (
