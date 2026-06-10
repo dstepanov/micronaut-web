@@ -132,9 +132,10 @@ const enhanceDocsScrollSpy = () => {
     activeDatasetKey: "active",
     currentContainerSelector: "[data-docs-current-section-index]",
     currentLinkSelector: "[data-docs-current-section-link]",
-    linkSelector: "[data-docs-scroll-link]",
+    linkSelector:
+      "[data-docs-current-section-link], [data-docs-project-section-link], [data-docs-scroll-link]",
     mutationSelector:
-      "[data-docs-scroll-link], [data-docs-scroll-container], [data-docs-current-section-index]",
+      "[data-docs-current-section-link], [data-docs-project-section-link], [data-docs-scroll-link], [data-docs-scroll-container], [data-docs-current-section-index]",
     rootIdAttribute: "docsSectionRootId",
     rootLinkSelector: "[data-docs-project-section-link]",
     scrollContainerSelector: "[data-docs-scroll-container]",

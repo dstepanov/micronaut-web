@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   collectRuntimeScriptAssertions,
   expectClipboardText,
@@ -177,6 +177,66 @@ test("generated docs page renders desktop content and sidebars without overlap",
     "[data-generated-docs]",
     'aside[aria-label="In this section"]',
   );
+  expect(failures).toEqual([]);
+});
+
+test("docs section and subsection navigation follows scroll movement", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+
+  await page.goto(appPath("/docs/core/"));
+  await expect(
+    page.getByRole("heading", {
+      exact: true,
+      level: 1,
+      name: "Micronaut Core",
+    }),
+  ).toBeVisible();
+
+  const docsSidebar = page.locator("[data-docs-sidebar]");
+  const sectionNav = page.locator("[data-docs-current-section-index]");
+  const introductionSection = docsSidebar.getByRole("link", {
+    name: "1 Introduction",
+  });
+  const quickStartSection = docsSidebar.getByRole("link", {
+    name: "2 Quick Start",
+  });
+  const snippetGallerySection = docsSidebar.getByRole("link", {
+    name: "3 Snippet Gallery",
+  });
+  const createApplication = sectionNav.getByRole("link", {
+    includeHidden: true,
+    name: "Create an Application",
+  });
+  const generatedSnippetMacros = sectionNav.getByRole("link", {
+    includeHidden: true,
+    name: "Generated Snippet Macros",
+  });
+
+  await scrollToGeneratedHeading(page, "Create an Application");
+  await expect(sectionNav).toBeVisible();
+  await expectDocsLinkActive(quickStartSection, true);
+  await expectDocsLinkActive(createApplication, true);
+  await expectDocsLinkActive(introductionSection, false);
+  await expectDocsLinkActive(snippetGallerySection, false);
+  await expect(generatedSnippetMacros).toBeHidden();
+
+  await scrollToGeneratedHeading(page, "Generated Snippet Macros");
+  await expect(generatedSnippetMacros).toBeVisible();
+  await expectDocsLinkActive(snippetGallerySection, true);
+  await expectDocsLinkActive(generatedSnippetMacros, true);
+  await expectDocsLinkActive(quickStartSection, false);
+  await expectDocsLinkActive(createApplication, false);
+  await expect(createApplication).toBeHidden();
+
+  await scrollToGeneratedHeading(page, "Create an Application");
+  await expect(createApplication).toBeVisible();
+  await expectDocsLinkActive(quickStartSection, true);
+  await expectDocsLinkActive(createApplication, true);
+  await expectDocsLinkActive(snippetGallerySection, false);
+  await expectDocsLinkActive(generatedSnippetMacros, false);
+
   expect(failures).toEqual([]);
 });
 
@@ -394,6 +454,20 @@ async function expectTopHeaderPinned(page: Page): Promise<void> {
   await expect
     .poll(async () => Math.round((await banner.boundingBox())?.y ?? -1))
     .toBe(0);
+}
+
+async function expectDocsLinkActive(
+  link: Locator,
+  active: boolean,
+): Promise<void> {
+  await expect(link).toHaveAttribute("data-active", active ? "true" : "false");
+  if (active) {
+    await expect(link).toHaveClass(/(^|\s)active(\s|$)/);
+    await expect(link).toHaveAttribute("aria-current", "location");
+    return;
+  }
+  await expect(link).not.toHaveClass(/(^|\s)active(\s|$)/);
+  await expect(link).not.toHaveAttribute("aria-current", "location");
 }
 
 async function scrollToGeneratedHeading(
