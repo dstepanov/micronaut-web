@@ -689,6 +689,131 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedText, /2 properties/);
 });
 
+test("docs renderer keeps Micronaut Data project-base repository snippets as separate cards", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-data-repository-snippets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+  );
+  const exampleBaseDirectory = path.join(submoduleDirectory, "doc-examples");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "AccountRepository.java",
+    ),
+    [
+      "package example;",
+      "",
+      "import io.micronaut.data.annotation.Repository;",
+      "import io.micronaut.data.repository.CrudRepository;",
+      "import jakarta.validation.Valid;",
+      "import jakarta.validation.constraints.Min;",
+      "",
+      "@Repository",
+      "public interface AccountRepository extends CrudRepository<@Valid Account, @Min(0) Long> {",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "AccountRepository.kt",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.data.annotation.Repository",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "@Repository",
+      "interface AccountRepository : CrudRepository<@jakarta.validation.Valid Account, @jakarta.validation.constraints.Min(0) Long>",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "AccountRepository.groovy",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.data.annotation.Repository",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "@Repository",
+      "interface AccountRepository extends CrudRepository<@jakarta.validation.Valid Account, @jakarta.validation.constraints.Min(0) Long> {",
+      "}",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Micronaut Data Fixture",
+    [
+      "Repositories can have the entity and the ID values validated.",
+      "To add the validation, annotate the repository's generic type argument with Jakarta Validation annotations:",
+      "",
+      'snippet::example.AccountRepository[project-base="doc-examples/hibernate-example", source="main"]',
+    ].join("\n"),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  const validationIndex = generatedHtml.indexOf(
+    "Repositories can have the entity and the ID values validated.",
+  );
+  assert.notEqual(validationIndex, -1);
+  const validationHtml = generatedHtml.slice(validationIndex);
+
+  assert.equal(countMatches(validationHtml, /docs-code-snippet-template/g), 3);
+  assertSnippetLanguageIcon(validationHtml, "java", "java");
+  assertSnippetLanguageIcon(validationHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(validationHtml, "groovy", "groovy");
+});
+
 test("docs renderer surfaces missing snippet sources and requested tags", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-docs-missing-tags-"),
@@ -1798,6 +1923,14 @@ async function writeGuide(
   );
 }
 
+async function writeRepositoryValidationSnippet(
+  file: string,
+  lines: string[],
+): Promise<void> {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, lines.join("\n"), "utf8");
+}
+
 function searchProject(
   slug: string,
   displayName: string,
@@ -1910,6 +2043,10 @@ function escapeRegExp(value: any): any {
 
 function textOnly(value: any): any {
   return value.replace(/<[^>]*>/g, "");
+}
+
+function countMatches(value: string, pattern: RegExp): number {
+  return value.match(pattern)?.length || 0;
 }
 
 function highlightedLineContaining(source: string, text: string): string {

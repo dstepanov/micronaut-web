@@ -20,6 +20,7 @@ type SnippetContext = {
 type SnippetLanguage = [language: string, extension: string];
 
 type SnippetSample = {
+  group?: string;
   language: string;
   source: string;
 };
@@ -30,6 +31,9 @@ export function docsSnippetSamples(
   context: SnippetContext,
 ): SnippetSample[] {
   const baseDirectories = snippetBaseDirectoriesSync(attrs, context);
+  const splitProjectBaseSnippets =
+    Boolean(macroAttribute(attrs, "project-base")) &&
+    baseDirectories.length > 1;
   const source = macroAttribute(attrs, "source");
   const sources = source ? [source] : ["test", "main"];
   const explicit = explicitSnippetLanguage(target);
@@ -72,7 +76,13 @@ export function docsSnippetSamples(
           macroAttribute(attrs, "indent"),
         );
         if (source.trim()) {
-          samples.push({ language, source });
+          samples.push({
+            ...(splitProjectBaseSnippets
+              ? { group: snippetGroup(baseDirectory, context) }
+              : {}),
+            language,
+            source,
+          });
         }
       }
     }
@@ -84,6 +94,12 @@ export function docsSnippetSamples(
     });
   }
   return samples;
+}
+
+function snippetGroup(baseDirectory: string, context: SnippetContext): string {
+  return path
+    .relative(context.submoduleDirectory, baseDirectory)
+    .replaceAll(path.sep, "/");
 }
 
 function taggedSourceDiagnosticNote(
