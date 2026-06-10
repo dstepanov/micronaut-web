@@ -39,10 +39,17 @@ export function docsSnippetSamples(
   const explicit = explicitSnippetLanguage(target);
   const languages = explicit ? [explicit] : languagesToRender(context);
   const samples: SnippetSample[] = [];
+  const matchedProjectBaseLanguages = new Set<string>();
   let matchedFiles = 0;
   for (const baseDirectory of baseDirectories) {
     for (const sourceSet of sources) {
       for (const [language, extension] of languages) {
+        if (
+          splitProjectBaseSnippets &&
+          matchedProjectBaseLanguages.has(language)
+        ) {
+          continue;
+        }
         const file = path.join(
           baseDirectory,
           "src",
@@ -61,6 +68,9 @@ export function docsSnippetSamples(
         );
         if (taggedSource.diagnostics.length) {
           samples.push({
+            ...(splitProjectBaseSnippets
+              ? { group: snippetGroup(baseDirectory, context) }
+              : {}),
             language,
             source: taggedSourceDiagnosticNote(
               taggedSource.diagnostics,
@@ -68,6 +78,9 @@ export function docsSnippetSamples(
               context,
             ),
           });
+          if (splitProjectBaseSnippets) {
+            matchedProjectBaseLanguages.add(language);
+          }
           continue;
         }
         source = taggedSource.source;
@@ -83,6 +96,9 @@ export function docsSnippetSamples(
             language,
             source,
           });
+          if (splitProjectBaseSnippets) {
+            matchedProjectBaseLanguages.add(language);
+          }
         }
       }
     }

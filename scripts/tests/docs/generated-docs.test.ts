@@ -770,6 +770,26 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
       "}",
     ],
   );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin-ksp",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "AccountRepository.kt",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.data.annotation.Repository",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "@Repository",
+      "interface AccountRepository : CrudRepository<Account, Long>",
+    ],
+  );
   await writeGuide(
     docsDirectory,
     "micronaut-fixture",
@@ -812,6 +832,10 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
   assertSnippetLanguageIcon(validationHtml, "java", "java");
   assertSnippetLanguageIcon(validationHtml, "kotlin", "kotlin");
   assertSnippetLanguageIcon(validationHtml, "groovy", "groovy");
+  assert.doesNotMatch(
+    textOnly(validationHtml),
+    /CrudRepository<Account, Long>/,
+  );
 });
 
 test("docs renderer surfaces missing snippet sources and requested tags", async (t: any): Promise<any> => {
