@@ -35,7 +35,7 @@ export function docsSnippetSamples(
   const dedupeProjectBaseLanguages =
     hasProjectBase && baseDirectories.length > 1;
   const splitProjectBaseSnippets =
-    dedupeProjectBaseLanguages && splitProjectBaseSnippetCards(target);
+    dedupeProjectBaseLanguages && splitProjectBaseSnippetCards(target, attrs);
   const source = macroAttribute(attrs, "source");
   const sources = source ? [source] : ["test", "main"];
   const explicit = explicitSnippetLanguage(target);
@@ -114,7 +114,13 @@ export function docsSnippetSamples(
   return samples;
 }
 
-function splitProjectBaseSnippetCards(target: string): boolean {
+function splitProjectBaseSnippetCards(
+  target: string,
+  attrs: MacroAttributes,
+): boolean {
+  if (macroAttribute(attrs, "tags") || macroAttribute(attrs, "tag")) {
+    return false;
+  }
   const className = target.split(".").at(-1) || target;
   return /(?:Filter|Repository)$/.test(className);
 }

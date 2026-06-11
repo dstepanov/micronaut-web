@@ -875,6 +875,168 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
   );
 });
 
+test("docs renderer groups Micronaut Data tagged repository snippets as language tabs", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-data-intro-repository-snippets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+  );
+  const exampleBaseDirectory = path.join(submoduleDirectory, "doc-examples");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "BookRepository.java",
+    ),
+    [
+      "// tag::repository[]",
+      "package example;",
+      "",
+      "import io.micronaut.data.annotation.Repository;",
+      "import io.micronaut.data.repository.CrudRepository;",
+      "",
+      "@Repository",
+      "public interface BookRepository extends CrudRepository<Book, Long> {",
+      "    Book javaFind(String title);",
+      "}",
+      "// end::repository[]",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "BookRepository.kt",
+    ),
+    [
+      "// tag::repository[]",
+      "package example",
+      "",
+      "import io.micronaut.data.annotation.Repository",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "@Repository",
+      "interface BookRepository : CrudRepository<Book, Long> {",
+      "    fun kotlinFind(title: String): Book",
+      "}",
+      "// end::repository[]",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "BookRepository.groovy",
+    ),
+    [
+      "// tag::repository[]",
+      "package example",
+      "",
+      "import io.micronaut.data.annotation.Repository",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "@Repository",
+      "interface BookRepository extends CrudRepository<Book, Long> {",
+      "    Book groovyFind(String title)",
+      "}",
+      "// end::repository[]",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin-ksp",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "BookRepository.kt",
+    ),
+    [
+      "// tag::repository[]",
+      "package example",
+      "",
+      "interface BookRepository {",
+      "    fun kspDuplicateShouldNotRender(): Book",
+      "}",
+      "// end::repository[]",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Micronaut Data Fixture",
+    [
+      "At a fundamental level however what Micronaut Data does can be summed up in the following snippets. Given the following interface:",
+      "",
+      'snippet::example.BookRepository[project-base="doc-examples/hibernate-example", source="main", tags="repository"]',
+      "",
+      "The `@Repository` annotation designates `BookRepository` as a data repository.",
+    ].join("\n"),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  const introIndex = generatedHtml.indexOf(
+    "At a fundamental level however what Micronaut Data does can be summed up in the following snippets. Given the following interface:",
+  );
+  assert.notEqual(introIndex, -1);
+  const introHtml = generatedHtml.slice(
+    introIndex,
+    generatedHtml.indexOf("The `@Repository` annotation", introIndex),
+  );
+
+  assert.equal(countMatches(introHtml, /docs-code-snippet-template/g), 1);
+  assert.equal(countMatches(introHtml, /role="tablist"/g), 1);
+  assertSnippetLanguageIcon(introHtml, "java", "java");
+  assertSnippetLanguageIcon(introHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(introHtml, "groovy", "groovy");
+  assert.match(textOnly(introHtml), /javaFind/);
+  assert.match(textOnly(introHtml), /kotlinFind/);
+  assert.match(textOnly(introHtml), /groovyFind/);
+  assert.doesNotMatch(textOnly(introHtml), /kspDuplicateShouldNotRender/);
+});
+
 test("docs renderer groups Serialization project-base model snippets as language tabs", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-serde-model-snippets-"),
