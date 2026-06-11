@@ -31,9 +31,11 @@ export function docsSnippetSamples(
   context: SnippetContext,
 ): SnippetSample[] {
   const baseDirectories = snippetBaseDirectoriesSync(attrs, context);
+  const hasProjectBase = Boolean(macroAttribute(attrs, "project-base"));
+  const dedupeProjectBaseLanguages =
+    hasProjectBase && baseDirectories.length > 1;
   const splitProjectBaseSnippets =
-    Boolean(macroAttribute(attrs, "project-base")) &&
-    baseDirectories.length > 1;
+    dedupeProjectBaseLanguages && splitProjectBaseSnippetCards(target);
   const source = macroAttribute(attrs, "source");
   const sources = source ? [source] : ["test", "main"];
   const explicit = explicitSnippetLanguage(target);
@@ -45,7 +47,7 @@ export function docsSnippetSamples(
     for (const sourceSet of sources) {
       for (const [language, extension] of languages) {
         if (
-          splitProjectBaseSnippets &&
+          dedupeProjectBaseLanguages &&
           matchedProjectBaseLanguages.has(language)
         ) {
           continue;
@@ -78,7 +80,7 @@ export function docsSnippetSamples(
               context,
             ),
           });
-          if (splitProjectBaseSnippets) {
+          if (dedupeProjectBaseLanguages) {
             matchedProjectBaseLanguages.add(language);
           }
           continue;
@@ -96,7 +98,7 @@ export function docsSnippetSamples(
             language,
             source,
           });
-          if (splitProjectBaseSnippets) {
+          if (dedupeProjectBaseLanguages) {
             matchedProjectBaseLanguages.add(language);
           }
         }
@@ -110,6 +112,11 @@ export function docsSnippetSamples(
     });
   }
   return samples;
+}
+
+function splitProjectBaseSnippetCards(target: string): boolean {
+  const className = target.split(".").at(-1) || target;
+  return /(?:Filter|Repository)$/.test(className);
 }
 
 function snippetGroup(baseDirectory: string, context: SnippetContext): string {

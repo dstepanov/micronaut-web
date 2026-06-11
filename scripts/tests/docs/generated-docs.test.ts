@@ -875,6 +875,153 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
   );
 });
 
+test("docs renderer groups Serialization project-base model snippets as language tabs", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-serde-model-snippets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+  );
+  const exampleBaseDirectory = path.join(submoduleDirectory, "doc-examples");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "Book.java",
+    ),
+    [
+      "package example;",
+      "",
+      "import io.micronaut.serde.annotation.Serdeable;",
+      "",
+      "@Serdeable",
+      "public class Book {",
+      "    String javaTitle;",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "Book.kt",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.serde.annotation.Serdeable",
+      "",
+      "@Serdeable",
+      "data class Book(val kotlinTitle: String)",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "Book.groovy",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.serde.annotation.Serdeable",
+      "",
+      "@Serdeable",
+      "class Book {",
+      "    String groovyTitle",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-kotlin-ksp",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "Book.kt",
+    ),
+    [
+      "package example",
+      "",
+      "class Book(val kspDuplicateShouldNotRender: String)",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Micronaut Serialization Fixture",
+    [
+      "With the correct dependencies in place you can now define an object to be serialized:",
+      "",
+      'snippet::example.Book[project-base="doc-examples/example", source="main"]',
+      "",
+      "Once you have a type that can be serialized and deserialized you can use the ObjectMapper interface to do so:",
+    ].join("\n"),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  const modelIndex = generatedHtml.indexOf(
+    "With the correct dependencies in place you can now define an object to be serialized:",
+  );
+  assert.notEqual(modelIndex, -1);
+  const modelHtml = generatedHtml.slice(
+    modelIndex,
+    generatedHtml.indexOf("Once you have a type", modelIndex),
+  );
+
+  assert.equal(countMatches(modelHtml, /docs-code-snippet-template/g), 1);
+  assert.equal(countMatches(modelHtml, /role="tablist"/g), 1);
+  assertSnippetLanguageIcon(modelHtml, "java", "java");
+  assertSnippetLanguageIcon(modelHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(modelHtml, "groovy", "groovy");
+  assert.match(textOnly(modelHtml), /javaTitle/);
+  assert.match(textOnly(modelHtml), /kotlinTitle/);
+  assert.match(textOnly(modelHtml), /groovyTitle/);
+  assert.doesNotMatch(textOnly(modelHtml), /kspDuplicateShouldNotRender/);
+});
+
 test("docs renderer keeps Serialization project-base property filter snippets as separate cards", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-serde-filter-snippets-"),
