@@ -190,7 +190,7 @@ function snippetBaseDirectoriesSync(
 ): string[] {
   const project = macroAttribute(attrs, "project");
   if (project) {
-    return [path.join(context.submoduleDirectory, project)];
+    return projectSnippetDirectories(project, context);
   }
   const projectBase = macroAttribute(attrs, "project-base");
   if (projectBase) {
@@ -215,6 +215,36 @@ function snippetBaseDirectoriesSync(
     path.join(context.submoduleDirectory, "test-suite-groovy"),
     context.submoduleDirectory,
   ];
+}
+
+function projectSnippetDirectories(
+  project: string,
+  context: SnippetContext,
+): string[] {
+  const requested = path.join(context.submoduleDirectory, project);
+  if (existsSync(requested) && statSync(requested).isDirectory()) {
+    return [requested];
+  }
+  const fallback = exampleProjectAliasDirectory(project, context);
+  return fallback ? [requested, fallback] : [requested];
+}
+
+function exampleProjectAliasDirectory(
+  project: string,
+  context: SnippetContext,
+): string | undefined {
+  const segments = project.split(/[\\/]+/);
+  const baseName = segments.at(-1) || "";
+  if (!baseName.startsWith("micronaut-")) {
+    return undefined;
+  }
+  segments[segments.length - 1] = `example-${baseName.slice(
+    "micronaut-".length,
+  )}`;
+  const candidate = path.join(context.submoduleDirectory, ...segments);
+  return existsSync(candidate) && statSync(candidate).isDirectory()
+    ? candidate
+    : undefined;
 }
 
 function sortSnippetDirectories(directories: string[]): string[] {

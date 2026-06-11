@@ -875,6 +875,92 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
   );
 });
 
+test("docs renderer resolves legacy Micronaut example project aliases", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-example-project-alias-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-kubernetes",
+  );
+
+  await writeDocsProjectManifest(
+    docsDirectory,
+    "kubernetes",
+    "micronaut-kubernetes",
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      submoduleDirectory,
+      "examples",
+      "example-kubernetes-operator",
+      "src",
+      "main",
+      "java",
+      "micronaut",
+      "operator",
+      "CustomLockIdentityProvider.java",
+    ),
+    [
+      "package micronaut.operator;",
+      "",
+      "import jakarta.inject.Singleton;",
+      "",
+      "// tag::lockprovider[]",
+      "@Singleton",
+      "final class CustomLockIdentityProvider implements LockIdentityProvider {",
+      "    @Override",
+      "    public String identity() {",
+      '        return "custom-lock";',
+      "    }",
+      "}",
+      "// end::lockprovider[]",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-kubernetes",
+    "Micronaut Kubernetes Fixture",
+    'snippet::micronaut.operator.CustomLockIdentityProvider[tags="lockprovider", project="examples/micronaut-kubernetes-operator", source="main"]',
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "kubernetes",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "kubernetes.html"),
+    "utf8",
+  );
+  const generatedText = textOnly(generatedHtml);
+
+  assert.match(generatedHtml, /docs-code-snippet-template/);
+  assert.match(generatedText, /CustomLockIdentityProvider/);
+  assert.match(generatedText, /custom-lock/);
+  assert.doesNotMatch(
+    generatedText,
+    /Missing snippet source[\s\S]*micronaut\.operator\.CustomLockIdentityProvider/,
+  );
+});
+
 test("docs renderer surfaces missing snippet sources and requested tags", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-docs-missing-tags-"),
