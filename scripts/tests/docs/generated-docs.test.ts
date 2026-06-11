@@ -875,6 +875,158 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
   );
 });
 
+test("docs renderer keeps Serialization project-base property filter snippets as separate cards", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-serde-filter-snippets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+  );
+  const exampleBaseDirectory = path.join(submoduleDirectory, "doc-examples");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "PersonFilter.java",
+    ),
+    [
+      "package example;",
+      "",
+      "import io.micronaut.serde.PropertyFilter;",
+      "",
+      "public class PersonFilter implements PropertyFilter {",
+      "    boolean javaFilter() {",
+      "        return true;",
+      "    }",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "PersonFilter.kt",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.serde.PropertyFilter",
+      "",
+      "class PersonFilter : PropertyFilter {",
+      "    fun kotlinFilter(): Boolean = true",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "PersonFilter.groovy",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.serde.PropertyFilter",
+      "",
+      "class PersonFilter implements PropertyFilter {",
+      "    boolean groovyFilter() {",
+      "        true",
+      "    }",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "example-kotlin-ksp",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "PersonFilter.kt",
+    ),
+    [
+      "package example",
+      "",
+      "class PersonFilter {",
+      "    fun kspDuplicateShouldNotRender(): Boolean = true",
+      "}",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Micronaut Serialization Fixture",
+    [
+      "A custom property filter can be defined as follows:",
+      "",
+      'snippet::example.PersonFilter[project-base="doc-examples/example", source="main"]',
+      "",
+      "The filter omits the `name` field when the `preferredName` field is set:",
+    ].join("\n"),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  const filterIndex = generatedHtml.indexOf(
+    "A custom property filter can be defined as follows:",
+  );
+  assert.notEqual(filterIndex, -1);
+  const filterHtml = generatedHtml.slice(
+    filterIndex,
+    generatedHtml.indexOf("The filter omits", filterIndex),
+  );
+
+  assert.equal(countMatches(filterHtml, /docs-code-snippet-template/g), 3);
+  assert.equal(countMatches(filterHtml, /role="tablist"/g), 3);
+  assertSnippetLanguageIcon(filterHtml, "java", "java");
+  assertSnippetLanguageIcon(filterHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(filterHtml, "groovy", "groovy");
+  assert.match(textOnly(filterHtml), /javaFilter/);
+  assert.match(textOnly(filterHtml), /kotlinFilter/);
+  assert.match(textOnly(filterHtml), /groovyFilter/);
+  assert.doesNotMatch(textOnly(filterHtml), /kspDuplicateShouldNotRender/);
+});
+
 test("docs renderer resolves legacy Micronaut example project aliases", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-example-project-alias-"),
