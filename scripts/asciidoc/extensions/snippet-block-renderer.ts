@@ -80,6 +80,14 @@ type ComponentBlockNode = {
   blocks?: ComponentBlockNode[];
   convert?: () => Promise<string> | string;
   context?: string;
+  getItems?: () => ComponentListItemNode[];
+  precomputeReftext?: () => Promise<void>;
+  precomputeTitle?: () => Promise<void>;
+};
+
+type ComponentListItemNode = {
+  blocks?: ComponentBlockNode[];
+  precomputeText?: () => Promise<void>;
 };
 
 type CalloutItem = {
@@ -404,17 +412,21 @@ async function snippetFooterHtml(
   }
 
   const holder = processor.createBlock(parent, "open", "", {});
+  const footerCalloutLines = footerLines.filter(isCalloutListItem);
   await processor.parseContent(holder, [
     "[source,text]",
     "----",
-    ...footerLines.map(
-      (line: string): string =>
-        `callout ${calloutNumberFromLine(line)} <${calloutNumberFromLine(line)}>`,
-    ),
+    ...footerCalloutLines.map((line: string): string => {
+      const number = calloutNumberFromLine(line) || "1";
+      return `callout ${number} <${number}>`;
+    }),
     "----",
     ...footerLines,
   ]);
   const colist = holder.blocks?.find(isCalloutList);
+  if (colist) {
+    await precomputeGeneratedInlineText(colist);
+  }
   return colist ? String(await colist.convert()) : "";
 }
 
@@ -428,6 +440,7 @@ async function manualCalloutsHtml(
   }
   const holder = processor.createBlock(parent, "open", "", {});
   await processor.parseContent(holder, lines);
+  await precomputeGeneratedInlineText(holder);
   return (
     await Promise.all(
       (holder.blocks || []).map(
@@ -497,6 +510,24 @@ async function highlightedCodeInnerHtml(
       ),
     highlighterLanguage,
   );
+}
+
+async function precomputeGeneratedInlineText(
+  node: ComponentBlockNode,
+): Promise<void> {
+  await node.precomputeTitle?.();
+  await node.precomputeReftext?.();
+
+  for (const item of node.getItems?.() || []) {
+    await item.precomputeText?.();
+    for (const block of item.blocks || []) {
+      await precomputeGeneratedInlineText(block);
+    }
+  }
+
+  for (const block of node.blocks || []) {
+    await precomputeGeneratedInlineText(block);
+  }
 }
 
 function codeElementInnerHtml(value: string): string {
@@ -628,10 +659,13 @@ async function readCalloutListItems(
       const number =
         match[1] === "." ? String(nextCallout) : String(Number(match[1]));
       nextCallout = Number(number) + 1;
+      const itemLines = [line.replace(/^<(\.|\d+)>/, `<${number}>`)];
+      const textLines = [match[2]];
+      await readCalloutContinuationLines(reader, itemLines, textLines);
       items.push({
-        line: line.replace(/^<(\.|\d+)>/, `<${number}>`),
+        line: itemLines.join("\n"),
         number,
-        text: match[2],
+        text: textLines.join("\n"),
       });
       continue;
     }
@@ -645,6 +679,35 @@ async function readCalloutListItems(
     }
     return items;
   }
+}
+
+async function readCalloutContinuationLines(
+  reader: CalloutReader,
+  itemLines: string[],
+  textLines: string[],
+): Promise<void> {
+  for (;;) {
+    const line = await reader.peekLine();
+    if (line === undefined || isCalloutListItem(line)) {
+      return;
+    }
+    if (!line.trim()) {
+      if (await nextNonBlankLineIsCallout(reader)) {
+        await reader.readLine();
+      }
+      return;
+    }
+    if (!isIndentedContinuationLine(line)) {
+      return;
+    }
+    const continuationLine = (await reader.readLine()) || "";
+    itemLines.push(continuationLine);
+    textLines.push(continuationLine.trim());
+  }
+}
+
+function isIndentedContinuationLine(line: string): boolean {
+  return /^[ \t]+\S/.test(line);
 }
 
 function payloadCalloutNumbers(payload: SnippetPayload): Set<string> {
@@ -687,11 +750,14 @@ function manualCalloutBlockLines(
   items: CalloutItem[],
   manualCalloutsClass: string,
 ): string[] {
-  return [
-    `[.${manualCalloutsClass}]`,
-    ...items.map((item) => `. ${item.text}`),
-    "",
-  ];
+  const lines = [`[.${manualCalloutsClass}]`];
+  for (const item of items) {
+    const [firstLine = "", ...continuationLines] = item.text.split(/\r?\n/);
+    lines.push(`. ${firstLine}`);
+    lines.push(...continuationLines.map((line) => `  ${line}`));
+  }
+  lines.push("");
+  return lines;
 }
 
 async function nextNonBlankLineIsCallout(

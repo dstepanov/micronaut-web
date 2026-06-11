@@ -186,7 +186,11 @@ test("docs legacy single-colon dependency line macros render dependency snippets
   };
   const converted = await renderAsciiDoc({
     asciidoctor,
-    source: 'dependency:micronaut-kafka[groupId="io.micronaut.kafka"]',
+    source: [
+      'dependency:micronaut-kafka[groupId="io.micronaut.kafka"]',
+      "",
+      'dependency:org.slf4j:jul-to-slf4j:2.0.9[scope="runtimeOnly"]',
+    ].join("\n"),
     convertOptions: {
       attributes: {
         icons: "font",
@@ -203,12 +207,18 @@ test("docs legacy single-colon dependency line macros render dependency snippets
 
   assert.match(converted, /docs-dependency-template/);
   assert.doesNotMatch(converted, /dependency:micronaut-kafka/);
+  assert.doesNotMatch(converted, /dependency:org\.slf4j:jul-to-slf4j/);
   assert.match(
     text,
     /implementation\("io\.micronaut\.kafka:micronaut-kafka"\)/,
   );
   assert.match(text, /<groupId>io\.micronaut\.kafka<\/groupId>/);
   assert.match(text, /<artifactId>micronaut-kafka<\/artifactId>/);
+  assert.match(text, /runtimeOnly\("org\.slf4j:jul-to-slf4j:2\.0\.9"\)/);
+  assert.match(text, /<groupId>org\.slf4j<\/groupId>/);
+  assert.match(text, /<artifactId>jul-to-slf4j<\/artifactId>/);
+  assert.match(text, /<version>2\.0\.9<\/version>/);
+  assert.match(text, /<scope>runtime<\/scope>/);
 });
 
 test("properties listing snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {

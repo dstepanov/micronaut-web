@@ -572,7 +572,13 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
       "",
       "// tag::body[]",
       "class FixtureSnippet {",
-      "    void run() { // <1>",
+      "    void createBuilder() { // <1>",
+      "    }",
+      "",
+      "    void customizeBuilder() { // <2>",
+      "    }",
+      "",
+      "    void buildClient() { // <3>",
       "    }",
       "}",
       "// end::body[]",
@@ -586,7 +592,10 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
     [
       "snippet::example.FixtureSnippet[tags=body,title=Fixture Snippet,description=Rendered from snippet macro]",
       "",
-      "<1> Snippet callout follows the generated card.",
+      "<1> Snippet callout follows the generated card and may wrap",
+      "    across a https://docs.micronaut.io/latest/guide/index.html#beanContext[Micronaut's Bean Context] continuation line.",
+      "<2> The link:https://googleapis.dev/java/google-cloud-pubsub/latest/com/google/cloud/pubsub/v1/Publisher.html[Publisher] will be configured using a configuration named `batching`.",
+      "<3> The link:https://googleapis.dev/java/google-cloud-pubsub/latest/com/google/cloud/pubsub/v1/Publisher.html[Publisher] will be configured using a configuration named `immediate`.",
       "",
       "[source,java]",
       "----",
@@ -680,6 +689,34 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
   assert.match(generatedText, /Snippet callout follows the generated card/);
+  assert.match(
+    generatedText,
+    /across a Micronaut(?:'|&#8217;)s Bean Context continuation line/,
+  );
+  assert.match(
+    generatedHtml,
+    /href="https:\/\/docs\.micronaut\.io\/latest\/guide\/index\.html#beanContext"[^>]*>Micronaut&#8217;s Bean Context<\/a>/,
+  );
+  assert.match(
+    generatedText,
+    /Publisher will be configured using a configuration named batching/,
+  );
+  assert.match(
+    generatedText,
+    /Publisher will be configured using a configuration named immediate/,
+  );
+  assert.match(
+    generatedHtml,
+    /href="https:\/\/googleapis\.dev\/java\/google-cloud-pubsub\/latest\/com\/google\/cloud\/pubsub\/v1\/Publisher\.html"[^>]*>Publisher<\/a>/,
+  );
+  assert.match(generatedHtml, /configuration named <code>batching<\/code>/);
+  assert.match(generatedHtml, /configuration named <code>immediate<\/code>/);
+  assert.doesNotMatch(
+    generatedHtml,
+    /link:https:\/\/googleapis\.dev\/java\/google-cloud-pubsub\/latest\/com\/google\/cloud\/pubsub\/v1\/Publisher\.html\[Publisher]/,
+  );
+  assert.doesNotMatch(generatedHtml, /&lt;2&gt; The link:/);
+  assert.doesNotMatch(generatedHtml, /&lt;3&gt; The link:/);
   assert.match(generatedText, /HTTP Client dependency/);
   assert.match(generatedText, /Rendered from dependency macro/);
   assert.match(generatedText, /io\.micronaut:micronaut-http-client/);

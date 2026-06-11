@@ -64,7 +64,7 @@ function rewriteDocsSource(source: string): string {
 
 function rewriteLegacyDependencyLineMacros(source: string): string {
   return source.replace(
-    /^([ \t]*)dependency:([^:\r\n]*\[[^\]\r\n]*])([ \t]*)$/gm,
+    /^([ \t]*)dependency:(?!:)([^\r\n\[]+\[[^\]\r\n]*])([ \t]*)$/gm,
     (_match: string, indent: string, macro: string): string =>
       `${indent}dependency::${macro}`,
   );
