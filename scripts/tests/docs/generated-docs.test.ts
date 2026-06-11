@@ -1597,13 +1597,25 @@ test("docs commandline source blocks use shell highlighting", (): void => {
 });
 
 test("properties listings format empty dotted assignments like indexed and placeholder assignments", async (): Promise<void> => {
+  const azureCredentialProperty =
+    "azure.credential.storage-shared-key.account-key";
+  const azureCredentialValue =
+    "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+  const azureConnectionStringProperty =
+    "azure.credential.storage-shared-key.connection-string";
+  const azureConnectionStringValue =
+    "DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=https://127.0.0.1:10000/devstoreaccount1;";
   const html = await highlightListingBlocks(
     [
       '<div class="listingblock">',
       '<div class="content">',
       '<pre><code class="language-properties">foo.bar.property=',
       "foo.bar[0]=",
-      "foo.bar&lt;prop&gt;=</code></pre>",
+      "foo.bar&lt;prop&gt;=",
+      "kubernetes.client.config-maps.includes[0]=",
+      "kubernetes.client.config-maps.excludes&#91;0&#93;=",
+      `${azureCredentialProperty}=${azureCredentialValue}`,
+      `${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>`,
       "</div>",
       "</div>",
     ].join("\n"),
@@ -1615,12 +1627,40 @@ test("properties listings format empty dotted assignments like indexed and place
     html,
     "foo.bar&lt;prop&gt;=",
   );
+  const kubernetesIndexedLine = highlightedLineContaining(
+    html,
+    "kubernetes.client.config-maps.includes[0]=",
+  );
+  const encodedIndexedLine = highlightedLineContaining(
+    html,
+    "kubernetes.client.config-maps.excludes[0]=",
+  );
+  const azureCredentialLine = highlightedLineContaining(
+    html,
+    azureCredentialProperty,
+  );
+  const azureConnectionStringLine = highlightedLineContaining(
+    html,
+    azureConnectionStringProperty,
+  );
   const dottedStyle = highlightedLineTextStyle(dottedLine);
 
   assert.notEqual(dottedLine, "");
   assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
   assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(encodedIndexedLine));
   assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+  assertOnlyPropertyKeyHighlighted(
+    azureCredentialLine,
+    azureCredentialProperty,
+    azureCredentialValue,
+  );
+  assertOnlyPropertyKeyHighlighted(
+    azureConnectionStringLine,
+    azureConnectionStringProperty,
+    azureConnectionStringValue,
+  );
 });
 
 test("properties listings attach standalone callout markers to the next property line", async (): Promise<void> => {
@@ -2210,6 +2250,21 @@ function highlightedLineContaining(source: string, text: string): string {
 
 function highlightedLineTextStyle(line: string): string {
   return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
+}
+
+function assertOnlyPropertyKeyHighlighted(
+  line: string,
+  property: string,
+  value: string,
+): void {
+  assert.notEqual(line, "");
+  const valueStart = line.indexOf(`=${value}`);
+  assert.notEqual(valueStart, -1);
+
+  const keyHtml = line.slice(0, valueStart);
+  assert.ok(keyHtml.includes(property));
+  assert.match(keyHtml, /#CF222E|#FF7B72/);
+  assert.doesNotMatch(line.slice(valueStart), /#CF222E|#FF7B72/);
 }
 
 async function fileExists(file: string): Promise<boolean> {

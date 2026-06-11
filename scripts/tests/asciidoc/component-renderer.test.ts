@@ -222,6 +222,14 @@ test("docs legacy single-colon dependency line macros render dependency snippets
 });
 
 test("properties listing snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
+  const azureCredentialProperty =
+    "azure.credential.storage-shared-key.account-key";
+  const azureCredentialValue =
+    "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+  const azureConnectionStringProperty =
+    "azure.credential.storage-shared-key.connection-string";
+  const azureConnectionStringValue =
+    "DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=https://127.0.0.1:10000/devstoreaccount1;";
   const converted = await renderAsciiDoc({
     asciidoctor,
     source: [
@@ -230,6 +238,9 @@ test("properties listing snippets format empty dotted assignments like indexed a
       "foo.bar.property=",
       "foo.bar[0]=",
       "foo.bar<prop>=",
+      "kubernetes.client.config-maps.includes[0]=",
+      `${azureCredentialProperty}=${azureCredentialValue}`,
+      `${azureConnectionStringProperty}=${azureConnectionStringValue}`,
       "----",
     ].join("\n"),
     convertOptions: {
@@ -248,12 +259,35 @@ test("properties listing snippets format empty dotted assignments like indexed a
     converted,
     "foo.bar&lt;prop&gt;=",
   );
+  const kubernetesIndexedLine = highlightedLineContaining(
+    converted,
+    "kubernetes.client.config-maps.includes[0]=",
+  );
+  const azureCredentialLine = highlightedLineContaining(
+    converted,
+    azureCredentialProperty,
+  );
+  const azureConnectionStringLine = highlightedLineContaining(
+    converted,
+    azureConnectionStringProperty,
+  );
   const dottedStyle = highlightedLineTextStyle(dottedLine);
 
   assert.notEqual(dottedLine, "");
   assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
   assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
+  assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
   assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+  assertOnlyPropertyKeyHighlighted(
+    azureCredentialLine,
+    azureCredentialProperty,
+    azureCredentialValue,
+  );
+  assertOnlyPropertyKeyHighlighted(
+    azureConnectionStringLine,
+    azureConnectionStringProperty,
+    azureConnectionStringValue,
+  );
 });
 
 test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<void> => {
@@ -883,6 +917,21 @@ function highlightedLineContaining(source: string, text: string): string {
 
 function highlightedLineTextStyle(line: string): string {
   return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
+}
+
+function assertOnlyPropertyKeyHighlighted(
+  line: string,
+  property: string,
+  value: string,
+): void {
+  assert.notEqual(line, "");
+  const valueStart = line.indexOf(`=${value}`);
+  assert.notEqual(valueStart, -1);
+
+  const keyHtml = line.slice(0, valueStart);
+  assert.ok(keyHtml.includes(property));
+  assert.match(keyHtml, /#CF222E|#FF7B72/);
+  assert.doesNotMatch(line.slice(valueStart), /#CF222E|#FF7B72/);
 }
 
 function buttonHtmlForLanguage(value: string, language: string): string {

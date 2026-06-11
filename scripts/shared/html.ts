@@ -11,11 +11,15 @@ export function attribute(value: unknown): string {
 
 export function decodeHtml(value: unknown): string {
   return String(value)
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code: string) =>
+      String.fromCodePoint(Number.parseInt(code, 16)),
+    )
+    .replace(/&#(\d+);/g, (_match, code: string) =>
+      String.fromCodePoint(Number.parseInt(code, 10)),
+    )
     .replaceAll("&lt;", "<")
     .replaceAll("&gt;", ">")
     .replaceAll("&quot;", '"')
-    .replaceAll("&#8217;", "'")
-    .replaceAll("&#x3C;", "<")
     .replaceAll("&amp;", "&");
 }
 
