@@ -182,6 +182,44 @@ test("snippet, dependency, and configuration block processors render React snipp
   assert.match(text, /micronaut\.application\.name=demo/);
 });
 
+test("configuration snippets with verbatim substitutions render component HTML", async (): Promise<void> => {
+  const converted = await renderAsciiDoc({
+    asciidoctor,
+    source: [
+      "For example, to configure Google as a provider:",
+      "",
+      '[configuration,subs="verbatim"]',
+      "----",
+      "micronaut:",
+      "  security:",
+      "    oauth2:",
+      "      clients:",
+      "        google:",
+      "          client-secret: <<your client secret>>",
+      "          client-id: <<your client id>>",
+      "          openid:",
+      "            issuer: https://accounts.google.com",
+      "----",
+    ].join("\n"),
+    convertOptions: {
+      attributes: {
+        icons: "font",
+        idprefix: "",
+        idseparator: "-",
+      },
+      base_dir: fixtureDirectory,
+    },
+  });
+  const text = textOnly(converted);
+
+  assert.match(converted, /<div data-slot="card"/);
+  assert.match(converted, /docs-code-snippet-template/);
+  assert.doesNotMatch(converted, /&lt;div data-slot="card"/);
+  assert.match(text, /For example, to configure Google as a provider/);
+  assert.match(text, /micronaut\.security\.oauth2\.clients\.google/);
+  assert.match(text, /issuer=https:\/\/accounts\.google\.com/);
+});
+
 test("docs legacy single-colon dependency line macros render dependency snippets", async (): Promise<void> => {
   const context = {
     attributes: {
@@ -358,6 +396,39 @@ test("snippet block processor absorbs following callout lines from the document 
   assert.match(text, /First source callout/);
   assert.match(text, /Second source callout/);
   assert.match(text, /Manual callout/);
+});
+
+test("listing callout footers render attribute-backed inline links", async (): Promise<void> => {
+  const converted = await renderAsciiDoc({
+    asciidoctor,
+    source: [
+      "[source,java]",
+      "----",
+      "class Example {",
+      "    void groups() {} // <1>",
+      "}",
+      "----",
+      "<1> The link:{api}/io/micronaut/security/ldap/group/LdapGroupProcessor.html#getAdditionalGroups-io.micronaut.security.ldap.context.LdapSearchResult-[getAdditionalGroups] method works.",
+    ].join("\n"),
+    convertOptions: {
+      attributes: {
+        api: "assets/security/docs/api",
+        icons: "font",
+        idprefix: "",
+        idseparator: "-",
+      },
+      base_dir: fixtureDirectory,
+    },
+  });
+  const text = textOnly(converted);
+
+  assert.match(converted, /docs-code-callouts/);
+  assert.match(
+    converted,
+    /href="assets\/security\/docs\/api\/io\/micronaut\/security\/ldap\/group\/LdapGroupProcessor\.html#getAdditionalGroups-io\.micronaut\.security\.ldap\.context\.LdapSearchResult-"[^>]*>getAdditionalGroups<\/a>/,
+  );
+  assert.doesNotMatch(converted, /link:\{api\}/);
+  assert.match(text, /The getAdditionalGroups method works/);
 });
 
 test("generated snippet ids stay unique without shared render state", async (): Promise<void> => {

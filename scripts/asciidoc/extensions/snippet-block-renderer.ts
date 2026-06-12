@@ -153,6 +153,7 @@ export async function renderSnippetBlockWithCalloutReader(
     rendered.html + manualCalloutHtml,
     {
       role: "docs-snippet",
+      subs: null,
     },
   );
 }
@@ -512,7 +513,7 @@ async function highlightedCodeInnerHtml(
   );
 }
 
-async function precomputeGeneratedInlineText(
+export async function precomputeGeneratedInlineText(
   node: ComponentBlockNode,
 ): Promise<void> {
   await node.precomputeTitle?.();

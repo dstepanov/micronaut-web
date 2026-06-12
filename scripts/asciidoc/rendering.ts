@@ -4,6 +4,7 @@ import type { Registry } from "@asciidoctor/core";
 import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
 import {
+  precomputeGeneratedInlineText,
   renderGeneratedSnippet,
   renderSnippetVariant,
 } from "./extensions/snippet-block-renderer.ts";
@@ -65,8 +66,15 @@ class MicronautComponentHtmlConverter extends Html5Converter {
 
   private async footerHtml(node: object): Promise<string> {
     return componentFooterHtml(node, (footerNode) =>
-      super.convert_colist(footerNode),
+      this.renderFooterColist(footerNode),
     );
+  }
+
+  private async renderFooterColist(
+    node: Parameters<typeof precomputeGeneratedInlineText>[0],
+  ): Promise<string> {
+    await precomputeGeneratedInlineText(node);
+    return super.convert_colist(node);
   }
 }
 
