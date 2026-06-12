@@ -99,8 +99,7 @@ export function DocsRelatedGuides({
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <Badge variant="secondary">Guides</Badge>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+          <h2 className="text-2xl font-semibold tracking-tight">
             Latest guides
           </h2>
         </div>
