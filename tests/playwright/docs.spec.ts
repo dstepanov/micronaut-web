@@ -357,6 +357,7 @@ test("docs page renders related latest guides from the guides manifest", async (
     relatedGuides.getByRole("link", { name: "Show more" }),
   ).toHaveAttribute("href", /\/(?:guides|latest)\/\?q=micronaut-data$/);
   await expect(relatedGuides.locator('[data-slot="card"]')).toHaveCount(3);
+  await expectShowMoreBelowCard(relatedGuides, 2);
   await expect(relatedGuides.locator('[data-slot="card-title"] a')).toHaveText([
     "Build reactive repositories with Micronaut Data R2DBC",
     "Use MongoDB with Micronaut Data",
@@ -395,6 +396,32 @@ test("docs page renders related latest guides from the guides manifest", async (
     "href",
     relatedGuideHrefPattern("micronaut-data-jdbc-repository-gradle-java.html"),
   );
+
+  expect(failures).toEqual([]);
+});
+
+test("docs related guides show more link follows shorter result counts", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(relatedGuidesManifest()),
+    });
+  });
+
+  await page.goto(appPath("/docs/core/"));
+  const coreRelatedGuides = page.locator("[data-docs-related-guides]");
+  await expect(coreRelatedGuides).toBeVisible();
+  await expect(coreRelatedGuides.locator('[data-slot="card"]')).toHaveCount(2);
+  await expectShowMoreBelowCard(coreRelatedGuides, 1);
+
+  await page.goto(appPath("/docs/serde/"));
+  const serdeRelatedGuides = page.locator("[data-docs-related-guides]");
+  await expect(serdeRelatedGuides).toBeVisible();
+  await expect(serdeRelatedGuides.locator('[data-slot="card"]')).toHaveCount(1);
+  await expectShowMoreBelowCard(serdeRelatedGuides, 0);
 
   expect(failures).toEqual([]);
 });
@@ -517,6 +544,30 @@ function relatedGuidesManifest() {
       categories: ["HTTP Client"],
       publicationDate: "2030-01-01",
       estimatedMinutes: 30,
+    }),
+    relatedGuideManifestEntry({
+      slug: "micronaut-configuration",
+      title: "Configure Micronaut applications",
+      intro: "Learn how to configure Micronaut applications.",
+      tags: ["configuration"],
+      categories: ["Core Basics"],
+      publicationDate: "2024-01-01",
+    }),
+    relatedGuideManifestEntry({
+      slug: "creating-your-first-micronaut-app",
+      title: "Creating your first Micronaut application",
+      intro: "Learn how to create a first Micronaut application.",
+      tags: ["junit"],
+      categories: ["Getting Started"],
+      publicationDate: "2018-05-23",
+    }),
+    relatedGuideManifestEntry({
+      slug: "micronaut-produces-xml",
+      title: "Produce XML responses with Micronaut",
+      intro: "Learn how to produce XML responses from Micronaut controllers.",
+      tags: [],
+      categories: ["Beyond JSON"],
+      publicationDate: "2022-01-31",
     }),
     relatedGuideManifestEntry({
       slug: "micronaut-data-r2dbc-repository",
@@ -719,6 +770,26 @@ async function expectDocsLinkActive(
   }
   await expect(link).not.toHaveClass(/(^|\s)active(\s|$)/);
   await expect(link).not.toHaveAttribute("aria-current", "location");
+}
+
+async function expectShowMoreBelowCard(
+  section: Locator,
+  cardIndex: number,
+): Promise<void> {
+  const showMore = section.locator("[data-docs-related-guides-show-more]");
+  const card = section.locator('[data-slot="card"]').nth(cardIndex);
+  await expect(showMore).toBeVisible();
+  await expect(card).toBeVisible();
+
+  const [showMoreBox, cardBox] = await Promise.all([
+    showMore.boundingBox(),
+    card.boundingBox(),
+  ]);
+  assertBox(showMoreBox, "related guides show more link");
+  assertBox(cardBox, "related guide card");
+  expect(showMoreBox.y).toBeGreaterThanOrEqual(cardBox.y + cardBox.height - 1);
+  expect(showMoreBox.x).toBeLessThanOrEqual(cardBox.x + cardBox.width);
+  expect(showMoreBox.x + showMoreBox.width).toBeGreaterThanOrEqual(cardBox.x);
 }
 
 async function clickAndExpectProjectSections({

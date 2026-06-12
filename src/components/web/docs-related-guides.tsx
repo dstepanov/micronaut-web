@@ -103,22 +103,36 @@ export function DocsRelatedGuides({
             Latest guides
           </h2>
         </div>
-        <Button
-          asChild
-          size="sm"
-          variant="link"
-          className="h-auto justify-start px-0"
-        >
-          <a href={showMoreHref}>
-            Show more
-            <ArrowRightIcon className="size-4" />
-          </a>
-        </Button>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {loaded
-          ? guides.map((guide) => (
-              <RelatedGuideCard key={guide.slug} guide={guide} />
+          ? guides.map((guide, index) => (
+              <div
+                key={guide.slug}
+                className="grid h-full grid-rows-[1fr_auto] gap-3"
+              >
+                <RelatedGuideCard guide={guide} />
+                {index === guides.length - 1 ? (
+                  <div className="flex min-h-8 items-center lg:justify-end">
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="link"
+                      className="h-auto justify-start px-0"
+                    >
+                      <a href={showMoreHref} data-docs-related-guides-show-more>
+                        Show more
+                        <ArrowRightIcon className="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="hidden min-h-8 lg:block"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
             ))
           : [0, 1, 2].map((index) => <RelatedGuideSkeleton key={index} />)}
       </div>
