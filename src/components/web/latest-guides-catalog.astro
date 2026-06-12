@@ -109,13 +109,24 @@ function matchesQuery(guide: GeneratedGuide, value: string) {
     return true;
   }
   const normalized = value.toLowerCase();
-  return [
+  const normalizedSlug = categorySlug(value);
+  const searchableText = [
+    guide.slug,
     guide.title,
     guide.intro,
     guide.authors.join(" "),
     guide.categories.join(" "),
     guide.tags.join(" ")
-  ].join(" ").toLowerCase().includes(normalized);
+  ].join(" ").toLowerCase();
+  const searchableSlugs = [
+    guide.slug,
+    ...guide.categories.map(categorySlug),
+    ...guide.tags.map(categorySlug)
+  ].join(" ");
+  return (
+    searchableText.includes(normalized) ||
+    Boolean(normalizedSlug && searchableSlugs.includes(normalizedSlug))
+  );
 }
 
 function sortGuides(items: GeneratedGuide[], mode: SortMode) {
@@ -285,9 +296,18 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
             <div
               data-guide-card
               data-title={guide.title}
-              data-search={[guide.title, guide.intro, guide.authors.join(" "), guide.categories.join(" "), guide.tags.join(" ")].join(" ").toLowerCase()}
+              data-search={[
+                guide.slug,
+                guide.title,
+                guide.intro,
+                guide.authors.join(" "),
+                guide.categories.join(" "),
+                guide.tags.join(" "),
+                guide.categories.map(categorySlug).join(" "),
+                guide.tags.map(categorySlug).join(" ")
+              ].join(" ").toLowerCase()}
               data-categories={guide.categories.map(categorySlug).join("|")}
-              data-tags={guide.tags.join("|")}
+              data-tags={guide.tags.map(categorySlug).join("|")}
               data-date={guide.publicationDate}
               data-minutes={guide.estimatedMinutes}
             >
@@ -315,5 +335,6 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
 </main>
 
 <script>
+  import "@/scripts/guides-catalog-filters";
   import "@/scripts/guides-version-selector";
 </script>

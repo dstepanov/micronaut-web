@@ -35,8 +35,8 @@
         "playwright"
       ],
       "guideTopicAliases": [
-        "getting-started",
-        "junit"
+        "core-basics",
+        "getting-started"
       ],
       "shortDescription": "Micronaut Core",
       "longDescription": "Micronaut Core copied browser layout fixture."
@@ -62,7 +62,10 @@
       "guideTopicAliases": [
         "micronaut-data",
         "data-jdbc",
-        "database"
+        "data-r2dbc",
+        "data-jpa",
+        "database-modeling",
+        "geospatial"
       ],
       "shortDescription": "Micronaut Data",
       "longDescription": "Micronaut Data copied browser layout fixture."
@@ -86,6 +89,7 @@
         "playwright"
       ],
       "guideTopicAliases": [
+        "beyond-json",
         "serialization",
         "serde",
         "json"

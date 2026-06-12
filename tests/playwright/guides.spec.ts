@@ -208,6 +208,24 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
   expect(failures).toEqual([]);
 });
 
+test("guide catalog search matches normalized category aliases", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+
+  await page.goto(appPath("/guides/?q=getting-started"));
+
+  await expect(
+    page.locator("[data-guide-card]", {
+      hasText: "Creating your first Micronaut application",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.locator("[data-guide-card]", { hasText: httpClientGuideTitle }),
+  ).toBeHidden();
+  expect(failures).toEqual([]);
+});
+
 test("guide overview redirects to the preferred variant and exposes variant navigation", async ({
   page,
 }) => {

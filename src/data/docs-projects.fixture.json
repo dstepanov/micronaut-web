@@ -243,8 +243,8 @@
         "most-popular"
       ],
       "guideTopicAliases": [
-        "getting-started",
-        "junit"
+        "core-basics",
+        "getting-started"
       ],
       "shortDescription": "Core framework runtime",
       "longDescription": "Micronaut Core supplies runtime APIs and compile-time infrastructure for injection, configuration, AOP, validation, HTTP, serialization, and native images so platform modules build fast, modular applications consistently across diverse deployment environments."
@@ -267,6 +267,11 @@
       "categorySlugs": [
         "dev-and-test"
       ],
+      "guideTopicAliases": [
+        "testing",
+        "testcontainers",
+        "micronaut-rest-assured"
+      ],
       "shortDescription": "Testing support",
       "longDescription": "Micronaut Test connects JUnit, Spock, Kotest, embedded servers, clients, dependency injection, transactions, and contexts so tests exercise real wiring while remaining isolated, repeatable, and CI-friendly across local and pipeline runs."
     },
@@ -287,6 +292,10 @@
       "primaryCategory": "languages",
       "categorySlugs": [
         "languages"
+      ],
+      "guideTopicAliases": [
+        "kotlin",
+        "micronaut-kotlin-extension-fns"
       ],
       "shortDescription": "Kotlin language support",
       "longDescription": "Micronaut Kotlin adds Kotlin-friendly extensions, annotation processing guidance, coroutine support, nullability-aware APIs, and testing conveniences so idiomatic Kotlin keeps compile-time injection, configuration binding, and native-image readiness across service modules cleanly."
@@ -310,6 +319,10 @@
         "most-popular",
         "api"
       ],
+      "guideTopicAliases": [
+        "spring-boot",
+        "micronaut-spring-boot"
+      ],
       "shortDescription": "Spring integration extensions",
       "longDescription": "Micronaut Spring supports selected Spring annotations, beans, events, transactions, and integration patterns so migrated code can run on the lightweight container while teams adopt compile-time injection gradually with less rewriting."
     },
@@ -331,6 +344,9 @@
       "categorySlugs": [
         "database-migration"
       ],
+      "guideTopicAliases": [
+        "micronaut-liquibase"
+      ],
       "shortDescription": "Liquibase integration",
       "longDescription": "Micronaut Liquibase runs changelogs during startup or deployment, connecting migrations to datasources, contexts, labels, rollback files, and per-datasource settings so schemas evolve predictably beside dependent services in every environment safely."
     },
@@ -351,6 +367,10 @@
       "primaryCategory": "database-migration",
       "categorySlugs": [
         "database-migration"
+      ],
+      "guideTopicAliases": [
+        "micronaut-flyway",
+        "flyway"
       ],
       "shortDescription": "Flyway integration",
       "longDescription": "Micronaut Flyway runs versioned SQL or Java migrations for configured datasources, exposes migration settings through configuration, and keeps schema changes aligned with releases without custom startup code in services reliably."
@@ -395,6 +415,10 @@
         "most-popular",
         "api"
       ],
+      "guideTopicAliases": [
+        "graphql",
+        "micronaut-graphql"
+      ],
       "shortDescription": "GraphQL integration",
       "longDescription": "Micronaut GraphQL provides schema loading, data fetchers, instrumentation, execution configuration, and runtime wiring so GraphQL APIs share injection, validation, security, testing, and configuration with HTTP services inside production applications cleanly."
     },
@@ -438,6 +462,10 @@
         "most-popular",
         "messaging"
       ],
+      "guideTopicAliases": [
+        "kafka",
+        "micronaut-kafka"
+      ],
       "shortDescription": "Kafka messaging",
       "longDescription": "Micronaut Kafka integrates producers, consumers, and event-driven workflows with serialization, batching, offsets, errors, health checks, and configuration so services exchange typed messages through injectable components with predictable lifecycle behavior reliably."
     },
@@ -480,6 +508,10 @@
       "categorySlugs": [
         "analytics"
       ],
+      "guideTopicAliases": [
+        "metrics",
+        "micronaut-metrics"
+      ],
       "shortDescription": "Metrics instrumentation",
       "longDescription": "Micronaut Micrometer connects applications to metrics registries with binders, annotations, management endpoints, and configuration so HTTP, messaging, cache, database, and custom telemetry is published consistently without manual metrics plumbing code."
     },
@@ -501,6 +533,10 @@
       "categorySlugs": [
         "data-access"
       ],
+      "guideTopicAliases": [
+        "jdbc",
+        "data-jdbc"
+      ],
       "shortDescription": "SQL database support",
       "longDescription": "Micronaut SQL provides JDBC infrastructure for datasource configuration, pools, transactions, schema tooling, and persistence support, giving applications a consistent base for relational access across environments while staying platform aligned cleanly."
     },
@@ -521,6 +557,9 @@
       "primaryCategory": "data-access",
       "categorySlugs": [
         "data-access"
+      ],
+      "guideTopicAliases": [
+        "mongodb"
       ],
       "shortDescription": "MongoDB integration",
       "longDescription": "Micronaut MongoDB configures clients, BSON codecs, health checks, optional transactions, and repository access so document database connectivity remains injectable, lifecycle-managed, and consistent across application environments without custom connection setup code."
@@ -585,6 +624,10 @@
       "categorySlugs": [
         "messaging"
       ],
+      "guideTopicAliases": [
+        "rabbitmq",
+        "micronaut-rabbitmq"
+      ],
       "shortDescription": "RabbitMQ messaging",
       "longDescription": "Micronaut RabbitMQ provides AMQP messaging with publishers, listeners, exchanges, queues, acknowledgements, serialization, retries, error handling, and configuration so message-driven components remain typed, injectable, and testable beside other application beans reliably."
     },
@@ -605,6 +648,18 @@
       "primaryCategory": "cloud",
       "categorySlugs": [
         "cloud"
+      ],
+      "guideTopicAliases": [
+        "aws-lambda",
+        "lambda",
+        "micronaut-aws-parameter-store",
+        "micronaut-aws-secretsmanager",
+        "micronaut-aws-secretsmanager-rotation",
+        "micronaut-cloud-database-aws",
+        "micronaut-elasticbeanstalk",
+        "micronaut-email-amazon-ses",
+        "micronaut-metrics-aws",
+        "micronaut-object-storage-aws"
       ],
       "shortDescription": "AWS cloud integrations",
       "longDescription": "Micronaut AWS integrates serverless functions, SDK clients, parameters, secrets, messaging, storage, tracing, and deployment support so services consume Amazon infrastructure through injection and configuration instead of custom bootstrap per module."
@@ -648,6 +703,15 @@
       "categorySlugs": [
         "cloud"
       ],
+      "guideTopicAliases": [
+        "cloudrun",
+        "appengine",
+        "cloudfunctions",
+        "micronaut-google-cloud-compute",
+        "micronaut-cloud-secret-manager-google",
+        "micronaut-cloud-database-google",
+        "micronaut-cloud-trace-google"
+      ],
       "shortDescription": "Google Cloud integrations",
       "longDescription": "Micronaut GCP integrates functions, cloud clients, configuration, tracing, logging, and runtime behavior so applications target Google Cloud while keeping development and testing familiar through injected services and settings locally too."
     },
@@ -668,6 +732,9 @@
       "primaryCategory": "cloud",
       "categorySlugs": [
         "cloud"
+      ],
+      "guideTopicAliases": [
+        "kubernetes"
       ],
       "shortDescription": "Kubernetes integration",
       "longDescription": "Micronaut Kubernetes supports service discovery, configuration, health, leader election, service account access, and cluster metadata so applications adapt to Kubernetes without scattering infrastructure code through business components or profiles repeatedly."
@@ -712,6 +779,9 @@
         "most-popular",
         "api"
       ],
+      "guideTopicAliases": [
+        "openapi"
+      ],
       "shortDescription": "OpenAPI and Swagger",
       "longDescription": "Micronaut OpenAPI generates API descriptions, schemas, Swagger UI assets, and documentation from code, helping HTTP APIs publish accurate contracts without maintaining separate specifications manually during development and release workflows reliably."
     },
@@ -733,6 +803,16 @@
       "categorySlugs": [
         "most-popular"
       ],
+      "guideTopicAliases": [
+        "micronaut-security",
+        "security",
+        "oauth2",
+        "oidc",
+        "jwt",
+        "basic-auth",
+        "x509",
+        "jwk"
+      ],
       "shortDescription": "Security solution",
       "longDescription": "Micronaut Security provides authentication and authorization with tokens, sessions, OAuth, OpenID Connect, LDAP, intercept rules, endpoint protection, and events while keeping policies configurable, explicit, and testable across services and environments."
     },
@@ -753,6 +833,13 @@
       "primaryCategory": "views",
       "categorySlugs": [
         "views"
+      ],
+      "guideTopicAliases": [
+        "views",
+        "turbo",
+        "hotwire",
+        "micronaut-views-thymeleaf",
+        "micronaut-webjars-stimulus"
       ],
       "shortDescription": "Server-side views",
       "longDescription": "Micronaut Views integrates server-side templates with HTTP applications, handling view resolution, model binding, static resources, rendering configuration, and HTML responses through normal controllers, validation, security, and injection like APIs too."
@@ -795,6 +882,10 @@
       "primaryCategory": "validation",
       "categorySlugs": [
         "validation"
+      ],
+      "guideTopicAliases": [
+        "hibernate-validator",
+        "micronaut-custom-validation-annotation"
       ],
       "shortDescription": "Hibernate Validator integration",
       "longDescription": "Micronaut Hibernate Validator integrates Hibernate Validator with managed components, supporting constraints, validator factories, localized messages, bean validation, controller argument validation, and configuration validation through familiar Jakarta Validation behavior and semantics."
@@ -863,7 +954,10 @@
       "guideTopicAliases": [
         "micronaut-data",
         "data-jdbc",
-        "database"
+        "data-r2dbc",
+        "data-jpa",
+        "database-modeling",
+        "geospatial"
       ],
       "shortDescription": "Data repository support",
       "longDescription": "Micronaut Data precomputes repository queries ahead of time and executes them through a small runtime layer for SQL and NoSQL stores, pagination, transactions, projections, criteria APIs, and reflection-free repository access."
@@ -885,6 +979,10 @@
       "primaryCategory": "misc",
       "categorySlugs": [
         "misc"
+      ],
+      "guideTopicAliases": [
+        "cache",
+        "micronaut-cache"
       ],
       "shortDescription": "Cache abstraction",
       "longDescription": "Micronaut Cache adds annotation-driven caching with pluggable backends, key generation, invalidation, conditions, async behavior, and backend configuration while keeping cache decisions near services and portable across infrastructure choices in tests."
@@ -928,6 +1026,10 @@
       "categorySlugs": [
         "api"
       ],
+      "guideTopicAliases": [
+        "beyond-json",
+        "micronaut-produces-xml"
+      ],
       "shortDescription": "Jackson XML support",
       "longDescription": "Micronaut Jackson XML adds XML media support for HTTP clients, controllers, and codecs using Jackson, content negotiation, serialization configuration, and object mapping for integrations still depending on XML contracts today."
     },
@@ -948,6 +1050,10 @@
       "primaryCategory": "api",
       "categorySlugs": [
         "api"
+      ],
+      "guideTopicAliases": [
+        "jax-rs",
+        "micronaut-jaxrs-jdbc"
       ],
       "shortDescription": "JAX-RS compatibility",
       "longDescription": "Micronaut JAX-RS supports selected Jakarta REST annotations and HTTP patterns so teams reuse JAX-RS-style controllers, parameters, and metadata on compile-time routing and injection during incremental migration from older stacks safely."
@@ -991,6 +1097,10 @@
       "categorySlugs": [
         "reactive"
       ],
+      "guideTopicAliases": [
+        "rx",
+        "micronaut-http-client"
+      ],
       "shortDescription": "RxJava 3 integration",
       "longDescription": "Micronaut RxJava 3 integrates RxJava types with HTTP clients, controllers, conversion services, and components so reactive flows remain usable in APIs and services with configuration, lifecycle, injection, and testing support."
     },
@@ -1011,6 +1121,9 @@
       "primaryCategory": "reactive",
       "categorySlugs": [
         "reactive"
+      ],
+      "guideTopicAliases": [
+        "micronaut-reactor-streaming-http-client"
       ],
       "shortDescription": "Project Reactor integration",
       "longDescription": "Micronaut Reactor integrates Mono, Flux, and Reactor context behavior with HTTP handling, conversion, clients, filters, controllers, services, and observability across reactive applications using dependency injection and configuration in production systems."
@@ -1033,6 +1146,13 @@
       "categorySlugs": [
         "cloud"
       ],
+      "guideTopicAliases": [
+        "azure",
+        "micronaut-azure-cloud",
+        "micronaut-azure-http-functions",
+        "micronaut-azure-logging",
+        "micronaut-cloud-secrets-azure"
+      ],
       "shortDescription": "Microsoft Azure integrations",
       "longDescription": "Micronaut Azure connects applications to Azure services and hosting models with functions, cloud clients, configuration, identity, tracing, and deployment workflows through injection and settings from local development to production cloud."
     },
@@ -1053,6 +1173,10 @@
       "primaryCategory": "messaging",
       "categorySlugs": [
         "messaging"
+      ],
+      "guideTopicAliases": [
+        "jms",
+        "micronaut-jms-aws-sqs"
       ],
       "shortDescription": "JMS messaging",
       "longDescription": "Micronaut JMS integrates producers, listeners, destinations, acknowledgements, transactions, serialization, and configuration so enterprise messaging uses typed handlers and injection with existing brokers and repeatable integration test suites in CI too."
@@ -1075,6 +1199,11 @@
       "categorySlugs": [
         "cloud"
       ],
+      "guideTopicAliases": [
+        "service-discovery",
+        "consul",
+        "eureka"
+      ],
       "shortDescription": "Service discovery",
       "longDescription": "Micronaut Discovery Client provides service registration and lookup with Consul, Eureka, health integration, metadata, and configuration-driven resolution so clients avoid hardcoded locations and duplicated discovery logic across modules in services."
     },
@@ -1095,6 +1224,17 @@
       "primaryCategory": "cloud",
       "categorySlugs": [
         "cloud"
+      ],
+      "guideTopicAliases": [
+        "micronaut-oracle-cloud",
+        "micronaut-oracle-cloud-streaming",
+        "micronaut-oracle-function",
+        "micronaut-oracle-function-http",
+        "micronaut-oracle-email-delivery",
+        "micronaut-object-storage-oracle-cloud",
+        "micronaut-cloud-database-oracle",
+        "micronaut-cloud-secrets-oracle",
+        "micronaut-cloud-trace-oci"
       ],
       "shortDescription": "Oracle Cloud integrations",
       "longDescription": "Micronaut Oracle Cloud integrates OCI functions, SDK clients, configuration, authentication, object storage, and deployment workflows so services consume cloud resources through injected clients and environment-aware configuration in deployments and tests."
@@ -1139,6 +1279,9 @@
       "categorySlugs": [
         "messaging"
       ],
+      "guideTopicAliases": [
+        "micronaut-mqtt"
+      ],
       "shortDescription": "MQTT messaging",
       "longDescription": "Micronaut MQTT supports publish and subscribe workflows for MQTT brokers with topics, serialization, quality-of-service options, connection settings, and handler methods for IoT messaging through framework components and tests locally too."
     },
@@ -1159,6 +1302,10 @@
       "primaryCategory": "data-access",
       "categorySlugs": [
         "data-access"
+      ],
+      "guideTopicAliases": [
+        "r2dbc",
+        "data-r2dbc"
       ],
       "shortDescription": "R2DBC database support",
       "longDescription": "Micronaut R2DBC provides reactive relational connectivity with clients, connection configuration, transactions, health checks, and repositories so nonblocking services use SQL without JDBC or separate database setup code in tests too."
@@ -1223,6 +1370,9 @@
       "categorySlugs": [
         "errors"
       ],
+      "guideTopicAliases": [
+        "micronaut-error-handling"
+      ],
       "shortDescription": "Problem JSON responses",
       "longDescription": "Micronaut Problem JSON returns RFC 7807 error payloads with exception mapping, validation errors, content negotiation, and structured details so clients receive predictable documents instead of endpoint-specific responses and handlers everywhere."
     },
@@ -1243,6 +1393,11 @@
       "primaryCategory": "build",
       "categorySlugs": [
         "build"
+      ],
+      "guideTopicAliases": [
+        "micronaut-docker-image",
+        "coordinated-restore-at-checkpoint",
+        "graalvm"
       ],
       "shortDescription": "AOT optimizations",
       "longDescription": "Micronaut AOT performs ahead-of-time optimizations that precompute metadata, reduce startup work, improve native-image behavior, and tune runtime artifacts for faster, smaller deployments while preserving framework features and configuration flexibility intact."
@@ -1266,6 +1421,7 @@
         "api"
       ],
       "guideTopicAliases": [
+        "beyond-json",
         "serialization",
         "serde",
         "json"
@@ -1312,6 +1468,9 @@
       "categorySlugs": [
         "misc"
       ],
+      "guideTopicAliases": [
+        "email"
+      ],
       "shortDescription": "Transactional email",
       "longDescription": "Micronaut Email abstracts message composition and sending with provider integrations, templates, attachments, configuration, transactional workflows, and test-friendly APIs for application mail delivery without binding business code to transports or providers."
     },
@@ -1334,6 +1493,14 @@
         "analytics",
         "cloud"
       ],
+      "guideTopicAliases": [
+        "distributed-tracing",
+        "opentelemetry",
+        "open-telemetry",
+        "jaeger",
+        "zipkin",
+        "xray"
+      ],
       "shortDescription": "Distributed tracing",
       "longDescription": "Micronaut Tracing propagates trace context through HTTP, messaging, and service flows, instruments framework components, and connects applications to tracing backends for request visibility, latency analysis, and failure investigation across services."
     },
@@ -1354,6 +1521,9 @@
       "primaryCategory": "cloud",
       "categorySlugs": [
         "cloud"
+      ],
+      "guideTopicAliases": [
+        "object-storage"
       ],
       "shortDescription": "Object storage abstraction",
       "longDescription": "Micronaut Object Storage provides uniform APIs for reading, writing, deleting, and listing objects across cloud providers while configuration selects the concrete backend per environment, deployment, or repeatable test suite locally."
@@ -1397,6 +1567,10 @@
       "categorySlugs": [
         "dev-and-test"
       ],
+      "guideTopicAliases": [
+        "testcontainers",
+        "testing"
+      ],
       "shortDescription": "Test resource provisioning",
       "longDescription": "Micronaut Test Resources provisions external dependencies for tests and local development, starting containers or services and providing connection properties for databases, brokers, or cloud-like services so tests match production wiring."
     },
@@ -1418,6 +1592,10 @@
       "categorySlugs": [
         "validation"
       ],
+      "guideTopicAliases": [
+        "micronaut-custom-validation-annotation",
+        "micronaut-error-handling"
+      ],
       "shortDescription": "Validation support",
       "longDescription": "Micronaut Validation performs bean validation from compile-time metadata, handling constraints, controller arguments, configuration properties, localized messages, and validators without reflection-heavy scanning or duplicated rules across controllers, services, and settings objects."
     },
@@ -1438,6 +1616,10 @@
       "primaryCategory": "misc",
       "categorySlugs": [
         "misc"
+      ],
+      "guideTopicAliases": [
+        "session",
+        "micronaut-security-session"
       ],
       "shortDescription": "HTTP session support",
       "longDescription": "Micronaut Session adds HTTP session management with stores, cookies, filters, configuration, and security integration so server-side user state remains explicit, testable, and framework-managed across environments and deployment models cleanly too."
@@ -1481,6 +1663,9 @@
       "categorySlugs": [
         "configuration"
       ],
+      "guideTopicAliases": [
+        "logging"
+      ],
       "shortDescription": "Logging dependency set",
       "longDescription": "Micronaut Logging coordinates logging dependencies, APIs, implementations, bridges, configuration, and versions so platform-aligned services, libraries, tests, and examples avoid conflicts and inconsistent setup across generated documentation and applications as well."
     },
@@ -1522,6 +1707,10 @@
       "primaryCategory": "data-access",
       "categorySlugs": [
         "data-access"
+      ],
+      "guideTopicAliases": [
+        "eclipsestore",
+        "micronaut-eclipsestore-persitence"
       ],
       "shortDescription": "EclipseStore integration",
       "longDescription": "Micronaut EclipseStore integrates object persistence with storage configuration, health checks, injected storage components, and data access patterns so services persist graphs with familiar lifecycle, configuration, and testing workflows locally too."
@@ -1565,6 +1754,10 @@
       "categorySlugs": [
         "api"
       ],
+      "guideTopicAliases": [
+        "json-schema",
+        "micronaut-json-schema"
+      ],
       "shortDescription": "JSON Schema support",
       "longDescription": "Micronaut JSON Schema generates schemas from application and serialization models, including configuration and validation metadata, so teams publish machine-readable contracts without separate schema sources or duplicated model metadata in tooling."
     },
@@ -1607,6 +1800,11 @@
       "categorySlugs": [
         "languages"
       ],
+      "guideTopicAliases": [
+        "graalpy",
+        "micronaut-graalpy",
+        "micronaut-graalpy-python-package"
+      ],
       "shortDescription": "Graal language integration",
       "longDescription": "Micronaut Graal Languages integrates GraalVM dynamic language runtimes and polyglot capabilities so language-specific components can participate in configuration and dependency injection beside JVM code where useful and practical for services."
     },
@@ -1648,6 +1846,9 @@
       "primaryCategory": "ai",
       "categorySlugs": [
         "ai"
+      ],
+      "guideTopicAliases": [
+        "mcp"
       ],
       "shortDescription": "Model Context Protocol",
       "longDescription": "Micronaut MCP adds Model Context Protocol support for exposing tools, resources, prompts, and server capabilities through framework-managed components, configuration, injection, and lifecycle management instead of standalone protocol wiring or bridges."

@@ -206,6 +206,7 @@ test("docs section and subsection navigation follows scroll movement", async ({
   page,
 }) => {
   const failures = collectBrowserFailures(page);
+  await routeEmptyRelatedGuides(page);
 
   await page.goto(appPath("/docs/core/"));
   await expect(
@@ -215,6 +216,7 @@ test("docs section and subsection navigation follows scroll movement", async ({
       name: "Micronaut Core",
     }),
   ).toBeVisible();
+  await expect(page.locator("[data-docs-related-guides]")).toHaveCount(0);
 
   const docsSidebar = page.locator("[data-docs-sidebar]");
   const sectionNav = page.locator("[data-docs-current-section-index]");
@@ -345,16 +347,45 @@ test("docs page renders related latest guides from the guides manifest", async (
       name: "Micronaut Data",
     }),
   ).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
   const relatedGuides = page.locator("[data-docs-related-guides]");
   await expect(relatedGuides).toBeVisible();
   await expect(
-    relatedGuides.getByRole("heading", { name: "Related guides" }),
+    relatedGuides.getByRole("heading", { name: "Latest guides" }),
   ).toBeVisible();
   await expect(
-    relatedGuides.getByText("Micronaut HTTP Client"),
-  ).toHaveCount(0);
+    relatedGuides.getByRole("link", { name: "Show more" }),
+  ).toHaveAttribute("href", /\/(?:guides|latest)\/\?q=micronaut-data$/);
+  await expect(relatedGuides.locator('[data-slot="card"]')).toHaveCount(3);
+  await expect(relatedGuides.locator('[data-slot="card-title"] a')).toHaveText([
+    "Build reactive repositories with Micronaut Data R2DBC",
+    "Use MongoDB with Micronaut Data",
+    "Access a database with Micronaut Data JDBC",
+  ]);
+  await expect(relatedGuides.getByText("Micronaut HTTP Client")).toHaveCount(0);
+  await expect(relatedGuides.getByText("Old Micronaut Data guide")).toHaveCount(
+    0,
+  );
+  const generatedContentOrder = await page
+    .locator("[data-generated-docs]")
+    .evaluate((root) =>
+      Array.from(root.children)
+        .filter((child) => child.tagName.toLowerCase() !== "script")
+        .slice(0, 3)
+        .map((child) => {
+          const element = child as HTMLElement;
+          if (
+            element.matches("[data-docs-related-guides]") ||
+            element.querySelector("[data-docs-related-guides]")
+          ) {
+            return "latest-guides";
+          }
+          return element.textContent?.replace(/\s+/g, " ").trim() || "";
+        }),
+    );
+  expect(generatedContentOrder[0]).toContain("Micronaut Data");
+  expect(generatedContentOrder[1]).toBe("latest-guides");
+  expect(generatedContentOrder[2]).toContain("1 Introduction");
   const guideLink = relatedGuides
     .getByRole("link", {
       name: "Access a database with Micronaut Data JDBC",
@@ -477,59 +508,110 @@ function relatedGuideHrefPattern(file: string): RegExp {
 }
 
 function relatedGuidesManifest() {
+  const guides = [
+    relatedGuideManifestEntry({
+      slug: "micronaut-http-client",
+      title: "Micronaut HTTP Client",
+      intro: "Learn how to use Micronaut low-level HTTP Client.",
+      tags: ["client"],
+      categories: ["HTTP Client"],
+      publicationDate: "2030-01-01",
+      estimatedMinutes: 30,
+    }),
+    relatedGuideManifestEntry({
+      slug: "micronaut-data-r2dbc-repository",
+      title: "Build reactive repositories with Micronaut Data R2DBC",
+      intro:
+        "Learn how to access a database with Micronaut Data R2DBC repositories.",
+      tags: ["database", "micronaut-data", "r2dbc"],
+      categories: ["Data R2DBC"],
+      publicationDate: "2025-02-15",
+    }),
+    relatedGuideManifestEntry({
+      slug: "micronaut-data-mongodb",
+      title: "Use MongoDB with Micronaut Data",
+      intro: "Learn how to use MongoDB repositories with Micronaut Data.",
+      tags: ["database", "micronaut-data", "mongodb"],
+      categories: ["Data MongoDB"],
+      publicationDate: "2023-10-10",
+    }),
+    relatedGuideManifestEntry({
+      slug: "micronaut-data-jdbc-repository",
+      title: "Access a database with Micronaut Data JDBC",
+      intro: "Learn how to access a database with Micronaut JDBC repositories.",
+      tags: ["database", "micronaut-data", "jdbc"],
+      categories: ["Data JDBC"],
+      publicationDate: "2021-05-28",
+    }),
+    relatedGuideManifestEntry({
+      slug: "old-micronaut-data-guide",
+      title: "Old Micronaut Data guide",
+      intro: "A historical Micronaut Data guide.",
+      tags: ["database", "micronaut-data"],
+      categories: ["Data JDBC"],
+      publicationDate: "2019-01-01",
+    }),
+  ];
   return {
     generatedAt: "2026-06-12T00:00:00.000Z",
-    guideCount: 2,
-    guides: [
+    guideCount: guides.length,
+    guides,
+  };
+}
+
+async function routeEmptyRelatedGuides(page: Page): Promise<void> {
+  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        generatedAt: "2026-01-01T00:00:00.000Z",
+        guideCount: 0,
+        guides: [],
+      }),
+    });
+  });
+}
+
+function relatedGuideManifestEntry({
+  slug,
+  title,
+  intro,
+  tags,
+  categories,
+  publicationDate,
+  estimatedMinutes = 25,
+}: {
+  slug: string;
+  title: string;
+  intro: string;
+  tags: string[];
+  categories: string[];
+  publicationDate: string;
+  estimatedMinutes?: number;
+}) {
+  const optionFile = `${slug}-gradle-java.html`;
+  return {
+    slug,
+    title,
+    intro,
+    authors: ["Micronaut"],
+    tags,
+    categories,
+    publicationDate,
+    estimatedMinutes,
+    overviewFile: `${slug}.html`,
+    defaultOptionFile: optionFile,
+    options: [
       {
-        slug: "micronaut-http-client",
-        title: "Micronaut HTTP Client",
-        intro: "Learn how to use Micronaut low-level HTTP Client.",
-        authors: ["Micronaut"],
-        tags: ["client"],
-        categories: ["HTTP Client"],
-        publicationDate: "2030-01-01",
-        estimatedMinutes: 30,
-        overviewFile: "micronaut-http-client.html",
-        defaultOptionFile: "micronaut-http-client-gradle-java.html",
-        options: [
-          {
-            id: "micronaut-http-client-gradle-java",
-            label: "Java / Gradle",
-            language: "java",
-            languageLabel: "Java",
-            buildTool: "gradle",
-            buildToolLabel: "Gradle",
-            file: "micronaut-http-client-gradle-java.html",
-            fragment: "fragments/micronaut-http-client-gradle-java.html",
-            zipUrl: "micronaut-http-client-gradle-java.zip",
-          },
-        ],
-      },
-      {
-        slug: "micronaut-data-jdbc-repository",
-        title: "Access a database with Micronaut Data JDBC",
-        intro: "Learn how to access a database with Micronaut JDBC repositories.",
-        authors: ["Micronaut"],
-        tags: ["database", "micronaut-data", "jdbc"],
-        categories: ["Data JDBC"],
-        publicationDate: "2021-05-28",
-        estimatedMinutes: 25,
-        overviewFile: "micronaut-data-jdbc-repository.html",
-        defaultOptionFile: "micronaut-data-jdbc-repository-gradle-java.html",
-        options: [
-          {
-            id: "micronaut-data-jdbc-repository-gradle-java",
-            label: "Java / Gradle",
-            language: "java",
-            languageLabel: "Java",
-            buildTool: "gradle",
-            buildToolLabel: "Gradle",
-            file: "micronaut-data-jdbc-repository-gradle-java.html",
-            fragment: "fragments/micronaut-data-jdbc-repository-gradle-java.html",
-            zipUrl: "micronaut-data-jdbc-repository-gradle-java.zip",
-          },
-        ],
+        id: `${slug}-gradle-java`,
+        label: "Java / Gradle",
+        language: "java",
+        languageLabel: "Java",
+        buildTool: "gradle",
+        buildToolLabel: "Gradle",
+        file: optionFile,
+        fragment: `fragments/${optionFile}`,
+        zipUrl: `${slug}-gradle-java.zip`,
       },
     ],
   };

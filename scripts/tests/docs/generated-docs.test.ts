@@ -2549,7 +2549,9 @@ test("docs routes render generated fragments and serve generated assets", async 
     /readFile\(join\(process\.cwd\(\),[\s\S]*"generated-docs"[\s\S]*`\$\{project\.slug\}\.html`/,
   );
   assert.match(docsPageSource, /data-generated-docs/);
-  assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
+  assert.match(docsPageSource, /splitGeneratedDocHtmlAfterProjectTitle/);
+  assert.match(docsPageSource, /set:html=\{generatedDocHtmlParts\.titleHtml\}/);
+  assert.match(docsPageSource, /set:html=\{generatedDocHtmlParts\.bodyHtml\}/);
   assert.match(docsPageSource, /@\/scripts\/generated-docs-hash-aligner/);
   assert.doesNotMatch(docsPageSource, /generatedDocsHashAlignerUrl|\?url/);
   assert.doesNotMatch(docsPageSource, /<script is:inline>/);

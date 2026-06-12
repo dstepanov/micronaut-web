@@ -6,6 +6,7 @@
 .playwright/
 .playwright-mcp/
 .docs/
+external/
 
 # Node and Astro output
 node_modules/

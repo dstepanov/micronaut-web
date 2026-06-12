@@ -30,6 +30,10 @@ export function DocsRelatedGuides({
   manifestUrl,
   topicAliases,
 }: DocsRelatedGuidesProps) {
+  const showMoreHref = React.useMemo(
+    () => guideSearchHref(topicAliases.find((alias) => alias.trim())),
+    [topicAliases],
+  );
   const normalizedAliases = React.useMemo(
     () => new Set(topicAliases.map(normalizeTopic).filter(Boolean)),
     [topicAliases],
@@ -89,7 +93,7 @@ export function DocsRelatedGuides({
 
   return (
     <section
-      className="mt-10 grid gap-4"
+      className="my-8 grid gap-4"
       data-docs-related-guides
       aria-busy={!loaded}
     >
@@ -97,9 +101,20 @@ export function DocsRelatedGuides({
         <div className="min-w-0">
           <Badge variant="secondary">Guides</Badge>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-            Related guides
+            Latest guides
           </h2>
         </div>
+        <Button
+          asChild
+          size="sm"
+          variant="link"
+          className="h-auto justify-start px-0"
+        >
+          <a href={showMoreHref}>
+            Show more
+            <ArrowRightIcon className="size-4" />
+          </a>
+        </Button>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {loaded
@@ -140,12 +155,13 @@ function RelatedGuideCard({ guide }: { guide: GeneratedGuide }) {
   const option = preferredGuideOption(guide);
   const href = withSurfacePath(
     "guides",
-    option ? guideOptionPath(option, "/guides") : guideOverviewPath(guide, "/guides"),
+    option
+      ? guideOptionPath(option, "/guides")
+      : guideOverviewPath(guide, "/guides"),
   );
-  const badges = (guide.categories.length ? guide.categories : guide.tags).slice(
-    0,
-    2,
-  );
+  const badges = (
+    guide.categories.length ? guide.categories : guide.tags
+  ).slice(0, 2);
 
   return (
     <Card className="h-full rounded-lg">
@@ -221,6 +237,14 @@ function normalizeTopic(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function guideSearchHref(topicAlias: string | undefined) {
+  const query = topicAlias?.trim();
+  if (!query) {
+    return withSurfacePath("guides", "/guides/");
+  }
+  return withSurfacePath("guides", `/guides/?q=${encodeURIComponent(query)}`);
 }
 
 function isGeneratedGuidesManifest(
