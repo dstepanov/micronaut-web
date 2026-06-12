@@ -726,7 +726,7 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedText, /2 properties/);
 });
 
-test("docs renderer keeps Micronaut Data project-base repository snippets as separate cards", async (t: any): Promise<any> => {
+test("docs renderer groups Micronaut Data untagged repository snippets as language tabs", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-data-repository-snippets-"),
   );
@@ -827,6 +827,85 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
       "interface AccountRepository : CrudRepository<Account, Long>",
     ],
   );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "AbstractBookRepository.java",
+    ),
+    [
+      "package example;",
+      "",
+      "import io.micronaut.data.repository.CrudRepository;",
+      "import java.util.List;",
+      "",
+      "public abstract class AbstractBookRepository implements CrudRepository<Book, Long> {",
+      "    abstract List<Book> javaAbstractQuery(String title);",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "AbstractBookRepository.kt",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "abstract class AbstractBookRepository : CrudRepository<Book, Long> {",
+      "    abstract fun kotlinAbstractQuery(title: String): List<Book>",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "AbstractBookRepository.groovy",
+    ),
+    [
+      "package example",
+      "",
+      "import io.micronaut.data.repository.CrudRepository",
+      "",
+      "abstract class AbstractBookRepository implements CrudRepository<Book, Long> {",
+      "    abstract List<Book> groovyAbstractQuery(String title)",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin-ksp",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "AbstractBookRepository.kt",
+    ),
+    [
+      "package example",
+      "",
+      "abstract class AbstractBookRepository {",
+      "    abstract fun kspAbstractDuplicateShouldNotRender(): Book",
+      "}",
+    ],
+  );
   await writeGuide(
     docsDirectory,
     "micronaut-fixture",
@@ -836,6 +915,12 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
       "To add the validation, annotate the repository's generic type argument with Jakarta Validation annotations:",
       "",
       'snippet::example.AccountRepository[project-base="doc-examples/hibernate-example", source="main"]',
+      "",
+      "Note that in addition to interfaces you can also define repositories as abstract classes:",
+      "",
+      'snippet::example.AbstractBookRepository[project-base="doc-examples/hibernate-example", source="main"]',
+      "",
+      "As you can see from the above example, using abstract classes can be useful.",
     ].join("\n"),
   );
 
@@ -863,15 +948,45 @@ test("docs renderer keeps Micronaut Data project-base repository snippets as sep
     "Repositories can have the entity and the ID values validated.",
   );
   assert.notEqual(validationIndex, -1);
-  const validationHtml = generatedHtml.slice(validationIndex);
+  const abstractRepositoryIndex = generatedHtml.indexOf(
+    "Note that in addition to interfaces you can also define repositories as abstract classes:",
+    validationIndex,
+  );
+  assert.notEqual(abstractRepositoryIndex, -1);
+  const validationHtml = generatedHtml.slice(
+    validationIndex,
+    abstractRepositoryIndex,
+  );
+  const abstractRepositoryHtml = generatedHtml.slice(
+    abstractRepositoryIndex,
+    generatedHtml.indexOf("As you can see", abstractRepositoryIndex),
+  );
 
-  assert.equal(countMatches(validationHtml, /docs-code-snippet-template/g), 3);
+  assert.equal(countMatches(validationHtml, /docs-code-snippet-template/g), 1);
+  assert.equal(countMatches(validationHtml, /role="tablist"/g), 1);
   assertSnippetLanguageIcon(validationHtml, "java", "java");
   assertSnippetLanguageIcon(validationHtml, "kotlin", "kotlin");
   assertSnippetLanguageIcon(validationHtml, "groovy", "groovy");
+  assert.match(textOnly(validationHtml), /@Valid Account/);
+  assert.match(textOnly(validationHtml), /jakarta\.validation\.Valid Account/);
   assert.doesNotMatch(
     textOnly(validationHtml),
     /CrudRepository<Account, Long>/,
+  );
+  assert.equal(
+    countMatches(abstractRepositoryHtml, /docs-code-snippet-template/g),
+    1,
+  );
+  assert.equal(countMatches(abstractRepositoryHtml, /role="tablist"/g), 1);
+  assertSnippetLanguageIcon(abstractRepositoryHtml, "java", "java");
+  assertSnippetLanguageIcon(abstractRepositoryHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(abstractRepositoryHtml, "groovy", "groovy");
+  assert.match(textOnly(abstractRepositoryHtml), /javaAbstractQuery/);
+  assert.match(textOnly(abstractRepositoryHtml), /kotlinAbstractQuery/);
+  assert.match(textOnly(abstractRepositoryHtml), /groovyAbstractQuery/);
+  assert.doesNotMatch(
+    textOnly(abstractRepositoryHtml),
+    /kspAbstractDuplicateShouldNotRender/,
   );
 });
 
@@ -1184,7 +1299,7 @@ test("docs renderer groups Serialization project-base model snippets as language
   assert.doesNotMatch(textOnly(modelHtml), /kspDuplicateShouldNotRender/);
 });
 
-test("docs renderer keeps Serialization project-base property filter snippets as separate cards", async (t: any): Promise<any> => {
+test("docs renderer groups Serialization project-base property filter snippets as language tabs", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-serde-filter-snippets-"),
   );
@@ -1325,8 +1440,8 @@ test("docs renderer keeps Serialization project-base property filter snippets as
     generatedHtml.indexOf("The filter omits", filterIndex),
   );
 
-  assert.equal(countMatches(filterHtml, /docs-code-snippet-template/g), 3);
-  assert.equal(countMatches(filterHtml, /role="tablist"/g), 3);
+  assert.equal(countMatches(filterHtml, /docs-code-snippet-template/g), 1);
+  assert.equal(countMatches(filterHtml, /role="tablist"/g), 1);
   assertSnippetLanguageIcon(filterHtml, "java", "java");
   assertSnippetLanguageIcon(filterHtml, "kotlin", "kotlin");
   assertSnippetLanguageIcon(filterHtml, "groovy", "groovy");

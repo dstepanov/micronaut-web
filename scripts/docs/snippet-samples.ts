@@ -31,11 +31,9 @@ export function docsSnippetSamples(
   context: SnippetContext,
 ): SnippetSample[] {
   const baseDirectories = snippetBaseDirectoriesSync(attrs, context);
-  const hasProjectBase = Boolean(macroAttribute(attrs, "project-base"));
   const dedupeProjectBaseLanguages =
-    hasProjectBase && baseDirectories.length > 1;
-  const splitProjectBaseSnippets =
-    dedupeProjectBaseLanguages && splitProjectBaseSnippetCards(target, attrs);
+    Boolean(macroAttribute(attrs, "project-base")) &&
+    baseDirectories.length > 1;
   const source = macroAttribute(attrs, "source");
   const sources = source ? [source] : ["test", "main"];
   const explicit = explicitSnippetLanguage(target);
@@ -70,9 +68,6 @@ export function docsSnippetSamples(
         );
         if (taggedSource.diagnostics.length) {
           samples.push({
-            ...(splitProjectBaseSnippets
-              ? { group: snippetGroup(baseDirectory, context) }
-              : {}),
             language,
             source: taggedSourceDiagnosticNote(
               taggedSource.diagnostics,
@@ -92,9 +87,6 @@ export function docsSnippetSamples(
         );
         if (source.trim()) {
           samples.push({
-            ...(splitProjectBaseSnippets
-              ? { group: snippetGroup(baseDirectory, context) }
-              : {}),
             language,
             source,
           });
@@ -112,23 +104,6 @@ export function docsSnippetSamples(
     });
   }
   return samples;
-}
-
-function splitProjectBaseSnippetCards(
-  target: string,
-  attrs: MacroAttributes,
-): boolean {
-  if (macroAttribute(attrs, "tags") || macroAttribute(attrs, "tag")) {
-    return false;
-  }
-  const className = target.split(".").at(-1) || target;
-  return /(?:Filter|Repository)$/.test(className);
-}
-
-function snippetGroup(baseDirectory: string, context: SnippetContext): string {
-  return path
-    .relative(context.submoduleDirectory, baseDirectory)
-    .replaceAll(path.sep, "/");
 }
 
 function taggedSourceDiagnosticNote(
