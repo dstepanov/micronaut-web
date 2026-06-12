@@ -1152,6 +1152,146 @@ test("docs renderer groups Micronaut Data tagged repository snippets as language
   assert.doesNotMatch(textOnly(introHtml), /kspDuplicateShouldNotRender/);
 });
 
+test("docs renderer deindents tagged snippets when indent is zero", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-data-indent-zero-snippets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  const submoduleDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+  );
+  const exampleBaseDirectory = path.join(submoduleDirectory, "doc-examples");
+
+  await writeDocsProjectManifest(docsDirectory);
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "BookRepository.java",
+    ),
+    [
+      "package example;",
+      "",
+      "interface BookRepository {",
+      "    // tag::simple[]",
+      "    Book findByTitle(String title);",
+      "",
+      "    Book getByTitle(String title);",
+      "",
+      "    Book retrieveByTitle(String title);",
+      "    // end::simple[]",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-kotlin",
+      "src",
+      "main",
+      "kotlin",
+      "example",
+      "BookRepository.kt",
+    ),
+    [
+      "package example",
+      "",
+      "interface BookRepository {",
+      "    // tag::simple[]",
+      "    fun findByTitle(title: String): Book",
+      "",
+      "    fun getByTitle(title: String): Book",
+      "",
+      "    fun retrieveByTitle(title: String): Book",
+      "    // end::simple[]",
+      "}",
+    ],
+  );
+  await writeRepositoryValidationSnippet(
+    path.join(
+      exampleBaseDirectory,
+      "hibernate-example-groovy",
+      "src",
+      "main",
+      "groovy",
+      "example",
+      "BookRepository.groovy",
+    ),
+    [
+      "package example",
+      "",
+      "interface BookRepository {",
+      "    // tag::simple[]",
+      "    Book findByTitle(String title)",
+      "",
+      "    Book getByTitle(String title)",
+      "",
+      "    Book retrieveByTitle(String title)",
+      "    // end::simple[]",
+      "}",
+    ],
+  );
+  await writeGuide(
+    docsDirectory,
+    "micronaut-fixture",
+    "Micronaut Data Fixture",
+    [
+      "The following methods demonstrate simple queries:",
+      "",
+      'snippet::example.BookRepository[project-base="doc-examples/hibernate-example", source="main", tags="simple", indent="0"]',
+    ].join("\n"),
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+
+  assert.equal(countMatches(generatedHtml, /docs-code-snippet-template/g), 1);
+  assert.equal(countMatches(generatedHtml, /role="tablist"/g), 1);
+  assertSnippetLanguageIcon(generatedHtml, "java", "java");
+  assertSnippetLanguageIcon(generatedHtml, "kotlin", "kotlin");
+  assertSnippetLanguageIcon(generatedHtml, "groovy", "groovy");
+  assert.equal(
+    textOnly(highlightedLineContaining(generatedHtml, "findByTitle")),
+    "Book findByTitle(String title);",
+  );
+  assert.equal(
+    textOnly(highlightedLineContaining(generatedHtml, "getByTitle")),
+    "Book getByTitle(String title);",
+  );
+  assert.equal(
+    textOnly(highlightedLineContaining(generatedHtml, "retrieveByTitle")),
+    "Book retrieveByTitle(String title);",
+  );
+});
+
 test("docs renderer groups Serialization project-base model snippets as language tabs", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-serde-model-snippets-"),

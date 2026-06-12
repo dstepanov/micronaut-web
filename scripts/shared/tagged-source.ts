@@ -34,13 +34,12 @@ export function extractTaggedSourceWithDiagnostics(
   const selectedTags = splitList(tags).map(cleanTagName).filter(Boolean);
   const lines = source.replace(/\s+$/, "").split(/\r?\n/);
   if (!selectedTags.length) {
+    const output = lines
+      .map((line) => lineWithoutTagDirective(line))
+      .filter((line): line is string => line !== undefined);
     return {
       diagnostics: [],
-      source: lines
-        .map((line) => lineWithoutTagDirective(line))
-        .filter((line): line is string => line !== undefined)
-        .join("\n")
-        .trim(),
+      source: trimBlankLines(output).join("\n"),
     };
   }
 
@@ -92,7 +91,7 @@ export function extractTaggedSourceWithDiagnostics(
   }
   return {
     diagnostics,
-    source: output.join("\n\n").trim(),
+    source: output.join("\n\n"),
   };
 }
 

@@ -65,7 +65,7 @@ public interface BookRepository extends CrudRepository<Book, Long> { // <2>
 
   assert.equal(
     extractTaggedSource(source, "simple-alt"),
-    "Book find(String title);",
+    "    Book find(String title);",
   );
 });
 
@@ -104,12 +104,12 @@ class Example {
 
   assert.equal(
     extractTaggedSource(source, "method"),
-    `void run() {
+    `    void run() {
     }`,
   );
   assert.equal(
     extractTaggedSource(source, "other"),
-    `void other() {
+    `    void other() {
     }`,
   );
   assert.equal(
@@ -149,7 +149,7 @@ class Example {
   );
   assert.deepEqual(extractTaggedSourceWithDiagnostics(source, "present"), {
     diagnostics: [],
-    source: `void run() {
+    source: `    void run() {
     }`,
   });
 });
@@ -166,7 +166,7 @@ class Example {
 
   assert.deepEqual(extractTaggedSourceWithDiagnostics(source, "legacy"), {
     diagnostics: [],
-    source: `void run() {
+    source: `    void run() {
     }`,
   });
 });
