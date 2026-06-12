@@ -1,4 +1,5 @@
 const DEFAULT_PROPERTIES_TEXT_STYLE = "color:#1F2328;--shiki-dark:#E6EDF3";
+const DEFAULT_PROPERTIES_KEY_STYLE = "color:#CF222E;--shiki-dark:#FF7B72";
 
 export function normalizeEmptyPropertiesAssignmentHighlighting(
   highlightedHtml: string,
@@ -36,11 +37,24 @@ function normalizePropertiesAssignmentValueHighlighting(
     return lineHtml;
   }
 
-  const keyHtml = lineHtmlUntilTextOffset(lineInnerHtml, valueStart);
+  const keyStart = assignmentKeyStartIndex(lineText);
+  if (keyStart < 0 || keyStart >= valueStart) {
+    return lineHtml;
+  }
+
+  const leadingHtml = lineHtmlUntilTextOffset(lineInnerHtml, keyStart);
+  const keyStyle =
+    highlightedStyleBetweenTextOffsets(lineInnerHtml, keyStart, valueStart) ||
+    DEFAULT_PROPERTIES_KEY_STYLE;
   const valueStyle =
     highlightedStyleAtTextOffset(lineInnerHtml, valueStart) ||
     DEFAULT_PROPERTIES_TEXT_STYLE;
-  return `<span class="line">${keyHtml}<span style="${valueStyle}">${escapeHtml(lineText.slice(valueStart))}</span></span>`;
+  return `<span class="line">${leadingHtml}<span style="${keyStyle}">${escapeHtml(lineText.slice(keyStart, valueStart))}</span><span style="${valueStyle}">${escapeHtml(lineText.slice(valueStart))}</span></span>`;
+}
+
+function assignmentKeyStartIndex(line: string): number {
+  const match = /^[ \t]*/.exec(line);
+  return match?.[0].length ?? 0;
 }
 
 function assignmentValueStartIndex(line: string): number {
@@ -100,6 +114,24 @@ function highlightedStyleAtTextOffset(
       token.style &&
       token.textOffset <= targetOffset &&
       targetOffset < token.textOffset + token.text.length
+    ) {
+      return token.style;
+    }
+  }
+  return undefined;
+}
+
+function highlightedStyleBetweenTextOffsets(
+  lineInnerHtml: string,
+  startOffset: number,
+  endOffset: number,
+): string | undefined {
+  for (const token of highlightedLineTokens(lineInnerHtml)) {
+    if (
+      token.style &&
+      token.textOffset < endOffset &&
+      token.textOffset + token.text.length > startOffset &&
+      token.style !== DEFAULT_PROPERTIES_TEXT_STYLE
     ) {
       return token.style;
     }

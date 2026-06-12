@@ -222,6 +222,10 @@ test("docs legacy single-colon dependency line macros render dependency snippets
 });
 
 test("properties listing snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
+  const kubernetesDiscoveryProperty = "kubernetes.client.discovery.includes[0]";
+  const kubernetesDiscoveryValue = "my-service";
+  const micronautConfigImportProperty = "micronaut.config.import[0].provider";
+  const micronautConfigImportValue = "azure-key-vault";
   const azureCredentialProperty =
     "azure.credential.storage-shared-key.account-key";
   const azureCredentialValue =
@@ -239,6 +243,8 @@ test("properties listing snippets format empty dotted assignments like indexed a
       "foo.bar[0]=",
       "foo.bar<prop>=",
       "kubernetes.client.config-maps.includes[0]=",
+      `${kubernetesDiscoveryProperty}=${kubernetesDiscoveryValue}`,
+      `${micronautConfigImportProperty}=${micronautConfigImportValue}`,
       `${azureCredentialProperty}=${azureCredentialValue}`,
       `${azureConnectionStringProperty}=${azureConnectionStringValue}`,
       "----",
@@ -267,6 +273,14 @@ test("properties listing snippets format empty dotted assignments like indexed a
     converted,
     azureCredentialProperty,
   );
+  const kubernetesDiscoveryLine = highlightedLineContaining(
+    converted,
+    kubernetesDiscoveryProperty,
+  );
+  const micronautConfigImportLine = highlightedLineContaining(
+    converted,
+    micronautConfigImportProperty,
+  );
   const azureConnectionStringLine = highlightedLineContaining(
     converted,
     azureConnectionStringProperty,
@@ -278,6 +292,16 @@ test("properties listing snippets format empty dotted assignments like indexed a
   assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
   assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
   assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+  assertOnlyPropertyKeyHighlighted(
+    kubernetesDiscoveryLine,
+    kubernetesDiscoveryProperty,
+    kubernetesDiscoveryValue,
+  );
+  assertOnlyPropertyKeyHighlighted(
+    micronautConfigImportLine,
+    micronautConfigImportProperty,
+    micronautConfigImportValue,
+  );
   assertOnlyPropertyKeyHighlighted(
     azureCredentialLine,
     azureCredentialProperty,

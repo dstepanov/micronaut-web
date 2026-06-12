@@ -161,6 +161,10 @@ String index() {
 
 test("main-site Markdown properties snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
+  const kubernetesDiscoveryProperty = "kubernetes.client.discovery.includes[0]";
+  const kubernetesDiscoveryValue = "my-service";
+  const micronautConfigImportProperty = "micronaut.config.import[0].provider";
+  const micronautConfigImportValue = "azure-key-vault";
   const azureCredentialProperty =
     "azure.credential.storage-shared-key.account-key";
   const azureCredentialValue =
@@ -175,6 +179,8 @@ foo.bar[0]=
 foo.bar&lt;prop&gt;=
 kubernetes.client.config-maps.includes[0]=
 kubernetes.client.config-maps.excludes&#91;0&#93;=
+${kubernetesDiscoveryProperty}=${kubernetesDiscoveryValue}
+${micronautConfigImportProperty}=${micronautConfigImportValue}
 ${azureCredentialProperty}=${azureCredentialValue}
 ${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>
 `);
@@ -197,6 +203,14 @@ ${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>
     html,
     azureCredentialProperty,
   );
+  const kubernetesDiscoveryLine = highlightedLineContaining(
+    html,
+    kubernetesDiscoveryProperty,
+  );
+  const micronautConfigImportLine = highlightedLineContaining(
+    html,
+    micronautConfigImportProperty,
+  );
   const azureConnectionStringLine = highlightedLineContaining(
     html,
     azureConnectionStringProperty,
@@ -209,6 +223,16 @@ ${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>
   assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
   assert.equal(dottedStyle, highlightedLineTextStyle(encodedIndexedLine));
   assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+  assertOnlyPropertyKeyHighlighted(
+    kubernetesDiscoveryLine,
+    kubernetesDiscoveryProperty,
+    kubernetesDiscoveryValue,
+  );
+  assertOnlyPropertyKeyHighlighted(
+    micronautConfigImportLine,
+    micronautConfigImportProperty,
+    micronautConfigImportValue,
+  );
   assertOnlyPropertyKeyHighlighted(
     azureCredentialLine,
     azureCredentialProperty,
