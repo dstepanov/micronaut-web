@@ -37,7 +37,7 @@ function CodeSnippetTemplate({ dependency = false }: { dependency?: boolean }) {
       }
       controls={
         <div
-          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
+          className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi"
           role="tablist"
           aria-label="{{optionsLabel}}"
         >

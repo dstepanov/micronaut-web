@@ -55,19 +55,16 @@ export function HighlightedCodeBlock({
   const normalizedLanguage = language.trim().toLowerCase() || "text";
 
   return (
-    <pre
-      className="docs-highlighted-pre !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground"
-      tabIndex={0}
-    >
+    <pre className="docs-highlighted-pre" tabIndex={0}>
       {highlightedHtml ? (
         <code
-          className={`language-${normalizedLanguage} docs-highlighted-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
+          className={`language-${normalizedLanguage} docs-highlighted-code`}
           data-lang={normalizedLanguage}
           dangerouslySetInnerHTML={{ __html: highlightedHtml }}
         />
       ) : (
         <code
-          className={`language-${normalizedLanguage} docs-highlighted-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]`}
+          className={`language-${normalizedLanguage} docs-highlighted-code`}
           data-lang={normalizedLanguage}
         >
           {code}
@@ -194,7 +191,7 @@ export function DocsCodeSnippet({
       controls={
         hasLanguageOptions ? (
           <div
-            className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi flex flex-wrap items-center gap-1"
+            className="docs-snippet-tabs docs-code-tabs docs-code-tabs-multi"
             role="tablist"
             aria-label={optionsLabel || `${example.label} language`}
           >
@@ -239,7 +236,7 @@ export function DocsCodeSnippet({
                   }
                 >
                   <DocsSnippetCodeLanguageIcon language={variant.language} />
-                  <span className="docs-code-language-text inline-flex items-center leading-none">
+                  <span className="docs-code-language-text">
                     {variant.label}
                   </span>
                 </DocsSnippetLanguageButton>
@@ -251,7 +248,7 @@ export function DocsCodeSnippet({
             aria-label={`${activeVariant.label} snippet`}
           >
             <DocsSnippetCodeLanguageIcon language={activeVariant.language} />
-            <span className="docs-code-language-text inline-flex items-center leading-none">
+            <span className="docs-code-language-text">
               {activeVariant.label}
             </span>
           </DocsSnippetStaticLanguage>
@@ -288,7 +285,7 @@ export function DocsCodeSnippet({
             aria-labelledby={tabId}
             aria-hidden={!active}
             hidden={!active}
-            className="docs-code-content docs-snippet-card-content bg-code text-code-foreground"
+            className="docs-code-content docs-snippet-card-content"
           >
             <HighlightedCodeBlock
               code={variant.code}
@@ -322,23 +319,17 @@ function renderSnippetExternalHeader(
   }
   if (description) {
     return (
-      <div className="docs-snippet-external-header my-0 mt-[1.35rem] mb-[0.45rem]">
+      <div className="docs-snippet-external-header">
         {title ? (
-          <div className="docs-snippet-external-header-title my-0 text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal">
-            {title}
-          </div>
+          <div className="docs-snippet-external-header-title">{title}</div>
         ) : null}
-        <div className="docs-snippet-external-header-description mt-1 text-sm leading-6 text-muted-foreground">
+        <div className="docs-snippet-external-header-description">
           {description}
         </div>
       </div>
     );
   }
-  return (
-    <div className="title docs-snippet-external-title my-0 mt-[1.35rem] mb-[0.45rem] text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere] [&_code]:whitespace-normal">
-      {title}
-    </div>
-  );
+  return <div className="title docs-snippet-external-title">{title}</div>;
 }
 
 function snippetTabId(exampleId: string, variant: CodeSnippetVariant) {

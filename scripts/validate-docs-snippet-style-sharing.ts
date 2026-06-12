@@ -33,20 +33,17 @@ const sourceExtensions = new Set([
   ".tsx",
 ]);
 
-const inlineConsumers = [
+const sharedClassConsumers = [
   {
     file: "src/components/web/docs-snippet-card.tsx",
     requiredUses: [
       "docs-snippet-template docs-code-block",
       "docs-code-snippet-template",
       "docs-properties-template docs-dependency-template",
-      "docs-snippet-panels overflow-hidden bg-code",
+      "docs-snippet-panels",
       "docs-snippet-card-footer docs-code-callouts",
-      "docs-properties-scroll overflow-x-auto",
-      "docs-code-language-icon inline-flex size-3.5",
-      "[&_ol]:[counter-reset:docs-code-callout]",
-      "[&_li::before]:content-[counter(docs-code-callout)]",
-      "[&_table.tableblock_:where(th,td)]:border",
+      "docs-properties-scroll",
+      "docs-code-language-icon",
     ],
   },
   {
@@ -54,10 +51,9 @@ const inlineConsumers = [
     requiredUses: [
       "docs-snippet-tabs docs-code-tabs docs-code-tabs-multi",
       "docs-code-content docs-snippet-card-content",
-      "docs-highlighted-pre !m-0",
-      "docs-highlighted-code grid min-w-max font-mono",
-      "[&_.conum::before]:content-[attr(data-value)]",
-      "docs-code-language-text inline-flex",
+      "docs-highlighted-pre",
+      "docs-highlighted-code",
+      "docs-code-language-text",
       "staticEnhancement",
       "showSingleVariantAsTabs",
       "title docs-snippet-external-title",
@@ -98,7 +94,6 @@ const inlineConsumers = [
     file: "src/lib/main-site-code-snippets.ts",
     requiredUses: [
       "renderDocsSnippetTemplates",
-      "buttonGhostXsClass",
       "languageButtonClass",
       "languageTextClass",
       "panelClass",
@@ -109,6 +104,36 @@ const inlineConsumers = [
   },
 ];
 
+const extractedCssFragments = [
+  ".docs-snippet-panels",
+  "@apply overflow-hidden bg-code !px-0 text-code-foreground;",
+  ".docs-code-language-icon",
+  "@apply inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none;",
+  ".docs-highlighted-pre",
+  "@apply !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 !text-sm !leading-6 !text-code-foreground;",
+  ".docs-highlighted-code",
+  "@apply grid min-w-max font-mono !text-[0.85rem] !leading-6;",
+  ".docs-code-callouts",
+  "counter-reset: docs-code-callout;",
+  "content: counter(docs-code-callout);",
+  "content: attr(data-value);",
+  ".docs-properties-scroll table.tableblock",
+  ".docs-properties-scroll table.tableblock :where(th, td)",
+];
+
+const disallowedInlineFragments = [
+  "docs-snippet-panels overflow-hidden bg-code",
+  "docs-properties-scroll overflow-x-auto",
+  "docs-code-language-icon inline-flex size-3.5",
+  "docs-highlighted-pre !m-0",
+  "docs-highlighted-code grid min-w-max font-mono",
+  "[&_ol]:[counter-reset:docs-code-callout]",
+  "[&_li::before]:content-[counter(docs-code-callout)]",
+  "[&_table.tableblock_:where(th,td)]:border",
+  "[&_.conum::before]:content-[attr(data-value)]",
+  "docs-code-language-text inline-flex",
+];
+
 const failures: string[] = [];
 const generatedSnippetRenderer = await readProjectFile(
   "src/components/web/docs-generated-snippet.tsx",
@@ -116,12 +141,19 @@ const generatedSnippetRenderer = await readProjectFile(
 const globalsCss = await readProjectFile("src/styles/globals.css");
 const webLayout = await readProjectFile("src/layouts/WebLayout.astro");
 
-for (const consumer of inlineConsumers) {
+for (const consumer of sharedClassConsumers) {
   const source = await readProjectFile(consumer.file);
   for (const requiredUse of consumer.requiredUses) {
     if (!source.includes(requiredUse)) {
       failures.push(
-        `${consumer.file}: expected inline snippet styling fragment "${requiredUse}".`,
+        `${consumer.file}: expected shared docs snippet class "${requiredUse}".`,
+      );
+    }
+  }
+  for (const fragment of disallowedInlineFragments) {
+    if (source.includes(fragment)) {
+      failures.push(
+        `${consumer.file}: move inline docs snippet styling fragment "${fragment}" to globals.css.`,
       );
     }
   }
@@ -131,7 +163,7 @@ for (const file of await listSourceFiles(sourceRoots)) {
   const source = await readProjectFile(file);
   if (source.includes(removedRegistryName)) {
     failures.push(
-      `${file}: inline snippet Tailwind classes instead of restoring the snippet style registry.`,
+      `${file}: use shared docs snippet classes instead of restoring the snippet style registry.`,
     );
   }
   if (source.includes(removedStaticSupportName)) {
@@ -144,7 +176,7 @@ for (const file of await listSourceFiles(sourceRoots)) {
 for (const removedPath of removedRuntimeCssPaths) {
   if (await projectFileExists(removedPath)) {
     failures.push(
-      `${removedPath}: snippet runtime styling should stay in inline Tailwind classes.`,
+      `${removedPath}: snippet runtime styling should stay in the shared globals.css classes.`,
     );
   }
 }
@@ -176,6 +208,7 @@ if (webLayout.includes("@/styles/generated/docs-snippet-runtime.css")) {
 for (const fragment of [
   ".dark .docs-highlighted-code span[style]",
   "--shiki-dark",
+  ...extractedCssFragments,
 ]) {
   if (!globalsCss.includes(fragment)) {
     failures.push(
@@ -184,14 +217,10 @@ for (const fragment of [
   }
 }
 
-for (const fragment of [
-  ".docs-code-block .shiki",
-  ".docs-code-callouts",
-  ".docs-properties-template table.tableblock",
-]) {
+for (const fragment of [".docs-code-block .shiki"]) {
   if (globalsCss.includes(fragment)) {
     failures.push(
-      `src/styles/globals.css: move "${fragment}" rules to inline Tailwind classes.`,
+      `src/styles/globals.css: move "${fragment}" rules to shared docs classes.`,
     );
   }
 }
@@ -203,7 +232,7 @@ if (failures.length) {
 }
 
 console.log(
-  `Validated inline docs snippet styling across ${inlineConsumers.length} consumers.`,
+  `Validated shared docs snippet styling across ${sharedClassConsumers.length} consumers.`,
 );
 
 async function readProjectFile(relativePath: string): Promise<string> {

@@ -13,7 +13,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -82,13 +81,7 @@ export function DocsSidebarRailControl() {
       aria-expanded={open}
       title="Toggle Sidebar"
       onClick={toggleSidebar}
-      className={cn(
-        "absolute inset-y-0 z-20 hidden h-auto w-4 -translate-x-1/2 rounded-none p-0 transition-all ease-linear sm:flex",
-        "group-data-[side=left]:-right-4 group-data-[side=right]:left-0",
-        "after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border",
-        "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
-        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-      )}
+      className="docs-sidebar-rail-control"
     >
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
@@ -133,7 +126,7 @@ export function DocsSidebarMobileSheet({
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="w-72 bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+        className="docs-sidebar-mobile-sheet-content"
       >
         <SheetHeader className="sr-only">
           <SheetTitle>Docs navigation</SheetTitle>
@@ -141,7 +134,10 @@ export function DocsSidebarMobileSheet({
             Displays the mobile documentation sidebar.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex h-full w-full flex-col" onClick={onContentClick}>
+        <div
+          className="docs-sidebar-mobile-sheet-body"
+          onClick={onContentClick}
+        >
           {children}
         </div>
       </SheetContent>

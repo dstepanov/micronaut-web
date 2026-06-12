@@ -335,6 +335,413 @@
 }
 
 @layer components {
+  .docs-snippet-external-header {
+    @apply my-0 mt-[1.35rem] mb-[0.45rem];
+  }
+
+  .docs-snippet-external-header-title,
+  .docs-snippet-external-title {
+    @apply my-0 text-[0.95rem] leading-[1.45] font-bold text-foreground [overflow-wrap:anywhere];
+  }
+
+  .docs-snippet-external-title {
+    @apply mt-[1.35rem] mb-[0.45rem];
+  }
+
+  .docs-snippet-external-header-description {
+    @apply mt-1 text-sm leading-6 text-muted-foreground;
+  }
+
+  .docs-snippet-external-header-title code,
+  .docs-snippet-external-title code {
+    @apply whitespace-normal;
+  }
+
+  .docs-snippet-template {
+    @apply my-5 !flex !flex-col !gap-0 overflow-hidden rounded-xl border border-code-border !bg-code-tab !py-0 !text-code-foreground shadow-sm shadow-black/[0.03];
+  }
+
+  .dark .docs-snippet-template {
+    @apply shadow-black/20;
+  }
+
+  .docs-properties-template:not(.docs-code-block) {
+    @apply my-5 flex flex-col !gap-0 overflow-hidden rounded-xl border border-border bg-card !py-0 text-card-foreground shadow-sm shadow-black/[0.03];
+  }
+
+  .dark .docs-properties-template:not(.docs-code-block) {
+    @apply shadow-black/20;
+  }
+
+  .docs-code-toolbar {
+    @apply !flex min-h-10 items-center justify-between !gap-3 border-b border-code-border bg-code-tab !px-3 !py-2 !pb-2;
+  }
+
+  .docs-snippet-card-header-with-text,
+  .docs-properties-card-header {
+    @apply grid auto-rows-min grid-rows-[auto_auto] items-start !gap-1.5 border-b border-code-border bg-code-tab !px-4 !py-2.5 !pb-2.5;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .docs-snippet-heading,
+  .docs-properties-heading {
+    @apply flex min-w-0 items-center gap-2 !text-sm !leading-5 font-semibold text-code-foreground;
+  }
+
+  .docs-snippet-description,
+  .docs-properties-description {
+    @apply !text-xs !leading-5 !text-code-muted;
+  }
+
+  .docs-snippet-actions {
+    @apply flex flex-wrap items-center justify-start justify-self-start gap-2;
+  }
+
+  .docs-snippet-tabs {
+    @apply flex flex-wrap items-center gap-1;
+  }
+
+  .docs-snippet-card-action {
+    @apply ml-auto !self-center !justify-self-auto;
+  }
+
+  .docs-snippet-card-action-with-text,
+  .docs-properties-card-action {
+    @apply col-start-2 row-span-2 row-start-1 self-start justify-self-end;
+  }
+
+  .docs-snippet-panels {
+    @apply overflow-hidden bg-code !px-0 text-code-foreground;
+  }
+
+  .docs-code-content {
+    @apply bg-code text-code-foreground;
+  }
+
+  .docs-code-language {
+    @apply inline-flex h-6 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs leading-none font-medium whitespace-nowrap text-code-muted align-middle transition-all outline-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20;
+  }
+
+  .dark .docs-code-language {
+    @apply hover:bg-accent/50 aria-invalid:ring-destructive/40;
+  }
+
+  .docs-code-language:focus-visible {
+    @apply border-ring ring-[3px] ring-ring/50;
+  }
+
+  .docs-code-language[aria-selected="true"],
+  .docs-code-language.selected {
+    @apply !font-semibold text-code-foreground;
+  }
+
+  .docs-code-language-static {
+    @apply font-medium;
+  }
+
+  .docs-code-language-icon {
+    @apply inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none;
+  }
+
+  .docs-code-language-icon svg {
+    @apply block size-full;
+  }
+
+  .docs-code-language-text {
+    @apply inline-flex items-center leading-none;
+  }
+
+  .docs-snippet-copy {
+    @apply inline-flex size-6 shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap text-code-muted transition-all outline-none hover:!bg-code-border hover:!text-code-foreground disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20;
+  }
+
+  .dark .docs-snippet-copy {
+    @apply hover:!bg-code-border aria-invalid:ring-destructive/40;
+  }
+
+  .docs-snippet-copy:focus-visible {
+    @apply border-ring ring-[3px] ring-ring/50;
+  }
+
+  .docs-snippet-copy svg {
+    @apply pointer-events-none shrink-0;
+  }
+
+  .docs-snippet-copy svg:not([class*="size-"]) {
+    @apply size-3;
+  }
+
+  .docs-highlighted-pre {
+    @apply !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 !text-sm !leading-6 !text-code-foreground;
+  }
+
+  .docs-highlighted-code {
+    @apply grid min-w-max font-mono !text-[0.85rem] !leading-6;
+  }
+
+  .docs-highlighted-code .line {
+    @apply min-h-[1.5rem];
+  }
+
+  .docs-highlighted-code .conum {
+    @apply ml-1 inline-flex h-[1.05rem] w-[1.05rem] items-center justify-center rounded-full bg-code-foreground text-[0.68rem] leading-none font-bold not-italic align-[0.08em] !text-code [font-family:var(--shell-font)];
+    border: 1px solid
+      color-mix(in oklab, var(--code-foreground) 82%, var(--code));
+  }
+
+  .docs-highlighted-code .conum::before {
+    content: attr(data-value);
+  }
+
+  .docs-code-callouts {
+    @apply block border-t border-code-border bg-code-tab px-6 pt-3 pb-3 text-sm leading-5 text-code-foreground;
+  }
+
+  .docs-code-callouts code {
+    @apply !rounded-none !bg-code-foreground/10 !p-0 !text-[1em] !leading-[inherit] !text-code-foreground;
+  }
+
+  .docs-code-callouts ol {
+    @apply !m-0 grid list-none gap-[0.35rem] !p-0;
+    counter-reset: docs-code-callout;
+  }
+
+  .docs-code-callouts li {
+    @apply grid grid-cols-[auto_minmax(0,1fr)] items-start gap-[0.7rem];
+    counter-increment: docs-code-callout;
+  }
+
+  .docs-code-callouts li + li {
+    @apply !mt-0;
+  }
+
+  .docs-code-callouts li::before {
+    @apply mt-[0.2rem] inline-flex h-[1.15rem] w-[1.15rem] items-center justify-center rounded-full bg-code-foreground text-code text-[0.72rem] leading-none font-bold;
+    border: 1px solid
+      color-mix(in oklab, var(--code-foreground) 82%, var(--code));
+    content: counter(docs-code-callout);
+  }
+
+  .docs-code-callouts table {
+    @apply w-full border-collapse;
+  }
+
+  .docs-code-callouts td {
+    @apply align-top;
+  }
+
+  .docs-code-callouts tr + tr td {
+    @apply pt-[0.55rem];
+  }
+
+  .docs-code-callouts td:first-child {
+    @apply w-[1.15rem] pt-0 pr-[0.7rem] align-middle;
+  }
+
+  .docs-code-callouts tr + tr td:first-child {
+    @apply pt-0;
+  }
+
+  .docs-code-callouts td:first-child .conum {
+    @apply ml-0 inline-flex h-[1.15rem] w-[1.15rem] items-center justify-center rounded-full bg-code-foreground text-code text-[0.72rem] leading-none font-bold not-italic [font-family:var(--shell-font)];
+    border: 1px solid
+      color-mix(in oklab, var(--code-foreground) 82%, var(--code));
+  }
+
+  .docs-code-callouts td:first-child .conum::before {
+    content: attr(data-value);
+  }
+
+  .docs-code-callouts td:first-child .conum + b {
+    @apply hidden;
+  }
+
+  .docs-code-callouts .colist,
+  .docs-code-callouts p {
+    @apply !m-0;
+  }
+
+  .docs-properties-anchor {
+    @apply block h-0 overflow-hidden no-underline;
+  }
+
+  .docs-properties-count {
+    @apply inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent bg-secondary px-2.5 py-1 text-[0.78rem] font-medium whitespace-nowrap text-secondary-foreground;
+  }
+
+  .docs-properties-scroll {
+    @apply overflow-x-auto !px-0;
+  }
+
+  .docs-properties-scroll table.tableblock {
+    @apply !m-0 w-full border-collapse text-[0.92rem] leading-[1.45];
+  }
+
+  .docs-properties-scroll table.tableblock caption {
+    @apply !m-0 text-left font-bold text-foreground;
+  }
+
+  .docs-properties-scroll table.tableblock :where(th, td) {
+    @apply border border-border px-3 py-[0.65rem] align-top;
+  }
+
+  .docs-properties-scroll table.tableblock th {
+    @apply bg-muted font-bold text-foreground;
+  }
+
+  .docs-sidebar-rail-control {
+    @apply absolute inset-y-0 z-20 !hidden !h-auto !w-4 -translate-x-1/2 !rounded-none !p-0 transition-all ease-linear sm:!flex;
+  }
+
+  .docs-sidebar-rail-control::after {
+    @apply absolute inset-y-0 left-1/2 w-[2px];
+    content: "";
+  }
+
+  .docs-sidebar-rail-control:hover::after {
+    @apply bg-sidebar-border;
+  }
+
+  .group[data-side="left"] .docs-sidebar-rail-control {
+    @apply -right-4;
+  }
+
+  .group[data-side="right"] .docs-sidebar-rail-control {
+    @apply left-0;
+  }
+
+  [data-side="left"] .docs-sidebar-rail-control {
+    @apply cursor-w-resize;
+  }
+
+  [data-side="right"] .docs-sidebar-rail-control {
+    @apply cursor-e-resize;
+  }
+
+  [data-side="left"][data-state="collapsed"] .docs-sidebar-rail-control {
+    @apply cursor-e-resize;
+  }
+
+  [data-side="right"][data-state="collapsed"] .docs-sidebar-rail-control {
+    @apply cursor-w-resize;
+  }
+
+  .docs-sidebar-mobile-sheet-content {
+    @apply !w-72 !bg-sidebar p-0 text-sidebar-foreground;
+  }
+
+  .docs-sidebar-mobile-sheet-content > button {
+    @apply hidden;
+  }
+
+  .docs-sidebar-mobile-sheet-body {
+    @apply flex h-full w-full flex-col;
+  }
+
+  .docs-related-guides {
+    @apply my-8 grid gap-4;
+  }
+
+  .docs-related-guides-header {
+    @apply flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between;
+  }
+
+  .docs-related-guides-heading-wrap {
+    @apply min-w-0;
+  }
+
+  .docs-related-guides-heading {
+    @apply text-2xl font-semibold tracking-normal;
+  }
+
+  .docs-related-guides-grid {
+    @apply grid gap-4 lg:grid-cols-3;
+  }
+
+  .docs-related-guide-item {
+    @apply grid h-full grid-rows-[1fr_auto] gap-3;
+  }
+
+  .docs-related-guides-more-row {
+    @apply flex min-h-8 items-center lg:justify-end;
+  }
+
+  .docs-related-guides-more-button {
+    @apply !h-auto !justify-start !px-0;
+  }
+
+  .docs-related-guides-icon {
+    @apply size-4;
+  }
+
+  .docs-related-guides-spacer {
+    @apply hidden min-h-8 lg:block;
+  }
+
+  .docs-related-guide-card {
+    @apply h-full !rounded-lg;
+  }
+
+  .docs-related-guide-skeleton-badges {
+    @apply flex gap-2;
+  }
+
+  .docs-related-guide-skeleton-badge-primary {
+    @apply h-6 w-24 !rounded-full;
+  }
+
+  .docs-related-guide-skeleton-badge-secondary {
+    @apply h-6 w-16 !rounded-full;
+  }
+
+  .docs-related-guide-skeleton-title {
+    @apply h-6 w-4/5;
+  }
+
+  .docs-related-guide-skeleton-description {
+    @apply grid gap-2;
+  }
+
+  .docs-related-guide-skeleton-line-full {
+    @apply h-4 w-full;
+  }
+
+  .docs-related-guide-skeleton-line-short {
+    @apply h-4 w-5/6;
+  }
+
+  .docs-related-guide-skeleton-meta {
+    @apply h-5 w-36;
+  }
+
+  .docs-related-guide-skeleton-button {
+    @apply h-8 w-28;
+  }
+
+  .docs-related-guide-badges {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .docs-related-guide-title {
+    @apply text-lg !leading-snug;
+  }
+
+  .docs-related-guide-title-link {
+    @apply text-inherit no-underline hover:text-brand;
+  }
+
+  .docs-related-guide-description {
+    @apply line-clamp-3;
+  }
+
+  .docs-related-guide-meta-content {
+    @apply mt-auto;
+  }
+
+  .docs-related-guide-meta {
+    @apply flex flex-wrap items-center gap-2 text-sm text-muted-foreground;
+  }
+
   .dark .docs-highlighted-code span[style] {
     color: var(--shiki-dark, var(--shiki-light, currentColor)) !important;
     font-style: var(

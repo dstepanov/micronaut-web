@@ -93,42 +93,37 @@ export function DocsRelatedGuides({
 
   return (
     <section
-      className="my-8 grid gap-4"
+      className="docs-related-guides"
       data-docs-related-guides
       aria-busy={!loaded}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Latest guides
-          </h2>
+      <div className="docs-related-guides-header">
+        <div className="docs-related-guides-heading-wrap">
+          <h2 className="docs-related-guides-heading">Latest guides</h2>
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="docs-related-guides-grid">
         {loaded
           ? guides.map((guide, index) => (
-              <div
-                key={guide.slug}
-                className="grid h-full grid-rows-[1fr_auto] gap-3"
-              >
+              <div key={guide.slug} className="docs-related-guide-item">
                 <RelatedGuideCard guide={guide} />
                 {index === guides.length - 1 ? (
-                  <div className="flex min-h-8 items-center lg:justify-end">
+                  <div className="docs-related-guides-more-row">
                     <Button
                       asChild
                       size="sm"
                       variant="link"
-                      className="h-auto justify-start px-0"
+                      className="docs-related-guides-more-button"
                     >
                       <a href={showMoreHref} data-docs-related-guides-show-more>
                         Show more
-                        <ArrowRightIcon className="size-4" />
+                        <ArrowRightIcon className="docs-related-guides-icon" />
                       </a>
                     </Button>
                   </div>
                 ) : (
                   <div
-                    className="hidden min-h-8 lg:block"
+                    className="docs-related-guides-spacer"
                     aria-hidden="true"
                   />
                 )}
@@ -142,23 +137,23 @@ export function DocsRelatedGuides({
 
 function RelatedGuideSkeleton() {
   return (
-    <Card className="h-full rounded-lg" aria-hidden="true">
+    <Card className="docs-related-guide-card" aria-hidden="true">
       <CardHeader>
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-24 rounded-full" />
-          <Skeleton className="h-6 w-16 rounded-full" />
+        <div className="docs-related-guide-skeleton-badges">
+          <Skeleton className="docs-related-guide-skeleton-badge-primary" />
+          <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
         </div>
-        <Skeleton className="h-6 w-4/5" />
-        <div className="grid gap-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="docs-related-guide-skeleton-title" />
+        <div className="docs-related-guide-skeleton-description">
+          <Skeleton className="docs-related-guide-skeleton-line-full" />
+          <Skeleton className="docs-related-guide-skeleton-line-short" />
         </div>
       </CardHeader>
       <CardContent>
-        <Skeleton className="h-5 w-36" />
+        <Skeleton className="docs-related-guide-skeleton-meta" />
       </CardContent>
       <CardFooter>
-        <Skeleton className="h-8 w-28" />
+        <Skeleton className="docs-related-guide-skeleton-button" />
       </CardFooter>
     </Card>
   );
@@ -177,10 +172,10 @@ function RelatedGuideCard({ guide }: { guide: GeneratedGuide }) {
   ).slice(0, 2);
 
   return (
-    <Card className="h-full rounded-lg">
+    <Card className="docs-related-guide-card">
       <CardHeader>
         {badges.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="docs-related-guide-badges">
             {badges.map((badge) => (
               <Badge key={badge} variant="outline">
                 {badge}
@@ -188,17 +183,17 @@ function RelatedGuideCard({ guide }: { guide: GeneratedGuide }) {
             ))}
           </div>
         ) : null}
-        <CardTitle className="text-lg leading-snug">
-          <a href={href} className="text-inherit no-underline hover:text-brand">
+        <CardTitle className="docs-related-guide-title">
+          <a href={href} className="docs-related-guide-title-link">
             {guide.title}
           </a>
         </CardTitle>
-        <CardDescription className="line-clamp-3">
+        <CardDescription className="docs-related-guide-description">
           {guide.intro}
         </CardDescription>
       </CardHeader>
-      <CardContent className="mt-auto">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <CardContent className="docs-related-guide-meta-content">
+        <div className="docs-related-guide-meta">
           {guide.publicationDate ? (
             <time dateTime={guide.publicationDate}>
               {formatGuideDate(guide.publicationDate)}
@@ -213,7 +208,7 @@ function RelatedGuideCard({ guide }: { guide: GeneratedGuide }) {
         <Button asChild size="sm" variant="outline">
           <a href={href}>
             Read guide
-            <ArrowRightIcon className="size-4" />
+            <ArrowRightIcon className="docs-related-guides-icon" />
           </a>
         </Button>
       </CardFooter>

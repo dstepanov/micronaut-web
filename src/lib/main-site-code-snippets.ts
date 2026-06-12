@@ -13,23 +13,15 @@ type CodeSample = {
 };
 
 const codeBlockPattern = /<pre([^>]*)><code([^>]*)>([\s\S]*?)<\/code><\/pre>/gi;
-const buttonGhostXsClass =
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3";
-const languageButtonClass =
-  "docs-code-language language-option inline-flex h-6 items-center gap-1 align-middle leading-none text-code-muted aria-selected:font-semibold aria-selected:text-code-foreground";
-const languageButtonActiveClass = "selected font-semibold text-code-foreground";
-const languageButtonInactiveClass = "text-code-muted";
-const languageTextClass =
-  "docs-code-language-text inline-flex items-center leading-none";
-const languageIconClass =
-  "docs-code-language-icon inline-flex size-3.5 shrink-0 items-center justify-center self-center leading-none [&_svg]:block [&_svg]:size-full";
+const languageButtonClass = "docs-code-language language-option";
+const languageButtonActiveClass = "selected";
+const languageTextClass = "docs-code-language-text";
+const languageIconClass = "docs-code-language-icon";
 const languageIconFillClass = "docs-code-language-icon-fill";
-const panelClass =
-  "docs-code-content docs-snippet-card-content bg-code text-code-foreground";
+const panelClass = "docs-code-content docs-snippet-card-content";
 const codePreClass =
-  "shiki shiki-themes github-light-default github-dark-default !m-0 !max-w-full !overflow-x-auto !rounded-none !border-0 !bg-code !px-6 !py-4 text-sm !leading-6 !text-code-foreground";
-const codeElementClass =
-  "shiki-code grid min-w-max font-mono !text-[0.85rem] !leading-6 [&_.line]:min-h-[1.5rem] dark:[&_span[style]]:![color:var(--shiki-dark,var(--shiki-light,currentColor))] dark:[&_span[style]]:![font-style:var(--shiki-dark-font-style,var(--shiki-light-font-style,inherit))] dark:[&_span[style]]:![font-weight:var(--shiki-dark-font-weight,var(--shiki-light-font-weight,inherit))] dark:[&_span[style]]:![text-decoration:var(--shiki-dark-text-decoration,var(--shiki-light-text-decoration,inherit))] [&_.conum]:ml-1 [&_.conum]:inline-flex [&_.conum]:h-[1.05rem] [&_.conum]:w-[1.05rem] [&_.conum]:items-center [&_.conum]:justify-center [&_.conum]:rounded-full [&_.conum]:[border:1px_solid_color-mix(in_oklab,var(--code-foreground)_82%,var(--code))] [&_.conum]:bg-code-foreground [&_.conum]:![color:var(--code)] [&_.conum]:[font-family:var(--shell-font)] [&_.conum]:text-[0.68rem] [&_.conum]:leading-none [&_.conum]:font-bold [&_.conum]:not-italic [&_.conum]:align-[0.08em] [&_.conum::before]:content-[attr(data-value)]";
+  "shiki shiki-themes github-light-default github-dark-default docs-highlighted-pre";
+const codeElementClass = "shiki-code docs-highlighted-code";
 let snippetTemplates: ReturnType<typeof renderDocsSnippetTemplates> | undefined;
 
 export async function renderMainSiteCodeSnippets(html: string) {
@@ -129,10 +121,11 @@ function renderLanguageOption({
   tabId: string;
 }) {
   const className = [
-    buttonGhostXsClass,
     languageButtonClass,
-    active ? languageButtonActiveClass : languageButtonInactiveClass,
-  ].join(" ");
+    active ? languageButtonActiveClass : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ");
   return `<button data-slot="button" data-variant="ghost" data-size="xs" class="${attribute(className)}" type="button" id="${attribute(tabId)}" role="tab" aria-controls="${attribute(panelId)}" aria-selected="${active}" data-lang="${attribute(language)}" tabindex="${active ? "0" : "-1"}">${languageIconHtml(language)}<span class="${attribute(languageTextClass)}">${html(label)}</span></button>`;
 }
 
