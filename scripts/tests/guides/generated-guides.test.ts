@@ -126,7 +126,10 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Manual callout keeps its place/);
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
-  assert.match(html, /docs-properties-template/);
+  assert.match(html, /docs-dependency-template/);
+  assert.doesNotMatch(html, /docs-properties-count/);
+  assert.match(html, /<table class="tableblock/);
+  assert.match(html, /Configuration Properties/);
   assert.match(html, /micronaut\.server\.port/);
   assert.match(html, /Unmarked source callout/);
   assert.match(html, /Missing source marker becomes manual/);

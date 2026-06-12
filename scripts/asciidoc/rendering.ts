@@ -1,11 +1,9 @@
 import { Html5Converter } from "@asciidoctor/core";
 import type { Registry } from "@asciidoctor/core";
 
-import { escapeRegExp } from "../shared/html.ts";
 import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
 import {
-  renderGeneratedPropertiesCard,
   renderGeneratedSnippet,
   renderSnippetVariant,
 } from "./extensions/snippet-block-renderer.ts";
@@ -30,7 +28,6 @@ type AsciidoctorNode = {
   context?: unknown;
   role?: unknown;
   attributes?: Record<string, unknown>;
-  rows?: { body?: unknown[] };
   hasTitle?: () => boolean;
   getAttribute?: (name: string) => unknown;
   getSource?: () => string;
@@ -47,7 +44,6 @@ type AsciidoctorDiagnostic = {
 
 class MicronautComponentHtmlConverter extends Html5Converter {
   private micronautListingIndex = 0;
-  private micronautPropertiesIndex = 0;
 
   override async convert_listing(node: AsciidoctorNode): Promise<string> {
     if (isSnippetCalloutValidationBlock(node)) {
@@ -64,27 +60,6 @@ class MicronautComponentHtmlConverter extends Html5Converter {
       language: listingBlockLanguage(node),
       source: node.getSource?.() || "",
       titleHtml: node.hasTitle?.() ? String(node.title || "") : "",
-    });
-  }
-
-  override async convert_table(node: AsciidoctorNode): Promise<string> {
-    if (!isConfigurationPropertyTable(node)) {
-      return super.convert_table(node);
-    }
-
-    const generatedIndex = this.micronautPropertiesIndex;
-    this.micronautPropertiesIndex += 1;
-    const anchorId = node.id || `generated-properties-${generatedIndex}`;
-    const tableHtml = configurationPropertyTableHtml(
-      await super.convert_table(node),
-      node.id,
-    );
-    const propertyCount = configurationPropertyCount(node);
-    return renderPropertiesSnippetCard({
-      anchorId,
-      propertyCount,
-      tableHtml,
-      title: configurationPropertyTitle(node),
     });
   }
 
@@ -207,70 +182,6 @@ async function renderListingSnippetCard({
       }),
     ],
   });
-}
-
-async function renderPropertiesSnippetCard({
-  anchorId,
-  propertyCount,
-  tableHtml,
-  title,
-}: {
-  anchorId: string;
-  propertyCount: number;
-  tableHtml: string;
-  title: string;
-}): Promise<string> {
-  return renderGeneratedPropertiesCard({
-    anchorId,
-    countLabel: `${propertyCount} ${
-      propertyCount === 1 ? "property" : "properties"
-    }`,
-    eyebrow: "Configuration properties",
-    id: `${anchorId}-properties`,
-    tableHtml,
-    title,
-  });
-}
-
-function isConfigurationPropertyTable(node: AsciidoctorNode): boolean {
-  return (
-    node?.context === "table" &&
-    /configuration properties/i.test(configurationPropertyTitle(node))
-  );
-}
-
-function configurationPropertyTitle(node: AsciidoctorNode): string {
-  return String(node?.title || "")
-    .trim()
-    .replace(/^Table\s+\d+\.\s*/i, "");
-}
-
-function configurationPropertyCount(node: AsciidoctorNode): number {
-  return Number(node?.rows?.body?.length || node?.attributes?.rowcount || 0);
-}
-
-function configurationPropertyTableHtml(
-  tableHtml: string,
-  id: unknown,
-): string {
-  return hideTableCaption(removeTableId(tableHtml, id));
-}
-
-function hideTableCaption(tableHtml: string): string {
-  return tableHtml.replace(
-    /<caption class="title">/,
-    '<caption class="sr-only">',
-  );
-}
-
-function removeTableId(tableHtml: string, id: unknown): string {
-  if (!id) {
-    return tableHtml;
-  }
-  return tableHtml.replace(
-    new RegExp(`(<table\\b[^>]*)\\s+id="${escapeRegExp(String(id))}"`),
-    "$1",
-  );
 }
 
 function formatAsciidoctorDiagnostic(message: AsciidoctorDiagnostic): string {

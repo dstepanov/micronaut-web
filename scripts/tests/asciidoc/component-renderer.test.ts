@@ -42,7 +42,8 @@ test("AsciiDoc snippets render directly through generated React components", asy
   );
   assert.equal(count(html, /docs-code-snippet-template/g), 17);
   assert.equal(count(html, /docs-dependency-template/g), 1);
-  assert.equal(count(html, /docs-properties-template/g), 2);
+  assert.equal(count(html, /docs-properties-template/g), 1);
+  assert.doesNotMatch(html, /docs-properties-count/);
   assert.equal(count(html, /docs-snippet-template docs-code-block/g), 18);
   assert.equal(count(html, /data-copy-active-snippet/g), 18);
   assert.ok(count(html, /docs-code-callouts/g) >= 3);
@@ -127,7 +128,10 @@ test("AsciiDoc snippets render directly through generated React components", asy
   assert.match(text, /Application configuration/);
   assert.match(text, /micronaut\.server\.port=8080/);
   assert.match(text, /Configuration Properties/);
-  assert.match(text, /3 properties/);
+  assert.match(
+    html,
+    /<caption class="title">Table \d+\. Configuration Properties<\/caption>/,
+  );
 });
 
 test("snippet, dependency, and configuration block processors render React snippet components", async (): Promise<void> => {

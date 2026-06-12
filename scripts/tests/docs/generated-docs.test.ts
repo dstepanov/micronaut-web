@@ -656,7 +656,12 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.doesNotMatch(generatedHtml, /\[(?:snippet|dependency),payload=/);
   assert.match(generatedHtml, /docs-code-snippet-template/);
   assert.match(generatedHtml, /docs-dependency-template/);
-  assert.match(generatedHtml, /docs-properties-template/);
+  assert.equal(countMatches(generatedHtml, /docs-properties-template/g), 1);
+  assert.doesNotMatch(generatedHtml, /docs-properties-count/);
+  assert.match(
+    generatedHtml,
+    /<caption class="title">Table \d+\. Configuration Properties<\/caption>/,
+  );
   assertSnippetLanguageIcon(generatedHtml, "java", "java");
   assertSnippetLanguageIcon(generatedHtml, "kotlin", "kotlin");
   assertSnippetLanguageIcon(generatedHtml, "groovy", "groovy");
@@ -723,7 +728,6 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(generatedText, /Configuration snippet/);
   assert.match(generatedText, /micronaut\.server\.port=8080/);
   assert.match(generatedText, /Configuration Properties/);
-  assert.match(generatedText, /2 properties/);
 });
 
 test("docs renderer groups Micronaut Data untagged repository snippets as language tabs", async (t: any): Promise<any> => {
@@ -1916,13 +1920,12 @@ test("docs search index includes generated headings, properties, classes, projec
     '<div class="guide-section-heading">',
     '  <h2 id="fixture-client"><a class="anchor" href="#fixture-client"></a>1.1 HTTP Client</h2>',
     "</div>",
-    '<div class="docs-properties-template">',
-    "  <table>",
+    '<table class="tableblock frame-all grid-all stretch">',
+    '  <caption class="title">Table 1. Configuration Properties</caption>',
     "    <tbody>",
     "      <tr><td><p><code>micronaut.fixture.enabled</code></p></td><td><p>Boolean</p></td><td><p>Enables the fixture.</p></td></tr>",
     "    </tbody>",
-    "  </table>",
-    "</div>",
+    "</table>",
     '<p>Use <a href="../assets/fixture/docs/api/io/micronaut/fixture/FixtureClient.html">FixtureClient</a>.</p>',
   ].join("\n");
 
@@ -1994,11 +1997,11 @@ test("docs search index covers several generated docs fragments", (): void => {
       '<div class="guide-section-heading">',
       '  <h2 id="data-repositories"><a class="anchor" href="#data-repositories"></a>1.1 Repositories</h2>',
       "</div>",
-      '<div class="docs-properties-template">',
-      "  <table><tbody>",
+      '<table class="tableblock frame-all grid-all stretch">',
+      '<caption class="title">Table 1. Configuration Properties</caption>',
+      "  <tbody>",
       "    <tr><td><p><code>micronaut.data.default-schema</code></p></td><td><p>String</p></td><td><p>Default schema.</p></td></tr>",
       "  </tbody></table>",
-      "</div>",
     ].join("\n"),
     serde: [
       '<div class="guide-section-heading">',
