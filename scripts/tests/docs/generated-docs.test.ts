@@ -671,8 +671,8 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assertNoRuntimeGeneratedRendering("generated docs HTML", generatedHtml);
   assert.match(generatedHtml, /docs-code-callouts/);
   assert.ok(
-    generatedHtml.includes("px-6 pt-3 pb-2 text-sm leading-5"),
-    "snippet callout footers should keep tighter bottom padding",
+    generatedHtml.includes("px-6 pt-3 pb-3 text-sm leading-5"),
+    "snippet callout footers should keep matching top and bottom padding",
   );
   assert.match(generatedHtml, /<i class="conum" data-value="1"><\/i>/);
   assert.ok(
