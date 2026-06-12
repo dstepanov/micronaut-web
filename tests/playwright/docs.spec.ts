@@ -59,6 +59,20 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
     );
   }
 
+  const searchButton = page.getByRole("button", { name: "Search Micronaut" });
+  const searchInput = page.getByPlaceholder(
+    "Search projects, classes, properties, docs...",
+  );
+  await expect(async () => {
+    await searchButton.click();
+    await expect(searchInput).toBeVisible({ timeout: 1_000 });
+  }).toPass();
+  await expect(searchInput).toHaveAttribute("type", "search");
+  await expect(searchInput).toHaveAttribute("autocomplete", "off");
+  await expect(searchInput).toHaveAttribute("autocapitalize", "none");
+  await expect(searchInput).toHaveAttribute("autocorrect", "off");
+  await expect(searchInput).toHaveAttribute("spellcheck", "false");
+
   await expectNoHorizontalOverflow(page);
   expect(failures).toEqual([]);
 });
@@ -88,12 +102,11 @@ test("generated docs page renders desktop content and sidebars without overlap",
   const activeProjectLink = docsSidebar.getByRole("link", {
     name: "Micronaut Core",
   });
-  await expect(
-    activeProjectLink,
-  ).toHaveAttribute("aria-current", "page");
-  await expect(
-    activeProjectLink,
-  ).toHaveAttribute("data-docs-active-project-link", "true");
+  await expect(activeProjectLink).toHaveAttribute("aria-current", "page");
+  await expect(activeProjectLink).toHaveAttribute(
+    "data-docs-active-project-link",
+    "true",
+  );
   await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
   const activeProjectSections = page.locator("#docs-desktop-core-sections");
   await expect(activeProjectSections).toBeVisible();
@@ -553,8 +566,7 @@ async function scrollToGeneratedHeading(
       ),
     );
     const heading = headings.find(
-      (element) =>
-        element.textContent?.replace(/\s+/g, " ").trim() === name,
+      (element) => element.textContent?.replace(/\s+/g, " ").trim() === name,
     );
     if (heading) {
       const targetTop = heading.getBoundingClientRect().top + window.scrollY;
