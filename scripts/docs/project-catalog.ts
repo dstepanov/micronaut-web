@@ -20,6 +20,7 @@ type DocsCatalogProject = DocsProject & {
   icon: string;
   primaryCategory: string;
   categorySlugs: string[];
+  guideTopicAliases?: string[];
   shortDescription: string;
   longDescription: string;
 };
@@ -97,6 +98,9 @@ export function buildDocsProjectCatalog({
         icon: existingProject.icon || "lucide:book-open",
         primaryCategory,
         categorySlugs,
+        ...(existingProject.guideTopicAliases?.length
+          ? { guideTopicAliases: existingProject.guideTopicAliases }
+          : {}),
         shortDescription:
           existingProject.shortDescription ||
           project.displayName.replace(/^Micronaut\s+/i, ""),

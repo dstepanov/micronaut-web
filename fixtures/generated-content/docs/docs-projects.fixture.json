@@ -34,6 +34,10 @@
       "categorySlugs": [
         "playwright"
       ],
+      "guideTopicAliases": [
+        "getting-started",
+        "junit"
+      ],
       "shortDescription": "Micronaut Core",
       "longDescription": "Micronaut Core copied browser layout fixture."
     },
@@ -55,6 +59,11 @@
       "categorySlugs": [
         "playwright"
       ],
+      "guideTopicAliases": [
+        "micronaut-data",
+        "data-jdbc",
+        "database"
+      ],
       "shortDescription": "Micronaut Data",
       "longDescription": "Micronaut Data copied browser layout fixture."
     },
@@ -75,6 +84,11 @@
       "primaryCategory": "playwright",
       "categorySlugs": [
         "playwright"
+      ],
+      "guideTopicAliases": [
+        "serialization",
+        "serde",
+        "json"
       ],
       "shortDescription": "Micronaut Serialization",
       "longDescription": "Micronaut Serialization copied browser layout fixture."

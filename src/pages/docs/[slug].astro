@@ -13,11 +13,12 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DocsRelatedGuides } from "@/components/web/docs-related-guides";
 import DocsShell from "@/components/web/docs-shell.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
-import { canonicalSurfaceUrl, withBasePath } from "@/lib/base-path";
+import { canonicalSurfaceUrl, withBasePath, withSurfacePath } from "@/lib/base-path";
 import {
   docsCatalogProject,
   loadDocsProjectCatalog,
@@ -67,6 +68,8 @@ const initialRootId = activeProjectSections[0]?.id || currentSectionLinks[0]?.pa
 const initialCurrentSectionIndexHidden =
   !initialRootId ||
   currentSectionLinks.every((section) => section.parentId !== initialRootId);
+const relatedGuideTopicAliases = project.guideTopicAliases || [];
+const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
 
 function extractGeneratedDocSections(html: string) {
   const sections: Array<{ id: string; label: string; depth: number; parentId?: string }> = [];
@@ -147,6 +150,13 @@ micronaut.category=${project.primaryCategory}`}</code></pre>
               </section>
             ))}
           </div>
+        )}
+        {relatedGuideTopicAliases.length > 0 && (
+          <DocsRelatedGuides
+            client:visible
+            manifestUrl={guidesManifestUrl}
+            topicAliases={relatedGuideTopicAliases}
+          />
         )}
       </div>
       {currentSectionLinks.length > 0 && (

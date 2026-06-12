@@ -36,6 +36,7 @@ export type DocsCatalogProject = {
   icon: string;
   primaryCategory: string;
   categorySlugs: string[];
+  guideTopicAliases?: string[];
   shortDescription: string;
   longDescription: string;
 };

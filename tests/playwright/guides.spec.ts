@@ -126,6 +126,25 @@ const generatedGuidePages = [
   },
 ];
 
+test("guides manifest endpoint exposes generated guide metadata", async ({
+  page,
+}) => {
+  const response = await page.request.get(appPath("/guides/manifest.json"));
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["content-type"]).toContain("application/json");
+
+  const manifest = await response.json();
+  const dataGuide = manifest.guides.find(
+    (guide: any) => guide.slug === "micronaut-data-jdbc-repository",
+  );
+  expect(dataGuide).toBeTruthy();
+  expect(dataGuide.title).toBe("Access a database with Micronaut Data JDBC");
+  expect(dataGuide.tags).toContain("micronaut-data");
+  expect(dataGuide.defaultOptionFile).toBe(
+    "micronaut-data-jdbc-repository-gradle-java.html",
+  );
+});
+
 test("guide catalog hydrates guide card islands and variant menus", async ({
   page,
 }) => {

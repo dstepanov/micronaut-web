@@ -325,6 +325,49 @@ test("generated docs pages convert snippets for selected real projects", async (
   expect(failures).toEqual([]);
 });
 
+test("docs page renders related latest guides from the guides manifest", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(relatedGuidesManifest()),
+    });
+  });
+
+  await page.goto(appPath("/docs/data/"));
+
+  await expect(
+    page.getByRole("heading", {
+      exact: true,
+      level: 1,
+      name: "Micronaut Data",
+    }),
+  ).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+  const relatedGuides = page.locator("[data-docs-related-guides]");
+  await expect(relatedGuides).toBeVisible();
+  await expect(
+    relatedGuides.getByRole("heading", { name: "Related guides" }),
+  ).toBeVisible();
+  await expect(
+    relatedGuides.getByText("Micronaut HTTP Client"),
+  ).toHaveCount(0);
+  const guideLink = relatedGuides
+    .getByRole("link", {
+      name: "Access a database with Micronaut Data JDBC",
+    })
+    .first();
+  await expect(guideLink).toHaveAttribute(
+    "href",
+    relatedGuideHrefPattern("micronaut-data-jdbc-repository-gradle-java.html"),
+  );
+
+  expect(failures).toEqual([]);
+});
+
 test("generated docs page fits the mobile viewport", async ({ page }) => {
   const failures = collectBrowserFailures(page);
   await page.setViewportSize({ width: 390, height: 860 });
@@ -427,6 +470,69 @@ function docsProjectHrefPattern(slug: string): RegExp {
     );
   }
   return new RegExp(`/docs/${slug}/$`);
+}
+
+function relatedGuideHrefPattern(file: string): RegExp {
+  return new RegExp(`/(?:guides|latest)/${escapeRegExp(file)}$`);
+}
+
+function relatedGuidesManifest() {
+  return {
+    generatedAt: "2026-06-12T00:00:00.000Z",
+    guideCount: 2,
+    guides: [
+      {
+        slug: "micronaut-http-client",
+        title: "Micronaut HTTP Client",
+        intro: "Learn how to use Micronaut low-level HTTP Client.",
+        authors: ["Micronaut"],
+        tags: ["client"],
+        categories: ["HTTP Client"],
+        publicationDate: "2030-01-01",
+        estimatedMinutes: 30,
+        overviewFile: "micronaut-http-client.html",
+        defaultOptionFile: "micronaut-http-client-gradle-java.html",
+        options: [
+          {
+            id: "micronaut-http-client-gradle-java",
+            label: "Java / Gradle",
+            language: "java",
+            languageLabel: "Java",
+            buildTool: "gradle",
+            buildToolLabel: "Gradle",
+            file: "micronaut-http-client-gradle-java.html",
+            fragment: "fragments/micronaut-http-client-gradle-java.html",
+            zipUrl: "micronaut-http-client-gradle-java.zip",
+          },
+        ],
+      },
+      {
+        slug: "micronaut-data-jdbc-repository",
+        title: "Access a database with Micronaut Data JDBC",
+        intro: "Learn how to access a database with Micronaut JDBC repositories.",
+        authors: ["Micronaut"],
+        tags: ["database", "micronaut-data", "jdbc"],
+        categories: ["Data JDBC"],
+        publicationDate: "2021-05-28",
+        estimatedMinutes: 25,
+        overviewFile: "micronaut-data-jdbc-repository.html",
+        defaultOptionFile: "micronaut-data-jdbc-repository-gradle-java.html",
+        options: [
+          {
+            id: "micronaut-data-jdbc-repository-gradle-java",
+            label: "Java / Gradle",
+            language: "java",
+            languageLabel: "Java",
+            buildTool: "gradle",
+            buildToolLabel: "Gradle",
+            file: "micronaut-data-jdbc-repository-gradle-java.html",
+            fragment: "fragments/micronaut-data-jdbc-repository-gradle-java.html",
+            zipUrl: "micronaut-data-jdbc-repository-gradle-java.zip",
+          },
+        ],
+      },
+    ],
+  };
 }
 
 function configuredDocsRoot(): string {

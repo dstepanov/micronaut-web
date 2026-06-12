@@ -242,6 +242,10 @@
       "categorySlugs": [
         "most-popular"
       ],
+      "guideTopicAliases": [
+        "getting-started",
+        "junit"
+      ],
       "shortDescription": "Core framework runtime",
       "longDescription": "Micronaut Core supplies runtime APIs and compile-time infrastructure for injection, configuration, AOP, validation, HTTP, serialization, and native images so platform modules build fast, modular applications consistently across diverse deployment environments."
     },
@@ -856,6 +860,11 @@
         "most-popular",
         "data-access"
       ],
+      "guideTopicAliases": [
+        "micronaut-data",
+        "data-jdbc",
+        "database"
+      ],
       "shortDescription": "Data repository support",
       "longDescription": "Micronaut Data precomputes repository queries ahead of time and executes them through a small runtime layer for SQL and NoSQL stores, pagination, transactions, projections, criteria APIs, and reflection-free repository access."
     },
@@ -1255,6 +1264,11 @@
       "primaryCategory": "api",
       "categorySlugs": [
         "api"
+      ],
+      "guideTopicAliases": [
+        "serialization",
+        "serde",
+        "json"
       ],
       "shortDescription": "Build-time serialization",
       "longDescription": "Micronaut Serialization generates reflection-free serializers and deserializers from compile-time metadata for JSON, JSON-B, Jackson annotations, BSON, custom serializers, and fast native-image payload handling without runtime introspection or reflection costs overhead."
