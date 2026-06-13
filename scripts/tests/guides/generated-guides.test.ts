@@ -216,6 +216,141 @@ test("guide renderer can render all guides in strict pipeline mode", async (t: a
   );
 });
 
+test("guide renderer handles legacy source macros and GraalPy package pom snippets", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-guides-graalpy-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const guidesDirectory = path.join(temporaryDirectory, "micronaut-guides");
+  const outputDirectory = path.join(temporaryDirectory, "generated-guides");
+  const guideDirectory = path.join(
+    guidesDirectory,
+    "guides",
+    "micronaut-graalpy-python-package",
+  );
+
+  await fs.mkdir(
+    path.join(guidesDirectory, "src", "docs", "common", "snippets"),
+    { recursive: true },
+  );
+  await fs.writeFile(
+    path.join(
+      guidesDirectory,
+      "src",
+      "docs",
+      "common",
+      "snippets",
+      "common-license.adoc",
+    ),
+    "",
+    "utf8",
+  );
+  await fs.mkdir(
+    path.join(
+      guideDirectory,
+      "java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "micronaut",
+    ),
+    { recursive: true },
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, "metadata.json"),
+    JSON.stringify(
+      {
+        title: "GraalPy Python package",
+        intro: "Fixture intro.",
+        authors: ["Micronaut"],
+        tags: ["junit"],
+        categories: ["GraalPy"],
+        publicationDate: "2026-01-01",
+        languages: ["java"],
+        buildTools: ["maven"],
+        apps: [
+          {
+            name: "default",
+            features: ["graalpy"],
+            invisibleFeatures: ["graalpy-pygal"],
+          },
+        ],
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(guideDirectory, "micronaut-graalpy-python-package.adoc"),
+    [
+      "Create a controller:",
+      "source:PygalController[]",
+      "<.> Controller callout.",
+      "",
+      "resource:../../../pom.xml[tag=graalpy-maven-plugin]",
+    ].join("\n"),
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(
+      guideDirectory,
+      "java",
+      "src",
+      "main",
+      "java",
+      "example",
+      "micronaut",
+      "PygalController.java",
+    ),
+    [
+      "package example.micronaut;",
+      "",
+      "class PygalController { // <1>",
+      "}",
+    ].join("\n"),
+    "utf8",
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-guides.ts",
+      "--guides-dir",
+      guidesDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "micronaut-graalpy-python-package",
+      "--strict",
+    ],
+    {
+      cwd: projectDirectory,
+    },
+  );
+
+  const html = await fs.readFile(
+    path.join(
+      outputDirectory,
+      "fragments",
+      "micronaut-graalpy-python-package-maven-java.html",
+    ),
+    "utf8",
+  );
+  assert.match(
+    html,
+    /java\/src\/main\/java\/example\/micronaut\/PygalController\.java/,
+  );
+  assert.match(html, /Controller callout/);
+  assert.match(html, /graalpy-maven-plugin/);
+  assert.match(html, /pygal==3\.0\.4/);
+  assert.doesNotMatch(html, /source:{1,2}PygalController/);
+  assert.doesNotMatch(html, /Missing resource/);
+});
+
 test("strict guide renderer allows existing guide subsection heading order", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-guides-heading-"),

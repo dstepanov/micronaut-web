@@ -129,9 +129,9 @@ function rewriteGuideLines(
       output.push(...expandedCallout);
       continue;
     }
-    const legacyBlockMacro = legacyLineBlockMacro(line);
+    const legacyBlockMacro = legacyLineBlockMacroLines(line);
     if (legacyBlockMacro) {
-      output.push(legacyBlockMacro);
+      output.push(...legacyBlockMacro);
       continue;
     }
     const excludeBlock = legacyExcludeBlockLines(lines, index, context);
@@ -247,10 +247,10 @@ function expandedGuideCalloutLines(
   }
 }
 
-function legacyLineBlockMacro(line: string): string | undefined {
+function legacyLineBlockMacroLines(line: string): string[] | undefined {
   const match = /^([A-Za-z][\w-]*):([^:]*\[[^\]]*])\s*$/.exec(line);
   return match && LEGACY_LINE_BLOCK_MACROS.has(match[1])
-    ? `${match[1]}::${match[2]}`
+    ? ["", `${match[1]}::${match[2]}`, ""]
     : undefined;
 }
 

@@ -32,6 +32,10 @@ const GUIDE_SOURCE_BLOCK = "guide-source";
 const GUIDE_TEST_BLOCK = "guide-test";
 const GUIDE_TEST_RESOURCE_BLOCK = "guide-test-resource";
 const GUIDE_ZIP_INCLUDE_BLOCK = "guide-zip-include";
+const GRAALPY_MAVEN_PLUGIN_TAG = "graalpy-maven-plugin";
+const GRAALPY_PYTHON_PACKAGES_BY_FEATURE = new Map([
+  ["graalpy-pygal", ["pygal==3.0.4"]],
+]);
 
 type GuideMacroPayload = {
   attributes: Record<string, string>;
@@ -237,6 +241,15 @@ async function resourceSnippetPayload(
     sourceSet,
   );
   if (!file) {
+    const syntheticPayload = syntheticResourceSnippetPayload(
+      target.trim(),
+      attributes,
+      context,
+      sourceSet,
+    );
+    if (syntheticPayload) {
+      return syntheticPayload;
+    }
     return missingNotePayload(`Missing resource \`${target.trim()}\`.`);
   }
 
@@ -269,6 +282,85 @@ async function resourceSnippetPayload(
       },
     ],
   };
+}
+
+function syntheticResourceSnippetPayload(
+  target: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+  sourceSet: ResourceSourceSet,
+): GuideSnippetPayload | undefined {
+  if (
+    sourceSet !== "main" ||
+    context.option.buildTool !== "maven" ||
+    target.replaceAll("\\", "/") !== "../../../pom.xml"
+  ) {
+    return undefined;
+  }
+  const tags = tagSelection(attributes)
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  if (tags.length && !tags.includes(GRAALPY_MAVEN_PLUGIN_TAG)) {
+    return undefined;
+  }
+
+  const packages = graalPyPythonPackages(context);
+  if (!packages.length) {
+    return undefined;
+  }
+
+  return {
+    kind: "code",
+    title: "pom.xml",
+    samples: [
+      {
+        language: "xml",
+        source: normalizeIndent(
+          graalPyMavenPluginSource(packages),
+          attributes.indent,
+        ),
+      },
+    ],
+  };
+}
+
+function graalPyPythonPackages(context: GuideRenderContext): string[] {
+  const packages = new Set<string>();
+  for (const app of context.guide.apps) {
+    for (const feature of [...app.features, ...(app.invisibleFeatures || [])]) {
+      for (const pythonPackage of GRAALPY_PYTHON_PACKAGES_BY_FEATURE.get(
+        feature,
+      ) || []) {
+        packages.add(pythonPackage);
+      }
+    }
+  }
+  return [...packages];
+}
+
+function graalPyMavenPluginSource(packages: string[]): string {
+  const packageLines = packages
+    .map((pythonPackage) => `        <package>${pythonPackage}</package>`)
+    .join("\n");
+  return [
+    "<plugin>",
+    "    <groupId>org.graalvm.python</groupId>",
+    "    <artifactId>graalpy-maven-plugin</artifactId>",
+    "    <configuration>",
+    "      <packages>",
+    packageLines,
+    "      </packages>",
+    "    </configuration>",
+    "    <executions>",
+    "      <execution>",
+    "        <goals>",
+    "          <goal>process-graalpy-resources</goal>",
+    "        </goals>",
+    "      </execution>",
+    "    </executions>",
+    "</plugin>",
+  ].join("\n");
 }
 
 async function zipIncludeSnippetPayload(

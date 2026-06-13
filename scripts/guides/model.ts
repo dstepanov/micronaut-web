@@ -7,6 +7,7 @@ export interface GuideApp {
   name: string;
   applicationType: string;
   features: string[];
+  invisibleFeatures?: string[];
   javaFeatures: string[];
   kotlinFeatures: string[];
   groovyFeatures: string[];
@@ -255,6 +256,7 @@ function normalizeGuideMetadata(
             name: "default",
             applicationType: "DEFAULT",
             features: [],
+            invisibleFeatures: [],
             javaFeatures: [],
             kotlinFeatures: [],
             groovyFeatures: [],
@@ -278,6 +280,7 @@ function normalizeApps(value: unknown): GuideApp[] {
       name: string(app?.name, "default"),
       applicationType: string(app?.applicationType, "DEFAULT"),
       features: strings(app?.features),
+      invisibleFeatures: strings(app?.invisibleFeatures),
       javaFeatures: strings(app?.javaFeatures),
       kotlinFeatures: strings(app?.kotlinFeatures),
       groovyFeatures: strings(app?.groovyFeatures),
