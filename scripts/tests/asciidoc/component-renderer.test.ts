@@ -26,6 +26,10 @@ const fixtureDirectory = path.join(
 
 test("AsciiDoc snippets render directly through generated React components", async (): Promise<void> => {
   const { converted, html } = await renderSnippetGalleryFixture();
+  const globalsCss = await fs.readFile(
+    path.join(projectDirectory, "src", "styles", "globals.css"),
+    "utf8",
+  );
   const text = textOnly(html);
 
   assert.doesNotMatch(converted, /\blistingblock\b/);
@@ -54,7 +58,15 @@ test("AsciiDoc snippets render directly through generated React components", asy
   assert.match(html, /data-slot="card-content"/);
   assert.match(html, /role="tablist" aria-label="Code language"/);
   assert.match(html, /class="[^"]*docs-code-content docs-snippet-card-content/);
-  assert.match(html, /class="[^"]*docs-highlighted-code grid min-w-max/);
+  assert.match(html, /class="[^"]*\bdocs-highlighted-code\b/);
+  assert.doesNotMatch(
+    html,
+    /class="[^"]*\bdocs-highlighted-code\b[^"]*\bgrid\b/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-highlighted-code\s*{\s*@apply grid min-w-max font-mono/,
+  );
   assert.match(html, /<i class="conum" data-value="1"><\/i>/);
 
   for (const language of [
