@@ -651,6 +651,10 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
     path.join(outputDirectory, "fixture.html"),
     "utf8",
   );
+  const globalsCss = await fs.readFile(
+    path.join(projectDirectory, "src", "styles", "globals.css"),
+    "utf8",
+  );
   const generatedText = textOnly(generatedHtml);
 
   assert.doesNotMatch(generatedHtml, /\[(?:snippet|dependency),payload=/);
@@ -674,23 +678,39 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assertSnippetLanguageIcon(generatedHtml, "hocon", "hocon");
   assertSnippetLanguageIcon(generatedHtml, "json-config", "json");
   assertNoRuntimeGeneratedRendering("generated docs HTML", generatedHtml);
-  assert.match(generatedHtml, /docs-code-callouts/);
-  assert.ok(
-    generatedHtml.includes("px-6 pt-3 pb-3 text-sm leading-5"),
-    "snippet callout footers should keep matching top and bottom padding",
+  assert.match(
+    generatedHtml,
+    /class="[^"]*docs-snippet-card-footer docs-code-callouts/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts\s*{\s*@apply block border-t border-code-border bg-code-tab px-6 pt-3 pb-3 text-sm leading-5 text-code-foreground;/,
   );
   assert.match(generatedHtml, /<i class="conum" data-value="1"><\/i>/);
-  assert.ok(
-    generatedHtml.includes(
-      "[&amp;_td:first-child_.conum::before]:content-[attr(data-value)]",
-    ),
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts td:first-child \.conum::before\s*{\s*content: attr\(data-value\);/,
   );
-  assert.ok(generatedHtml.includes("[&amp;_td:first-child_.conum+b]:hidden"));
-  assert.ok(generatedHtml.includes("[&amp;_tr+tr_td]:pt-[0.55rem]"));
-  assert.ok(generatedHtml.includes("[&amp;_td:first-child]:align-middle"));
-  assert.ok(generatedHtml.includes("[&amp;_td:first-child]:pt-0"));
-  assert.ok(generatedHtml.includes("[&amp;_tr+tr_td:first-child]:pt-0"));
-  assert.ok(generatedHtml.includes("[&amp;_.colist]:!m-0"));
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts td:first-child \.conum \+ b\s*{\s*@apply hidden;/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts tr \+ tr td\s*{\s*@apply pt-\[0\.55rem\];/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts td:first-child\s*{\s*@apply w-\[1\.15rem\] pt-0 pr-\[0\.7rem\] align-middle;/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts tr \+ tr td:first-child\s*{\s*@apply pt-0;/,
+  );
+  assert.match(
+    globalsCss,
+    /\.docs-code-callouts \.colist,\s*\.docs-code-callouts p\s*{\s*@apply !m-0;/,
+  );
   assert.match(generatedText, /Fixture Snippet/);
   assert.match(generatedText, /Rendered from snippet macro/);
   assert.match(generatedText, /Snippet callout follows the generated card/);
