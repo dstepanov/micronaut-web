@@ -695,7 +695,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides:browser"],
-    "node tests/playwright/generated-content-fixtures.ts guides && playwright test --config playwright.config.ts tests/playwright/guides.spec.ts",
+    "node scripts/ensure-playwright-chromium.ts && node tests/playwright/generated-content-fixtures.ts guides && playwright test --config playwright.config.ts tests/playwright/guides.spec.ts",
   );
   assert.match(browserTestRunner, /npm_execpath/);
   assert.match(prepareScript, /Promise\.all/);

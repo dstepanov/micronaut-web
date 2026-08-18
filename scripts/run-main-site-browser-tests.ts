@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 
 const surface = process.env.MICRONAUT_DEPLOY_SURFACE;
 const npmCommand = process.env.npm_execpath ?? "npm";
+const playwrightOrigin = `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT || "4339"}`;
 const skipBrowserTests =
   process.env.MICRONAUT_SKIP_MAIN_SITE_BROWSER_TESTS === "true";
 
@@ -13,9 +14,13 @@ if (skipBrowserTests) {
   await run(npmCommand, ["run", "test:main-site:browser"], {
     ...process.env,
     MICRONAUT_DOCS_SITE_URL:
-      surface === "main" ? "/micronaut-docs-v2/" : "/docs/",
+      surface === "main"
+        ? `${playwrightOrigin}/micronaut-docs-v2/`
+        : `${playwrightOrigin}/docs/`,
     MICRONAUT_GUIDES_SITE_URL:
-      surface === "main" ? "/micronaut-guides-v2/" : "/guides/",
+      surface === "main"
+        ? `${playwrightOrigin}/micronaut-guides-v2/`
+        : `${playwrightOrigin}/guides/`,
   });
 }
 

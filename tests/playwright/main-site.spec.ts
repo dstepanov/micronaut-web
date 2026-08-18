@@ -193,12 +193,25 @@ function collectBrowserFailures(page: Page) {
 }
 
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
-  const overflow = await page.evaluate(
-    () =>
-      document.documentElement.scrollWidth -
-      document.documentElement.clientWidth,
-  );
-  expect(overflow).toBeLessThanOrEqual(1);
+  await expect
+    .poll(async () => {
+      try {
+        return await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        );
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.includes("Execution context was destroyed")
+        ) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+        throw error;
+      }
+    })
+    .toBeLessThanOrEqual(1);
 }
 
 function appPath(path: string): string {

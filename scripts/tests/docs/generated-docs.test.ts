@@ -59,7 +59,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   );
   assert.equal(
     packageJson.scripts["test:docs:browser"],
-    "node tests/playwright/generated-content-fixtures.ts docs && playwright test --config playwright.config.ts tests/playwright/docs.spec.ts",
+    "node scripts/ensure-playwright-chromium.ts && node tests/playwright/generated-content-fixtures.ts docs && playwright test --config playwright.config.ts tests/playwright/docs.spec.ts",
   );
   assert.match(browserTestRunner, /npm_execpath/);
   assert.equal(

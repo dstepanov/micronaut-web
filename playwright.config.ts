@@ -30,7 +30,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `ASTRO_TELEMETRY_DISABLED=1 astro dev --host 127.0.0.1 --port ${port}`,
+    command: `ASTRO_DEV_BACKGROUND=0 ASTRO_TELEMETRY_DISABLED=1 astro dev --host 127.0.0.1 --port ${port}`,
     url: `${baseURL}${webServerPath}`,
     reuseExistingServer: false,
     timeout: 120_000,
