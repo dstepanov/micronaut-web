@@ -111,7 +111,7 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
   return rightDate - leftDate || byOrderThenTitle(left, right);
 }
 
-const footerPageGroups = [
+const footerPageGroups: Array<MainSiteFooterGroup | { title: string; slugs: string[] }> = [
   {
     title: "Start",
     slugs: ["download", "micronaut-success-stories"]
@@ -131,6 +131,14 @@ const footerPageGroups = [
   {
     title: "Legal",
     slugs: ["brand-guidelines", "brand-guidelines/micronaut-logos", "brand-guidelines/micronaut-trademark-policy"]
+  },
+  {
+    title: "Policies",
+    links: [
+      { label: "Code of Conduct", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md" },
+      { label: "Governance", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/GOVERNANCE.md" },
+      { label: "Security Disclosure", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md" }
+    ]
   }
 ];
 
@@ -156,9 +164,13 @@ export async function getMainSitePageSummaries(): Promise<MainSitePageSummary[]>
 
 export async function getMainSiteFooterGroups(): Promise<MainSiteFooterGroup[]> {
   const pagesBySlug = new Map((await getMainSitePageSummaries()).map((page) => [page.slug, page.title]));
-  return footerPageGroups.map((group) => ({
-    title: group.title,
-    links: group.slugs.map((slug) => {
+  return footerPageGroups.map((group) => {
+    if ("links" in group) {
+      return group;
+    }
+    return {
+      title: group.title,
+      links: group.slugs.map((slug) => {
       const label = pagesBySlug.get(slug);
       if (!label) {
         throw new Error(`Footer page slug "${slug}" does not exist in main-site pages.`);
@@ -167,8 +179,9 @@ export async function getMainSiteFooterGroups(): Promise<MainSiteFooterGroup[]> 
         label,
         href: `/${slug}/`
       };
-    })
-  }));
+      })
+    };
+  });
 }
 
 export async function getBlogPosts(): Promise<BlogPostModel[]> {

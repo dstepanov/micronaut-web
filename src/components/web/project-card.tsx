@@ -20,7 +20,7 @@ export function ProjectCard({ project }: { project: DocsProject }) {
         <div className="min-w-0">
           <CardTitle className="text-[0.96rem] leading-snug">
             <a href={withBasePath(project.href)} className="text-foreground no-underline hover:underline">
-              {project.displayName}
+              {project.shortName}
             </a>
           </CardTitle>
           <CardDescription className="mt-1 line-clamp-2 text-[0.8rem] leading-snug">

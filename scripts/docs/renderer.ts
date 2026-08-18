@@ -63,7 +63,7 @@ export async function renderProject(
   };
 
   let content = `<span class="project-document-anchor" id="${attribute(project.slug)}-docs" aria-hidden="true"></span>\n`;
-  content += `<div class="project">\n    <h1>${html(project.displayName)}</h1>\n</div>\n`;
+  content += `<div class="project">\n    <h1>${html(project.displayName.replace(/^Micronaut\s+/i, ""))}</h1>\n</div>\n`;
   for (const node of toc.children) {
     content += await renderNode(asciidoctor, context, node);
   }

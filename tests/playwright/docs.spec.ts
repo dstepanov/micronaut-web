@@ -9,21 +9,21 @@ import {
 const docsProjects = [
   {
     language: "java",
-    name: "Micronaut Core",
+    name: "Core",
     requireDependency: true,
     requireProperties: true,
     slug: "core",
   },
   {
     language: "kotlin",
-    name: "Micronaut Data",
+    name: "Data",
     requireDependency: false,
     requireProperties: false,
     slug: "data",
   },
   {
     language: "groovy",
-    name: "Micronaut Serialization",
+    name: "Serialization",
     requireDependency: false,
     requireProperties: false,
     slug: "serde",
@@ -88,7 +88,7 @@ test("generated docs page renders desktop content and sidebars without overlap",
     page.getByRole("heading", {
       exact: true,
       level: 1,
-      name: "Micronaut Core",
+      name: "Core",
     }),
   ).toBeVisible();
   await expect(page.locator("[data-generated-docs]")).toBeVisible();
@@ -100,7 +100,7 @@ test("generated docs page renders desktop content and sidebars without overlap",
   const docsSidebar = page.locator("[data-docs-sidebar]");
   await expect(docsSidebar).toBeVisible();
   const activeProjectLink = docsSidebar.getByRole("link", {
-    name: "Micronaut Core",
+    name: "Core",
   });
   await expect(activeProjectLink).toHaveAttribute("aria-current", "page");
   await expect(activeProjectLink).toHaveAttribute(
@@ -213,7 +213,7 @@ test("docs section and subsection navigation follows scroll movement", async ({
     page.getByRole("heading", {
       exact: true,
       level: 1,
-      name: "Micronaut Core",
+      name: "Core",
     }),
   ).toBeVisible();
   await expect(page.locator("[data-docs-related-guides]")).toHaveCount(0);
@@ -344,7 +344,7 @@ test("docs page renders related latest guides from the guides manifest", async (
     page.getByRole("heading", {
       exact: true,
       level: 1,
-      name: "Micronaut Data",
+      name: "Data",
     }),
   ).toBeVisible();
 
@@ -384,7 +384,7 @@ test("docs page renders related latest guides from the guides manifest", async (
           return element.textContent?.replace(/\s+/g, " ").trim() || "";
         }),
     );
-  expect(generatedContentOrder[0]).toContain("Micronaut Data");
+  expect(generatedContentOrder[0]).toContain("Data");
   expect(generatedContentOrder[1]).toBe("latest-guides");
   expect(generatedContentOrder[2]).toContain("1 Introduction");
   const guideLink = relatedGuides
@@ -437,7 +437,7 @@ test("generated docs page fits the mobile viewport", async ({ page }) => {
     page.getByRole("heading", {
       exact: true,
       level: 1,
-      name: "Micronaut Data",
+      name: "Data",
     }),
   ).toBeVisible();
   await expect(
@@ -468,7 +468,7 @@ test("expanded docs project link toggles sections inside the mobile sidebar", as
   await expect(sheet).toBeVisible();
 
   const activeProjectLink = sheet.getByRole("link", {
-    name: "Micronaut Core",
+    name: "Core",
   });
   const activeProjectSections = sheet.locator("#docs-mobile-core-sections");
   await expect(activeProjectLink).toHaveAttribute("aria-expanded", "true");
