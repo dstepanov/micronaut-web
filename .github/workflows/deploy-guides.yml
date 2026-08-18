@@ -14,7 +14,7 @@ on:
       guides_repository:
         description: Guides repository to build from
         required: false
-        default: micronaut-projects/micronaut-guides-v2
+        default: micronaut-projects/micronaut-guides
       guides_ref:
         description: Guides branch, tag, or SHA to build from
         required: false
