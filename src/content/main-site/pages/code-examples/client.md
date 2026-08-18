@@ -45,16 +45,14 @@ interface HelloClient {
 ```
 
 ```python
-from typing import Annotated
-
-from jakarta.inject import Inject
-from micronaut.http.client import HttpClient
 from micronaut.http.client.annotation import Client
+from io.micronaut.http.annotation import Get
+from typing import Protocol
 
+@Client("/pets")
+class PetClient(Protocol):
 
-hello_client: Annotated[HttpClient, Inject, Client("/hello")]
-
-
-def index() -> str:
-    return hello_client.toBlocking().retrieve("/")
+    @Get
+    def index(self) -> dict[str, str]: 
+        ...
 ```
