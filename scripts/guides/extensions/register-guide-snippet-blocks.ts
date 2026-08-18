@@ -1,3 +1,4 @@
+// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
