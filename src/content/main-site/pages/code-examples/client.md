@@ -43,3 +43,18 @@ interface HelloClient {
     Map<String, String> index()
 }
 ```
+
+```python
+from typing import Annotated
+
+from jakarta.inject import Inject
+from micronaut.http.client import HttpClient
+from micronaut.http.client.annotation import Client
+
+
+hello_client: Annotated[HttpClient, Inject, Client("/hello")]
+
+
+def index() -> str:
+    return hello_client.toBlocking().retrieve("/")
+```

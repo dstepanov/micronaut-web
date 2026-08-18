@@ -49,9 +49,9 @@ test("homepage code example Markdown files use plain fenced blocks", async (): P
       ).map((variant: any): any => variant.language),
     })),
     [
-      { id: "server", languages: ["java", "kotlin", "groovy"] },
-      { id: "client", languages: ["java", "kotlin", "groovy"] },
-      { id: "testing", languages: ["java", "kotlin", "groovy"] },
+      { id: "server", languages: ["java", "kotlin", "groovy", "python"] },
+      { id: "client", languages: ["java", "kotlin", "groovy", "python"] },
+      { id: "testing", languages: ["java", "kotlin", "groovy", "python"] },
     ],
   );
 });
@@ -87,6 +87,11 @@ class HelloController
 class HelloController {
 }
 \`\`\`
+
+\`\`\`python
+def index() -> dict[str, str]:
+    return {"message": "Hello World"}
+\`\`\`
 `,
     "test code example",
   );
@@ -101,6 +106,7 @@ class HelloController {
       { fileName: "Java", label: "Java", language: "java" },
       { fileName: "Kotlin", label: "Kotlin", language: "kotlin" },
       { fileName: "Groovy", label: "Groovy", language: "groovy" },
+      { fileName: "Python", label: "Python", language: "python" },
     ],
   );
 });

@@ -16,6 +16,7 @@ const supportedCodeSnippetLanguages = new Set<CodeSnippetLanguage>([
   "java",
   "kotlin",
   "maven",
+  "python",
   "text"
 ]);
 const codeSnippetLanguageAliases: Record<string, CodeSnippetLanguage> = {
