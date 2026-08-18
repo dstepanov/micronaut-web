@@ -266,16 +266,18 @@ The docs workflow resolves `platform_ref` explicitly as a branch first, then as 
 
 The build reads these deployment inputs:
 
-- `ASTRO_BASE`: GitHub Pages project base, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`.
+- `ASTRO_BASE`: deployment path used for pages and assets, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`. Docs and guides workflows derive it from `target_repository`; an existing or configured custom domain uses `/`.
 - `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
 - `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
 - `MICRONAUT_GUIDES_ROOT`: public guides root in the current artifact. Source guide pages are authored under `/guides`; standalone guides builds publish that rendered tree at `/latest`.
 - `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
 - `MICRONAUT_PREPARE_GENERATED_CONTENT`: set to `false`, `0`, or `none` to skip generated docs/guides rendering before Astro starts. `build:main` sets this to `false` by default; docs and guides builds leave it enabled but prepare only the generated content for their own surface.
-- `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the Pages owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io` for the main site or the owner of `target_repository` for docs and guides.
+- `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the workflow repository owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io`. The current docs or guides surface URL is derived separately from `target_repository`.
 - `MICRONAUT_GITHUB_PAGES_ORIGIN`: effective GitHub Pages host override. When unset, it falls back to `DEFAULT_GITHUB_PAGES_ORIGIN`.
-- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. When unset, they are derived from `MICRONAUT_GITHUB_PAGES_ORIGIN` plus `micronaut-web`, `micronaut-docs-v2`, or `micronaut-guides-v2`.
+- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. In docs and guides workflows, the active surface is derived from `target_repository` or its custom domain; remaining defaults use `MICRONAUT_GITHUB_PAGES_ORIGIN` plus the repository name.
+- `MICRONAUT_DOCS_BASE`, `MICRONAUT_GUIDES_BASE`: optional repository variables that override the derived docs or guides deployment base.
+- `MICRONAUT_DOCS_CUSTOM_DOMAIN`, `MICRONAUT_GUIDES_CUSTOM_DOMAIN`: optional repository variables used when creating a custom-domain deployment. For branch deployments, an existing root `CNAME` is detected automatically and preserved.
 
 All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-config.ts`. Those helpers translate `/docs`, `/guides`, and `/latest` links so the same source can run as an all-in-one preview, standalone docs, standalone guides, or the main site linking to external docs/guides.
 
@@ -292,6 +294,8 @@ The docs workflow:
 5. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
 6. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
 7. Commits and pushes the branch.
+
+The docs merge stores deployment metadata with the published artifact. If the base or complete surface URLs change, retained version HTML and text assets are migrated to the new deployment values before unused shared assets are pruned. This allows a one-time move from the repository-path Pages URL to a root custom domain without rebuilding every historical docs source.
 
 The docs workflow does not check out or render Micronaut Guides.
 

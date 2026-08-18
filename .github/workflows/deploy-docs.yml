@@ -115,21 +115,23 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Configure GitHub Pages origin
+      - name: Configure docs deployment
         env:
           CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
-        run: |
-          default_github_pages_origin="https://micronaut-projects.github.io"
-          github_pages_origin="${CONFIGURED_GITHUB_PAGES_ORIGIN:-$default_github_pages_origin}"
-          echo "DEFAULT_GITHUB_PAGES_ORIGIN=$default_github_pages_origin" >> "$GITHUB_ENV"
-          echo "MICRONAUT_GITHUB_PAGES_ORIGIN=$github_pages_origin" >> "$GITHUB_ENV"
+          CONFIGURED_MAIN_SITE_URL: ${{ vars.MICRONAUT_MAIN_SITE_URL }}
+          CONFIGURED_DOCS_SITE_URL: ${{ vars.MICRONAUT_DOCS_SITE_URL }}
+          CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
+          CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_DOCS_CUSTOM_DOMAIN }}
+          CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_DOCS_BASE }}
+          TARGET_REPOSITORY: ${{ inputs.target_repository }}
+          PUBLISHED_DIRECTORY: published-docs
+        run: node scripts/configure-pages-deployment.ts --surface docs --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
 
       - name: Build docs version manifest
         run: node scripts/update-docs-version-manifest.ts --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}"
 
       - name: Build docs surface
         env:
-          ASTRO_BASE: /micronaut-docs-v2/
           MICRONAUT_DEPLOY_SURFACE: docs
           MICRONAUT_DOCS_ROOT: /${{ inputs.docs_version }}
           MICRONAUT_DOCS_LATEST_ROOT: /latest
@@ -140,7 +142,7 @@ jobs:
         run: npm run build:docs
 
       - name: Merge docs artifact
-        run: node scripts/publish-docs-surface.ts --dist dist --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}" --base /micronaut-docs-v2/
+        run: node scripts/publish-docs-surface.ts --dist dist --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}" --base "$ASTRO_BASE"
 
       - name: Commit and push docs Pages branch
         working-directory: published-docs

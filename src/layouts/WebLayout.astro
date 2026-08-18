@@ -5,6 +5,7 @@ import { LEGACY_THEME_STORAGE_KEY, THEME_MODE_STORAGE_KEY } from "@/lib/experien
 import { getMainSitePageSummaries } from "@/lib/main-site-content";
 import { withBasePath } from "@/lib/base-path";
 import {
+  canonicalSurfaceUrl,
   deploySurface,
   externalSurfacePath,
   externalSurfaceUrls
@@ -25,6 +26,14 @@ const {
   surface = "main",
   hideHeader = false
 } = Astro.props;
+const canonicalSurface = surface === "launch" ? "main" : surface;
+const basePath = import.meta.env.BASE_URL || "/";
+const routePath =
+  basePath !== "/" && Astro.url.pathname.startsWith(basePath)
+    ? `/${Astro.url.pathname.slice(basePath.length)}`
+    : Astro.url.pathname;
+const resolvedCanonicalUrl =
+  canonicalUrl || canonicalSurfaceUrl(canonicalSurface, routePath);
 const shouldUseRemoteHeader =
   !import.meta.env.DEV &&
   (deploySurface === "docs" || deploySurface === "guides") &&
@@ -60,7 +69,7 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <link rel="canonical" href={resolvedCanonicalUrl} />
     <script
       is:inline
       define:vars={{

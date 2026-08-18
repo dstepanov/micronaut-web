@@ -153,6 +153,39 @@ function routedDocsHref(href: string) {
       ?.href;
   };
 
+  const isVersionRoot = (href: string) =>
+    /^\/(?:latest|\d+\.\d+(?:\.\d+)?(?:[-.][A-Za-z0-9]+)?)\/$/.test(
+      href,
+    );
+
+  const versionDestination = (
+    selected: DocsVersionOption,
+    options: DocsVersionOption[],
+  ) => {
+    const selectedRoute = withSurfacePath("docs", selected.href);
+    if (!isVersionRoot(selected.href)) {
+      return selectedRoute;
+    }
+    const currentHref = currentOptionHref(options);
+    if (!currentHref || !isVersionRoot(currentHref)) {
+      return selectedRoute;
+    }
+    const currentRoot = normalizedPathname(
+      withSurfacePath("docs", currentHref),
+    );
+    const currentPath = normalizedPathname(window.location.href);
+    if (!currentPath.startsWith(currentRoot)) {
+      return selectedRoute;
+    }
+    const pageSuffix = currentPath.slice(currentRoot.length);
+    if (!pageSuffix) {
+      return selectedRoute;
+    }
+    const selectedUrl = new URL(selectedRoute, window.location.href);
+    selectedUrl.pathname = `${selectedUrl.pathname.replace(/\/+$/, "")}/${pageSuffix.replace(/^\/+/, "")}`;
+    return selectedUrl.toString();
+  };
+
   const optionSignature = (options: DocsVersionOption[]) =>
     JSON.stringify(
       options.map((option) => [
@@ -245,7 +278,18 @@ function routedDocsHref(href: string) {
       return;
     }
     const selected = select.selectedOptions[0];
-    const href = selected?.dataset.routeHref || selected?.value;
+    const options =
+      selectorState().dynamicOptions ||
+      Array.from(select.options).map((option) => ({
+        label: option.textContent || option.value,
+        href: option.value,
+      }));
+    const selectedOption = options.find(
+      (option) => option.href === selected?.value,
+    );
+    const href = selectedOption
+      ? versionDestination(selectedOption, options)
+      : selected?.dataset.routeHref || selected?.value;
     if (href) {
       window.location.href = href;
     }

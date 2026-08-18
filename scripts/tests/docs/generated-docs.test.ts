@@ -2671,6 +2671,8 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsVersionSelectorSource, /data-docs-version-selector/);
   assert.match(docsVersionSelectorSource, /withBasePathForBase/);
   assert.match(docsVersionSelectorSource, /withSurfacePath\("docs"/);
+  assert.match(docsVersionSelectorSource, /versionDestination/);
+  assert.match(docsVersionSelectorSource, /pageSuffix/);
   assert.match(
     docsVersionSelectorSource,
     /document\.addEventListener\("change"/,

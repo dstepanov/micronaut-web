@@ -5,12 +5,9 @@ import { fileURLToPath } from "node:url";
 import { build } from "vite";
 
 import {
-  DEFAULT_GITHUB_PAGES_ORIGIN,
-  githubPagesProjectUrl,
-  normalizedExternalOrigin,
+  resolveDeploymentSettings,
+  type DeploySurface,
 } from "../src/lib/deployment-defaults.ts";
-
-type DeploySurface = "all" | "main" | "docs" | "guides";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -80,7 +77,7 @@ async function buildSiteHeaderShell(): Promise<void> {
 }
 
 function deploymentDefines(): Record<string, string> {
-  const deployment = deploymentConfig();
+  const deployment = resolveDeploymentSettings(process.env);
   return {
     __MICRONAUT_DEPLOYMENT__: JSON.stringify(deployment),
     "process.env.NODE_ENV": JSON.stringify("production"),
@@ -98,7 +95,7 @@ function deploymentDefines(): Record<string, string> {
       deployment.guidesLatestRoot,
     ),
     "import.meta.env.DEFAULT_GITHUB_PAGES_ORIGIN": JSON.stringify(
-      defaultGithubPagesOrigin(),
+      process.env.DEFAULT_GITHUB_PAGES_ORIGIN || deployment.githubPagesOrigin,
     ),
     "import.meta.env.MICRONAUT_GITHUB_PAGES_ORIGIN": JSON.stringify(
       deployment.githubPagesOrigin,
@@ -113,43 +110,4 @@ function deploymentDefines(): Record<string, string> {
       deployment.guidesSiteUrl,
     ),
   };
-}
-
-function deploymentConfig() {
-  const deploySurface = process.env.MICRONAUT_DEPLOY_SURFACE || "all";
-  const docsRoot =
-    process.env.MICRONAUT_DOCS_ROOT ||
-    (deploySurface === "docs" ? "/latest" : "/docs");
-  const docsLatestRoot =
-    process.env.MICRONAUT_DOCS_LATEST_ROOT ||
-    (deploySurface === "docs" ? "/latest" : docsRoot);
-  const guidesRoot =
-    process.env.MICRONAUT_GUIDES_ROOT ||
-    (deploySurface === "guides" ? "/latest" : "/guides");
-  const guidesLatestRoot =
-    process.env.MICRONAUT_GUIDES_LATEST_ROOT || "/latest";
-  const githubPagesOrigin = normalizedExternalOrigin(
-    process.env.MICRONAUT_GITHUB_PAGES_ORIGIN || defaultGithubPagesOrigin(),
-  );
-  return {
-    deploySurface,
-    docsRoot,
-    docsLatestRoot,
-    guidesRoot,
-    guidesLatestRoot,
-    githubPagesOrigin,
-    mainSiteUrl:
-      process.env.MICRONAUT_MAIN_SITE_URL ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-web"),
-    docsSiteUrl:
-      process.env.MICRONAUT_DOCS_SITE_URL ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs-v2"),
-    guidesSiteUrl:
-      process.env.MICRONAUT_GUIDES_SITE_URL ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"),
-  };
-}
-
-function defaultGithubPagesOrigin(): string {
-  return process.env.DEFAULT_GITHUB_PAGES_ORIGIN || DEFAULT_GITHUB_PAGES_ORIGIN;
 }

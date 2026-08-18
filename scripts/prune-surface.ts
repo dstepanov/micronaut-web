@@ -182,7 +182,9 @@ async function pruneGuides(
   }
 }
 
-async function pruneUnreferencedAstroAssets(directory: string): Promise<void> {
+export async function pruneUnreferencedAstroAssets(
+  directory: string,
+): Promise<void> {
   const astroDirectory = path.join(directory, "_astro");
   if (!(await existsDirectory(astroDirectory))) {
     return;

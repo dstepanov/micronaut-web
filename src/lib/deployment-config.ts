@@ -1,10 +1,9 @@
 import {
-  DEFAULT_GITHUB_PAGES_ORIGIN,
-  githubPagesProjectUrl,
-  normalizedExternalOrigin,
+  resolveDeploymentSettings,
+  type DeploySurface,
 } from "./deployment-defaults.ts";
 
-export type DeploySurface = "all" | "main" | "docs" | "guides";
+export type { DeploySurface } from "./deployment-defaults.ts";
 export type SurfaceTarget = "main" | "docs" | "guides" | "launch";
 type DeploymentImportMeta = ImportMeta & {
   readonly env?: {
@@ -34,31 +33,28 @@ const importMetaEnvValues = {
   MICRONAUT_DOCS_SITE_URL: metaEnv?.MICRONAUT_DOCS_SITE_URL,
   MICRONAUT_GUIDES_SITE_URL: metaEnv?.MICRONAUT_GUIDES_SITE_URL,
 } as const;
+const processEnv =
+  typeof process === "undefined"
+    ? {}
+    : (process.env as Record<string, string | undefined>);
+const deploymentSettings = resolveDeploymentSettings({
+  ...processEnv,
+  ...definedValues(importMetaEnvValues),
+});
 
-export const deploySurface = envValue("MICRONAUT_DEPLOY_SURFACE", "all") as DeploySurface;
-export const docsRoot = normalizedRoot(
-  envValue("MICRONAUT_DOCS_ROOT", deploySurface === "docs" ? "/latest" : "/docs"),
-);
-export const docsLatestRoot = normalizedRoot(
-  envValue("MICRONAUT_DOCS_LATEST_ROOT", deploySurface === "docs" ? "/latest" : docsRoot),
-);
-export const guidesRoot = normalizedRoot(
-  envValue("MICRONAUT_GUIDES_ROOT", deploySurface === "guides" ? "/latest" : "/guides"),
-);
+export const deploySurface = deploymentSettings.deploySurface;
+export const docsRoot = normalizedRoot(deploymentSettings.docsRoot);
+export const docsLatestRoot = normalizedRoot(deploymentSettings.docsLatestRoot);
+export const guidesRoot = normalizedRoot(deploymentSettings.guidesRoot);
 export const guidesLatestRoot = normalizedRoot(
-  envValue("MICRONAUT_GUIDES_LATEST_ROOT", "/latest"),
+  deploymentSettings.guidesLatestRoot,
 );
-export const githubPagesOrigin = normalizedExternalOrigin(
-  envValue(
-    "MICRONAUT_GITHUB_PAGES_ORIGIN",
-    envValue("DEFAULT_GITHUB_PAGES_ORIGIN", DEFAULT_GITHUB_PAGES_ORIGIN),
-  ),
-);
+export const githubPagesOrigin = deploymentSettings.githubPagesOrigin;
 
 export const externalSurfaceUrls: Record<"main" | "docs" | "guides", string> = {
-  main: normalizedExternalBase(envValue("MICRONAUT_MAIN_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-web"))),
-  docs: normalizedExternalBase(envValue("MICRONAUT_DOCS_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs-v2"))),
-  guides: normalizedExternalBase(envValue("MICRONAUT_GUIDES_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"))),
+  main: deploymentSettings.mainSiteUrl,
+  docs: deploymentSettings.docsSiteUrl,
+  guides: deploymentSettings.guidesSiteUrl,
 };
 
 export function routeForSurface(surface: SurfaceTarget, path = "/") {
@@ -75,7 +71,12 @@ export function routeForSurface(surface: SurfaceTarget, path = "/") {
 }
 
 export function routeForCurrentDeployment(path: string) {
-  if (!path || path.startsWith("#") || hasSchemeOrProtocolRelativeUrl(path) || !path.startsWith("/")) {
+  if (
+    !path ||
+    path.startsWith("#") ||
+    hasSchemeOrProtocolRelativeUrl(path) ||
+    !path.startsWith("/")
+  ) {
     return path;
   }
   if (deploySurface === "docs") {
@@ -119,12 +120,24 @@ export function routeForCurrentDeployment(path: string) {
   return normalizeAbsolutePath(path);
 }
 
-export function externalSurfacePath(surface: "main" | "docs" | "guides", path = "/") {
-  return new URL(externalRouteForSurface(surface, path).replace(/^\/+/, ""), externalSurfaceUrls[surface]).toString();
+export function externalSurfacePath(
+  surface: "main" | "docs" | "guides",
+  path = "/",
+) {
+  return new URL(
+    externalRouteForSurface(surface, path).replace(/^\/+/, ""),
+    externalSurfaceUrls[surface],
+  ).toString();
 }
 
-export function canonicalSurfaceUrl(surface: "main" | "docs" | "guides", path = "/") {
-  return new URL(routeForSurface(surface, path).replace(/^\/+/, ""), externalSurfaceUrls[surface]).toString();
+export function canonicalSurfaceUrl(
+  surface: "main" | "docs" | "guides",
+  path = "/",
+) {
+  return new URL(
+    routeForSurface(surface, path).replace(/^\/+/, ""),
+    externalSurfaceUrls[surface],
+  ).toString();
 }
 
 export function currentDocsRootPath(path = "/") {
@@ -169,7 +182,10 @@ function guidesRoute(path: string) {
   return normalized;
 }
 
-function externalRouteForSurface(surface: "main" | "docs" | "guides", path: string) {
+function externalRouteForSurface(
+  surface: "main" | "docs" | "guides",
+  path: string,
+) {
   if (surface === "docs") {
     return docsRouteWithRoot(path, "/latest", "/latest");
   }
@@ -214,15 +230,30 @@ function guidesRouteWithRoot(path: string, root: string, latestRoot: string) {
 }
 
 function isDocsPath(path: string) {
-  return path === "/docs" || path.startsWith("/docs/") || path === "/latest/guide" || path.startsWith("/latest/guide/");
+  return (
+    path === "/docs" ||
+    path.startsWith("/docs/") ||
+    path === "/latest/guide" ||
+    path.startsWith("/latest/guide/")
+  );
 }
 
 function isGuidesPath(path: string) {
-  return path === "/guides" || path.startsWith("/guides/") || path === "/latest" || path.startsWith("/latest/");
+  return (
+    path === "/guides" ||
+    path.startsWith("/guides/") ||
+    path === "/latest" ||
+    path.startsWith("/latest/")
+  );
 }
 
 function isMainSurfacePath(path: string) {
-  return path === "/" || path === "/launch" || path.startsWith("/launch/") || !isDocsPath(path) && !isGuidesPath(path);
+  return (
+    path === "/" ||
+    path === "/launch" ||
+    path.startsWith("/launch/") ||
+    (!isDocsPath(path) && !isGuidesPath(path))
+  );
 }
 
 function joinRoot(root: string, suffix: string) {
@@ -244,7 +275,9 @@ function normalizeAbsolutePath(path: string) {
   if (hasSchemeOrProtocolRelativeUrl(path) || path.startsWith("#")) {
     return path;
   }
-  const [pathname, suffix = ""] = splitPathSuffix(path.startsWith("/") ? path : `/${path}`);
+  const [pathname, suffix = ""] = splitPathSuffix(
+    path.startsWith("/") ? path : `/${path}`,
+  );
   const normalizedPathname = pathname.replace(/\/{2,}/g, "/");
   return `${normalizedPathname || "/"}${suffix}`;
 }
@@ -255,10 +288,6 @@ function normalizedRoot(root: string) {
     return "/";
   }
   return normalized.endsWith("/") ? normalized.slice(0, -1) : normalized;
-}
-
-function normalizedExternalBase(value: string) {
-  return value.endsWith("/") ? value : `${value}/`;
 }
 
 function splitPathSuffix(path: string) {
@@ -279,16 +308,11 @@ function hasSchemeOrProtocolRelativeUrl(path: string) {
   return /^[a-z][a-z\d+\-.]*:\/\//i.test(path) || path.startsWith("//");
 }
 
-function envValue(name: string, fallback: string) {
-  const metaValue = importMetaEnvValues[name as keyof typeof importMetaEnvValues];
-  if (typeof metaValue === "string" && metaValue) {
-    return metaValue;
-  }
-  if (typeof process !== "undefined") {
-    const processValue = process.env[name];
-    if (processValue) {
-      return processValue;
-    }
-  }
-  return fallback;
+function definedValues(values: Record<string, string | undefined>) {
+  return Object.fromEntries(
+    Object.entries(values).filter((entry): entry is [string, string] => {
+      const value = entry[1];
+      return typeof value === "string" && value.length > 0;
+    }),
+  );
 }

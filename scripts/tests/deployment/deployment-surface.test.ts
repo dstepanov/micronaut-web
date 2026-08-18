@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { pruneSurface } from "../../prune-surface.ts";
 import { publishDocsSurface } from "../../publish-docs-surface.ts";
+import { configurePagesDeployment } from "../../configure-pages-deployment.ts";
 import { updateDocsVersionManifest } from "../../update-docs-version-manifest.ts";
 
 const projectDirectory = path.resolve(
@@ -28,6 +29,51 @@ const surfaceRoutesFile = path.join(
   "surface-routes.ts",
 );
 const pagesArtifactTokenPattern = new RegExp("PAGES_" + "TOKEN");
+
+test("Pages deployment derives its base and URL from the target repository", async (t) => {
+  const environment = await configurePagesDeployment({
+    surface: "docs",
+    targetRepository: "example-org/reference-docs",
+    publishedDirectory: await temporaryDirectory(t),
+    repositoryOwner: "micronaut-projects",
+  });
+
+  assert.equal(environment.ASTRO_BASE, "/reference-docs/");
+  assert.equal(
+    environment.MICRONAUT_DOCS_SITE_URL,
+    "https://example-org.github.io/reference-docs/",
+  );
+  assert.equal(
+    environment.MICRONAUT_MAIN_SITE_URL,
+    "https://micronaut-projects.github.io/micronaut-web/",
+  );
+});
+
+test("Pages deployment detects branch custom domains and complete surface URLs", async (t) => {
+  const published = await temporaryDirectory(t);
+  await writeTextFile(published, "CNAME", "guides.micronaut.io\n");
+
+  const environment = await configurePagesDeployment({
+    surface: "guides",
+    targetRepository: "micronaut-projects/micronaut-guides-v2",
+    publishedDirectory: published,
+    repositoryOwner: "micronaut-projects",
+    configuredMainSiteUrl: "https://micronaut.io/",
+    configuredDocsSiteUrl: "https://docs.micronaut.io/",
+  });
+
+  assert.equal(environment.ASTRO_BASE, "/");
+  assert.equal(environment.MICRONAUT_CUSTOM_DOMAIN, "guides.micronaut.io");
+  assert.equal(
+    environment.MICRONAUT_GUIDES_SITE_URL,
+    "https://guides.micronaut.io/",
+  );
+  assert.equal(environment.MICRONAUT_MAIN_SITE_URL, "https://micronaut.io/");
+  assert.equal(
+    environment.MICRONAUT_DOCS_SITE_URL,
+    "https://docs.micronaut.io/",
+  );
+});
 
 test("deployment routes keep all-in-one paths by default", async () => {
   const deployment = await importDeploymentConfig("all", {
@@ -288,11 +334,16 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     surface: "guides",
     distDirectory: dist,
     base: "/micronaut-guides/",
+    customDomain: "guides.micronaut.io",
     budgetMb: 1,
   });
 
   assert.equal(await exists(path.join(dist, "index.html")), true);
   assert.equal(await exists(path.join(dist, ".nojekyll")), true);
+  assert.equal(
+    await fs.readFile(path.join(dist, "CNAME"), "utf8"),
+    "guides.micronaut.io\n",
+  );
   assert.equal(await exists(path.join(dist, "latest", "index.html")), true);
   assert.equal(
     await exists(
@@ -398,12 +449,19 @@ test("docs and guides production layouts load the shared header shell from the m
     path.join(projectDirectory, "scripts", "build-site-header-shell.ts"),
     "utf8",
   );
+  const astroConfig = await fs.readFile(
+    path.join(projectDirectory, "astro.config.mjs"),
+    "utf8",
+  );
 
   assert.match(layout, /data-micronaut-site-header/);
   assert.match(layout, /externalSurfaceUrls\.main/);
   assert.match(layout, /shell\/site-header\.js/);
   assert.match(layout, /shell\/site-header\.css/);
   assert.match(layout, /!import\.meta\.env\.DEV/);
+  assert.match(layout, /resolvedCanonicalUrl/);
+  assert.match(layout, /canonicalSurfaceUrl\(canonicalSurface, routePath\)/);
+  assert.match(astroConfig, /site:\s*deploymentConfig\.site/);
   assert.match(shell, /createRoot/);
   assert.match(shell, /@\/styles\/globals\.css/);
   assert.match(shell, /SiteHeader/);
@@ -485,6 +543,26 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   assert.match(guidesWorkflow, /npx playwright install --with-deps chromium/);
   assert.match(docsWorkflow, /GH_TOKEN/);
   assert.match(guidesWorkflow, /GH_TOKEN/);
+  assert.match(docsWorkflow, /configure-pages-deployment\.ts --surface docs/);
+  assert.match(
+    guidesWorkflow,
+    /configure-pages-deployment\.ts --surface guides/,
+  );
+  assert.match(docsWorkflow, /MICRONAUT_DOCS_CUSTOM_DOMAIN/);
+  assert.match(guidesWorkflow, /MICRONAUT_GUIDES_CUSTOM_DOMAIN/);
+  assert.match(docsWorkflow, /--base "\$ASTRO_BASE"/);
+  assert.doesNotMatch(docsWorkflow, /ASTRO_BASE:\s*\/micronaut-docs-v2\//);
+  assert.doesNotMatch(guidesWorkflow, /ASTRO_BASE:\s*\/micronaut-guides-v2\//);
+});
+
+test("local surface build defaults match the transferred repositories", async () => {
+  const buildSurface = await fs.readFile(
+    path.join(projectDirectory, "scripts", "build-surface.ts"),
+    "utf8",
+  );
+
+  assert.match(buildSurface, /`micronaut-\$\{surface\}-v2`/);
+  assert.doesNotMatch(buildSurface, /`micronaut-\$\{surface\}`/);
 });
 
 test("published surface artifacts stay out of local typecheck inputs", async () => {
@@ -782,6 +860,76 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     { label: "4.10.14", href: "/4.10.14/" },
     { label: "4.10.1", href: "/4.10.1/" },
   ]);
+});
+
+test("docs publish migrates retained versions to a custom domain", async (t) => {
+  const dist = await temporaryDirectory(t);
+  const published = await temporaryDirectory(t);
+  await writeFiles(dist, [
+    "_astro/new.js",
+    "5.0.0/index.html",
+    "5.0.0/core/index.html",
+  ]);
+  await writeTextFile(dist, "CNAME", "docs.micronaut.io\n");
+  await writeTextFile(
+    dist,
+    "5.0.0/core/index.html",
+    '<script src="/_astro/new.js"></script>',
+  );
+  await writeFiles(published, [
+    "_astro/old.js",
+    "_astro/unused.js",
+    "4.10.14/index.html",
+    "4.10.14/core/index.html",
+  ]);
+  await writeTextFile(
+    published,
+    "4.10.14/core/index.html",
+    [
+      '<script src="/micronaut-docs-v2/_astro/old.js"></script>',
+      '<script src="https://micronaut-projects.github.io/micronaut-web/shell/site-header.js"></script>',
+      '<a href="https://micronaut-projects.github.io/micronaut-guides-v2/latest/">Guides</a>',
+    ].join("\n"),
+  );
+
+  await publishDocsSurface({
+    distDirectory: dist,
+    publishedDirectory: published,
+    version: "5.0.0",
+    base: "/",
+    surfaceUrls: {
+      mainSiteUrl: "https://micronaut.io/",
+      docsSiteUrl: "https://docs.micronaut.io/",
+      guidesSiteUrl: "https://guides.micronaut.io/",
+    },
+  });
+
+  const retainedHtml = await fs.readFile(
+    path.join(published, "4.10.14", "core", "index.html"),
+    "utf8",
+  );
+  assert.match(retainedHtml, /src="\/_astro\/old\.js"/);
+  assert.match(retainedHtml, /https:\/\/micronaut\.io\/shell\/site-header\.js/);
+  assert.match(retainedHtml, /https:\/\/guides\.micronaut\.io\/latest\//);
+  assert.doesNotMatch(retainedHtml, /micronaut-projects\.github\.io/);
+  assert.equal(
+    await fs.readFile(path.join(published, "CNAME"), "utf8"),
+    "docs.micronaut.io\n",
+  );
+  assert.equal(await exists(path.join(published, "_astro", "old.js")), true);
+  assert.equal(await exists(path.join(published, "_astro", "new.js")), true);
+  assert.equal(
+    await exists(path.join(published, "_astro", "unused.js")),
+    false,
+  );
+  const deploymentMetadata = JSON.parse(
+    await fs.readFile(
+      path.join(published, ".micronaut-deployment.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(deploymentMetadata.base, "/");
+  assert.equal(deploymentMetadata.docsSiteUrl, "https://docs.micronaut.io/");
 });
 
 async function importDeploymentConfig(

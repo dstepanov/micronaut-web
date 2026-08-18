@@ -39,7 +39,9 @@ function surfaceEnvironment(surface: Surface): NodeJS.ProcessEnv {
     MICRONAUT_DEPLOY_SURFACE: surface,
   };
   if (!env.ASTRO_BASE) {
-    env.ASTRO_BASE = `/${surface === "main" ? "micronaut-web" : `micronaut-${surface}`}/`;
+    const repositoryName =
+      surface === "main" ? "micronaut-web" : `micronaut-${surface}-v2`;
+    env.ASTRO_BASE = `/${repositoryName}/`;
   }
   if (surface === "docs") {
     env.MICRONAUT_DOCS_ROOT ||= "/latest";
