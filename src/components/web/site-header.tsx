@@ -56,14 +56,9 @@ type MobileMenuLink = {
 
 const menuGroups = [
   {
-    label: "Learn",
-    description: "Docs, guides, video, and starter paths.",
+    label: "Get started",
+    description: "Download the CLI and start a new project.",
     links: [
-      {
-        href: "/learn/",
-        label: "Learning overview",
-        description: "All learning paths from the main site.",
-      },
       {
         href: "/download/",
         label: "Download",
@@ -79,11 +74,6 @@ const menuGroups = [
         href: "/blog/",
         label: "Blog",
         description: "Project news and technical articles.",
-      },
-      {
-        href: "/upcoming-events/",
-        label: "Upcoming Events",
-        description: "Events, talks, webinars, and community sessions.",
       },
       {
         href: "/category/release-announcements/",
