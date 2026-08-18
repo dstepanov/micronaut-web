@@ -186,7 +186,7 @@ test("Tailwind does not scan generated docs and guides fragments", async (): Pro
 
   assertScriptOrder(
     globalsCss,
-    '@import "tailwindcss/utilities.css";',
+    '@import "tailwindcss/index.css";',
     generatedDocsExclusion,
   );
   assertScriptOrder(
