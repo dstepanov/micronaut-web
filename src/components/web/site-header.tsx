@@ -136,7 +136,6 @@ const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
         href: "/brand-guidelines/micronaut-trademark-policy/",
         label: "Trademark Policy",
       },
-      { href: "/contact/", label: "Contact" },
     ],
   },
 ];

@@ -125,8 +125,7 @@ const footerPageGroups = [
       "category/security-announcements",
       "support",
       "resources/community-support",
-      "faq",
-      "contact"
+      "faq"
     ]
   },
   {
