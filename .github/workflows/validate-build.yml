@@ -23,5 +23,8 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Build site
+      - name: Check script formatting
+        run: npm run style:scripts
+
+      - name: Run build checks and build site
         run: npm run build
