@@ -2,9 +2,9 @@
 order: 28
 title: Payment Confirmation
 eyebrow: Foundation
-description: Confirmation page for payment-related flows on the Micronaut Foundation site.
+description: Confirmation page for payment-related flows for the Micronaut project at the Commonhaus Foundation.
 sourceUrl: https://micronaut.io/payment-confirmation/
-intro: Confirmation page for payment-related flows on the Micronaut Foundation site.
+intro: Confirmation page for payment-related flows for the Micronaut project at the Commonhaus Foundation.
 layoutVariant: public-markdown
 ---
 

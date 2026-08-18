@@ -80,8 +80,18 @@ const mainSiteFooterGroups = await getMainSiteFooterGroups();
       ))}
     </nav>
     <Separator className="lg:col-span-2" />
-    <p class="text-xs leading-6 text-muted-foreground lg:col-span-2">
-      Micronaut is a registered trademark of Object Computing, Inc.
-    </p>
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs leading-6 text-muted-foreground lg:col-span-2">
+      <p>Micronaut® is a project of the Commonhaus Foundation.</p>
+      <a
+        href="https://www.commonhaus.org/"
+        class="inline-flex rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        <img
+          src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal.svg")}
+          alt="Commonhaus Foundation"
+          class="h-8 w-auto"
+        />
+      </a>
+    </div>
   </div>
 </footer>
