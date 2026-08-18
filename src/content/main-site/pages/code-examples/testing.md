@@ -65,13 +65,19 @@ class HelloControllerSpec extends Specification {
 
 ```python
 from typing import Annotated
+
 from jakarta.inject import Inject
+from micronaut.http.client import HttpClient
+from micronaut.http.client.annotation import Client
+from micronaut.test.extensions.junit5.annotation import MicronautTest
+
 
 MicronautTest()
 
-client: Annotated[PetClient, Inject]
+client: Annotated[HttpClient, Inject, Client("/")]
+
 
 def test_returns_message() -> None:
-    response = client.index()
-    assert response["message"] == "Hello World"
+    response = client.toBlocking().retrieve("/hello")
+    assert "Hello World" in response
 ```
