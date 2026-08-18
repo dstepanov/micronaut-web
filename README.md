@@ -256,7 +256,7 @@ The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`,
 - The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact.
 - The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
 
-The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `TARGET_REPOSITORY_TOKEN` with `contents:write` access to that target repository.
+The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `GH_TOKEN` with `contents:write` access to that target repository.
 
 External source repositories checked out by the manual docs and guides workflows are placed under `external/` in the GitHub workspace. `actions/checkout` paths must stay inside the workspace; do not use `${{ runner.temp }}` for those checkouts.
 

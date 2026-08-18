@@ -459,7 +459,7 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     );
     assert.match(
       workflow,
-      /token:\s*\$\{\{ secrets\.TARGET_REPOSITORY_TOKEN \|\| github\.token \}\}/,
+      /token:\s*\$\{\{ secrets\.GH_TOKEN \|\| github\.token \}\}/,
     );
     assert.match(
       workflow,
@@ -483,8 +483,8 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
   assert.match(guidesWorkflow, /npx playwright install --with-deps chromium/);
-  assert.match(docsWorkflow, /TARGET_REPOSITORY_TOKEN/);
-  assert.match(guidesWorkflow, /TARGET_REPOSITORY_TOKEN/);
+  assert.match(docsWorkflow, /GH_TOKEN/);
+  assert.match(guidesWorkflow, /GH_TOKEN/);
 });
 
 test("published surface artifacts stay out of local typecheck inputs", async () => {

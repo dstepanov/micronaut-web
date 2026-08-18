@@ -45,13 +45,13 @@ jobs:
       - name: Check out Micronaut web
         uses: actions/checkout@v6
 
-      - name: Validate target repository token
+      - name: Validate GitHub token
         env:
-          HAS_TARGET_REPOSITORY_TOKEN: ${{ secrets.TARGET_REPOSITORY_TOKEN != '' }}
+          HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
           TARGET_REPOSITORY: ${{ inputs.target_repository }}
         run: |
-          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_TARGET_REPOSITORY_TOKEN" != "true" ]; then
-            echo "::error::Set TARGET_REPOSITORY_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
+          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_GH_TOKEN" != "true" ]; then
+            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
             exit 1
           fi
 
@@ -61,7 +61,7 @@ jobs:
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.target_branch }}
           path: published-docs
-          token: ${{ secrets.TARGET_REPOSITORY_TOKEN || github.token }}
+          token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Check out platform project
         env:
