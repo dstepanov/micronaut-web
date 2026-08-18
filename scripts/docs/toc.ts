@@ -1,4 +1,4 @@
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 

@@ -219,12 +219,10 @@ test("generated docs tooling uses Micronaut Platform catalog instead of the old 
     "scripts/sync-docs-fixture.ts",
   ];
   const fileContents = await Promise.all(
-    checkedFiles.map(
-      async (file: any): Promise<any> => [
-        file,
-        await fs.readFile(path.join(projectDirectory, file), "utf8"),
-      ],
-    ),
+    checkedFiles.map(async (file: any): Promise<any> => [
+      file,
+      await fs.readFile(path.join(projectDirectory, file), "utf8"),
+    ]),
   );
   const workflow = fileContents.find(
     ([file]: any): any => file === ".github/workflows/deploy-docs.yml",
@@ -2201,14 +2199,13 @@ test("docs renderer writes several generated project fragments and catalog entri
     ),
   );
   await Promise.all(
-    projects.map(
-      (project): Promise<any> =>
-        writeGuide(
-          docsDirectory,
-          project.repositoryName,
-          project.displayName,
-          project.body,
-        ),
+    projects.map((project): Promise<any> =>
+      writeGuide(
+        docsDirectory,
+        project.repositoryName,
+        project.displayName,
+        project.body,
+      ),
     ),
   );
 

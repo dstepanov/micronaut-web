@@ -1382,9 +1382,8 @@ async function readDirectoryText(directory: string): Promise<string> {
       .filter(
         (entry: any): boolean => entry.isFile() && entry.name.endsWith(".ts"),
       )
-      .map(
-        (entry: any): Promise<string> =>
-          fs.readFile(path.join(directory, entry.name), "utf8"),
+      .map((entry: any): Promise<string> =>
+        fs.readFile(path.join(directory, entry.name), "utf8"),
       ),
   );
   return contents.join("\n");

@@ -6,7 +6,7 @@ import type {
   Registry,
   Section,
 } from "@asciidoctor/core";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 import { stringify as stringifyToml } from "smol-toml";
 
 import { renderSnippetBlock } from "./snippet-block-renderer.ts";

@@ -42,9 +42,7 @@ const LEGACY_LINE_BLOCK_MACROS = new Set([
 ]);
 
 type ExcludeMacroName =
-  | "exclude-for-languages"
-  | "exclude-for-build"
-  | "exclude-for-jdk-lower-than";
+  "exclude-for-languages" | "exclude-for-build" | "exclude-for-jdk-lower-than";
 
 type ExcludeDirective = {
   name: ExcludeMacroName;
