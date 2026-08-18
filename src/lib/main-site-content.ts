@@ -114,16 +114,15 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
 const footerPageGroups = [
   {
     title: "Start",
-    slugs: ["learn", "download", "resources", "micronaut-success-stories"]
+    slugs: ["learn", "download", "micronaut-success-stories"]
   },
   {
     title: "Learn",
-    slugs: ["learn", "professional-training", "category/microcast", "category/webinar", "category/case-studies"]
+    slugs: ["learn"]
   },
   {
     title: "Resources",
     slugs: [
-      "resources",
       "upcoming-events",
       "blog",
       "category/release-announcements",
@@ -136,12 +135,8 @@ const footerPageGroups = [
     ]
   },
   {
-    title: "Foundation",
-    slugs: ["foundation", "foundation/corporate-sponsorship", "foundation/community-sponsorship", "foundation/sponsors", "meeting-minutes"]
-  },
-  {
     title: "Legal",
-    slugs: ["brand-guidelines", "brand-guidelines/micronaut-logos", "brand-guidelines/micronaut-trademark-policy", "community-guidelines", "privacy-policy"]
+    slugs: ["brand-guidelines", "brand-guidelines/micronaut-logos", "brand-guidelines/micronaut-trademark-policy"]
   }
 ];
 

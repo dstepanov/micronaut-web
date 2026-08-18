@@ -57,7 +57,7 @@ type MobileMenuLink = {
 const menuGroups = [
   {
     label: "Learn",
-    description: "Docs, guides, training, video, and starter paths.",
+    description: "Docs, guides, video, and starter paths.",
     links: [
       {
         href: "/learn/",
@@ -69,21 +69,6 @@ const menuGroups = [
         label: "Download",
         description: "Launch, CLI, and build-tool starter options.",
       },
-      {
-        href: "/professional-training/",
-        label: "Professional Training",
-        description: "Structured training material for teams.",
-      },
-      {
-        href: "/category/microcast/",
-        label: "Microcasts",
-        description: "Short framework videos and episodes.",
-      },
-      {
-        href: "/category/webinar/",
-        label: "Webinars",
-        description: "Longer talks, demos, and framework sessions.",
-      },
     ],
   },
   {
@@ -91,19 +76,9 @@ const menuGroups = [
     description: "News, events, support, roadmap, and public proof.",
     links: [
       {
-        href: "/resources/",
-        label: "Resources overview",
-        description: "Main index for resource pages.",
-      },
-      {
         href: "/blog/",
         label: "Blog",
         description: "Project news and technical articles.",
-      },
-      {
-        href: "/foundation/",
-        label: "Foundation",
-        description: "Governance, sponsorship, brand, and community policy.",
       },
       {
         href: "/upcoming-events/",
@@ -147,47 +122,6 @@ const menuGroups = [
       },
     ],
   },
-  {
-    label: "Foundation",
-    description: "Governance, sponsorship, brand, and community policy.",
-    links: [
-      {
-        href: "/foundation/",
-        label: "Foundation overview",
-        description: "Project support, community, and governance.",
-      },
-      {
-        href: "/foundation/corporate-sponsorship/",
-        label: "Corporate Sponsorship",
-        description: "Organization support for project sustainability.",
-      },
-      {
-        href: "/foundation/community-sponsorship/",
-        label: "Community Sponsorship",
-        description: "Community support routes for the foundation.",
-      },
-      {
-        href: "/foundation/sponsors/",
-        label: "Sponsors",
-        description: "Organizations supporting the project.",
-      },
-      {
-        href: "/meeting-minutes/",
-        label: "Meeting Minutes",
-        description: "Public governance and advisory records.",
-      },
-      {
-        href: "/brand-guidelines/",
-        label: "Brand Guidelines",
-        description: "Logo, brand, and trademark usage.",
-      },
-      {
-        href: "/community-guidelines/",
-        label: "Code of Conduct",
-        description: "Community participation expectations.",
-      },
-    ],
-  },
 ];
 
 const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
@@ -212,7 +146,6 @@ const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
         href: "/brand-guidelines/micronaut-trademark-policy/",
         label: "Trademark Policy",
       },
-      { href: "/privacy-policy/", label: "Privacy Policy" },
       { href: "/contact/", label: "Contact" },
     ],
   },

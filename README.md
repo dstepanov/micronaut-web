@@ -138,7 +138,7 @@ Use root-relative links for internal routes, such as `/docs/`, `/guides/`, or `/
 
 ### Main-Site Pages
 
-Main-site pages are Markdown content entries under `src/content/main-site/pages`. The route is derived from the file path under that directory: `support.md` becomes `/support/`, `foundation/sponsors.md` becomes `/foundation/sponsors/`, `category/release-announcements.md` becomes `/category/release-announcements/`, and an `index.md` file drops the final `index` segment.
+Main-site pages are Markdown content entries under `src/content/main-site/pages`. The route is derived from the file path under that directory: `support.md` becomes `/support/`, `brand-guidelines/micronaut-logos.md` becomes `/brand-guidelines/micronaut-logos/`, `category/release-announcements.md` becomes `/category/release-announcements/`, and an `index.md` file drops the final `index` segment.
 
 Use this shape for a normal page:
 
