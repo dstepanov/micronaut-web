@@ -12,10 +12,11 @@
         "core",
         "data",
         "security",
-        "graphql",
-        "spring",
+        "openapi",
+        "test",
         "kafka",
-        "openapi"
+        "kotlin",
+        "aws"
       ]
     },
     {
@@ -265,6 +266,7 @@
       "icon": "brand:junit5",
       "primaryCategory": "dev-and-test",
       "categorySlugs": [
+        "most-popular",
         "dev-and-test"
       ],
       "guideTopicAliases": [
@@ -291,6 +293,7 @@
       "icon": "brand:kotlin",
       "primaryCategory": "languages",
       "categorySlugs": [
+        "most-popular",
         "languages"
       ],
       "guideTopicAliases": [
@@ -314,9 +317,8 @@
       "platformVersionKey": "managed-micronaut-spring",
       "version": "6.0.0",
       "icon": "brand:spring",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "api",
       "categorySlugs": [
-        "most-popular",
         "api"
       ],
       "guideTopicAliases": [
@@ -647,6 +649,7 @@
       "icon": "lucide:cloud-cog",
       "primaryCategory": "cloud",
       "categorySlugs": [
+        "most-popular",
         "cloud"
       ],
       "guideTopicAliases": [
