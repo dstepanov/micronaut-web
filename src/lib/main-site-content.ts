@@ -114,16 +114,11 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
 const footerPageGroups = [
   {
     title: "Start",
-    slugs: ["learn", "download", "micronaut-success-stories"]
-  },
-  {
-    title: "Learn",
-    slugs: ["learn"]
+    slugs: ["download", "micronaut-success-stories"]
   },
   {
     title: "Resources",
     slugs: [
-      "upcoming-events",
       "blog",
       "category/release-announcements",
       "micronaut-roadmap",
