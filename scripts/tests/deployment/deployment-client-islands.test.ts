@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import * as ts from "typescript5";
+import * as ts from "typescript";
 
 import {
   forbiddenBrowserRuntimeAssetMatches,

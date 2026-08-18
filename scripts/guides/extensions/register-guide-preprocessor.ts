@@ -1,4 +1,3 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
