@@ -23,7 +23,9 @@ if (isMainModule()) {
       stringArg(options.publishedDir) || process.env.PUBLISHED_DOCS_DIR,
     version: stringArg(options.version) || process.env.MICRONAUT_DOCS_VERSION,
     base:
-      stringArg(options.base) || process.env.ASTRO_BASE || "/micronaut-docs-v2/",
+      stringArg(options.base) ||
+      process.env.ASTRO_BASE ||
+      "/micronaut-docs-v2/",
     latest: stringArg(options.latest) !== "false",
   });
 }
