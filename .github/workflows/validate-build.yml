@@ -30,4 +30,4 @@ jobs:
         run: npm run style:scripts
 
       - name: Run build checks and build site
-        run: npm run build
+        run: npm run build:main
