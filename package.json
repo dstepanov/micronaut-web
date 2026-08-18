@@ -20,7 +20,7 @@
     "test:guides:browser": "node scripts/ensure-playwright-chromium.ts && node tests/playwright/generated-content-fixtures.ts guides && playwright test --config playwright.config.ts tests/playwright/guides.spec.ts",
     "test:deployment": "node --test scripts/tests/deployment/*.test.ts",
     "typecheck": "tsc --noEmit --pretty false",
-    "typecheck:scripts": "tsc --project tsconfig.scripts.json --noEmit --pretty false",
+    "typecheck:scripts": "node ./node_modules/typescript5/bin/tsc --project tsconfig.scripts.json --noEmit --pretty false",
     "style:scripts": "prettier --check \"scripts/**/*.ts\"",
     "dev": "npm run check && npm run prepare:generated-content && astro dev --host 127.0.0.1",
     "build:site": "npm run check && npm run prepare:generated-content && astro build && node scripts/assert-browser-runtime-assets.ts && node scripts/build-site-header-shell.ts && node scripts/prepare-template-artifacts.ts",
@@ -64,7 +64,8 @@
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
     "prettier": "^3.9.6",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "typescript5": "npm:typescript@5.9.3"
   },
   "overrides": {
     "vite": "^8.0.13"
