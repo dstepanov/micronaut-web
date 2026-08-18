@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import * as ts from "typescript";
+import * as ts from "typescript5";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
