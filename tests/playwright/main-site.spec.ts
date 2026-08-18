@@ -82,6 +82,19 @@ test("main-site runtime scripts do not include build-time content processors", a
   expect(failures).toEqual([]);
 });
 
+test("homepage code examples include a Python variant", async ({ page }) => {
+  await page.goto(appPath("/"));
+
+  const pythonTab = page
+    .locator('[role="tab"][data-lang="python"]')
+    .first();
+  await expect(pythonTab).toHaveText("Python");
+  await pythonTab.click();
+  await expect(page.locator('code[data-lang="python"]')).toContainText(
+    'from micronaut.http.annotation import Get',
+  );
+});
+
 test("footer exposes social media links as labelled icons", async ({
   page,
 }) => {
