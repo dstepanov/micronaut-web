@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Micronaut web
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Validate GitHub token
         env:
@@ -46,7 +46,7 @@ jobs:
           fi
 
       - name: Check out guides Pages repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.target_branch }}
@@ -54,7 +54,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Check out guides project
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.guides_repository }}
           ref: ${{ inputs.guides_ref }}
