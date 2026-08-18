@@ -4,7 +4,7 @@ title: Payment Failed
 eyebrow: Foundation
 description: We’re sorry, but your transaction failed to process. Please try again or contact site support.
 sourceUrl: https://micronaut.io/payment-failed/
-intro: Failure page for payment-related flows on the Micronaut Foundation site.
+intro: Failure page for payment-related flows for the Micronaut project at the Commonhaus Foundation.
 layoutVariant: public-markdown
 ---
 

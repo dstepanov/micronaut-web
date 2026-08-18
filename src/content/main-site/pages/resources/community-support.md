@@ -130,7 +130,7 @@ All community members are expected to follow the Micronaut project code of condu
 
 ### [Support Schedule](https://micronaut.io/support-schedule/)
 
-The Micronaut Foundation is committed to the continued innovation, development, maintenance, and support of the Micronaut framework.
+The Commonhaus Foundation is committed to the continued innovation, development, maintenance, and support of the Micronaut framework.
 
 Our goal is to provide users of the Micronaut framework the support they need, while maintaining as much focus as possible on innovation. The level and type of support available for earlier versions will change, as the Framework continues to evolve. For more information about the level of support available for each version of the Micronaut framework, please see our [support schedule](https://micronaut.io/support-schedule/).
 
@@ -156,4 +156,4 @@ General community and training questions: [info@micronaut.io](mailto:info@micron
 
 Request a complimentary consultation: [info@micronaut.io](mailto:info@micronaut.io)
 
-Contact the Micronaut Foundation: [foundation@micronaut.io](mailto:foundation@micronaut.io)
+Contact the Commonhaus Foundation: [foundation@micronaut.io](mailto:foundation@micronaut.io)

@@ -14,10 +14,10 @@ layoutVariant: public-markdown
 
   The Micronaut framework is an open source project licensed under the [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0). This includes all the code and documentation included in public repositories, as further defined in the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
 
-  The License specifically does not include permission to use the word “Micronaut” or Micronaut logos and trademarks. Use of the word “Micronaut” and Micronaut logos and trademarks is strictly prohibited except as otherwise set forth in the [Micronaut Trademark Policy](https://micronaut.io/brand-guidelines/micronaut-trademark-policy/).
+  The License specifically does not include permission to use the word “Micronaut” or Micronaut logos and trademarks. Use of the word “Micronaut” and Micronaut logos and trademarks is strictly prohibited except as otherwise set forth in the [Commonhaus Foundation Trademark Policy](https://www.commonhaus.org/policies/trademark-policy/).
 - ### [I see the Micronaut name is trademarked; does that mean the software is proprietary?](#i-see-the-micronaut-name-is-trademarked-does-that-mean-its-proprietary)
 
-  While the Micronaut name and various marks [are trademarks of Object Computing, Inc.](https://micronaut.io/brand-guidelines/), the Micronaut framework itself is an open source project, and you are invited to use and modify the source code under the terms of the [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0).
+  Micronaut® is a project of the [Commonhaus Foundation](https://www.commonhaus.org/), while the framework itself is open source. You are invited to use and modify its source code under the terms of the [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0).
 - ### [Can I contribute code to the Micronaut framework?](#can-i-contribute-code-to-the-micronaut-framework)
 
   Yes please!
@@ -62,9 +62,9 @@ layoutVariant: public-markdown
   The Micronaut framework was created by the same team that built the [Grails framework](http://grails.org), and they incorporated many of the lessons learned from the Grails framework into the design of the new Framework. Unlike the Grails framework and other JVM web frameworks, the Micronaut framework is designed to function as both a client and a server framework in a microservice environment. The Micronaut framework’s modularity and lack of external dependencies means that Grails developers can take advantage of many key Micronaut features within their existing Grails applications.
 - ### [How can I get permission to use the Micronaut name or logo on my materials?](#how-can-i-get-permission-to-use-the-micronaut-name-or-logo-on-my-materials)
 
-  The [Micronaut® Trademark Policy](https://micronaut.io/brand-guidelines/micronaut-trademark-policy/) governs the use of  the word “Micronaut” and all Micronaut logos and trademarks.
+  The [Commonhaus Foundation Trademark Policy](https://www.commonhaus.org/policies/trademark-policy/) governs the use of the word “Micronaut” and all Micronaut logos and trademarks.
 
-  Use of Micronaut logos is prohibited without the prior written consent and express license of the Micronaut brand team. Complete and submit [this form](https://micronaut.io/brand-guidelines/micronaut-trademark-policy/#request) to request a license to use the Micronaut logo(s) or mark(s).
+  For questions about using Micronaut logos or marks, contact [brand@commonhaus.org](mailto:brand@commonhaus.org).
 
   If you are authorized to use a Micronaut logo, you must comply with the requirements set forth in the [Micronaut Brand Guidelines](/micronaut-assets/main-site/wp-content/uploads/2023/06/Micronaut_Brand_Guidelines.pdf).
 - ### [What is the Export Control Classification Number (ECCN) for the Micronaut framework?](#what-is-the-export-control-classification-number-eccn-for-micronaut)
