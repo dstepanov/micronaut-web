@@ -116,9 +116,13 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Configure GitHub Pages origin
+        env:
+          CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
         run: |
-          echo "DEFAULT_GITHUB_PAGES_ORIGIN=https://micronaut-projects.github.io" >> "$GITHUB_ENV"
-          echo "MICRONAUT_GITHUB_PAGES_ORIGIN=https://micronaut-projects.github.io" >> "$GITHUB_ENV"
+          default_github_pages_origin="https://micronaut-projects.github.io"
+          github_pages_origin="${CONFIGURED_GITHUB_PAGES_ORIGIN:-$default_github_pages_origin}"
+          echo "DEFAULT_GITHUB_PAGES_ORIGIN=$default_github_pages_origin" >> "$GITHUB_ENV"
+          echo "MICRONAUT_GITHUB_PAGES_ORIGIN=$github_pages_origin" >> "$GITHUB_ENV"
 
       - name: Build docs version manifest
         run: node scripts/update-docs-version-manifest.ts --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}"
