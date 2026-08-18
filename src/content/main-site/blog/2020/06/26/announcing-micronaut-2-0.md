@@ -23,9 +23,9 @@ Here are some highlights of what’s new in Micronaut 2.
 
 ## MICRONAUT LAUNCH
 
-In Micronaut 2.0, we have completely rewritten the Micronaut CLI using Micronaut itself and simultaneously launched [Micronaut Launch](https://micronaut.io/launch/), a new tool for creating Micronaut applications that is built on the new CLI.
+In Micronaut 2.0, we have completely rewritten the Micronaut CLI using Micronaut itself and simultaneously launched [Micronaut Launch](https://launch.micronaut.io), a new tool for creating Micronaut applications that is built on the new CLI.
 
-The new website and CLI are so cool, we wrote [a whole blog post](https://micronaut.io/launch/) to introduce them!
+The new website and CLI are so cool, we wrote [a whole blog post](https://launch.micronaut.io) to introduce them!
 
 ## JDK 14, GROOVY 3
 
@@ -37,7 +37,7 @@ Micronaut is intensely focused on performance, and we are always looking to impr
 
 ## IMPROVED SERVERLESS SUPPORT
 
-Micronaut 2.0 introduces support for writing applications that can be deployed to Google’s upcoming [Cloud Function](https://micronaut.io/launch/) support for Java.
+Micronaut 2.0 introduces support for writing applications that can be deployed to Google’s upcoming [Cloud Function](https://launch.micronaut.io) support for Java.
 
 In addition to Google Cloud Function, we have also added support for [Azure Function](https://azure.microsoft.com/en-us/services/functions/) using the same approach. Check out the [Micronaut Azure Function](https://micronaut-projects.github.io/micronaut-azure/1.0.x/guide/#azureFunction) documentation for more information.
 
@@ -83,7 +83,7 @@ Working toward today’s release, we published 3 milestones, each including a su
 
 The items listed above certainly are not the entirety of the new features, improvements, and bug fixes included in this release. For a more detailed description of what you can do with Micronaut 2, please see our [documentation](https://micronaut.io/documentation.html).
 
-If you haven’t given Micronaut a try yet, now is a great time to [get started](https://micronaut.io/launch/)! We can’t wait to see what you build.
+If you haven’t given Micronaut a try yet, now is a great time to [get started](https://launch.micronaut.io)! We can’t wait to see what you build.
 
 Please report any issues or ideas for improvement to our [Github issue tracker](https://github.com/micronaut-projects/micronaut-core/issues). We are very excited for Micronaut 2 and the future of Micronaut!
 

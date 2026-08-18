@@ -29,6 +29,6 @@ While you’re there, be sure to check out these talks:
 - Monitoring your Spring Boot and Micronaut microservices with Micrometer – [Ko Turk](https://twitter.com/KoTurk77)
 - Easier Microservice Persistence With Micronaut Data – [Todd Sharp](https://twitter.com/recursivecodes)
 
-If you would like to familiarize yourself with the Micronaut framework in preparation for the conference, please explore our [complimentary tips and tutorials](https://objectcomputing.com/products/micronaut/resources). Additionally, you can starting experimenting with the Micronaut framework in a matter of seconds by creating your first project right now with [Micronaut Launch](https://micronaut.io/launch/)!
+If you would like to familiarize yourself with the Micronaut framework in preparation for the conference, please explore our [complimentary tips and tutorials](https://objectcomputing.com/products/micronaut/resources). Additionally, you can starting experimenting with the Micronaut framework in a matter of seconds by creating your first project right now with [Micronaut Launch](https://launch.micronaut.io)!
 
 Claim your free ticket before they’re gone, and enjoy JCON 2020!

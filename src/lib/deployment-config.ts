@@ -4,7 +4,7 @@ import {
 } from "./deployment-defaults.ts";
 
 export type { DeploySurface } from "./deployment-defaults.ts";
-export type SurfaceTarget = "main" | "docs" | "guides" | "launch";
+export type SurfaceTarget = "main" | "docs" | "guides";
 type DeploymentImportMeta = ImportMeta & {
   readonly env?: {
     readonly DEFAULT_GITHUB_PAGES_ORIGIN?: string;
@@ -58,9 +58,6 @@ export const externalSurfaceUrls: Record<"main" | "docs" | "guides", string> = {
 };
 
 export function routeForSurface(surface: SurfaceTarget, path = "/") {
-  if (surface === "launch") {
-    return normalizeAbsolutePath(path || "/launch/");
-  }
   if (surface === "docs") {
     return docsRoute(path);
   }
@@ -248,12 +245,7 @@ function isGuidesPath(path: string) {
 }
 
 function isMainSurfacePath(path: string) {
-  return (
-    path === "/" ||
-    path === "/launch" ||
-    path.startsWith("/launch/") ||
-    (!isDocsPath(path) && !isGuidesPath(path))
-  );
+  return path === "/" || (!isDocsPath(path) && !isGuidesPath(path));
 }
 
 function joinRoot(root: string, suffix: string) {

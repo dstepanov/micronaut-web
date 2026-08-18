@@ -146,7 +146,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
     /<td>\s*<i class="conum" data-value="1"><\/i><b>1<\/b>\s*<\/td>/,
   );
   assert.doesNotMatch(html, /__MICRONAUT_CALLOUT_|\uE000|\uE001/);
-  assert.match(html, /https:\/\/micronaut\.io\/launch\?/);
+  assert.match(html, /https:\/\/launch\.micronaut\.io\?/);
   assert.match(html, /href="\.\.\/another-guide\.html"/);
   assert.match(html, /href="\.\.\/legacy-guide\.html"/);
   assert.match(

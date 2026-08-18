@@ -38,7 +38,7 @@ We have been working hard to create a new infrastructure for the guides with all
 
 This is the most important thing we wanted to improve. Keeping the guides up to date with every Micronaut version is important because new users will find working examples with the latest version of the framework.
 
-To fix this problem, we are leveraging [Micronaut Launch](https://micronaut.io/launch/). It’s not that we are calling the RESTful endpoints exposed by Launch, but that we are using the code that powers the website directly in our new guides.
+To fix this problem, we are leveraging [Micronaut Launch](https://launch.micronaut.io). It’s not that we are calling the RESTful endpoints exposed by Launch, but that we are using the code that powers the website directly in our new guides.
 
 What we do is generate programmatically a project for the desired Micronaut version with every language combination, build tool, and the features needed for that guide. Then we copy specific code from the guide and package every project as a zip file ready for users to download. When a new Micronaut version is released, we only need to update the version in one file, submit a new pull request, and if all the tests pass, merge it, and we have automatically migrated all the guides to that version. Awesome, isn’t it? 🙂
 

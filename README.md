@@ -27,37 +27,37 @@ All repository scripts under `scripts/` must be TypeScript files. Add new script
 
 ### Package Scripts
 
-| Script                              | Purpose                                                                                                              |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `npm run check`                     | Runs TypeScript checks, script formatting, script tests, browser-backed surface tests, and snippet style validation. |
-| `npm run snippet-styles`            | Verifies generated docs snippet styles stay shared instead of copied into runtime layout code.                       |
-| `npm run sync:docs-projects`        | Refreshes `src/data/docs-projects.fixture.json` from a local Micronaut Platform checkout.                            |
-| `npm run render:docs`               | Renders generated docs fragments and the docs project catalog.                                                       |
-| `npm run render:guides`             | Renders generated guide fragments and the guide manifest.                                                            |
-| `npm run prepare:generated-docs`    | Alias for `render:docs`, used by docs preparation flows.                                                             |
-| `npm run prepare:generated-content` | Renders docs and guides generated content together.                                                                  |
-| `npm run test:main-site`            | Runs main-site script tests and the main-site Playwright wrapper.                                                    |
-| `npm run test:main-site:browser`    | Runs the main-site Playwright spec directly.                                                                         |
-| `npm run test:asciidoc`             | Runs shared Asciidoc renderer and macro tests.                                                                       |
-| `npm run test:docs`                 | Runs docs script tests and the docs Playwright wrapper.                                                              |
-| `npm run test:docs:browser`         | Prepares docs generated content and runs the docs Playwright spec.                                                   |
-| `npm run test:guides`               | Runs guides script tests and the guides Playwright wrapper.                                                          |
-| `npm run test:guides:browser`       | Prepares guides generated content and runs the guides Playwright spec.                                               |
-| `npm run test:deployment`           | Runs deployment, pruning, publishing, and surface-routing script tests.                                              |
-| `npm run typecheck`                 | Runs the main TypeScript project check.                                                                              |
-| `npm run typecheck:scripts`         | Runs the strict TypeScript check for files under `scripts/`.                                                         |
-| `npm run style:scripts`             | Checks TypeScript script formatting with Prettier.                                                                   |
-| `npm run dev`                       | Runs the full check, prepares generated content, and starts Astro dev on `127.0.0.1`.                                |
+| Script                              | Purpose                                                                                                                 |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                     | Runs TypeScript checks, script formatting, script tests, browser-backed surface tests, and snippet style validation.    |
+| `npm run snippet-styles`            | Verifies generated docs snippet styles stay shared instead of copied into runtime layout code.                          |
+| `npm run sync:docs-projects`        | Refreshes `src/data/docs-projects.fixture.json` from a local Micronaut Platform checkout.                               |
+| `npm run render:docs`               | Renders generated docs fragments and the docs project catalog.                                                          |
+| `npm run render:guides`             | Renders generated guide fragments and the guide manifest.                                                               |
+| `npm run prepare:generated-docs`    | Alias for `render:docs`, used by docs preparation flows.                                                                |
+| `npm run prepare:generated-content` | Renders docs and guides generated content together.                                                                     |
+| `npm run test:main-site`            | Runs main-site script tests and the main-site Playwright wrapper.                                                       |
+| `npm run test:main-site:browser`    | Runs the main-site Playwright spec directly.                                                                            |
+| `npm run test:asciidoc`             | Runs shared Asciidoc renderer and macro tests.                                                                          |
+| `npm run test:docs`                 | Runs docs script tests and the docs Playwright wrapper.                                                                 |
+| `npm run test:docs:browser`         | Prepares docs generated content and runs the docs Playwright spec.                                                      |
+| `npm run test:guides`               | Runs guides script tests and the guides Playwright wrapper.                                                             |
+| `npm run test:guides:browser`       | Prepares guides generated content and runs the guides Playwright spec.                                                  |
+| `npm run test:deployment`           | Runs deployment, pruning, publishing, and surface-routing script tests.                                                 |
+| `npm run typecheck`                 | Runs the main TypeScript project check.                                                                                 |
+| `npm run typecheck:scripts`         | Runs the strict TypeScript check for files under `scripts/`.                                                            |
+| `npm run style:scripts`             | Checks TypeScript script formatting with Prettier.                                                                      |
+| `npm run dev`                       | Runs the full check, prepares generated content, and starts Astro dev on `127.0.0.1`.                                   |
 | `npm run build:site`                | Runs checks, prepares generated content, builds Astro, builds the shared header shell, and prepares template artifacts. |
-| `npm run build`                     | Same as `build:site`; kept as the default full-site build command.                                                   |
-| `npm run build:surface`             | Builds and prunes a selected deployment surface.                                                                     |
-| `npm run build:main`                | Builds the standalone main surface.                                                                                  |
-| `npm run build:docs`                | Builds the standalone docs surface.                                                                                  |
-| `npm run build:guides`              | Builds the standalone guides surface.                                                                                |
-| `npm run prune:surface`             | Prunes an existing `dist` output for the selected surface.                                                           |
-| `npm run update:docs-versions`      | Rebuilds the published docs version manifest.                                                                        |
-| `npm run publish:docs-surface`      | Merges a docs surface build into an existing published docs tree.                                                    |
-| `npm run preview`                   | Runs `astro preview` on `127.0.0.1`.                                                                                 |
+| `npm run build`                     | Same as `build:site`; kept as the default full-site build command.                                                      |
+| `npm run build:surface`             | Builds and prunes a selected deployment surface.                                                                        |
+| `npm run build:main`                | Builds the standalone main surface.                                                                                     |
+| `npm run build:docs`                | Builds the standalone docs surface.                                                                                     |
+| `npm run build:guides`              | Builds the standalone guides surface.                                                                                   |
+| `npm run prune:surface`             | Prunes an existing `dist` output for the selected surface.                                                              |
+| `npm run update:docs-versions`      | Rebuilds the published docs version manifest.                                                                           |
+| `npm run publish:docs-surface`      | Merges a docs surface build into an existing published docs tree.                                                       |
+| `npm run preview`                   | Runs `astro preview` on `127.0.0.1`.                                                                                    |
 
 ## Design Tokens
 
@@ -108,8 +108,8 @@ Use this shape for a normal post:
 slug: 2026/06/01/example-post
 title: Example Post Title
 description: One or two sentences used in cards, metadata, and search previews.
-date: '2026-06-01T09:00:00'
-modified: '2026-06-01T09:00:00'
+date: "2026-06-01T09:00:00"
+modified: "2026-06-01T09:00:00"
 category: release-announcements
 categories:
   - release-announcements
@@ -199,7 +199,7 @@ Search is static and catalog-backed. There is no external search service; the UI
 
 The header search is `SearchDialog`, rendered by `SiteHeader` in the top-menu island and hydrated on load. It opens from the search button or the `Meta/Ctrl+K` keyboard shortcut, then navigates by assigning `window.location.href` through the base-path helpers so the same result paths work in the all-in-one preview, standalone docs, standalone guides, remote-header shells, and GitHub Pages base paths.
 
-The main-site search mode is used on the main, guides, and launch surfaces. Its result sets are built synchronously from:
+The main-site search mode is used on the main and guides surfaces. Its result sets are built synchronously from:
 
 - `getMainSitePageSummaries()`, passed into `SiteHeader`, for main-site pages.
 - `searchItems()` in `src/lib/content-catalog.ts`, backed by `src/data/docs-projects.fixture.json` for docs projects and synthetic docs sections.
@@ -221,8 +221,6 @@ Generated entries are deduplicated by scope, href, and title, and each project i
 
 Guides catalog filtering is separate from the header dialog. `LatestGuidesCatalog` reads URL parameters on the server: `q` matches guide title, intro, authors, categories, and tags; `category` and `tag` narrow the list; and `sort` accepts `latest`, `title`, or `duration`. Filter links are generated with `filterHref(...)`, so the selected filters remain URL-addressable.
 
-Launch feature search is also separate. It is client-side React state over feature name, title, description, and category; it is not part of the global search index.
-
 ## Deployment and Compatibility
 
 This repository is the only source implementation for the three web surfaces. A normal Astro build can render the all-in-one preview, then `scripts/prune-surface.ts` rewrites that full `dist` output into the artifact shape needed by one deploy target.
@@ -235,7 +233,7 @@ Production-compatible hosts are:
 
 Temporary GitHub Pages hosts keep the repository names in the path:
 
-- `micronaut-web`: main site and Launch at `/micronaut-web/`
+- `micronaut-web`: main site at `/micronaut-web/`
 - `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, latest docs at `/micronaut-docs-v2/latest/`, and version folders such as `/micronaut-docs-v2/4.10.14/`
 - `micronaut-guides-v2`: guides at `/micronaut-guides-v2/latest/`
 
@@ -243,7 +241,7 @@ Temporary GitHub Pages hosts keep the repository names in the path:
 
 Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `scripts/build-surface.ts` sets a matching default `ASTRO_BASE`, runs the full static build, then prunes the artifact:
 
-- `npm run build:main` keeps the homepage, Launch, blog/content pages, redirects, `.nojekyll`, shared branding assets, and the shared header shell under `/shell/site-header.js` and `/shell/site-header.css`. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. Dynamic docs/guides route generation is disabled for this surface, and pruning removes any remaining docs, guides, latest-route, and template artifacts from the published Pages artifact.
+- `npm run build:main` keeps the homepage, blog/content pages, redirects, `.nojekyll`, shared branding assets, and the shared header shell under `/shell/site-header.js` and `/shell/site-header.css`. It sets `MICRONAUT_PREPARE_GENERATED_CONTENT=false` by default, so the web deployment does not fetch or render docs/guides content. Dynamic docs/guides route generation is disabled for this surface, and pruning removes any remaining docs, guides, latest-route, and template artifacts from the published Pages artifact.
 - `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
 - `npm run build:guides` renders the generated guides once under `/guides`, moves that tree to `/latest` for the standalone guides artifact, and keeps the root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
@@ -347,12 +345,12 @@ This section is the maintainer-facing contract for Micronaut web UI/UX work, leg
 
 Observed baselines before the compatibility pass:
 
-| Surface | URL | Form factor | Performance | Accessibility | Best Practices | SEO | Notes |
-| --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| Homepage | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/` | Desktop | 100 | 93 | 100 | 100 | Main issues were shared link naming and low-contrast brand opacity patterns. |
-| Homepage | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/` | Mobile | 96 | 93 | 100 | 100 | Cache lifetime is partly hosting-controlled. |
-| Docs index | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/` | Mobile | 93 | 95 | 100 | 100 | Main issues were unnamed generated anchors, image dimensions, and unused hydrated JS. |
-| Core docs | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/core/` | Desktop | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Core is the heaviest generated page and the main DOM-size/performance risk. |
+| Surface    | URL                                                         | Form factor |                              Performance |                            Accessibility |                           Best Practices |                                      SEO | Notes                                                                                 |
+| ---------- | ----------------------------------------------------------- | ----------- | ---------------------------------------: | ---------------------------------------: | ---------------------------------------: | ---------------------------------------: | ------------------------------------------------------------------------------------- |
+| Homepage   | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/`           | Desktop     |                                      100 |                                       93 |                                      100 |                                      100 | Main issues were shared link naming and low-contrast brand opacity patterns.          |
+| Homepage   | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/`           | Mobile      |                                       96 |                                       93 |                                      100 |                                      100 | Cache lifetime is partly hosting-controlled.                                          |
+| Docs index | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/`      | Mobile      |                                       93 |                                       95 |                                      100 |                                      100 | Main issues were unnamed generated anchors, image dimensions, and unused hydrated JS. |
+| Core docs  | `${MICRONAUT_GITHUB_PAGES_ORIGIN}/micronaut-web/docs/core/` | Desktop     | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Needs re-run after generated docs render | Core is the heaviest generated page and the main DOM-size/performance risk.           |
 
 Known Core docs findings:
 
@@ -370,7 +368,6 @@ Known Core docs findings:
 - Logos, project icons, customer logos, language icons, and generated docs images need stable sizing to reduce layout shift.
 - Docs/Core should favor readable generated content, a predictable sidebar, and active section state without making the generated article part of a large hydrated island.
 - Guides index must remain available at `/latest/index.html` and support URL-backed filtering with `q`, `category`, `tag`, and `sort`.
-- Launch share URLs should remain stable while exposing validation, selected-feature summary, and keyboard-friendly flow.
 
 #### Compatibility Manifest Schema
 
@@ -378,38 +375,38 @@ Route aliases and redirects should be added through `src/lib/route-compatibility
 
 Each route compatibility entry has:
 
-| Field | Purpose |
-| --- | --- |
-| `id` | Stable identifier used by tests and route modules. |
-| `sourceSurface` | Surface receiving the legacy URL: `main`, `docs`, `guides`, or `assets`. |
-| `sourcePath` | Representative legacy path, with `{placeholder}` markers for route families. |
-| `destinationSurface` | Surface that owns the canonical destination. |
-| `previewDestinationPath` | All-in-one preview target, before `ASTRO_BASE` is applied. |
-| `productionDestinationPath` | Production target path on `destinationSurface`. |
-| `status` | Expected status for redirect-style routes, or `200` for production aliases. |
-| `behavior` | `canonical`, `redirect`, `external-redirect`, or `alias`. |
-| `preservesSearch` | Whether query strings are expected to survive the redirect. |
-| `preservesHash` | `client`, `same-document`, or `not-available`. URL fragments are not sent to servers, so server redirects cannot preserve them. |
-| `notes` | Maintainer context and constraints. |
+| Field                       | Purpose                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                        | Stable identifier used by tests and route modules.                                                                              |
+| `sourceSurface`             | Surface receiving the legacy URL: `main`, `docs`, `guides`, or `assets`.                                                        |
+| `sourcePath`                | Representative legacy path, with `{placeholder}` markers for route families.                                                    |
+| `destinationSurface`        | Surface that owns the canonical destination.                                                                                    |
+| `previewDestinationPath`    | All-in-one preview target, before `ASTRO_BASE` is applied.                                                                      |
+| `productionDestinationPath` | Production target path on `destinationSurface`.                                                                                 |
+| `status`                    | Expected status for redirect-style routes, or `200` for production aliases.                                                     |
+| `behavior`                  | `canonical`, `redirect`, `external-redirect`, or `alias`.                                                                       |
+| `preservesSearch`           | Whether query strings are expected to survive the redirect.                                                                     |
+| `preservesHash`             | `client`, `same-document`, or `not-available`. URL fragments are not sent to servers, so server redirects cannot preserve them. |
+| `notes`                     | Maintainer context and constraints.                                                                                             |
 
 When a legacy route is added, update the manifest and add or update one route module. Avoid duplicating redirect tables across pages.
 
 #### Compatibility Matrix
 
-| Representative old URL | Preview behavior | Production behavior | Notes |
-| --- | --- | --- | --- |
-| `https://micronaut.io/core/` | Deferred until `/core/` routing is resumed | Deferred until main-host Core routing is resumed | Tracked here as a known legacy URL, but not implemented in this pass. |
-| `/core/?q=bean` | Deferred until `/core/` routing is resumed | Deferred until main-host Core routing is resumed | Query/hash preservation should be covered when this route is reintroduced. |
-| `https://docs.micronaut.io/latest/guide/` | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/` | Remains Core docs on docs host | Production may serve this as canonical or alias. |
-| `https://docs.micronaut.io/latest/guide/index.html#ioc` | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirect or alias to Core docs with the same section | Fragments require client redirect pages. |
-| `https://guides.micronaut.io/latest/index.html` | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/` | Redirect or alias to guides latest index | Query strings are preserved. |
-| `https://guides.micronaut.io/latest/tag-security.html` | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL | Served or redirected by guides production | Existing tag compatibility stays generated from guide metadata. |
-| `https://guides.micronaut.io/latest/micronaut-http-client.html` | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL | Served by guides production | Applies to guide overview `.html` pages. |
-| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html` | Redirects to slash-style generated `/guides/` variant when present, otherwise external production URL | Served by guides production | Applies to language/build variants. |
-| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.zip` | Redirects to production ZIP URL | Production ZIP remains downloadable | ZIP redirects are temporary external redirects. |
-| `https://micronaut.io/blog/2020-04-30-introducing-micronaut-launch.html` | Redirects to the canonical dated post | Redirects to the canonical dated post | Dated blog aliases are generated from post metadata. |
-| `https://micronaut.io/blog/2019-07-18-unleashing-predator-precomputed-data-repositories.html` | Redirects to `/2019/07/18/announcing-micronaut-data/` | Same canonical post | Explicit historical aliases remain in `blog-redirects`. |
-| Any supported route with `#section` | Same-document anchors stay intact; client redirect pages preserve hashes across route changes | Same rule | Server redirects cannot see fragments. |
+| Representative old URL                                                                        | Preview behavior                                                                                                  | Production behavior                                  | Notes                                                                      |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
+| `https://micronaut.io/core/`                                                                  | Deferred until `/core/` routing is resumed                                                                        | Deferred until main-host Core routing is resumed     | Tracked here as a known legacy URL, but not implemented in this pass.      |
+| `/core/?q=bean`                                                                               | Deferred until `/core/` routing is resumed                                                                        | Deferred until main-host Core routing is resumed     | Query/hash preservation should be covered when this route is reintroduced. |
+| `https://docs.micronaut.io/latest/guide/`                                                     | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/`                                           | Remains Core docs on docs host                       | Production may serve this as canonical or alias.                           |
+| `https://docs.micronaut.io/latest/guide/index.html#ioc`                                       | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirect or alias to Core docs with the same section | Fragments require client redirect pages.                                   |
+| `https://guides.micronaut.io/latest/index.html`                                               | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/`                                          | Redirect or alias to guides latest index             | Query strings are preserved.                                               |
+| `https://guides.micronaut.io/latest/tag-security.html`                                        | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL               | Served or redirected by guides production            | Existing tag compatibility stays generated from guide metadata.            |
+| `https://guides.micronaut.io/latest/micronaut-http-client.html`                               | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL            | Served by guides production                          | Applies to guide overview `.html` pages.                                   |
+| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html`                   | Redirects to slash-style generated `/guides/` variant when present, otherwise external production URL             | Served by guides production                          | Applies to language/build variants.                                        |
+| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.zip`                    | Redirects to production ZIP URL                                                                                   | Production ZIP remains downloadable                  | ZIP redirects are temporary external redirects.                            |
+| `https://micronaut.io/blog/2020-04-30-introducing-micronaut-launch.html`                      | Redirects to the canonical dated post                                                                             | Redirects to the canonical dated post                | Dated blog aliases are generated from post metadata.                       |
+| `https://micronaut.io/blog/2019-07-18-unleashing-predator-precomputed-data-repositories.html` | Redirects to `/2019/07/18/announcing-micronaut-data/`                                                             | Same canonical post                                  | Explicit historical aliases remain in `blog-redirects`.                    |
+| Any supported route with `#section`                                                           | Same-document anchors stay intact; client redirect pages preserve hashes across route changes                     | Same rule                                            | Server redirects cannot see fragments.                                     |
 
 #### Canonical URL Rules
 
@@ -435,11 +432,10 @@ When a legacy route is added, update the manifest and add or update one route mo
 #### Manual QA Checklist
 
 - Build with `ASTRO_BASE=/micronaut-web/` and verify all preview links keep the base path.
-- Check `/`, `/docs/`, `/docs/core/`, `/latest/index.html`, `/latest/guide/`, `/latest/guide/index.html`, `/guides/`, a guide detail page, `/launch/`, `/blog/`, a dated blog alias, and a content page.
+- Check `/`, `/docs/`, `/docs/core/`, `/latest/index.html`, `/latest/guide/`, `/latest/guide/index.html`, `/guides/`, a guide detail page, `/blog/`, a dated blog alias, and a content page.
 - Repeat the checks on desktop and mobile widths.
 - Verify `/latest/guide/index.html#ioc` preserves the fragment after redirect.
 - Verify guides filters update and restore state with `q`, `category`, `tag`, and `sort`.
-- Verify Launch share URLs keep selected settings/features and validation text is announced through field descriptions.
 - Re-run PageSpeed or Lighthouse-style checks for homepage, docs index, and Core docs after deployment assets are available.
 
 #### Automated Checks

@@ -407,7 +407,7 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
 
   assert.equal(await exists(path.join(dist, "index.html")), true);
   assert.equal(await exists(path.join(dist, ".nojekyll")), true);
-  assert.equal(await exists(path.join(dist, "launch", "index.html")), true);
+  assert.equal(await exists(path.join(dist, "launch", "index.html")), false);
   assert.equal(
     await exists(path.join(dist, "micronaut-assets", "logo.svg")),
     true,
@@ -988,7 +988,6 @@ async function fakeDist(t: TestContext) {
     "_astro/unused.js",
     "index.html",
     "versions.json",
-    "launch/index.html",
     "docs/index.html",
     "docs/core/index.html",
     "docs/assets/core/docs/img/diagram.svg",

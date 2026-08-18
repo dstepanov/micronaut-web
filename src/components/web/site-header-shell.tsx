@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/web/site-header";
 import type { SiteSurfaceUrls } from "@/lib/base-path";
 import "@/styles/globals.css";
 
-type HeaderSurface = "main" | "docs" | "guides" | "launch";
+type HeaderSurface = "main" | "docs" | "guides";
 
 type HeaderElement = HTMLElement & {
   dataset: DOMStringMap & {
@@ -76,12 +76,7 @@ function navigationUrls(element: HeaderElement): SiteSurfaceUrls {
 }
 
 function surface(value: string | undefined): HeaderSurface {
-  if (
-    value === "main" ||
-    value === "docs" ||
-    value === "guides" ||
-    value === "launch"
-  ) {
+  if (value === "main" || value === "docs" || value === "guides") {
     return value;
   }
   return "main";

@@ -70,7 +70,7 @@ Micronaut 2.1 adds improvements for Oracle Cloud and Google Cloud Platform.
 
 ### Oracle Functions
 
-With Micronaut 2.1, you can create Oracle Function projects by adding the `oracle-function` feature to a new project in [Micronaut Launch](https://micronaut.io/launch/) or by passing it to the Micronaut CLI:
+With Micronaut 2.1, you can create Oracle Function projects by adding the `oracle-function` feature to a new project in [Micronaut Launch](https://launch.micronaut.io) or by passing it to the Micronaut CLI:
 
 ```bash
 mn create-function-app myfunction --features oracle-function
@@ -97,7 +97,7 @@ For more information about Micronaut’s GCP support, see the [Micronaut GCP Gui
 
 ## Give it a Try!
 
-The easiest way to create a new Micronaut 2.1 application is with [Micronaut Launch](https://micronaut.io/launch/). Just select the application type, build, and features you would like to use and generate a new Micronaut application configured just for you! You can also use the [Micronaut CLI](https://micronaut-projects.github.io/micronaut-starter/latest/guide/index.html) to create and manage your Micronaut applications. For more information and installation options, please see the [Download](https://micronaut.io/download.html) page.
+The easiest way to create a new Micronaut 2.1 application is with [Micronaut Launch](https://launch.micronaut.io). Just select the application type, build, and features you would like to use and generate a new Micronaut application configured just for you! You can also use the [Micronaut CLI](https://micronaut-projects.github.io/micronaut-starter/latest/guide/index.html) to create and manage your Micronaut applications. For more information and installation options, please see the [Download](https://micronaut.io/download.html) page.
 
 For Micronaut Documentation, Guides, and API information see the [Documentation](https://micronaut.io/documentation.html).
 

@@ -28,7 +28,7 @@ For more information about all the new features, see the [“What’s New” gui
 
 The big news with this announcement is the rearchitecture of Micronaut’s venerable `mn` CLI for generating new applications from terminal, which is receiving a big upgrade.
 
-In Micronaut 2.0, we have completely rewritten the CLI in Micronaut itself and simultaneously launched [Micronaut Launch](https://micronaut.io/launch/), a new tool for creating Micronaut applications that is built on the new CLI.
+In Micronaut 2.0, we have completely rewritten the CLI in Micronaut itself and simultaneously launched [Micronaut Launch](https://launch.micronaut.io), a new tool for creating Micronaut applications that is built on the new CLI.
 
 The new website and CLI are so cool, we wrote a [whole blog post](/blog/2020-04-30-introducing-micronaut-launch.html) to introduce them!
 
@@ -38,7 +38,7 @@ Micronaut 2.0 introduces support for writing applications that can be deployed t
 
 You can either write [simple functions](https://micronaut-projects.github.io/micronaut-gcp/2.0.x/guide/#simpleFunctions) directly or write regular Micronaut controllers and have Micronaut’s function support [route requests to these controllers](https://micronaut-projects.github.io/micronaut-gcp/2.0.x/guide/#httpFunctions). This latter approach allows you to use the regular HTTP server and also deploy the same application to Cloud Function.
 
-Try it out at [Micronaut Launch](https://micronaut.io/launch/) by choosing the `google-cloud-function` feature!
+Try it out at [Micronaut Launch](https://launch.micronaut.io) by choosing the `google-cloud-function` feature!
 
 ## Microsoft Azure Function Support
 

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository is an Astro static site for Micronaut web, docs, guides, and launch surfaces. It uses Astro, React islands, Tailwind CSS, shadcn/ui components, Radix primitives, and npm scripts.
+This repository is an Astro static site for Micronaut web, docs, and guides. It uses Astro, React islands, Tailwind CSS, shadcn/ui components, Radix primitives, and npm scripts.
 
 Use the current repository structure as the source of truth. Do not apply Gradle or Micronaut module workflows unless a Gradle wrapper is later added.
 

@@ -47,9 +47,9 @@ Available Java Versions for macOS ARM 64bit
 
 ## Generate the Micronaut Application for AWS Lambda
 
-The easiest way to generate Micronaut Applications is to use Micronaut CLI or [Micronaut Launch](https://launch.micronaut.io/).
+The easiest way to generate Micronaut Applications is to use Micronaut CLI or [Micronaut Launch](https://launch.micronaut.io).
 
-Generate a [`Function Application for Serverless` with the following features: `graalvm`, `aws-cdk`, `aws-lambda`, and `aws-lambda-function-url`](https://micronaut.io/launch?type=FUNCTION&features=graalvm&features=aws-cdk&features=aws-lambda-function-url&features=aws-lambda).
+Generate a [`Function Application for Serverless` with the following features: `graalvm`, `aws-cdk`, `aws-lambda`, and `aws-lambda-function-url`](https://launch.micronaut.io?type=FUNCTION&features=graalvm&features=aws-cdk&features=aws-lambda-function-url&features=aws-lambda).
 
 ## Selecting ARM Architecture
 
@@ -112,4 +112,4 @@ It is impossible to generate a GraalVM native Image of your Micronaut Applicatio
 
 ## Deployment instructions
 
-The `README.md` file of the [generated application](https://micronaut.io/launch?type=FUNCTION&features=graalvm&features=aws-cdk&features=aws-lambda-function-url&features=aws-lambda) contains deployment instructions.
+The `README.md` file of the [generated application](https://launch.micronaut.io?type=FUNCTION&features=graalvm&features=aws-cdk&features=aws-lambda-function-url&features=aws-lambda) contains deployment instructions.

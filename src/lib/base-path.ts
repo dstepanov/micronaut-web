@@ -1,5 +1,5 @@
 type DeploySurface = "all" | "main" | "docs" | "guides";
-type SurfaceTarget = "main" | "docs" | "guides" | "launch";
+type SurfaceTarget = "main" | "docs" | "guides";
 export type SiteSurfaceUrls = Partial<
   Record<"main" | "docs" | "guides", string>
 >;
@@ -82,7 +82,7 @@ export function withBasePath(path: string) {
 }
 
 export function withSurfacePath(surface: SurfaceTarget, path = "/") {
-  const targetSurface = surface === "launch" ? "main" : surface;
+  const targetSurface = surface;
   if (
     targetSurface === "main" &&
     deploySurface !== "all" &&
@@ -115,7 +115,7 @@ export function withConfiguredSurfacePath(
   if (!urls) {
     return withSurfacePath(surface, path);
   }
-  const targetSurface = surface === "launch" ? "main" : surface;
+  const targetSurface = surface;
   const surfaceUrl = urls[targetSurface];
   if (!surfaceUrl) {
     return withSurfacePath(surface, path);
@@ -194,9 +194,6 @@ function routeForCurrentDeployment(path: string) {
 }
 
 function routeForSurface(surface: SurfaceTarget, path = "/") {
-  if (surface === "launch") {
-    return normalizeAbsolutePath(path || "/launch/");
-  }
   if (surface === "docs") {
     return docsRoute(path);
   }

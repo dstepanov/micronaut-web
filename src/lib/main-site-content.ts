@@ -4,6 +4,7 @@ import { withBasePath } from "@/lib/base-path";
 import { routeSlugsForPost } from "@/lib/blog-redirects";
 import { extractFaqItemsFromHtml, type MainSiteFaqItem } from "@/lib/main-site-faq";
 import { renderMainSiteCodeSnippets } from "@/lib/main-site-code-snippets";
+import { rewriteRootRelativeHtml } from "@/lib/main-site-link-rewrite";
 
 export type MainSitePageEntry = CollectionEntry<"mainSitePages">;
 export type BlogPostEntry = CollectionEntry<"blogPosts">;
@@ -283,20 +284,18 @@ export async function getSuccessStories(): Promise<SuccessStory[]> {
 
 export async function renderMarkdownHtml(entry: MainSitePageEntry | BlogPostEntry) {
   await render(entry);
-  const html = stripGeneratedPermalinkParagraphs(rewriteRootRelativeHtml(entry.rendered?.html ?? ""));
+  const html = stripGeneratedPermalinkParagraphs(
+    rewriteRootRelativeHtml(
+      entry.rendered?.html ?? "",
+      withBasePath,
+      rewriteMicronautPath,
+    ),
+  );
   return renderMainSiteCodeSnippets(html);
 }
 
 export async function renderFaqItems(entry: MainSitePageEntry | BlogPostEntry): Promise<MainSiteFaqItem[]> {
   return extractFaqItemsFromHtml(await renderMarkdownHtml(entry));
-}
-
-function rewriteRootRelativeHtml(html: string) {
-  return html.replace(/\b(href|src)="https?:\/\/micronaut\.io(\/[^"]*)"/g, (_match, attribute: string, value: string) => {
-    return `${attribute}="${withBasePath(rewriteMicronautPath(value))}"`;
-  }).replace(/\b(href|src)="(\/(?!\/)[^"]*)"/g, (_match, attribute: string, value: string) => {
-    return `${attribute}="${withBasePath(rewriteMicronautPath(value))}"`;
-  });
 }
 
 export function cleanExcerptText(value: string) {

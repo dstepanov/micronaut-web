@@ -25,7 +25,7 @@ Micronaut Framework 4.2.0 supports using the `--strict-image-heap` flag and asso
 
 ## Java 21
 
-You can select [Java 21 in Micronaut Launch or CLI](https://micronaut.io/launch?javaVersion=JDK_21).
+You can select [Java 21 in Micronaut Launch or CLI](https://launch.micronaut.io?javaVersion=JDK_21).
 
 ## Gradle Kotlin DSL
 

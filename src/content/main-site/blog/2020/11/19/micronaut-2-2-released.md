@@ -22,7 +22,7 @@ tags:
 href: /2020/11/19/micronaut-2-2-released/
 ---
 
-The [Micronaut team](https://objectcomputing.com/products/2gm-team) is excited to announce the release of [Micronaut 2.2!](https://docs.micronaut.io/2.2.0/guide/index.html) This release features MQTT support, packaging and configuration enhancements for the [Micronaut Maven Plugin](https://micronaut-projects.github.io/micronaut-maven-plugin/1.1.0/), pushing a new project directly to [GitHub](https://github.com) from [Micronaut Launch](https://micronaut.io/launch/), a preview of R2DBC support with [Micronaut Data](https://micronaut-projects.github.io/micronaut-data/latest/guide/index.html), and a bunch of [other enhancements](https://docs.micronaut.io/2.2.0/guide/index.html#whatsNew)!
+The [Micronaut team](https://objectcomputing.com/products/2gm-team) is excited to announce the release of [Micronaut 2.2!](https://docs.micronaut.io/2.2.0/guide/index.html) This release features MQTT support, packaging and configuration enhancements for the [Micronaut Maven Plugin](https://micronaut-projects.github.io/micronaut-maven-plugin/1.1.0/), pushing a new project directly to [GitHub](https://github.com) from [Micronaut Launch](https://launch.micronaut.io), a preview of R2DBC support with [Micronaut Data](https://micronaut-projects.github.io/micronaut-data/latest/guide/index.html), and a bunch of [other enhancements](https://docs.micronaut.io/2.2.0/guide/index.html#whatsNew)!
 
 ## MQTT
 
@@ -109,7 +109,7 @@ For a full list of options and features, please see the [Micronaut Maven Plugin 
 
 ## Push to GitHub
 
-[Micronaut Launch](https://micronaut.io/launch/) learned a new trick! Starting with version 2.2.0, you can push new Micronaut projects directly to GitHub!
+[Micronaut Launch](https://launch.micronaut.io) learned a new trick! Starting with version 2.2.0, you can push new Micronaut projects directly to GitHub!
 
 First, select the options and features that you would like for your new Micronaut project. Now, when you select “Generate Project”, pick the “Push to GitHub” option:
 
@@ -123,7 +123,7 @@ Congratulations! Now you can `git clone...` and go!
 
 ## Try it out!
 
-Create a new Micronaut 2.2 application with [Micronaut Launch](https://micronaut.io/launch/), or visit our [Download](https://micronaut.io/download.html) page for other options to get started including installing the latest [Micronaut CLI](https://micronaut-projects.github.io/micronaut-starter/latest/guide/#introduction).
+Create a new Micronaut 2.2 application with [Micronaut Launch](https://launch.micronaut.io), or visit our [Download](https://micronaut.io/download.html) page for other options to get started including installing the latest [Micronaut CLI](https://micronaut-projects.github.io/micronaut-starter/latest/guide/#introduction).
 
 This is just a sampling of the enhancements that come with Micronaut 2.2. This release also includes [JSON Feed](https://www.jsonfeed.org/) support, [Micronaut Security](https://micronaut-projects.github.io/micronaut-security/latest/guide/) now supports [Client Credentials Grant](https://tools.ietf.org/html/rfc6749#section-4.4), and the [Gradle plugin](https://github.com/micronaut-projects/micronaut-gradle-plugin) received an improvement to allow for testing with native images. For a full description of this release, please see the [What’s New](https://docs.micronaut.io/2.2.0/guide/index.html#whatsNew) section of the [guide](https://docs.micronaut.io/2.2.0/guide/index.html).
 

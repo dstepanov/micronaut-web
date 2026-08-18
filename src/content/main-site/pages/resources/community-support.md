@@ -12,7 +12,7 @@ layoutVariant: public-markdown
 
 ## Getting Started
 
-### [Micronaut Launch](https://micronaut.io/launch/)
+### [Micronaut Launch](https://launch.micronaut.io)
 
 **This is the easiest way to create a new project with the latest version of the Micronaut framework.** Just select the type of application you would like to create along with the language, build system, test framework, and features you would like to include. You can download a new project with the provided configuration by selecting “Generate Project.”
 

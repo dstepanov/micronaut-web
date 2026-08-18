@@ -24,7 +24,7 @@ The Micronaut team is excited to announce the release of Micronaut framework 2.5
 
 ## Gradle 7 and Java 16
 
-[Micronaut Launch](https://micronaut.io/launch) has been updated to allow for the creation of applications with Java 16. In addition, Gradle 7 is now the version used in new applications for those who prefer Gradle.
+[Micronaut Launch](https://launch.micronaut.io) has been updated to allow for the creation of applications with Java 16. In addition, Gradle 7 is now the version used in new applications for those who prefer Gradle.
 
 ## GraalVM 21.1.0
 

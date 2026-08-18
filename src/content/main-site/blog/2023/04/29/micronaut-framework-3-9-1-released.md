@@ -19,7 +19,7 @@ The Micronaut Foundation is excited to announce the release of [Micronaut framew
 
 This is a patch release, and it contains bug fixes. Moreover, Micronaut 3.9.1 upgrades to [GraalVM 22.3.2](https://www.graalvm.org/latest/release-notes/22_3/#2232) and patch releases of several modules – [Micronaut AWS](https://github.com/micronaut-projects/micronaut-aws/releases/tag/v3.17.1), and [Micronaut GCP](https://github.com/micronaut-projects/micronaut-gcp/releases/tag/v4.10.1).
 
-[AWS Lambda now supports Java 17](https://aws.amazon.com/blogs/compute/java-17-runtime-now-available-on-aws-lambda/); try  [Micronaut framework integration with Amazon CDK](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_17&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway-http&version=3.9.1) and deploy to Lambda seamlessly.
+[AWS Lambda now supports Java 17](https://aws.amazon.com/blogs/compute/java-17-runtime-now-available-on-aws-lambda/); try  [Micronaut framework integration with Amazon CDK](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_17&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway-http&version=3.9.1) and deploy to Lambda seamlessly.
 
 Moreover, update your application to version 3.7.9 of the [Micronaut Gradle Plugins if you use Gradle.](https://plugins.gradle.org/u/micronaut)
 

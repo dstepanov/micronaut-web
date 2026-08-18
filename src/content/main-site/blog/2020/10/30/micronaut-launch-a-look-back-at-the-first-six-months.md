@@ -15,7 +15,7 @@ tags:
 href: /2020/10/30/micronaut-launch-a-look-back-at-the-first-six-months/
 ---
 
-Back in April with the release of Micronaut 2.0 M3, we went live with a brand new implementation of the Micronaut command line interface (CLI) and [Micronaut Launch](https://micronaut.io/launch/), an online tool for creating Micronaut applications. Micronaut Launch features a core written in Micronaut itself and a [micronaut-cli module that targets the user’s command line](https://github.com/micronaut-projects/micronaut-starter/tree/master/starter-cli) and uses [PicoCLI](https://picocli.info/).
+Back in April with the release of Micronaut 2.0 M3, we went live with a brand new implementation of the Micronaut command line interface (CLI) and [Micronaut Launch](https://launch.micronaut.io), an online tool for creating Micronaut applications. Micronaut Launch features a core written in Micronaut itself and a [micronaut-cli module that targets the user’s command line](https://github.com/micronaut-projects/micronaut-starter/tree/master/starter-cli) and uses [PicoCLI](https://picocli.info/).
 
 Micronaut Launch has been helping you get your Micronaut apps off the ground for six months now, and we’ve found the data related to its use pretty interesting.
 

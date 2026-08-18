@@ -25,7 +25,7 @@ Since inception, the Micronaut framework has enjoyed massive enthusiasm, engagem
 Notable milestones we’ve achieved throughout the Framework’s first 3 years include:
 
 - [**Micronaut Data**](https://micronaut-projects.github.io/micronaut-data/latest/guide/index.html). Micronaut Data™ is a productivity-boosting open source technology that dramatically improves runtime and memory performance of data access repository logic for the microservice and serverless era.
-- [**Micronaut Launch**](https://micronaut.io/launch/). Micronaut Launch™ is an implementation of the Micronaut command line interface (CLI) and an online tool for creating Micronaut applications.
+- [**Micronaut Launch**](https://launch.micronaut.io). Micronaut Launch™ is an implementation of the Micronaut command line interface (CLI) and an online tool for creating Micronaut applications.
 - [**Micronaut Foundation**](https://micronaut.io/foundation/). The Micronaut Foundation™ is a not-for-profit organization that exists to support and collectively lead the open source Micronaut project.
 
 Without the support and contributions of our amazing community, we would not be where we are today.  The Micronaut framework stands on a firm foundation built with your pull requests, feature requests, reported issues, documentation updates, and questions answered.  We believe in the success of the Micronaut framework, and it is clear that you do too.  Thank you for everything that you do.

@@ -271,7 +271,7 @@ export function SearchDialog({
               <CommandGroup heading="Actions">
                 <CommandItem
                   value="Launch create project application starter"
-                  onSelect={() => navigateTo("/launch/")}
+                  onSelect={() => navigateTo("https://launch.micronaut.io")}
                 >
                   <Rocket />
                   <span className="grid min-w-0 gap-0.5">

@@ -30,7 +30,7 @@ import {
 } from "@/lib/base-path";
 import { cn } from "@/lib/utils";
 
-type SurfaceId = "main" | "docs" | "guides" | "launch";
+type SurfaceId = "main" | "docs" | "guides";
 type MainSiteSearchPage = {
   slug: string;
   title: string;
@@ -38,12 +38,15 @@ type MainSiteSearchPage = {
   description: string;
 };
 
-const primaryLinks: Array<{ href: string; label: string; surface: SurfaceId }> =
-  [
-    { href: "/docs/", label: "Docs", surface: "docs" },
-    { href: "/guides/", label: "Guides", surface: "guides" },
-    { href: "/launch/", label: "Launch", surface: "launch" },
-  ];
+const primaryLinks: Array<{
+  href: string;
+  label: string;
+  surface?: SurfaceId;
+}> = [
+  { href: "/docs/", label: "Docs", surface: "docs" },
+  { href: "/guides/", label: "Guides", surface: "guides" },
+  { href: "https://launch.micronaut.io", label: "Launch" },
+];
 
 type MobileMenuLink = {
   href: string;
@@ -194,7 +197,7 @@ const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
       { href: "/docs/", label: "Docs", surface: "docs" },
       { href: "/guides/", label: "Guides", surface: "guides" },
       { href: "/blog/", label: "Blog", surface: "main" },
-      { href: "/launch/", label: "Launch", surface: "launch" },
+      { href: "https://launch.micronaut.io", label: "Launch" },
     ],
   },
   ...menuGroups.map((group) => ({
@@ -248,13 +251,11 @@ export function SiteHeader({
   const surfaceHref = (targetSurface: SurfaceId, href: string) =>
     withConfiguredSurfacePath(targetSurface, href, navigationUrls);
   const mobileLinkHref = (link: MobileMenuLink) =>
-    withConfiguredSurfacePath(
-      link.surface || "main",
-      link.href,
-      navigationUrls,
-    );
+    link.surface
+      ? withConfiguredSurfacePath(link.surface, link.href, navigationUrls)
+      : link.href;
   const desktopPrimaryLinks = primaryLinks.filter(
-    (link) => link.surface !== "main" && link.surface !== "launch",
+    (link) => link.surface !== "main",
   );
   const desktopMenuGroups = menuGroups.filter(
     (group) => group.label !== "Foundation",
@@ -280,11 +281,15 @@ export function SiteHeader({
             {desktopPrimaryLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
-                  href={surfaceHref(link.surface, link.href)}
-                  active={surface === link.surface}
+                  href={
+                    link.surface
+                      ? surfaceHref(link.surface, link.href)
+                      : link.href
+                  }
+                  active={link.surface ? surface === link.surface : false}
                   className={cn(
                     "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                    surface === link.surface &&
+                    link.surface === surface &&
                       "bg-accent text-accent-foreground",
                   )}
                 >
@@ -344,7 +349,7 @@ export function SiteHeader({
             className="hidden h-9 lg:inline-flex"
             asChild
           >
-            <a href={surfaceHref("launch", "/launch/")}>Launch</a>
+            <a href="https://launch.micronaut.io">Launch</a>
           </Button>
           <ThemeModeSwitch className="hidden lg:inline-flex" />
           <Sheet>
@@ -362,7 +367,7 @@ export function SiteHeader({
               <SheetHeader>
                 <SheetTitle>Micronaut</SheetTitle>
                 <SheetDescription>
-                  Navigate main-site pages, documentation, guides, and Launch.
+                  Navigate main-site pages, documentation, and guides.
                 </SheetDescription>
               </SheetHeader>
               <nav

@@ -496,7 +496,7 @@ test("guide macro block processors render snippet gallery macros", async (): Pro
   assert.match(converted, /docs-dependency-template/);
   assert.match(converted, /docs-code-callouts/);
   assert.match(converted, /href="gallery-linked\.html"/);
-  assert.match(converted, /https:\/\/micronaut\.io\/launch\?/);
+  assert.match(converted, /https:\/\/launch\.micronaut\.io\?/);
   assert.match(text, /Common guide snippet content/);
   assert.match(text, /Common template value: COMMON/);
   assert.match(text, /External guide include content/);

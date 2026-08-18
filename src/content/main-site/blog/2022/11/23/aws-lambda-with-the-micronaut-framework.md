@@ -78,13 +78,13 @@ Micronaut Launch and/or the Micronaut CLI allow you to generate Micronaut projec
 
 For example:
 
-– [Micronaut Application with API Gateway and CDK for Java runtime](https://micronaut.io/launch?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway)
+– [Micronaut Application with API Gateway and CDK for Java runtime](https://launch.micronaut.io?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway)
 
-– [Micronaut Function with API Gateway and CDK for Java runtime](https://micronaut.io/launch?type=FUNCTION&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway)
+– [Micronaut Function with API Gateway and CDK for Java runtime](https://launch.micronaut.io?type=FUNCTION&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway)
 
-– [Micronaut Application with API Gateway and CDK with GraalVM](https://micronaut.io/launch?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway&features=graalvm)
+– [Micronaut Application with API Gateway and CDK with GraalVM](https://launch.micronaut.io?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway&features=graalvm)
 
-– [Micronaut Function with API Gateway and CDK](https://micronaut.io/launch?type=FUNCTION&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway) [with GraalVM](https://micronaut.io/launch?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway&features=graalvm)
+– [Micronaut Function with API Gateway and CDK](https://launch.micronaut.io?type=FUNCTION&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway) [with GraalVM](https://launch.micronaut.io?type=DEFAULT&javaVersion=JDK_11&features=aws-lambda&features=aws-cdk&features=amazon-api-gateway&features=graalvm)
 
 Micronaut framework 3.8.0 has a new CLI command create-aws-lambda to guide you through the steps for creating the Lambda.
 

@@ -42,7 +42,7 @@ micronautVersion=4.0.0
 
 ### Update Gradle to 8
 
-Micronaut framework 4 applications generated via the Micronaut CLI or [Micronaut Launch](https://launch.micronaut.io/) use Gradle `8.1.1`. Micronaut framework 3.x applications use Gradle 7.6. [Upgrade your build from Gradle 7.x to 8.0](https://docs.gradle.org/current/userguide/upgrading_version_7.html).
+Micronaut framework 4 applications generated via the Micronaut CLI or [Micronaut Launch](https://launch.micronaut.io) use Gradle `8.1.1`. Micronaut framework 3.x applications use Gradle 7.6. [Upgrade your build from Gradle 7.x to 8.0](https://docs.gradle.org/current/userguide/upgrading_version_7.html).
 
 ### Update Micronaut Gradle plugins to 4.x
 

@@ -25,15 +25,6 @@ export default defineConfig({
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client"],
     },
-    server: {
-      proxy: {
-        "/launch-preview-proxy": {
-          target: "https://launch.micronaut.io",
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/launch-preview-proxy/, ""),
-        },
-      },
-    },
     define: {
       __MICRONAUT_DEPLOYMENT__: JSON.stringify(deploymentConfig),
       "import.meta.env.MICRONAUT_DEPLOY_SURFACE": JSON.stringify(

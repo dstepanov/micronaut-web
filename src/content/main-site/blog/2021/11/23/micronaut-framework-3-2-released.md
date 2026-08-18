@@ -46,7 +46,7 @@ You can still build existing applications or libraries using the 2.x version of 
 
 This new release includes support for [Kotlin 1.6.0](https://kotlinlang.org/docs/whatsnew16.html).
 
-For Kotlin/JVM, starting with 1.6.0, the compiler can generate classes with a bytecode version corresponding to JVM 17. Thus, you can generate Micronaut applications with Kotlin as your programming language targeting JDK 17 with [Micronaut Launch](https://launch.micronaut.io/).
+For Kotlin/JVM, starting with 1.6.0, the compiler can generate classes with a bytecode version corresponding to JVM 17. Thus, you can generate Micronaut applications with Kotlin as your programming language targeting JDK 17 with [Micronaut Launch](https://launch.micronaut.io).
 
 ## HTTP Features
 

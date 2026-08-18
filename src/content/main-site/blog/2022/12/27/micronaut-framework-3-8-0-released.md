@@ -58,10 +58,10 @@ Micronaut CLI offers a new command. Type `mn create-aws-lambda`, and an interact
 
 We continue to improve project templates to get you the best starting point for your Micronaut applications. Both Micronaut Launch and CLI offer several extra features:
 
-- [`gitlab-workflow-ci`](https://micronaut.io/launch?features=gitlab-workflow-ci).
-- [`azure-cosmos-db`](https://micronaut.io/launch?features=azure-cosmos-db).
-- [`localstack`](https://micronaut.io/launch?features=localstack).
-- [`aws-alexa,aws-cdk`](https://micronaut.io/launch?type=FUNCTION&features=aws-alexa,aws-cdk).
+- [`gitlab-workflow-ci`](https://launch.micronaut.io?features=gitlab-workflow-ci).
+- [`azure-cosmos-db`](https://launch.micronaut.io?features=azure-cosmos-db).
+- [`localstack`](https://launch.micronaut.io?features=localstack).
+- [`aws-alexa,aws-cdk`](https://launch.micronaut.io?type=FUNCTION&features=aws-alexa,aws-cdk).
 
 ## Build Plugins
 

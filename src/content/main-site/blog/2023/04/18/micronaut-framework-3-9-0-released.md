@@ -66,24 +66,24 @@ You can use [Micronaut CRaC](https://micronaut-projects.github.io/micronaut-crac
 
 It updates to [Jib](https://github.com/GoogleContainerTools/jib) `3.3.1`.
 
-Moreover, Micronaut Launch and CLI generate [applications with Apache Maven 3.9.1](https://micronaut.io/launch?build=MAVEN)
+Moreover, Micronaut Launch and CLI generate [applications with Apache Maven 3.9.1](https://launch.micronaut.io?build=MAVEN)
 
 ## Micronaut Launch / CLI
 
-When you create a [Micronaut AWS Lambda function with Amazon CDK and the Java Runtime](https://micronaut.io/launch?type=DEFAULT&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=amazon-api-gateway-http&features=aws-cdk), the infrastructure as code enables AWS SnapStart by default.
+When you create a [Micronaut AWS Lambda function with Amazon CDK and the Java Runtime](https://launch.micronaut.io?type=DEFAULT&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=amazon-api-gateway-http&features=aws-cdk), the infrastructure as code enables AWS SnapStart by default.
 
 Java 17 is now the default for new applications.
 
 ### Features
 
-- The [`data-azure-cosmos`](https://micronaut.io/launch?type=DEFAULT&features=data-azure-cosmos) feature supports defining data repositories for Azure Cosmos DB.
-- The [`google-cloud-function-cloudevents`](https://micronaut.io/launch?type=FUNCTION&features=google-cloud-function-cloudevents) feature supports writing functions with Google CloudEvents and deploying them to Google Cloud Function.
+- The [`data-azure-cosmos`](https://launch.micronaut.io?type=DEFAULT&features=data-azure-cosmos) feature supports defining data repositories for Azure Cosmos DB.
+- The [`google-cloud-function-cloudevents`](https://launch.micronaut.io?type=FUNCTION&features=google-cloud-function-cloudevents) feature supports writing functions with Google CloudEvents and deploying them to Google Cloud Function.
 
 ### Community Features
 
-- [`camunda-platform7`](https://micronaut.io/launch?type=DEFAULT&features=camunda-platform7) to support Camunda Platform 7 Workflow Engine.
-- [`agorapulse-micronaut-slack`](https://micronaut.io/launch?features=agorapulse-micronaut-slack) feature is an idiomatic alternative to Bolt Micronaut library for Slack integration into the Micronaut Framework.
-- [`gradle-enterprise`](https://micronaut.io/launch?type=DEFAULT&features=gradle-enterprise) feature supports both Maven and Gradle applications.
+- [`camunda-platform7`](https://launch.micronaut.io?type=DEFAULT&features=camunda-platform7) to support Camunda Platform 7 Workflow Engine.
+- [`agorapulse-micronaut-slack`](https://launch.micronaut.io?features=agorapulse-micronaut-slack) feature is an idiomatic alternative to Bolt Micronaut library for Slack integration into the Micronaut Framework.
+- [`gradle-enterprise`](https://launch.micronaut.io?type=DEFAULT&features=gradle-enterprise) feature supports both Maven and Gradle applications.
 
 ## Micronaut Test
 

@@ -18,7 +18,7 @@ export type VersionOption = {
 type VersionSelectorProps = {
   label: string;
   options: VersionOption[];
-  surface?: "main" | "docs" | "guides" | "launch";
+  surface?: "main" | "docs" | "guides";
   className?: string;
   versionManifestHref?: string;
   showLabel?: boolean;

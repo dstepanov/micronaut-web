@@ -83,12 +83,12 @@ When you select the `aws-cdk` feature, we generate a multi-project build for Mav
 
 You can combine `aws-cdk` features with new features, including:
 
-- - `aws-lambda-function-url`– To [generate a Lambda function connected to a Lambda Function URL](https://micronaut.io/launch?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&version=3.5.0)
-  - `amazon-api-gateway`– To [generate a Lambda function connected to an Amazon API Gateway](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=amazon-api-gateway&features=aws-cdk&version=3.5.0)
-  - `dynamodb`– To [generate a Lambda function connected to a Dynamodb Database](https://micronaut.io/launch?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&features=dynamodb&version=3.5.0)
-  - `amazon-cognito`– To generate [an Amazon Cognito User Pool](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=amazon-cognito&features=aws-cdk&version=3.5.0)
+- - `aws-lambda-function-url`– To [generate a Lambda function connected to a Lambda Function URL](https://launch.micronaut.io?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&version=3.5.0)
+  - `amazon-api-gateway`– To [generate a Lambda function connected to an Amazon API Gateway](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=amazon-api-gateway&features=aws-cdk&version=3.5.0)
+  - `dynamodb`– To [generate a Lambda function connected to a Dynamodb Database](https://launch.micronaut.io?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&features=dynamodb&version=3.5.0)
+  - `amazon-cognito`– To generate [an Amazon Cognito User Pool](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=amazon-cognito&features=aws-cdk&version=3.5.0)
 
-Moreover, you can use the new CDK feature for deployments to the Java Runtime or the Provided Runtime. It has never been easier to [deploy a GraalVM native image of your function](https://micronaut.io/launch?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&features=dynamodb&features=graalvm&version=3.5.0)
+Moreover, you can use the new CDK feature for deployments to the Java Runtime or the Provided Runtime. It has never been easier to [deploy a GraalVM native image of your function](https://launch.micronaut.io?type=FUNCTION&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=aws-lambda&features=aws-lambda-function-url&features=aws-cdk&features=dynamodb&features=graalvm&version=3.5.0)
 
 ### Latest AWS SDKs
 
@@ -116,15 +116,15 @@ An interactive prompt that will guide you through the options while creating a M
 
 ### Micronaut Serialization
 
-We have improved the [generation of applications](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=serialization-jackson&version=3.4.4) using [Micronaut serialization](https://micronaut-projects.github.io/micronaut-serialization/latest/guide/).
+We have improved the [generation of applications](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=serialization-jackson&version=3.4.4) using [Micronaut serialization](https://micronaut-projects.github.io/micronaut-serialization/latest/guide/).
 
 ### Community Features
 
-The [AgoraPulse](https://www.agorapulse.com/) development team offers several [Micronaut open source libraries](https://agorapulse.github.io/agorapulse-oss/). You can now select some of their libraries via [Micronaut Launch](https://launch.micronaut.io/) or the Micronaut CLI features:
+The [AgoraPulse](https://www.agorapulse.com/) development team offers several [Micronaut open source libraries](https://agorapulse.github.io/agorapulse-oss/). You can now select some of their libraries via [Micronaut Launch](https://launch.micronaut.io) or the Micronaut CLI features:
 
-- [Agorapulse](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0) [Gru HTTP](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=gru-http&version=3.5.0). Gru is an interaction testing library
-- [Agorapulse Micronaut Worker](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0). A library to provide advanced distributed scheduling capabilities for Micronaut applications
-- [Agorapulse](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0) [Micronaut Console](https://micronaut.io/launch?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-console&version=3.5.0). An extension to Micronaut applications and functions that allows executing arbitrary code
+- [Agorapulse](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0) [Gru HTTP](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=gru-http&version=3.5.0). Gru is an interaction testing library
+- [Agorapulse Micronaut Worker](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0). A library to provide advanced distributed scheduling capabilities for Micronaut applications
+- [Agorapulse](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-worker&version=3.5.0) [Micronaut Console](https://launch.micronaut.io?type=DEFAULT&name=demo&package=com.example&javaVersion=JDK_11&lang=JAVA&build=GRADLE&test=JUNIT&features=micronaut-console&version=3.5.0). An extension to Micronaut applications and functions that allows executing arbitrary code
 
 **Please [get in touch with us](https://twitter.com/sdelamo) if you are developing a Micronaut library.**We would love to help you integrate it into Micronaut Launch and Micronaut CLI.
 

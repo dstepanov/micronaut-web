@@ -78,14 +78,6 @@ test("main-site runtime scripts do not include build-time content processors", a
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expectNoForbiddenRuntimeLibraries(runtimeScripts);
 
-  await page.goto(appPath("/launch/"));
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Build a Micronaut project",
-    }),
-  ).toBeVisible();
-
   await expectNoForbiddenRuntimeLibraries(runtimeScripts);
   expect(failures).toEqual([]);
 });
@@ -115,7 +107,7 @@ async function expectPrimaryMobileLinks(page: Page): Promise<void> {
   );
   await expect(
     browseLinks.getByRole("link", { name: "Launch" }),
-  ).toHaveAttribute("href", /\/launch\/$/);
+  ).toHaveAttribute("href", "https://launch.micronaut.io");
 
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();

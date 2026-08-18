@@ -124,8 +124,8 @@ public class NameControllerTest {
 ## Next Steps
 
 - Read [Micronaut Azure Module](https://micronaut-projects.github.io/micronaut-azure/snapshot/guide/index.html) documentation.
-- Try it out at [Micronaut Launch](https://micronaut.io/launch) by choosing the azure-function feature!
-- Check [Azure Functions Library](https://github.com/Azure/azure-functions-java-library) documentation. This library is included when you select azure-function while generating a Micronaut application with [Micronaut Launch](https://micronaut.io/launch)
+- Try it out at [Micronaut Launch](https://launch.micronaut.io) by choosing the azure-function feature!
+- Check [Azure Functions Library](https://github.com/Azure/azure-functions-java-library) documentation. This library is included when you select azure-function while generating a Micronaut application with [Micronaut Launch](https://launch.micronaut.io)
 - Micronaut is build-tool agnostic. You can write apps with Maven or Gradle. If you write Micronaut Azure Functions with Gradle, you will need to learn how to use the [Azure Gradle Plugin](https://plugins.gradle.org/plugin/com.microsoft.azure.azurefunctions).
 
 As you’ll quickly see, by combining Micronaut and Azure, you don’t have to give up the software paradigms that make you productive and keep your code robust when coding Java serverless functions.

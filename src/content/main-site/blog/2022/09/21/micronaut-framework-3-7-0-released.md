@@ -65,14 +65,14 @@ We have also released [Micronaut CRaC Gradle Plugin](https://plugins.gradle.org/
 
 ## Micronaut Launch and CLI
 
-[Micronaut Launch](https://launch.micronaut.io/) and Micronaut CLI offer new features:
+[Micronaut Launch](https://launch.micronaut.io) and Micronaut CLI offer new features:
 
-- [JUnit Params](https://micronaut.io/launch?features=junit-params)
-- [Amazon API Gateway HTTP Feature](https://micronaut.io/launch?features=aws-lambda&features=aws-cdk&features=amazon-api-gateway-http)
-- [Object Storage AWS](https://micronaut.io/launch?features=object-storage-aws)
-- [Object Storage Azure](https://micronaut.io/launch?features=object-storage-azure)
-- [Object Storage GCP](https://micronaut.io/launch?features=object-storage-gcp)
-- [Object Storage Oracle Cloud](https://micronaut.io/launch?features=object-storage-oracle-cloud)
+- [JUnit Params](https://launch.micronaut.io?features=junit-params)
+- [Amazon API Gateway HTTP Feature](https://launch.micronaut.io?features=aws-lambda&features=aws-cdk&features=amazon-api-gateway-http)
+- [Object Storage AWS](https://launch.micronaut.io?features=object-storage-aws)
+- [Object Storage Azure](https://launch.micronaut.io?features=object-storage-azure)
+- [Object Storage GCP](https://launch.micronaut.io?features=object-storage-gcp)
+- [Object Storage Oracle Cloud](https://launch.micronaut.io?features=object-storage-oracle-cloud)
 
 ## Module Upgrades
 

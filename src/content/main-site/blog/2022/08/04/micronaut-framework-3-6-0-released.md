@@ -77,15 +77,15 @@ We are happy to announce another reactive persistence option for Micronaut Users
 
 You can use either [Hibernate Reactive](https://micronaut-projects.github.io/micronaut-sql/latest/guide/#hibernate-reactive) by itself with the appropriate Vertx driver or use [Micronaut Data Hibernate Reactive](https://micronaut-projects.github.io/micronaut-data/snapshot/guide/#hibernateReactive), which adds support for the repository pattern on top of Hibernate Reactive, automatically implementing the most common queries for you!
 
-You can generate a Micronaut application with Hibernate Reactive via the Micronaut CLI or [Micronaut Launch.](https://launch.micronaut.io/)
+You can generate a Micronaut application with Hibernate Reactive via the Micronaut CLI or [Micronaut Launch.](https://launch.micronaut.io)
 
 | Database | Micronaut Data Hibernate ReactiveW |
 | --- | --- |
-| MariaDB | [`data-hibernate-reactive`, `mariadb`](https://micronaut.io/launch?features=mariadb&features=data-hibernate-reactive) |
-| MySQL | [`data-hibernate-reactive`, `mysql`](https://micronaut.io/launch?features=mysql&features=data-hibernate-reactive) |
-| Oracle | [`data-hibernate-reactive`, `oracle`](https://micronaut.io/launch?features=oracle&features=data-hibernate-reactive) |
-| PostgreSQL | [`data-hibernate-reactive`, `postgres`](https://micronaut.io/launch?features=postgres&features=data-hibernate-reactive) |
-| SQL Server | [`data-hibernate-reactive`, `sqlserver`](https://micronaut.io/launch?features=sqlserver&features=hibernate-jpa) |
+| MariaDB | [`data-hibernate-reactive`, `mariadb`](https://launch.micronaut.io?features=mariadb&features=data-hibernate-reactive) |
+| MySQL | [`data-hibernate-reactive`, `mysql`](https://launch.micronaut.io?features=mysql&features=data-hibernate-reactive) |
+| Oracle | [`data-hibernate-reactive`, `oracle`](https://launch.micronaut.io?features=oracle&features=data-hibernate-reactive) |
+| PostgreSQL | [`data-hibernate-reactive`, `postgres`](https://launch.micronaut.io?features=postgres&features=data-hibernate-reactive) |
+| SQL Server | [`data-hibernate-reactive`, `sqlserver`](https://launch.micronaut.io?features=sqlserver&features=hibernate-jpa) |
 
 To get you started, read the Hibernate Reactive guides:
 
@@ -153,7 +153,7 @@ The Micronaut Gradle Plugin allows you to define the GraalVM JDK architecture vi
 
 ## Starter Features
 
-You can select a new community feature [agora-micronaut-permissions](https://micronaut.io/launch?features=agorapulse-micronaut-permissions) via Micronaut Launch/CLI Features. Agora Micronaut Permissions is a lightweight library to declare object-level permissions in the Micronaut framework built by the [Agorapulse team](https://www.agorapulse.com/).
+You can select a new community feature [agora-micronaut-permissions](https://launch.micronaut.io?features=agorapulse-micronaut-permissions) via Micronaut Launch/CLI Features. Agora Micronaut Permissions is a lightweight library to declare object-level permissions in the Micronaut framework built by the [Agorapulse team](https://www.agorapulse.com/).
 
 ### CI Configuration Files
 
@@ -161,10 +161,10 @@ You can now generate a Continuous Integration (CI) configuration files to build 
 
 | CI | Feature |
 | --- | --- |
-| [AWS CodeBuild](https://aws.amazon.com/codebuild/) | [`aws-codebuild-workflow-ci`](https://micronaut.io/launch?features=aws-codebuild-workflow-ci) |
-| [Github Actions](https://github.com/features/actions) | [`github-workflow-ci`](https://micronaut.io/launch?features=github-workflow-ci) |
-| [Google Cloud Build](https://cloud.google.com/build) | [`google-cloud-workflow-ci`](https://micronaut.io/launch?features=google-cloud-workflow-ci) |
-| [Oracle Cloud Devops Build CI](https://docs.oracle.com/en/solutions/build-cicd-pipelines-devops-function/index.html#GUID-55766606-CB77-4879-ACD7-8F530EC2EB3F) | [`oci-devops-build-ci`](https://micronaut.io/launch?features=oci-devops-build-ci) |
+| [AWS CodeBuild](https://aws.amazon.com/codebuild/) | [`aws-codebuild-workflow-ci`](https://launch.micronaut.io?features=aws-codebuild-workflow-ci) |
+| [Github Actions](https://github.com/features/actions) | [`github-workflow-ci`](https://launch.micronaut.io?features=github-workflow-ci) |
+| [Google Cloud Build](https://cloud.google.com/build) | [`google-cloud-workflow-ci`](https://launch.micronaut.io?features=google-cloud-workflow-ci) |
+| [Oracle Cloud Devops Build CI](https://docs.oracle.com/en/solutions/build-cicd-pipelines-devops-function/index.html#GUID-55766606-CB77-4879-ACD7-8F530EC2EB3F) | [`oci-devops-build-ci`](https://launch.micronaut.io?features=oci-devops-build-ci) |
 
 ## Modules
 

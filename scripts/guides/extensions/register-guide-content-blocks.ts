@@ -330,7 +330,7 @@ function diffLink(
   params.set("type", String(app?.applicationType || "DEFAULT").toUpperCase());
   params.set("package", "example.micronaut");
   params.set("activity", "diff");
-  return `https://micronaut.io/launch?${params.toString()}[Diff, window="_blank"]`;
+  return `https://launch.micronaut.io?${params.toString()}[Diff, window="_blank"]`;
 }
 
 function findApp(

@@ -23,7 +23,7 @@ We have published [several blog posts about the changes introduced in Micronaut 
 
 ## Generating a Micronaut Framework 4 application
 
-You can generate a Micronaut framework 4.0.0-M2 application with [Micronaut Launch](https://launch.micronaut.io/) or with the Micronaut CLI. The easiest way to install 4.0.0-M2 CLI is with [sdkman](https://sdkman.io/). Type `sdk install micronaut 4.0.0-M2`, and then run `mn-create`.
+You can generate a Micronaut framework 4.0.0-M2 application with [Micronaut Launch](https://launch.micronaut.io) or with the Micronaut CLI. The easiest way to install 4.0.0-M2 CLI is with [sdkman](https://sdkman.io/). Type `sdk install micronaut 4.0.0-M2`, and then run `mn-create`.
 
 ## Upgrading to Micronaut Framework 4
 

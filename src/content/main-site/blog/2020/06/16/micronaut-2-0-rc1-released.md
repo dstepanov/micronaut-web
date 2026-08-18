@@ -27,7 +27,7 @@ Here are some of the highlights of Micronaut 2.0:
 
 ## Micronaut Launch
 
-In Micronaut 2.0, we have completely rewritten the Micronaut CLI using Micronaut itself and simultaneously launched [Micronaut Launch](https://micronaut.io/launch/), a new tool for creating Micronaut applications that is built on the new CLI.
+In Micronaut 2.0, we have completely rewritten the Micronaut CLI using Micronaut itself and simultaneously launched [Micronaut Launch](https://launch.micronaut.io), a new tool for creating Micronaut applications that is built on the new CLI.
 
 The new website and CLI are so cool, we wrote [a whole blog post](/blog/2020-04-30-introducing-micronaut-launch.html) to introduce them!
 
