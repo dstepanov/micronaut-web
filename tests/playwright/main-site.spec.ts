@@ -82,6 +82,29 @@ test("main-site runtime scripts do not include build-time content processors", a
   expect(failures).toEqual([]);
 });
 
+test("footer exposes social media links as labelled icons", async ({
+  page,
+}) => {
+  await page.goto(appPath("/"));
+
+  const socialLinks = page.getByRole("navigation", {
+    name: "Micronaut social links",
+  });
+  await expect(
+    socialLinks.getByRole("link", { name: "GitHub" }),
+  ).toHaveAttribute("href", "https://github.com/micronaut-projects");
+  await expect(
+    socialLinks.getByRole("link", { name: "Discord" }),
+  ).toHaveAttribute("href", "https://discord.com/invite/9xRFsHv98T");
+  await expect(socialLinks.getByRole("link", { name: "X" })).toHaveAttribute(
+    "href",
+    "https://x.com/micronautfw",
+  );
+  await expect(
+    socialLinks.getByRole("link", { name: "YouTube" }),
+  ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
+});
+
 async function expectPrimaryMobileLinks(page: Page): Promise<void> {
   await expectSiteHeaderHydrated(page);
   await page.getByRole("button", { name: "Open navigation" }).click();
