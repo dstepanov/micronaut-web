@@ -6,7 +6,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-
 import {
   forbiddenBrowserRuntimeAssetMatches,
   forbiddenBrowserRuntimeTextMatches,
@@ -286,12 +285,21 @@ function importedComponentBindings(
   frontmatter: string,
 ): Map<string, string> {
   const bindings = new Map<string, string>();
-  for (const statement of frontmatter.matchAll(/^import\s+(?!type\b|["'])([\s\S]*?)\s+from\s+["']([^"']+)["'];?/gm)) {
+  for (const statement of frontmatter.matchAll(
+    /^import\s+(?!type\b|["'])([\s\S]*?)\s+from\s+["']([^"']+)["'];?/gm,
+  )) {
     const [, clause, importSource] = statement;
     for (const binding of clause
       .replace(/[{}]/g, "")
       .split(",")
-      .map((value) => value.trim().replace(/^type\s+/, "").split(/\s+as\s+/).at(-1) || "")
+      .map(
+        (value) =>
+          value
+            .trim()
+            .replace(/^type\s+/, "")
+            .split(/\s+as\s+/)
+            .at(-1) || "",
+      )
       .filter(Boolean)) {
       bindings.set(binding, importSource);
     }
@@ -302,10 +310,15 @@ function importedComponentBindings(
 
 function valueModuleSpecifiers(file: string, source: string): string[] {
   const imports = new Set<string>();
-  const staticImportPattern = /^(?:import|export)\s+(?!type\b|["'])[\s\S]*?\s+from\s+["']([^"']+)["']/gm;
+  const staticImportPattern =
+    /^(?:import|export)\s+(?!type\b|["'])[\s\S]*?\s+from\s+["']([^"']+)["']/gm;
   const sideEffectImportPattern = /import\s+["']([^"']+)["']/g;
   const dynamicImportPattern = /import\(\s*["']([^"']+)["']\s*\)/g;
-  for (const pattern of [staticImportPattern, sideEffectImportPattern, dynamicImportPattern]) {
+  for (const pattern of [
+    staticImportPattern,
+    sideEffectImportPattern,
+    dynamicImportPattern,
+  ]) {
     for (const match of source.matchAll(pattern)) {
       imports.add(match[1]);
     }
