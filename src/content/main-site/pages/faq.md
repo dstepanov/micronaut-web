@@ -46,9 +46,6 @@ layoutVariant: public-markdown
   The main resource to learn about the Micronaut framework is [docs.micronaut.io](http://docs.micronaut.io).
 
   In addition, step-by-step tutorials for solving common scenarios can be found in our [Micronaut Guides](https://micronaut.io/guides/).
-- ### [Where can I go for Micronaut training?](#are-there-training-offerings-for-micronaut)
-
-  The Micronaut Foundation offers [training courses](https://micronaut.io/professional-training/), which are developed and delivered by the Micronaut core development team.
 - ### [Can I contribute to the documentation?](#can-i-contribute-to-the-documentation)
 
   Absolutely! The Micronaut project includes a couple of forms of documentation:
@@ -73,6 +70,3 @@ layoutVariant: public-markdown
 - ### [What is the Export Control Classification Number (ECCN) for the Micronaut framework?](#what-is-the-export-control-classification-number-eccn-for-micronaut)
 
   The Micronaut framework is an open source technology that is not on the Commerce Control List; it is classified with the general purpose classification of EAR 99.
-- ### [Who sponsors development of the Micronaut framework?](#who-sponsors-development-of-micronaut)
-
-  [The Micronaut Foundation](https://micronaut.io/foundation/) sponsors the Framework’s development and maintains the Framework. In addition, the [Unity Foundation](https://unityfoundation.io/) employs core members of the Micronaut development team.

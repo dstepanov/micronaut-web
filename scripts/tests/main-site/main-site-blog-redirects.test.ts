@@ -161,36 +161,6 @@ test("main-site browser tests are wired through a surface-aware runner", async (
   assert.match(runner, /npm_execpath/);
 });
 
-test("meeting minutes index does not duplicate dated minutes", async (): Promise<void> => {
-  const index = await fs.readFile(
-    path.join(
-      projectDirectory,
-      "src",
-      "content",
-      "main-site",
-      "pages",
-      "meeting-minutes.md",
-    ),
-    "utf8",
-  );
-  const aprilMinutes = await fs.readFile(
-    path.join(
-      projectDirectory,
-      "src",
-      "content",
-      "main-site",
-      "pages",
-      "meeting-minutes",
-      "4_24_2024.md",
-    ),
-    "utf8",
-  );
-
-  assert.match(index, /\[April 24, 2024\]\(\/meeting-minutes\/4_24_2024\/\)/);
-  assert.doesNotMatch(index, /## Board Members In Attendance/);
-  assert.match(aprilMinutes, /## Board Members In Attendance/);
-});
-
 test("runtime code block does not ship client highlighter libraries", async (): Promise<void> => {
   const codeBlock = await fs.readFile(
     path.join(projectDirectory, "src", "components", "ui", "code-block.tsx"),

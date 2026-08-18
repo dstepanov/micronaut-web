@@ -32,11 +32,11 @@ Access documentation for the various modules that make up the Framework.
 
 Maximize your productivity with these step-by-step tutorials written by the Framework’s core developers.
 
-### [On-Demand Webinars](https://micronaut.io/category/webinar/)
+### [On-Demand Webinars](https://www.youtube.com/@MicronautFramework/playlists)
 
 View recordings of past technical webinars to gain a deeper understanding of the Framework and expand your skills with live coding examples.
 
-### [Microcasts](https://micronaut.io/category/microcast/)
+### [Microcasts](https://www.youtube.com/playlist?list=PLzR4N8lGQvWjh_OJN_22qhi497OMwcmKY)
 
 Watch short tutorials designed to help you maximize your productivity with the Framework and confidently contribute to the ecosystem.
 
@@ -65,16 +65,6 @@ Stay up to date on all Framework-related news, releases, events, publications, a
 ### [Upcoming Events](https://micronaut.io/events/)
 
 Find out when Micronaut team members will be in your area for conferences and events! Want us to promote an upcoming event that’s not on our list? Share the details with us, and we’ll add it!
-
-### [Foundation](https://micronaut.io/foundation/)
-
-The Micronaut Foundation is a not-for-profit organization that serves to:
-
-- Ensure technical innovation and advancement of the Micronaut framework as a free and open public-use software development toolkit for a growing global community
-- Evangelize and promote the Micronaut framework as a leading technology in the JVM space
-- Build and support an ecosystem of complementary documentation, functionality, and services
-
-You can help support the Framework and its evolution by donating to the Foundation.
 
 ### [Brand Guidelines](https://micronaut.io/brand-guidelines/)
 
@@ -130,9 +120,9 @@ We want our documentation to be clear and easy to follow for users worldwide. Pl
 
 To edit a section of the documentation, sign into your GitHub account and access the AsciiDoc file with the applicable “Improve this doc” button.
 
-### [Community Guidelines](https://micronaut.io/community-guidelines/)
+### [Code of Conduct](https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md)
 
-We respectfully ask that community members adhere to a simple set of guidelines to ensure that everyone participating in the community and the project, whether as a contributor, a user, or an interested bystander, feels welcome and supported.
+All community members are expected to follow the Micronaut project code of conduct.
 
 ---
 
@@ -157,18 +147,6 @@ You can ask technical questions and get guidance regarding specific programming 
 The Micronaut development team makes a priority of monitoring this channel. If you have a specific technical question, post your question to Stack Overflow using the #micronaut or #micronaut-data tag.
 
 Questions posed on Stack Overflow generally have specific answers; if you’re looking to discuss a broader topic,[join us on Discord](https://discord.com/invite/9xRFsHv98T).
-
-### [Professional Training](https://micronaut.io/professional-training/)
-
-The Micronaut Foundation is pleased to offer professional development training to support our clients and community. These live, instructor-led training workshops, are designed to help your team quickly master the Micronaut framework. All workshops are developed and taught by members of the core Micronaut development team.
-
-Private training engagements are also available. Private engagements can be adapted, expanded, combined, and tailored to cover the specific skills your team requires to achieve your goals. These offerings can be conducted online, at your location, or in Object Computing’s training lab located in St. Louis, Missouri.
-
-Please let us know if you would like to discuss a private offering for your team by filling out the form below.
-
-Open-enrollment courses are offered periodically throughout the year; these are a great, cost-effective option for organizations that have an immediate need to train a small number of employees, as well as for individuals looking to boost their skills.
-
----
 
 ## Contact Us
 

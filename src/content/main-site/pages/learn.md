@@ -28,20 +28,14 @@ Instructional guides written by the Framework’s core developers
 
 A video course available for free on Oracle MyLearn with an OCI Free Learning Subscription.
 
-[![](/micronaut-assets/main-site/wp-content/uploads/2022/04/webinars-black-on-white-150x150.png)](https://micronaut.io/category/webinar/)
+[![](/micronaut-assets/main-site/wp-content/uploads/2022/04/webinars-black-on-white-150x150.png)](https://www.youtube.com/@MicronautFramework/playlists)
 
-## [On-Demand Webinars](https://micronaut.io/category/webinar/)
+## [On-Demand Webinars](https://www.youtube.com/@MicronautFramework/playlists)
 
 Pre-recorded webinars that focus on practical, real-world examples and techniques
 
-[![](/micronaut-assets/main-site/wp-content/uploads/2022/04/microcasts-black-on-white-150x150.png)](https://micronaut.io/category/microcast/)
+[![](/micronaut-assets/main-site/wp-content/uploads/2022/04/microcasts-black-on-white-150x150.png)](https://www.youtube.com/playlist?list=PLzR4N8lGQvWjh_OJN_22qhi497OMwcmKY)
 
-## [Microcasts](https://micronaut.io/category/microcast/)
+## [Microcasts](https://www.youtube.com/playlist?list=PLzR4N8lGQvWjh_OJN_22qhi497OMwcmKY)
 
 Brief video tutorials designed to help you confidently contribute to the Micronaut ecosystem
-
-[![](/micronaut-assets/main-site/wp-content/uploads/2022/04/training-black-on-white-150x150.png)](https://micronaut.io/professional-training/)
-
-## [Professional Training](https://micronaut.io/professional-training/)
-
-Live, instructor-led training workshops tailored to meet your team’s unique needs
