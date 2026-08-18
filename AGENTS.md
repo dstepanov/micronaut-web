@@ -67,6 +67,8 @@ Before pushing to `main`, do not stop at typecheck. Run the affected surface bui
 - Docs-surface changes: `npm run build:docs`
 - Guides-surface changes: `npm run build:guides`
 
+Before committing dependency, Astro, Vite, build-tooling, or deployment changes, run the affected surface build locally. Do not commit if it fails; resolve the first reported failure before continuing.
+
 If a change touches shared browser/runtime scripts, generated content rendering, snippets, search, navigation, or surface routing, run the browser test under the deploy surface that will be pushed. For a fast main-surface guard, run:
 
 ```sh
