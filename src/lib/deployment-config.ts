@@ -57,8 +57,8 @@ export const githubPagesOrigin = normalizedExternalOrigin(
 
 export const externalSurfaceUrls: Record<"main" | "docs" | "guides", string> = {
   main: normalizedExternalBase(envValue("MICRONAUT_MAIN_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-web"))),
-  docs: normalizedExternalBase(envValue("MICRONAUT_DOCS_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs"))),
-  guides: normalizedExternalBase(envValue("MICRONAUT_GUIDES_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides"))),
+  docs: normalizedExternalBase(envValue("MICRONAUT_DOCS_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs-v2"))),
+  guides: normalizedExternalBase(envValue("MICRONAUT_GUIDES_SITE_URL", githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"))),
 };
 
 export function routeForSurface(surface: SurfaceTarget, path = "/") {

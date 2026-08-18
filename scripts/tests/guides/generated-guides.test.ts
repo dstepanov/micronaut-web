@@ -705,7 +705,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(prepareScript, /MICRONAUT_DEPLOY_SURFACE/);
   assert.match(
     guidesWorkflow,
-    /default:\s*micronaut-projects\/micronaut-guides/,
+    /default:\s*micronaut-projects\/micronaut-guides-v2/,
   );
   assert.match(guidesWorkflow, /GUIDES_RENDER_ALL:\s*"true"/);
   assert.match(guidesWorkflow, /GUIDES_RENDER_STRICT:\s*"true"/);

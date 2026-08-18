@@ -6,7 +6,7 @@ on:
       target_repository:
         description: Repository that owns the guides GitHub Pages branch
         required: false
-        default: dstepanov/micronaut-guides
+        default: micronaut-projects/micronaut-guides-v2
       target_branch:
         description: GitHub Pages source branch in the guides repository
         required: false
@@ -14,7 +14,7 @@ on:
       guides_repository:
         description: Guides repository to build from
         required: false
-        default: micronaut-projects/micronaut-guides
+        default: micronaut-projects/micronaut-guides-v2
       guides_ref:
         description: Guides branch, tag, or SHA to build from
         required: false
@@ -85,7 +85,7 @@ jobs:
 
       - name: Build guides surface
         env:
-          ASTRO_BASE: /micronaut-guides/
+          ASTRO_BASE: /micronaut-guides-v2/
           MICRONAUT_DEPLOY_SURFACE: guides
           MICRONAUT_GUIDES_ROOT: /latest
           MICRONAUT_GUIDES_LATEST_ROOT: /latest

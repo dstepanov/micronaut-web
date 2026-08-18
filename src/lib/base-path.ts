@@ -45,11 +45,11 @@ const externalSurfaceUrls = {
   ),
   docs: normalizedExternalBase(
     deployment?.docsSiteUrl ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs"),
+      githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs-v2"),
   ),
   guides: normalizedExternalBase(
     deployment?.guidesSiteUrl ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides"),
+      githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"),
   ),
 };
 

@@ -118,11 +118,11 @@ test("deployment routes derive external surface URLs from the GitHub Pages origi
 
   assert.equal(
     deployment.routeForCurrentDeployment("/docs/core/"),
-    "https://example-org.github.io/micronaut-docs/latest/core/",
+    "https://example-org.github.io/micronaut-docs-v2/latest/core/",
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "https://example-org.github.io/micronaut-guides/latest/micronaut-http-client/",
+    "https://example-org.github.io/micronaut-guides-v2/latest/micronaut-http-client/",
   );
 });
 
@@ -141,11 +141,11 @@ test("deployment routes use the default GitHub Pages origin fallback", async () 
 
   assert.equal(
     deployment.routeForCurrentDeployment("/docs/core/"),
-    "https://fallback-org.github.io/micronaut-docs/latest/core/",
+    "https://fallback-org.github.io/micronaut-docs-v2/latest/core/",
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "https://fallback-org.github.io/micronaut-guides/latest/micronaut-http-client/",
+    "https://fallback-org.github.io/micronaut-guides-v2/latest/micronaut-http-client/",
   );
 });
 
@@ -468,11 +468,11 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     assert.doesNotMatch(workflow, /upload-pages-artifact/);
     assert.doesNotMatch(workflow, /deploy-pages/);
   }
-  assert.match(docsWorkflow, /default:\s*dstepanov\/micronaut-docs/);
+  assert.match(docsWorkflow, /default:\s*micronaut-projects\/micronaut-docs-v2/);
   assert.match(docsWorkflow, /path:\s*published-docs/);
   assert.match(docsWorkflow, /working-directory:\s*published-docs/);
   assert.match(docsWorkflow, /npx playwright install --with-deps chromium/);
-  assert.match(guidesWorkflow, /default:\s*dstepanov\/micronaut-guides/);
+  assert.match(guidesWorkflow, /default:\s*micronaut-projects\/micronaut-guides-v2/);
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
   assert.match(guidesWorkflow, /npx playwright install --with-deps chromium/);

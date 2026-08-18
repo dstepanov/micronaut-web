@@ -1,4 +1,4 @@
-export const DEFAULT_GITHUB_PAGES_ORIGIN = "https://dstepanov.github.io";
+export const DEFAULT_GITHUB_PAGES_ORIGIN = "https://micronaut-projects.github.io";
 
 export function githubPagesProjectUrl(origin: string, repositoryName: string) {
   return `${normalizedExternalOrigin(origin)}/${repositoryName}/`;

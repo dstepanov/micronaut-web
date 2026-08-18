@@ -143,10 +143,10 @@ function deploymentConfig() {
       githubPagesProjectUrl(githubPagesOrigin, "micronaut-web"),
     docsSiteUrl:
       process.env.MICRONAUT_DOCS_SITE_URL ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs"),
+      githubPagesProjectUrl(githubPagesOrigin, "micronaut-docs-v2"),
     guidesSiteUrl:
       process.env.MICRONAUT_GUIDES_SITE_URL ||
-      githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides"),
+      githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"),
   };
 }
 

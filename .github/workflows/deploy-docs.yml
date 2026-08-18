@@ -17,7 +17,7 @@ on:
       target_repository:
         description: Repository that owns the docs GitHub Pages branch
         required: false
-        default: dstepanov/micronaut-docs
+        default: micronaut-projects/micronaut-docs-v2
       target_branch:
         description: GitHub Pages source branch in the docs repository
         required: false
@@ -131,7 +131,7 @@ jobs:
 
       - name: Build docs surface
         env:
-          ASTRO_BASE: /micronaut-docs/
+          ASTRO_BASE: /micronaut-docs-v2/
           MICRONAUT_DEPLOY_SURFACE: docs
           MICRONAUT_DOCS_ROOT: /${{ inputs.docs_version }}
           MICRONAUT_DOCS_LATEST_ROOT: /latest
@@ -142,7 +142,7 @@ jobs:
         run: npm run build:docs
 
       - name: Merge docs artifact
-        run: node scripts/publish-docs-surface.ts --dist dist --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}" --base /micronaut-docs/
+        run: node scripts/publish-docs-surface.ts --dist dist --published-dir published-docs --version "${{ inputs.docs_version }}" --latest "${{ inputs.publish_latest }}" --base /micronaut-docs-v2/
 
       - name: Commit and push docs Pages branch
         working-directory: published-docs

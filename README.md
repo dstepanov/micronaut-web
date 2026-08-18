@@ -236,8 +236,8 @@ Production-compatible hosts are:
 Temporary GitHub Pages hosts keep the repository names in the path:
 
 - `micronaut-web`: main site and Launch at `/micronaut-web/`
-- `micronaut-docs`: docs selector at `/micronaut-docs/`, latest docs at `/micronaut-docs/latest/`, and version folders such as `/micronaut-docs/4.10.14/`
-- `micronaut-guides`: guides at `/micronaut-guides/latest/`
+- `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, latest docs at `/micronaut-docs-v2/latest/`, and version folders such as `/micronaut-docs-v2/4.10.14/`
+- `micronaut-guides-v2`: guides at `/micronaut-guides-v2/latest/`
 
 ### Surface Split
 
@@ -251,10 +251,10 @@ Standalone docs and guides builds do not publish their own header shell. In prod
 
 The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`, builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned `dist` directory as the GitHub Pages artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides and does not render generated docs/guides content. The docs and guides workflows are manual publish jobs in this repository:
 
-- `.github/workflows/deploy-docs.yml` publishes to `dstepanov/micronaut-docs` by default.
-- `.github/workflows/deploy-guides.yml` publishes to `dstepanov/micronaut-guides` by default.
+- `.github/workflows/deploy-docs.yml` publishes to `micronaut-projects/micronaut-docs-v2` by default.
+- `.github/workflows/deploy-guides.yml` publishes to `micronaut-projects/micronaut-guides-v2` by default.
 - The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact.
-- The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `dstepanov/micronaut-docs:gh-pages` and `dstepanov/micronaut-guides:gh-pages`.
+- The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
 
 The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `TARGET_REPOSITORY_TOKEN` with `contents:write` access to that target repository.
 
@@ -266,7 +266,7 @@ The docs workflow resolves `platform_ref` explicitly as a branch first, then as 
 
 The build reads these deployment inputs:
 
-- `ASTRO_BASE`: GitHub Pages project base, such as `/micronaut-web/`, `/micronaut-docs/`, or `/micronaut-guides/`.
+- `ASTRO_BASE`: GitHub Pages project base, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`.
 - `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
 - `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
@@ -275,7 +275,7 @@ The build reads these deployment inputs:
 - `MICRONAUT_PREPARE_GENERATED_CONTENT`: set to `false`, `0`, or `none` to skip generated docs/guides rendering before Astro starts. `build:main` sets this to `false` by default; docs and guides builds leave it enabled but prepare only the generated content for their own surface.
 - `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the Pages owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io` for the main site or the owner of `target_repository` for docs and guides.
 - `MICRONAUT_GITHUB_PAGES_ORIGIN`: effective GitHub Pages host override. When unset, it falls back to `DEFAULT_GITHUB_PAGES_ORIGIN`.
-- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. When unset, they are derived from `MICRONAUT_GITHUB_PAGES_ORIGIN` plus `micronaut-web`, `micronaut-docs`, or `micronaut-guides`.
+- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. When unset, they are derived from `MICRONAUT_GITHUB_PAGES_ORIGIN` plus `micronaut-web`, `micronaut-docs-v2`, or `micronaut-guides-v2`.
 
 All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-config.ts`. Those helpers translate `/docs`, `/guides`, and `/latest` links so the same source can run as an all-in-one preview, standalone docs, standalone guides, or the main site linking to external docs/guides.
 
@@ -413,7 +413,7 @@ When a legacy route is added, update the manifest and add or update one route mo
 - Docs canonical catalog pages use `https://docs.micronaut.io/`; Core legacy docs paths continue to resolve.
 - Guides canonical generated guide URLs use `https://guides.micronaut.io/latest/`.
 - GitHub Pages preview URLs must always be generated with `ASTRO_BASE`, not hard-coded as production links.
-- Split GitHub Pages deployments must use the repo-name bases until custom domains are enabled: `/micronaut-web/`, `/micronaut-docs/`, and `/micronaut-guides/`.
+- Split GitHub Pages deployments must use the repo-name bases until custom domains are enabled: `/micronaut-web/`, `/micronaut-docs-v2/`, and `/micronaut-guides-v2/`.
 - Docs version publishing updates the selector from the Pages branch and preserves shared root assets so older versions do not duplicate the same asset trees.
 - Legacy URLs should prefer permanent redirects unless the destination points to another production host for generated artifacts, where temporary redirects are safer.
 - Main-host `/core/` compatibility is intentionally deferred for now; add it through `src/lib/route-compatibility.ts` when route work resumes.
