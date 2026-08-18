@@ -14,11 +14,6 @@ const docsProjectCatalog = await loadDocsProjectCatalog();
   <DocsShell projectCatalog={docsProjectCatalog}>
     <section class="mx-auto grid w-full max-w-[1346px] gap-6 px-5 py-7 md:px-6">
       <h1 class="sr-only">Micronaut Docs</h1>
-      <p class="m-0 max-w-none text-base leading-7 text-muted-foreground">
-        Micronaut Framework is a modern JVM framework for modular applications and services with fast startup, low memory use,
-        and compile-time dependency injection. These docs collect the core framework and companion modules in one place
-        for aligned versions, guides, APIs, and configuration references.
-      </p>
       <div class="grid gap-6">
         {docsProjectCatalog.categories.map((category) => {
           const projects = docsCatalogProjectsByCategory(
