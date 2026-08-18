@@ -149,7 +149,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
     <section class="border-b bg-background">
       <div class="mx-auto grid max-w-[var(--page-max)] gap-12 px-5 py-[var(--hero-y)] sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center xl:px-0">
         <div class="max-w-[680px]">
-          <Badge variant="secondary" className="mb-5 px-3 py-1.5 text-xs">Fast cloud applications on the JVM</Badge>
           <h1 class="max-w-[680px] text-[3.1rem] font-extrabold leading-[1.02] text-foreground md:text-[4.25rem]">
             A modern, JVM&#8209;based framework for fast cloud applications
           </h1>
@@ -265,7 +264,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
     <section class="border-b bg-background">
       <div class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-[var(--section-y)] sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] xl:px-0">
         <div>
-          <Badge variant="secondary">Code examples</Badge>
           <h2 class="mt-4 text-3xl font-bold md:text-4xl">Build an endpoint, client, and test with one model</h2>
           <p class="mt-4 text-base leading-7 text-muted-foreground">
             Define a controller, create a declarative HTTP client, and test both using the same compact application model.
@@ -287,7 +285,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
       <div class="mx-auto grid max-w-[var(--page-max)] gap-7 px-5 py-[var(--section-y)] sm:px-6 xl:px-0">
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <Badge variant="outline">Who uses Micronaut?</Badge>
           <h2 class="mt-4 text-3xl font-bold md:text-4xl">Who&rsquo;s using The Micronaut Framework?</h2>
           <p class="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
             See how Micronaut users are achieving results with the Micronaut framework across serverless APIs, migrations, workflow platforms, and cloud services.
@@ -298,7 +295,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
 
       <div class="grid gap-4 lg:grid-cols-3">
         {featuredStories.map((story) => (
-          <Card className="h-full min-h-[260px] transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md">
+          <a href={withBasePath(story.href)} class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
+          <Card className="h-full min-h-[260px] transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
             <CardHeader>
               {story.logo ? (
                 <div class="flex h-16 min-w-0 items-center">
@@ -323,10 +321,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
                 ))}
               </div>
             </CardContent>
-            <CardFooter className="mt-auto">
-              <ActionLink href={story.href} label="Read story ->" variant="ghost" className="-ml-3" />
-            </CardFooter>
           </Card>
+          </a>
         ))}
       </div>
       <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
@@ -348,9 +344,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
                 <CardTitle className="col-span-full text-[1rem] leading-6">{story.organization}</CardTitle>
                 <CardDescription className="col-span-full text-[0.9rem]">{story.summary}</CardDescription>
               </CardHeader>
-              <CardFooter className="mt-auto px-5">
-                <span class="text-sm font-medium text-brand">Read story -&gt;</span>
-              </CardFooter>
             </Card>
           </a>
         ))}
@@ -448,17 +441,20 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div class="grid gap-3 rounded-lg bg-muted p-4 text-sm">
-              <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
-                <div class="rounded-md bg-card p-3 text-center font-medium">Compile</div>
+            <div class="min-w-0 grid gap-3 rounded-lg bg-muted p-4 text-sm">
+              <div
+                class="grid min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
+                data-graalvm-startup-diagram
+              >
+                <div class="min-w-0 rounded-md bg-card p-3 text-center font-medium" data-graalvm-startup-step="compile">Compile</div>
                 <div class="flex justify-center text-brand">
-                  <IconGlyph name="arrow-right" className="size-5" />
+                  <IconGlyph name="arrow-right" className="size-5 rotate-90 sm:rotate-0" />
                 </div>
-                <div class="rounded-md bg-card p-3 text-center font-medium">Optimize</div>
+                <div class="min-w-0 rounded-md bg-card p-3 text-center font-medium" data-graalvm-startup-step="optimize">Optimize</div>
                 <div class="flex justify-center text-brand">
-                  <IconGlyph name="arrow-right" className="size-5" />
+                  <IconGlyph name="arrow-right" className="size-5 rotate-90 sm:rotate-0" />
                 </div>
-                <div class="rounded-md bg-brand p-3 text-center font-medium text-brand-foreground">Native image</div>
+                <div class="min-w-0 rounded-md bg-brand p-3 text-center font-medium text-brand-foreground" data-graalvm-startup-step="native-image">Native image</div>
               </div>
             </div>
             <div class="grid gap-2 text-sm leading-6 text-muted-foreground">

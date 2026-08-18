@@ -1,3 +1,4 @@
+// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { Html5Converter } from "@asciidoctor/core";
 import type { Registry } from "@asciidoctor/core";
 

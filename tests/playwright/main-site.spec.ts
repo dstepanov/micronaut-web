@@ -95,6 +95,30 @@ test("homepage code examples include a Python variant", async ({ page }) => {
   );
 });
 
+test("GraalVM startup diagram stacks complete steps on narrow viewports", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 860 });
+  await page.goto(appPath("/"));
+
+  const diagram = page.locator("[data-graalvm-startup-diagram]");
+  const compileStep = diagram.locator('[data-graalvm-startup-step="compile"]');
+  const nativeImageStep = diagram.locator(
+    '[data-graalvm-startup-step="native-image"]',
+  );
+
+  await expect(nativeImageStep).toHaveText("Native image");
+  const [compileBox, nativeImageBox] = await Promise.all([
+    compileStep.boundingBox(),
+    nativeImageStep.boundingBox(),
+  ]);
+
+  expect(compileBox).not.toBeNull();
+  expect(nativeImageBox).not.toBeNull();
+  expect(nativeImageBox!.x).toBe(compileBox!.x);
+  expect(nativeImageBox!.height).toBe(compileBox!.height);
+});
+
 test("footer exposes social media links as labelled icons", async ({
   page,
 }) => {

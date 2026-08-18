@@ -121,7 +121,13 @@ const mainSiteFooterGroups = await getMainSiteFooterGroups();
         <img
           src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal.svg")}
           alt="Commonhaus Foundation"
-          class="h-8 w-auto"
+          class="h-8 w-auto dark:hidden"
+        />
+        <img
+          src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal-light.svg")}
+          alt=""
+          aria-hidden="true"
+          class="hidden h-20 w-auto dark:block"
         />
       </a>
     </div>

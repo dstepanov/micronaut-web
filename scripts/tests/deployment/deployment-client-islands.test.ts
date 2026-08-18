@@ -6,8 +6,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import * as ts from "typescript";
-
 import {
   forbiddenBrowserRuntimeAssetMatches,
   forbiddenBrowserRuntimeTextMatches,
@@ -283,41 +281,27 @@ function astroFrontmatter(source: string): string {
 }
 
 function importedComponentBindings(
-  file: string,
+  _file: string,
   frontmatter: string,
 ): Map<string, string> {
   const bindings = new Map<string, string>();
-  const sourceFile = ts.createSourceFile(
-    file,
-    frontmatter,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX,
-  );
-
-  for (const statement of sourceFile.statements) {
-    if (
-      !ts.isImportDeclaration(statement) ||
-      !ts.isStringLiteral(statement.moduleSpecifier) ||
-      !hasValueImport(statement.importClause)
-    ) {
-      continue;
-    }
-    const importSource = statement.moduleSpecifier.text;
-    const importClause = statement.importClause;
-    if (importClause?.name) {
-      bindings.set(importClause.name.text, importSource);
-    }
-    const namedBindings = importClause?.namedBindings;
-    if (namedBindings && ts.isNamespaceImport(namedBindings)) {
-      bindings.set(namedBindings.name.text, importSource);
-    }
-    if (namedBindings && ts.isNamedImports(namedBindings)) {
-      for (const element of namedBindings.elements) {
-        if (!element.isTypeOnly) {
-          bindings.set(element.name.text, importSource);
-        }
-      }
+  for (const statement of frontmatter.matchAll(
+    /^import\s+(?!type\b|["'])([\s\S]*?)\s+from\s+["']([^"']+)["'];?/gm,
+  )) {
+    const [, clause, importSource] = statement;
+    for (const binding of clause
+      .replace(/[{}]/g, "")
+      .split(",")
+      .map(
+        (value) =>
+          value
+            .trim()
+            .replace(/^type\s+/, "")
+            .split(/\s+as\s+/)
+            .at(-1) || "",
+      )
+      .filter(Boolean)) {
+      bindings.set(binding, importSource);
     }
   }
 
@@ -325,74 +309,21 @@ function importedComponentBindings(
 }
 
 function valueModuleSpecifiers(file: string, source: string): string[] {
-  const sourceFile = ts.createSourceFile(
-    file,
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  );
-  const imports: string[] = [];
-
-  function visit(node: ts.Node): void {
-    if (
-      ts.isImportDeclaration(node) &&
-      ts.isStringLiteral(node.moduleSpecifier) &&
-      hasValueImport(node.importClause)
-    ) {
-      imports.push(node.moduleSpecifier.text);
-    } else if (
-      ts.isExportDeclaration(node) &&
-      node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier) &&
-      hasValueExport(node)
-    ) {
-      imports.push(node.moduleSpecifier.text);
-    } else if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword
-    ) {
-      const importArgument = node.arguments[0];
-      if (importArgument && ts.isStringLiteral(importArgument)) {
-        imports.push(importArgument.text);
-      }
+  const imports = new Set<string>();
+  const staticImportPattern =
+    /^(?:import|export)\s+(?!type\b|["'])[\s\S]*?\s+from\s+["']([^"']+)["']/gm;
+  const sideEffectImportPattern = /import\s+["']([^"']+)["']/g;
+  const dynamicImportPattern = /import\(\s*["']([^"']+)["']\s*\)/g;
+  for (const pattern of [
+    staticImportPattern,
+    sideEffectImportPattern,
+    dynamicImportPattern,
+  ]) {
+    for (const match of source.matchAll(pattern)) {
+      imports.add(match[1]);
     }
-    ts.forEachChild(node, visit);
   }
-
-  visit(sourceFile);
-  return imports;
-}
-
-function hasValueImport(importClause: ts.ImportClause | undefined): boolean {
-  if (!importClause) {
-    return true;
-  }
-  if (importClause.isTypeOnly) {
-    return false;
-  }
-  if (importClause.name) {
-    return true;
-  }
-  const namedBindings = importClause.namedBindings;
-  if (!namedBindings) {
-    return false;
-  }
-  return (
-    ts.isNamespaceImport(namedBindings) ||
-    namedBindings.elements.some((element) => !element.isTypeOnly)
-  );
-}
-
-function hasValueExport(exportDeclaration: ts.ExportDeclaration): boolean {
-  if (exportDeclaration.isTypeOnly) {
-    return false;
-  }
-  const exportClause = exportDeclaration.exportClause;
-  if (!exportClause || ts.isNamespaceExport(exportClause)) {
-    return true;
-  }
-  return exportClause.elements.some((element) => !element.isTypeOnly);
+  return [...imports];
 }
 
 async function resolveLocalModule(

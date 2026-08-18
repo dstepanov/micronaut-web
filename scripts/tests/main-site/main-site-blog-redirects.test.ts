@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import * as ts from "typescript";
+import { transform } from "esbuild";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -324,29 +324,18 @@ async function importTypeScriptModule(
   moduleName: any,
 ): Promise<any> {
   const source = await fs.readFile(sourceFile, "utf8");
-  const result = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ES2022,
-      target: ts.ScriptTarget.ES2022,
-    },
-    fileName: sourceFile,
-    reportDiagnostics: true,
+  const result = await transform(source, {
+    format: "esm",
+    loader: "ts",
+    sourcefile: sourceFile,
+    target: "es2022",
   });
-  const errors =
-    result.diagnostics?.filter(
-      (diagnostic: any): any =>
-        diagnostic.category === ts.DiagnosticCategory.Error,
-    ) ?? [];
-  assert.deepEqual(
-    errors.map((diagnostic: any): any => diagnostic.messageText),
-    [],
-  );
 
   const temporaryDirectory = await fs.mkdtemp(
     path.join(projectDirectory, ".tmp-tests-"),
   );
   const moduleFile = path.join(temporaryDirectory, moduleName);
-  await fs.writeFile(moduleFile, result.outputText, "utf8");
+  await fs.writeFile(moduleFile, result.code, "utf8");
   try {
     return await import(pathToFileURL(moduleFile).href);
   } finally {

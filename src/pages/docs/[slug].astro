@@ -115,7 +115,7 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
 }
 ---
 
-<WebLayout title={`${project.displayName} Docs`} surface="docs" canonicalUrl={canonicalUrl}>
+<WebLayout title={`${project.shortName} Docs`} surface="docs" canonicalUrl={canonicalUrl}>
   <DocsShell
     projectCatalog={docsProjectCatalog}
     activeSlug={project.slug}
@@ -132,7 +132,7 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
               <IconBadge name={project.icon} size="lg" />
               <Badge variant="secondary">{project.primaryCategory}</Badge>
             </div>
-            <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.displayName}</h1>
+            <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.shortName}</h1>
             <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">{project.longDescription}</p>
             <ProjectReferenceLinks references={project.references} />
           </header>

@@ -45,7 +45,6 @@ const primaryLinks: Array<{
 }> = [
   { href: "/docs/", label: "Docs", surface: "docs" },
   { href: "/guides/", label: "Guides", surface: "guides" },
-  { href: "https://launch.micronaut.io", label: "Launch" },
 ];
 
 type MobileMenuLink = {
