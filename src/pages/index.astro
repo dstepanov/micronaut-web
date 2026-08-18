@@ -441,17 +441,17 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div class="grid gap-3 rounded-lg bg-muted p-4 text-sm">
-              <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
-                <div class="rounded-md bg-card p-3 text-center font-medium">Compile</div>
+            <div class="min-w-0 grid gap-3 rounded-lg bg-muted p-4 text-sm">
+              <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                <div class="min-w-0 rounded-md bg-card p-3 text-center font-medium">Compile</div>
                 <div class="flex justify-center text-brand">
                   <IconGlyph name="arrow-right" className="size-5" />
                 </div>
-                <div class="rounded-md bg-card p-3 text-center font-medium">Optimize</div>
+                <div class="min-w-0 rounded-md bg-card p-3 text-center font-medium">Optimize</div>
                 <div class="flex justify-center text-brand">
                   <IconGlyph name="arrow-right" className="size-5" />
                 </div>
-                <div class="rounded-md bg-brand p-3 text-center font-medium text-brand-foreground">Native image</div>
+                <div class="min-w-0 break-words rounded-md bg-brand p-3 text-center font-medium text-brand-foreground">Native image</div>
               </div>
             </div>
             <div class="grid gap-2 text-sm leading-6 text-muted-foreground">
