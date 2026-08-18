@@ -39,12 +39,12 @@ test("tablet navigation stays collapsed and can select docs, guides, and blog", 
     await expectMobileDestinationHref(
       page,
       "Docs",
-      /\/micronaut-docs\/latest\/$/,
+      /\/micronaut-docs-v2\/latest\/$/,
     );
     await expectMobileDestinationHref(
       page,
       "Guides",
-      /\/micronaut-guides\/latest\/$/,
+      /\/micronaut-guides-v2\/latest\/$/,
     );
   } else {
     await openMobileDestination(page, "Docs", /\/docs\/$/);
@@ -99,13 +99,15 @@ async function expectPrimaryMobileLinks(page: Page): Promise<void> {
   const browseLinks = dialog.locator('[data-mobile-navigation-group="Browse"]');
   await expect(browseLinks.getByRole("link", { name: "Docs" })).toHaveAttribute(
     "href",
-    deploySurface === "main" ? /\/micronaut-docs\/latest\/$/ : /\/docs\/$/,
+    deploySurface === "main" ? /\/micronaut-docs-v2\/latest\/$/ : /\/docs\/$/,
   );
   await expect(
     browseLinks.getByRole("link", { name: "Guides" }),
   ).toHaveAttribute(
     "href",
-    deploySurface === "main" ? /\/micronaut-guides\/latest\/$/ : /\/guides\/$/,
+    deploySurface === "main"
+      ? /\/micronaut-guides-v2\/latest\/$/
+      : /\/guides\/$/,
   );
   await expect(browseLinks.getByRole("link", { name: "Blog" })).toHaveAttribute(
     "href",

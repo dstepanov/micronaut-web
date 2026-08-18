@@ -35,9 +35,6 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
       - name: Configure GitHub Pages paths
         env:
           CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
@@ -56,6 +53,7 @@ jobs:
       - name: Build web
         env:
           MICRONAUT_DEPLOY_SURFACE: main
+          MICRONAUT_SKIP_MAIN_SITE_BROWSER_TESTS: "true"
         run: npm run build:main
 
       - name: Ensure GitHub Pages serves underscore assets

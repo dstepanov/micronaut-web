@@ -424,7 +424,8 @@ test("web workflow deploys the main surface through GitHub Pages Actions", async
   assert.match(workflow, /id-token:\s*write/);
   assert.match(workflow, /environment:\s*\n\s*name:\s*github-pages/);
   assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*main/);
-  assert.match(workflow, /npx playwright install --with-deps chromium/);
+  assert.match(workflow, /MICRONAUT_SKIP_MAIN_SITE_BROWSER_TESTS:\s*"true"/);
+  assert.doesNotMatch(workflow, /npx playwright install --with-deps chromium/);
   assert.match(workflow, /npm run build:main/);
   assert.match(workflow, /touch dist\/\.nojekyll/);
   assert.match(workflow, /actions\/configure-pages@/);

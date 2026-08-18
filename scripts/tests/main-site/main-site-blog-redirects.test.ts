@@ -153,6 +153,9 @@ test("main-site browser tests are wired through a surface-aware runner", async (
     "playwright test --config playwright.config.ts tests/playwright/main-site.spec.ts",
   );
   assert.match(runner, /MICRONAUT_DEPLOY_SURFACE/);
+  assert.match(runner, /MICRONAUT_SKIP_MAIN_SITE_BROWSER_TESTS/);
+  assert.match(runner, /MICRONAUT_DOCS_SITE_URL/);
+  assert.match(runner, /MICRONAUT_GUIDES_SITE_URL/);
   assert.match(runner, /surface !== "all" && surface !== "main"/);
   assert.match(runner, /npm_execpath/);
 });
