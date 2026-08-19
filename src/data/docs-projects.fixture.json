@@ -12,11 +12,7 @@
         "core",
         "data",
         "security",
-        "openapi",
-        "test",
-        "kafka",
-        "kotlin",
-        "aws"
+        "openapi"
       ]
     },
     {
