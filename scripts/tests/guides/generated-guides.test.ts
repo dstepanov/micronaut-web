@@ -174,6 +174,59 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.doesNotMatch(mavenHtml, /<!--1-->|<!--2-->/);
 });
 
+test("guide renderer copies only guide images referenced by rendered content", async (t: any): Promise<any> => {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-guides-assets-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const guidesDirectory = path.join(temporaryDirectory, "micronaut-guides");
+  const outputDirectory = path.join(temporaryDirectory, "generated-guides");
+  const slug = "micronaut-http-client";
+  const guideDirectory = path.join(guidesDirectory, "guides", slug);
+
+  await writeGuideFixture(guidesDirectory, slug, "HTTP Client");
+  await fs.mkdir(path.join(guideDirectory, "images"), { recursive: true });
+  await fs.writeFile(path.join(guideDirectory, "images", "used.png"), "used");
+  await fs.writeFile(
+    path.join(guideDirectory, "images", "unreferenced-large.png"),
+    "unreferenced",
+  );
+  await fs.appendFile(
+    path.join(guideDirectory, `${slug}.adoc`),
+    "\nimage::images/used.png[]\n",
+  );
+
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-guides.ts",
+      "--guides-dir",
+      guidesDirectory,
+      "--output",
+      outputDirectory,
+    ],
+    { cwd: projectDirectory, env: nonStrictEnv() },
+  );
+
+  await fs.stat(
+    path.join(outputDirectory, "assets", slug, "images", "used.png"),
+  );
+  await assert.rejects(
+    fs.stat(
+      path.join(
+        outputDirectory,
+        "assets",
+        slug,
+        "images",
+        "unreferenced-large.png",
+      ),
+    ),
+    { code: "ENOENT" },
+  );
+});
+
 test("guide renderer can render all guides in strict pipeline mode", async (t: any): Promise<any> => {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-guides-all-"),
