@@ -229,13 +229,13 @@ Production-compatible hosts are:
 
 - `main`: `https://micronaut.io/`
 - `docs`: `https://docs.micronaut.io/`
-- `guides`: `https://guides.micronaut.io/latest/index.html`
+- `guides`: `https://guides.micronaut.io/`
 
 Temporary GitHub Pages hosts keep the repository names in the path:
 
 - `micronaut-web`: main site at `/micronaut-web/`
 - `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, latest docs at `/micronaut-docs-v2/latest/`, and version folders such as `/micronaut-docs-v2/4.10.14/`
-- `micronaut-guides-v2`: guides at `/micronaut-guides-v2/latest/`
+- `micronaut-guides-v2`: guides at `/micronaut-guides-v2/`
 
 ### Surface Split
 
@@ -399,11 +399,11 @@ When a legacy route is added, update the manifest and add or update one route mo
 | `/core/?q=bean`                                                                               | Deferred until `/core/` routing is resumed                                                                        | Deferred until main-host Core routing is resumed     | Query/hash preservation should be covered when this route is reintroduced. |
 | `https://docs.micronaut.io/latest/guide/`                                                     | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/`                                           | Remains Core docs on docs host                       | Production may serve this as canonical or alias.                           |
 | `https://docs.micronaut.io/latest/guide/index.html#ioc`                                       | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirect or alias to Core docs with the same section | Fragments require client redirect pages.                                   |
-| `https://guides.micronaut.io/latest/index.html`                                               | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/`                                          | Redirect or alias to guides latest index             | Query strings are preserved.                                               |
-| `https://guides.micronaut.io/latest/tag-security.html`                                        | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL               | Served or redirected by guides production            | Existing tag compatibility stays generated from guide metadata.            |
-| `https://guides.micronaut.io/latest/micronaut-http-client.html`                               | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL            | Served by guides production                          | Applies to guide overview `.html` pages.                                   |
-| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html`                   | Redirects to slash-style generated `/guides/` variant when present, otherwise external production URL             | Served by guides production                          | Applies to language/build variants.                                        |
-| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.zip`                    | Redirects to production ZIP URL                                                                                   | Production ZIP remains downloadable                  | ZIP redirects are temporary external redirects.                            |
+| `https://guides.micronaut.io/latest/index.html`                                               | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/`                                          | Redirects to `https://guides.micronaut.io/`          | Query strings are preserved.                                               |
+| `https://guides.micronaut.io/latest/tag-security.html`                                        | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL               | Redirects to the root-level guide tag                | Existing tag compatibility stays generated from guide metadata.            |
+| `https://guides.micronaut.io/latest/micronaut-http-client.html`                               | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL            | Redirects to the root-level guide overview           | Applies to guide overview `.html` pages.                                   |
+| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.html`                   | Redirects to slash-style generated `/guides/` variant when present, otherwise external production URL             | Redirects to the root-level guide variant            | Applies to language/build variants.                                        |
+| `https://guides.micronaut.io/latest/micronaut-http-client-gradle-java.zip`                    | Redirects to production ZIP URL                                                                                   | ZIP remains downloadable at the root                 | ZIP redirects are temporary external redirects.                            |
 | `https://micronaut.io/blog/2020-04-30-introducing-micronaut-launch.html`                      | Redirects to the canonical dated post                                                                             | Redirects to the canonical dated post                | Dated blog aliases are generated from post metadata.                       |
 | `https://micronaut.io/blog/2019-07-18-unleashing-predator-precomputed-data-repositories.html` | Redirects to `/2019/07/18/announcing-micronaut-data/`                                                             | Same canonical post                                  | Explicit historical aliases remain in `blog-redirects`.                    |
 | Any supported route with `#section`                                                           | Same-document anchors stay intact; client redirect pages preserve hashes across route changes                     | Same rule                                            | Server redirects cannot see fragments.                                     |
@@ -412,7 +412,7 @@ When a legacy route is added, update the manifest and add or update one route mo
 
 - Main-site canonical content uses `https://micronaut.io/`.
 - Docs canonical catalog pages use `https://docs.micronaut.io/`; Core legacy docs paths continue to resolve.
-- Guides canonical generated guide URLs use `https://guides.micronaut.io/latest/`.
+- Guides canonical generated guide URLs use `https://guides.micronaut.io/`; `/latest/` is retained only for redirects.
 - GitHub Pages preview URLs must always be generated with `ASTRO_BASE`, not hard-coded as production links.
 - Split GitHub Pages deployments must use the repo-name bases until custom domains are enabled: `/micronaut-web/`, `/micronaut-docs-v2/`, and `/micronaut-guides-v2/`.
 - Docs version publishing updates the selector from the Pages branch and preserves shared root assets so older versions do not duplicate the same asset trees.

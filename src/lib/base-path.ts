@@ -27,10 +27,10 @@ const docsLatestRoot = normalizedRoot(
 );
 const guidesRoot = normalizedRoot(
   deployment?.guidesRoot ||
-    (deploySurface === "guides" ? "/latest" : "/guides"),
+    (deploySurface === "guides" ? "/" : "/guides"),
 );
 const guidesLatestRoot = normalizedRoot(
-  deployment?.guidesLatestRoot || "/latest",
+  deployment?.guidesLatestRoot || guidesRoot,
 );
 const githubPagesOrigin = normalizedExternalOrigin(
   deployment?.githubPagesOrigin ||
@@ -226,7 +226,7 @@ function externalRouteForSurface(
     return docsRouteWithRoot(path, "/latest", "/latest");
   }
   if (surface === "guides") {
-    return guidesRouteWithRoot(path, "/latest", "/latest");
+    return guidesRouteWithRoot(path, "/", "/");
   }
   return normalizeAbsolutePath(path);
 }

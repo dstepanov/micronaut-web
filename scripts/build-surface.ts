@@ -48,8 +48,8 @@ function surfaceEnvironment(surface: Surface): NodeJS.ProcessEnv {
     env.MICRONAUT_DOCS_LATEST_ROOT ||= "/latest";
   }
   if (surface === "guides") {
-    env.MICRONAUT_GUIDES_ROOT ||= "/latest";
-    env.MICRONAUT_GUIDES_LATEST_ROOT ||= "/latest";
+    env.MICRONAUT_GUIDES_ROOT ||= "/";
+    env.MICRONAUT_GUIDES_LATEST_ROOT ||= "/";
   }
   if (surface === "main") {
     env.MICRONAUT_PREPARE_GENERATED_CONTENT ||= "false";

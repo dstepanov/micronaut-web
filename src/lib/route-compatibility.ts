@@ -24,7 +24,7 @@ export const productionHosts: Record<ProductionSurface, string> = {
 const productionPathPrefixes: Record<ProductionSurface, string> = {
   main: "/",
   docs: "/",
-  guides: "/latest/",
+  guides: "/",
   assets: "/"
 };
 
@@ -70,12 +70,12 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     sourcePath: "/latest/index.html",
     destinationSurface: "guides",
     previewDestinationPath: "/guides/",
-    productionDestinationPath: "/index.html",
+    productionDestinationPath: "/",
     status: 301,
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "same-document",
-    notes: "The guides host continues to accept the historical latest index.html path."
+    notes: "The guides host redirects the historical latest index.html path to the root-level guide catalog."
   },
   {
     id: "guides-tag-html",

@@ -123,7 +123,7 @@ test("deployment routes map docs project pages to the standalone docs root", asy
   );
   assert.equal(
     deployment.externalSurfacePath("guides", "/guides/micronaut-http-client/"),
-    "https://example.test/micronaut-guides/latest/micronaut-http-client/",
+    "https://example.test/micronaut-guides/micronaut-http-client/",
   );
   assert.equal(
     deployment.canonicalSurfaceUrl("docs", "/docs/core/"),
@@ -144,11 +144,11 @@ test("deployment routes map main links to external docs and guides sites", async
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "https://example.test/micronaut-guides/latest/micronaut-http-client/",
+    "https://example.test/micronaut-guides/micronaut-http-client/",
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/"),
-    "https://example.test/micronaut-guides/latest/",
+    "https://example.test/micronaut-guides/",
   );
 });
 
@@ -168,7 +168,7 @@ test("deployment routes derive external surface URLs from the GitHub Pages origi
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "https://example-org.github.io/micronaut-guides-v2/latest/micronaut-http-client/",
+    "https://example-org.github.io/micronaut-guides-v2/micronaut-http-client/",
   );
 });
 
@@ -191,22 +191,25 @@ test("deployment routes use the default GitHub Pages origin fallback", async () 
   );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "https://fallback-org.github.io/micronaut-guides-v2/latest/micronaut-http-client/",
+    "https://fallback-org.github.io/micronaut-guides-v2/micronaut-http-client/",
   );
 });
 
-test("deployment routes keep standalone guides latest as a directory", async () => {
+test("deployment routes publish standalone guides at the root", async () => {
   const deployment = await importDeploymentConfig("guides", {
     MICRONAUT_DEPLOY_SURFACE: "guides",
-    MICRONAUT_GUIDES_ROOT: "/latest",
     MICRONAUT_GUIDES_SITE_URL: "https://example.test/micronaut-guides/",
   });
 
-  assert.equal(deployment.routeForCurrentDeployment("/"), "/latest/");
-  assert.equal(deployment.routeForCurrentDeployment("/guides/"), "/latest/");
+  assert.equal(deployment.routeForCurrentDeployment("/"), "/");
+  assert.equal(deployment.routeForCurrentDeployment("/guides/"), "/");
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
-    "/latest/micronaut-http-client/",
+    "/micronaut-http-client/",
+  );
+  assert.equal(
+    deployment.routeForCurrentDeployment("/latest/micronaut-http-client/"),
+    "/micronaut-http-client/",
   );
 });
 
@@ -327,7 +330,7 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   );
 });
 
-test("guides pruning publishes only latest guides and a root redirect", async (t) => {
+test("guides pruning publishes root-level guides and legacy latest redirects", async (t) => {
   const dist = await fakeDist(t);
 
   await pruneSurface({
@@ -344,7 +347,10 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     await fs.readFile(path.join(dist, "CNAME"), "utf8"),
     "guides.micronaut.io\n",
   );
-  assert.equal(await exists(path.join(dist, "latest", "index.html")), true);
+  assert.equal(
+    await exists(path.join(dist, "micronaut-http-client", "index.html")),
+    true,
+  );
   assert.equal(
     await exists(
       path.join(dist, "latest", "micronaut-http-client", "index.html"),
@@ -360,7 +366,7 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     await exists(path.join(dist, "shell", "site-header.css")),
     false,
   );
-  assert.equal(await exists(path.join(dist, "latest", "assets")), false);
+  assert.equal(await exists(path.join(dist, "assets")), true);
   const assetFile = await singleProjectHashedAssetFile(
     dist,
     "micronaut-http-client",
@@ -371,16 +377,8 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
     await exists(path.join(dist, "assets", "micronaut-http-client", assetFile)),
     true,
   );
-  assert.match(
-    await fs.readFile(path.join(dist, "index.html"), "utf8"),
-    /\/micronaut-guides\/latest\//,
-  );
-  assert.match(
-    await fs.readFile(path.join(dist, "index.html"), "utf8"),
-    /window\.location\.replace/,
-  );
   const guideHtml = await fs.readFile(
-    path.join(dist, "latest", "micronaut-http-client", "index.html"),
+    path.join(dist, "micronaut-http-client", "index.html"),
     "utf8",
   );
   assert.doesNotMatch(guideHtml, /<style\b[^>]*data-docs-shiki/i);
@@ -390,9 +388,10 @@ test("guides pruning publishes only latest guides and a root redirect", async (t
   assert.match(
     guideHtml,
     new RegExp(
-      `\\.\\./\\.\\./assets/micronaut-http-client/${escapeRegExp(assetFile)}`,
+      `\\.\\./assets/micronaut-http-client/${escapeRegExp(assetFile)}`,
     ),
   );
+  assert.equal(await exists(path.join(dist, "latest", "index.html")), true);
 });
 
 test("main pruning drops docs, guides, latest, and template artifacts", async (t) => {

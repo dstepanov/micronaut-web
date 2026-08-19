@@ -44,7 +44,7 @@ test("tablet navigation stays collapsed and can select docs, guides, and blog", 
     await expectMobileDestinationHref(
       page,
       "Guides",
-      /\/micronaut-guides-v2\/latest\/$/,
+      /\/micronaut-guides-v2\/$/,
     );
   } else {
     await openMobileDestination(page, "Docs", /\/docs\/$/);
@@ -165,7 +165,7 @@ async function expectPrimaryMobileLinks(page: Page): Promise<void> {
   ).toHaveAttribute(
     "href",
     deploySurface === "main"
-      ? /\/micronaut-guides-v2\/latest\/$/
+      ? /\/micronaut-guides-v2\/$/
       : /\/guides\/$/,
   );
   await expect(browseLinks.getByRole("link", { name: "Blog" })).toHaveAttribute(
