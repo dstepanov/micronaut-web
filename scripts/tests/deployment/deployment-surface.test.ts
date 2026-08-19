@@ -644,8 +644,8 @@ test("validation runs fixture-based docs and guides tests without external check
     "utf8",
   );
 
-  assert.match(workflow, /run:\s*npm run test:docs/);
-  assert.match(workflow, /run:\s*npm run test:guides/);
+  assert.match(workflow, /run:\s*npm run build:docs/);
+  assert.match(workflow, /run:\s*npm run build:guides/);
   assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*docs/);
   assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*guides/);
   assert.match(workflow, /PLAYWRIGHT_STATIC_PREVIEW:\s*"true"/);
