@@ -68,6 +68,15 @@ test("tablet navigation stays collapsed and can select docs, guides, and blog", 
   expect(failures).toEqual([]);
 });
 
+test("desktop navigation links directly to the blog", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(appPath("/"));
+
+  await expect(
+    page.locator("header").getByRole("link", { name: "Blog" }),
+  ).toHaveAttribute("href", /\/blog\/$/);
+});
+
 test("main-site runtime scripts do not include build-time content processors", async ({
   page,
 }) => {

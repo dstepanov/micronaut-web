@@ -165,9 +165,7 @@ export function SiteHeader({
     link.surface
       ? withConfiguredSurfacePath(link.surface, link.href, navigationUrls)
       : link.href;
-  const desktopPrimaryLinks = primaryLinks.filter(
-    (link) => link.surface !== "main",
-  );
+  const desktopPrimaryLinks = primaryLinks;
   const desktopMenuGroups = menuGroups.filter(
     (group) => group.label !== "Foundation",
   );
