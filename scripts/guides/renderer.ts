@@ -163,7 +163,7 @@ function rewriteGuideUrls(input: string, slug: string): string {
         if (legacyGuidePath[1].endsWith(".zip")) {
           return match;
         }
-        return `${attributeName}="${productionUrl("guides", legacyGuidePath[1])}${legacyGuidePath[2] || ""}"`;
+        return `${attributeName}="${productionUrl("guides", guidePagePath(legacyGuidePath[1]))}${legacyGuidePath[2] || ""}"`;
       }
       if (
         !value ||
@@ -185,7 +185,7 @@ function rewriteGuideUrls(input: string, slug: string): string {
         return `${attributeName}="${productionUrl("guides", normalized)}${suffix}"`;
       }
       if (normalized.endsWith(".html")) {
-        return `${attributeName}="${productionUrl("guides", normalized)}${suffix}"`;
+        return `${attributeName}="${productionUrl("guides", guidePagePath(normalized))}${suffix}"`;
       }
       const assetPath =
         normalized.startsWith("images/") || normalized.startsWith("img/")
@@ -194,6 +194,10 @@ function rewriteGuideUrls(input: string, slug: string): string {
       return `${attributeName}="../assets/${assetPath}${suffix}"`;
     },
   );
+}
+
+function guidePagePath(file: string): string {
+  return `${file.replace(/\.html$/, "")}/`;
 }
 
 async function copyReferencedGuideAssets(
