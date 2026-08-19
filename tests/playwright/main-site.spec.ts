@@ -191,6 +191,9 @@ test("footer exposes social and contact links as labelled icons", async ({
     socialLinks.getByRole("link", { name: "GitHub" }),
   ).toHaveAttribute("href", "https://github.com/micronaut-projects");
   await expect(
+    socialLinks.getByRole("link", { name: "OpenCollective" }),
+  ).toHaveAttribute("href", "https://opencollective.com/micronaut");
+  await expect(
     socialLinks.getByRole("link", { name: "LinkedIn" }),
   ).toHaveAttribute("href", "https://www.linkedin.com/showcase/28176137");
   await expect(
