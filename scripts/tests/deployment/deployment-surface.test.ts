@@ -533,14 +533,14 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   );
   assert.match(docsWorkflow, /path:\s*published-docs/);
   assert.match(docsWorkflow, /working-directory:\s*published-docs/);
-  assert.match(docsWorkflow, /npx playwright install --with-deps chromium/);
+  assert.match(docsWorkflow, /npx playwright install chromium/);
   assert.match(
     guidesWorkflow,
     /default:\s*micronaut-projects\/micronaut-guides-v2/,
   );
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
-  assert.match(guidesWorkflow, /npx playwright install --with-deps chromium/);
+  assert.match(guidesWorkflow, /npx playwright install chromium/);
   assert.match(docsWorkflow, /GH_TOKEN/);
   assert.match(guidesWorkflow, /GH_TOKEN/);
   assert.match(docsWorkflow, /configure-pages-deployment\.ts --surface docs/);
