@@ -35,6 +35,7 @@ jobs:
           MICRONAUT_DEPLOY_SURFACE: docs
           MICRONAUT_DOCS_ROOT: /latest
           MICRONAUT_DOCS_LATEST_ROOT: /latest
+          MICRONAUT_PREPARE_GENERATED_CONTENT: "false"
           PLAYWRIGHT_STATIC_PREVIEW: "true"
         run: npm run build:docs
 
@@ -44,6 +45,7 @@ jobs:
           MICRONAUT_DEPLOY_SURFACE: guides
           MICRONAUT_GUIDES_ROOT: /
           MICRONAUT_GUIDES_LATEST_ROOT: /
+          MICRONAUT_PREPARE_GENERATED_CONTENT: "false"
           PLAYWRIGHT_STATIC_PREVIEW: "true"
         run: npm run build:guides
 
