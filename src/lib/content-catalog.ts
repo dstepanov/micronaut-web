@@ -103,6 +103,7 @@ export type SearchItem = {
   href: string;
   terms: string;
   scope?: "Projects" | "Docs" | "Properties" | "Classes" | "Repos";
+  weight?: number;
 };
 
 export const staticDocsProjectCatalog =
