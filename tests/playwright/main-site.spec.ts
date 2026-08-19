@@ -97,16 +97,17 @@ test("desktop navigation presents blog directly and download under resources", a
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(appPath("/"));
 
+  const header = page.locator("header");
   await expect(
-    page.getByRole("link", { name: "Blog", exact: true }),
+    header.getByRole("link", { name: "Blog", exact: true }),
   ).toHaveAttribute("href", /\/blog\/$/);
   await expect(
-    page.getByRole("link", { name: "Get Started", exact: true }),
+    header.getByRole("link", { name: "Get Started", exact: true }),
   ).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Resources" }).click();
+  await header.getByRole("button", { name: "Resources" }).click();
   await expect(
-    page.getByRole("link", { name: "Download", exact: true }),
+    header.locator('a[data-slot="navigation-menu-link"][href$="/download/"]'),
   ).toHaveAttribute("href", /\/download\/$/);
 });
 
@@ -211,21 +212,30 @@ test("footer exposes social and contact links as labelled icons", async ({
   ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
 });
 
-test("footer labels the success-stories link without the Micronaut prefix", async ({
+test("footer labels links without the Micronaut prefix", async ({
   page,
 }) => {
   await page.goto(appPath("/"));
 
   const footer = page.getByRole("navigation", { name: "Main site footer" });
-  await expect(
-    footer.getByRole("link", { name: "Success Stories", exact: true }),
-  ).toHaveAttribute("href", /\/micronaut-success-stories\/$/);
-  await expect(
-    footer.getByRole("link", {
-      name: "Micronaut Success Stories",
-      exact: true,
-    }),
-  ).toHaveCount(0);
+  const expectedLinks = [
+    ["Success Stories", /\/micronaut-success-stories\/$/],
+    ["Blog", /\/blog\/$/],
+    ["Release Announcements", /\/category\/release-announcements\/$/],
+    ["ROADMAP", /\/micronaut-roadmap\/$/],
+    ["Security Announcements", /\/category\/security-announcements\/$/],
+    ["Logos", /\/brand-guidelines\/micronaut-logos\/$/],
+    ["Trademark Policy", /\/brand-guidelines\/micronaut-trademark-policy\/$/],
+  ] as const;
+
+  for (const [label, href] of expectedLinks) {
+    await expect(footer.getByRole("link", { name: label, exact: true })).toHaveAttribute(
+      "href",
+      href,
+    );
+  }
+
+  await expect(footer.getByRole("link", { name: /^Micronaut/ })).toHaveCount(0);
 });
 
 async function expectPrimaryMobileLinks(page: Page): Promise<void> {

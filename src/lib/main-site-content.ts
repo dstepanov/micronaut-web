@@ -121,19 +121,23 @@ const footerPageGroups: Array<MainSiteFooterGroup | { title: string; slugs: stri
   },
   {
     title: "Resources",
-    slugs: [
-      "blog",
-      "category/release-announcements",
-      "micronaut-roadmap",
-      "category/security-announcements",
-      "support",
-      "resources/community-support",
-      "faq"
+    links: [
+      { label: "Blog", href: "/blog/" },
+      { label: "Release Announcements", href: "/category/release-announcements/" },
+      { label: "ROADMAP", href: "/micronaut-roadmap/" },
+      { label: "Security Announcements", href: "/category/security-announcements/" },
+      { label: "Commercial Support", href: "/support/" },
+      { label: "Community Support", href: "/resources/community-support/" },
+      { label: "Frequently Asked Questions", href: "/faq/" }
     ]
   },
   {
     title: "Legal",
-    slugs: ["brand-guidelines", "brand-guidelines/micronaut-logos", "brand-guidelines/micronaut-trademark-policy"]
+    links: [
+      { label: "Brand Guidelines", href: "/brand-guidelines/" },
+      { label: "Logos", href: "/brand-guidelines/micronaut-logos/" },
+      { label: "Trademark Policy", href: "/brand-guidelines/micronaut-trademark-policy/" }
+    ]
   },
   {
     title: "Policies",
