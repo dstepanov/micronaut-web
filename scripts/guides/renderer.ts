@@ -89,15 +89,7 @@ export async function copyGuideAssets(
   outputDirectory: string,
   options: GuideOption[] = [],
 ): Promise<void> {
-  const targetRoot = path.join(outputDirectory, "assets", guide.slug);
-  await copyIfExists(
-    path.join(guide.directory, "images"),
-    path.join(targetRoot, "images"),
-  );
-  await copyIfExists(
-    path.join(guide.directory, "img"),
-    path.join(targetRoot, "img"),
-  );
+  await copyReferencedGuideAssets(outputDirectory, guide, options);
   await copyReferencedSharedAssets(guidesDirectory, outputDirectory, options);
 }
 
@@ -204,17 +196,28 @@ function rewriteGuideUrls(input: string, slug: string): string {
   );
 }
 
-async function copyIfExists(source: string, target: string): Promise<void> {
-  try {
-    const stat = await fs.stat(source);
-    if (!stat.isDirectory()) {
-      return;
-    }
-  } catch {
-    return;
-  }
-  await fs.mkdir(path.dirname(target), { recursive: true });
-  await fs.cp(source, target, { recursive: true });
+async function copyReferencedGuideAssets(
+  outputDirectory: string,
+  guide: Guide,
+  options: GuideOption[],
+): Promise<void> {
+  const prefix = `../assets/${guide.slug}/`;
+  const referenced = await referencedAssets(outputDirectory, options, prefix);
+  await Promise.all(
+    Array.from(referenced).map(async (asset): Promise<void> => {
+      if (!asset.startsWith("images/") && !asset.startsWith("img/")) {
+        return;
+      }
+      const source = path.join(guide.directory, ...asset.split("/"));
+      const target = path.join(
+        outputDirectory,
+        "assets",
+        guide.slug,
+        ...asset.split("/"),
+      );
+      await copyAssetFile(source, target);
+    }),
+  );
 }
 
 async function copyReferencedSharedAssets(
@@ -222,23 +225,11 @@ async function copyReferencedSharedAssets(
   outputDirectory: string,
   options: GuideOption[],
 ): Promise<void> {
-  const referenced = new Set<string>();
-  for (const option of options) {
-    let html: string;
-    try {
-      html = await fs.readFile(
-        path.join(outputDirectory, "fragments", option.file),
-        "utf8",
-      );
-    } catch {
-      continue;
-    }
-    for (const match of html.matchAll(
-      /\.\.\/assets\/shared\/images\/([^"?#]+)/g,
-    )) {
-      referenced.add(decodeURIComponent(match[1]));
-    }
-  }
+  const referenced = await referencedAssets(
+    outputDirectory,
+    options,
+    "../assets/shared/images/",
+  );
 
   await Promise.all(
     Array.from(referenced).map(async (asset): Promise<void> => {
@@ -256,18 +247,51 @@ async function copyReferencedSharedAssets(
         "images",
         ...asset.split("/"),
       );
-      try {
-        const stat = await fs.stat(source);
-        if (!stat.isFile()) {
-          return;
-        }
-      } catch {
-        return;
-      }
-      await fs.mkdir(path.dirname(target), { recursive: true });
-      await fs.copyFile(source, target);
+      await copyAssetFile(source, target);
     }),
   );
+}
+
+async function referencedAssets(
+  outputDirectory: string,
+  options: GuideOption[],
+  prefix: string,
+): Promise<Set<string>> {
+  const referenced = new Set<string>();
+  const expression = new RegExp(`${escapeRegExp(prefix)}([^"?#]+)`, "g");
+  for (const option of options) {
+    try {
+      const html = await fs.readFile(
+        path.join(outputDirectory, "fragments", option.file),
+        "utf8",
+      );
+      for (const match of html.matchAll(expression)) {
+        const asset = decodeURIComponent(match[1]);
+        if (!asset.startsWith("/") && !asset.split("/").includes("..")) {
+          referenced.add(asset);
+        }
+      }
+    } catch {
+      // Rendering has already reported a missing fragment when strict mode is enabled.
+    }
+  }
+  return referenced;
+}
+
+async function copyAssetFile(source: string, target: string): Promise<void> {
+  try {
+    if (!(await fs.stat(source)).isFile()) {
+      return;
+    }
+  } catch {
+    return;
+  }
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.copyFile(source, target);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function firstSuffixIndex(value: string): number {
