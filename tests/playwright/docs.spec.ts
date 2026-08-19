@@ -331,13 +331,16 @@ test("docs page renders related latest guides from the guides manifest", async (
   page,
 }) => {
   const failures = collectBrowserFailures(page);
-  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      headers: { "access-control-allow-origin": "*" },
-      body: JSON.stringify(relatedGuidesManifest()),
-    });
-  });
+  await page.route(
+    /\/(?:guides|latest|micronaut-guides-v2)\/manifest\.json$/,
+    async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify(relatedGuidesManifest()),
+      });
+    },
+  );
 
   await page.goto(appPath("/docs/data/"));
 
@@ -356,7 +359,10 @@ test("docs page renders related latest guides from the guides manifest", async (
   ).toBeVisible();
   await expect(
     relatedGuides.getByRole("link", { name: "Show more" }),
-  ).toHaveAttribute("href", /\/(?:guides|latest)\/\?q=micronaut-data$/);
+  ).toHaveAttribute(
+    "href",
+    /\/(?:guides|latest|micronaut-guides-v2)\/\?q=micronaut-data$/,
+  );
   await expect(relatedGuides.locator('[data-slot="card"]')).toHaveCount(3);
   await expectShowMoreBelowCard(relatedGuides, 2);
   await expect(relatedGuides.locator('[data-slot="card-title"] a')).toHaveText([
@@ -405,13 +411,16 @@ test("docs related guides show more link follows shorter result counts", async (
   page,
 }) => {
   const failures = collectBrowserFailures(page);
-  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      headers: { "access-control-allow-origin": "*" },
-      body: JSON.stringify(relatedGuidesManifest()),
-    });
-  });
+  await page.route(
+    /\/(?:guides|latest|micronaut-guides-v2)\/manifest\.json$/,
+    async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify(relatedGuidesManifest()),
+      });
+    },
+  );
 
   await page.goto(appPath("/docs/core/"));
   const coreRelatedGuides = page.locator("[data-docs-related-guides]");
@@ -533,7 +542,9 @@ function docsProjectHrefPattern(slug: string): RegExp {
 }
 
 function relatedGuideHrefPattern(file: string): RegExp {
-  return new RegExp(`/(?:guides|latest)/${escapeRegExp(file)}$`);
+  return new RegExp(
+    `/(?:guides|latest|micronaut-guides-v2)/${escapeRegExp(file)}$`,
+  );
 }
 
 function relatedGuidesManifest() {
@@ -613,17 +624,20 @@ function relatedGuidesManifest() {
 }
 
 async function routeEmptyRelatedGuides(page: Page): Promise<void> {
-  await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      headers: { "access-control-allow-origin": "*" },
-      body: JSON.stringify({
-        generatedAt: "2026-01-01T00:00:00.000Z",
-        guideCount: 0,
-        guides: [],
-      }),
-    });
-  });
+  await page.route(
+    /\/(?:guides|latest|micronaut-guides-v2)\/manifest\.json$/,
+    async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify({
+          generatedAt: "2026-01-01T00:00:00.000Z",
+          guideCount: 0,
+          guides: [],
+        }),
+      });
+    },
+  );
 }
 
 function relatedGuideManifestEntry({
@@ -850,10 +864,25 @@ function appPath(path: string): string {
   const basePath = normalizeBasePath(
     process.env.PLAYWRIGHT_BASE_PATH || process.env.ASTRO_BASE,
   );
-  if (path === "/") {
+  const deployedPath = deployedDocsPath(path);
+  if (deployedPath === "/") {
     return basePath;
   }
-  return `${basePath}${path.replace(/^\/+/, "")}`;
+  return `${basePath}${deployedPath.replace(/^\/+/, "")}`;
+}
+
+function deployedDocsPath(path: string): string {
+  if (process.env.MICRONAUT_DEPLOY_SURFACE !== "docs") {
+    return path;
+  }
+  const root = configuredDocsRoot();
+  if (path === "/docs" || path === "/docs/") {
+    return root;
+  }
+  if (path.startsWith("/docs/")) {
+    return `${root}${path.slice("/docs/".length)}`;
+  }
+  return path;
 }
 
 function normalizeBasePath(path: string | undefined): string {

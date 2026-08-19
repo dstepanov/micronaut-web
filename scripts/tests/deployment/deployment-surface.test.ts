@@ -646,9 +646,12 @@ test("validation runs fixture-based docs and guides tests without external check
 
   assert.match(workflow, /run:\s*npm run test:docs/);
   assert.match(workflow, /run:\s*npm run test:guides/);
+  assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*docs/);
+  assert.match(workflow, /MICRONAUT_DEPLOY_SURFACE:\s*guides/);
+  assert.match(workflow, /PLAYWRIGHT_STATIC_PREVIEW:\s*"true"/);
   assert.doesNotMatch(
     workflow,
-    /micronaut-(?:platform|docs|guides)/,
+    /repository:\s*micronaut-projects\/micronaut-(?:platform|docs|guides)/,
     "Validation must rely on checked-in generated-content fixtures.",
   );
 });
