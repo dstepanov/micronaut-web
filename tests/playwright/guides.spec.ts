@@ -273,6 +273,13 @@ test("legacy latest guide links redirect to canonical catalog and tag paths", as
       name: "Micronaut Guides: micronaut-data",
     }),
   ).toBeVisible();
+
+  await page.goto(
+    appPath("/latest/micronaut-http-client-gradle-java.html?source=legacy"),
+  );
+  await expect(page).toHaveURL(
+    guideUrlPattern("micronaut-http-client-gradle-java", "source=legacy"),
+  );
 });
 
 test("guide overview redirects to the preferred variant and exposes variant navigation", async ({
@@ -587,21 +594,21 @@ function deployedGuidesPath(path: string): string {
 }
 
 function guideHrefPattern(file: string): RegExp {
+  const slug = file.replace(/\.html$/, "");
   if (isGuidesSurface()) {
     return new RegExp(
-      `${escapeRegExp(appPath(`${configuredGuidesRoot()}${file}`))}$`,
+      `${escapeRegExp(appPath(`${configuredGuidesRoot()}${slug}/`))}$`,
     );
   }
-  return new RegExp(`/guides/${escapeRegExp(file)}$`);
+  return new RegExp(`/guides/${escapeRegExp(slug)}/$`);
 }
 
-function guideUrlPattern(slug: string): RegExp {
+function guideUrlPattern(slug: string, search?: string): RegExp {
+  const query = search ? `\\?${escapeRegExp(search)}` : "";
   if (isGuidesSurface()) {
-    return new RegExp(
-      `${escapeRegExp(appPath(`/guides/${slug}`))}(?:\\.html|/)$`,
-    );
+    return new RegExp(`${escapeRegExp(appPath(`/guides/${slug}/`))}${query}$`);
   }
-  return new RegExp(`/guides/${escapeRegExp(slug)}(?:\\.html|/)$`);
+  return new RegExp(`/guides/${escapeRegExp(slug)}/${query}$`);
 }
 
 function tagHrefPattern(tag: string): RegExp {

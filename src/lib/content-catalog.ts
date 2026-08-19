@@ -112,7 +112,9 @@ export const staticDocsProjectCatalog =
 export const staticGeneratedGuidesManifest =
   generatedGuidesManifest as GeneratedGuidesManifest;
 
-export function docsProjectFromCatalog(project: DocsCatalogProject): DocsProject {
+export function docsProjectFromCatalog(
+  project: DocsCatalogProject,
+): DocsProject {
   return {
     ...project,
     href: `/docs/${project.slug}/`,
@@ -168,7 +170,9 @@ export function latestGuideSummaries(limit = 8) {
 
 export function guideCategories() {
   return Array.from(
-    new Set(staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.categories)),
+    new Set(
+      staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.categories),
+    ),
   )
     .sort()
     .map((category) => ({
@@ -179,14 +183,28 @@ export function guideCategories() {
 }
 
 export function guideOverviewPath(
-  guide: Pick<GeneratedGuide, "overviewFile">,
+  guide: Pick<GeneratedGuide, "overviewFile" | "options" | "defaultOptionFile">,
   root = "/latest",
 ) {
-  return `${normalizedRoot(root)}/${guide.overviewFile}`;
+  const option = preferredGuideOption(guide);
+  return `${normalizedRoot(root)}/${(option?.file || guide.overviewFile).replace(/\.html$/, "")}/`;
+}
+
+function preferredGuideOption(
+  guide: Pick<GeneratedGuide, "options" | "defaultOptionFile">,
+) {
+  return (
+    guide.options.find(
+      (option) => option.language === "java" && option.buildTool === "gradle",
+    ) ||
+    guide.options.find((option) => option.file === guide.defaultOptionFile) ||
+    guide.options.find((option) => option.language === "java") ||
+    guide.options[0]
+  );
 }
 
 export function guideTagPath(tag: string, root = "/latest") {
-  return `${normalizedRoot(root)}/tag-${tagSlug(tag)}.html`;
+  return `${normalizedRoot(root)}/tag-${tagSlug(tag)}/`;
 }
 
 export function tagSlug(tag: string) {
@@ -198,7 +216,9 @@ export function tagSlug(tag: string) {
 }
 
 export function searchItems(): SearchItem[] {
-  const projects = staticDocsProjectCatalog.projects.map(docsProjectFromCatalog);
+  const projects = staticDocsProjectCatalog.projects.map(
+    docsProjectFromCatalog,
+  );
   const projectItems: SearchItem[] = projects.map((project) => ({
     kind: "Project",
     title: project.displayName,
@@ -236,7 +256,9 @@ export function searchItems(): SearchItem[] {
     }),
   );
   const tagItems: SearchItem[] = Array.from(
-    new Set(staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags)),
+    new Set(
+      staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags),
+    ),
   )
     .sort()
     .slice(0, 80)

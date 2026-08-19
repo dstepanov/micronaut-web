@@ -46,11 +46,14 @@ export function guideOptionPath(
   option: GeneratedGuideOption,
   root = "/latest",
 ) {
-  return `${normalizedRoot(root)}/${option.file}`;
+  return guidePagePath(option.file, root);
 }
 
 export function guideOverviewPath(guide: GeneratedGuide, root = "/latest") {
-  return `${normalizedRoot(root)}/${guide.overviewFile}`;
+  const option = preferredGuideOption(guide);
+  return option
+    ? guideOptionPath(option, root)
+    : guidePagePath(guide.overviewFile, root);
 }
 
 export function preferredGuideOption(guide: GeneratedGuide) {
@@ -65,7 +68,7 @@ export function preferredGuideOption(guide: GeneratedGuide) {
 }
 
 export function guideTagPath(tag: string, root = "/latest") {
-  return `${normalizedRoot(root)}/tag-${tagSlug(tag)}.html`;
+  return `${normalizedRoot(root)}/tag-${tagSlug(tag)}/`;
 }
 
 export function latestGuides(guides: GeneratedGuide[], limit = 8) {
@@ -81,4 +84,8 @@ export function latestGuides(guides: GeneratedGuide[], limit = 8) {
 function normalizedRoot(root: string) {
   const value = root.endsWith("/") ? root.slice(0, -1) : root;
   return value || "";
+}
+
+function guidePagePath(file: string, root: string) {
+  return `${normalizedRoot(root)}/${file.replace(/\.html$/, "")}/`;
 }
