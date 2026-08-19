@@ -163,7 +163,7 @@ function rewriteGuideUrls(input: string, slug: string): string {
         if (legacyGuidePath[1].endsWith(".zip")) {
           return match;
         }
-        return `${attributeName}="../${legacyGuidePath[1]}${legacyGuidePath[2] || ""}"`;
+        return `${attributeName}="${productionUrl("guides", legacyGuidePath[1])}${legacyGuidePath[2] || ""}"`;
       }
       if (
         !value ||
@@ -185,7 +185,7 @@ function rewriteGuideUrls(input: string, slug: string): string {
         return `${attributeName}="${productionUrl("guides", normalized)}${suffix}"`;
       }
       if (normalized.endsWith(".html")) {
-        return `${attributeName}="../${normalized}${suffix}"`;
+        return `${attributeName}="${productionUrl("guides", normalized)}${suffix}"`;
       }
       const assetPath =
         normalized.startsWith("images/") || normalized.startsWith("img/")
