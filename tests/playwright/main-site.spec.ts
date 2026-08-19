@@ -82,6 +82,25 @@ test("main-site runtime scripts do not include build-time content processors", a
   expect(failures).toEqual([]);
 });
 
+test("desktop navigation presents blog directly and download under resources", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(appPath("/"));
+
+  await expect(
+    page.getByRole("link", { name: "Blog", exact: true }),
+  ).toHaveAttribute("href", /\/blog\/$/);
+  await expect(
+    page.getByRole("link", { name: "Get Started", exact: true }),
+  ).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Resources" }).click();
+  await expect(
+    page.getByRole("link", { name: "Download", exact: true }),
+  ).toHaveAttribute("href", /\/download\/$/);
+});
+
 test("homepage code examples include a Python variant", async ({ page }) => {
   await page.goto(appPath("/"));
 
@@ -175,6 +194,23 @@ test("footer exposes social and contact links as labelled icons", async ({
   await expect(
     socialLinks.getByRole("link", { name: "YouTube" }),
   ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
+});
+
+test("footer labels the success-stories link without the Micronaut prefix", async ({
+  page,
+}) => {
+  await page.goto(appPath("/"));
+
+  const footer = page.getByRole("navigation", { name: "Main site footer" });
+  await expect(
+    footer.getByRole("link", { name: "Success Stories", exact: true }),
+  ).toHaveAttribute("href", /\/micronaut-success-stories\/$/);
+  await expect(
+    footer.getByRole("link", {
+      name: "Micronaut Success Stories",
+      exact: true,
+    }),
+  ).toHaveCount(0);
 });
 
 async function expectPrimaryMobileLinks(page: Page): Promise<void> {
