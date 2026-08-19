@@ -243,6 +243,9 @@ test("guide catalog provides a search form", async ({ page }) => {
 
   expect(new URL(page.url()).search).toBe("?q=getting-started");
   await expect(
+    search.getByRole("searchbox", { name: "Search guides" }),
+  ).toHaveValue("getting-started");
+  await expect(
     page.locator("[data-guide-card]", {
       hasText: "Creating your first Micronaut application",
     }),

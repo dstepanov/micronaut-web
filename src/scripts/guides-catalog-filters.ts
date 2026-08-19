@@ -8,6 +8,11 @@ if (catalog) {
   const tag = normalizeTopic(activeTag || params.get("tag") || "");
   const sort = params.get("sort") || "latest";
   const hasFilters = Boolean(query || category || tag || sort !== "latest");
+  const searchInput = catalog.querySelector<HTMLInputElement>('input[name="q"]');
+
+  if (searchInput) {
+    searchInput.value = query;
+  }
   const cards = Array.from(
     catalog.querySelectorAll<HTMLElement>("[data-guide-card]"),
   );
