@@ -233,7 +233,9 @@ test("guide catalog provides a search form", async ({ page }) => {
   await page.goto(appPath("/guides/"));
 
   const search = page.getByRole("search");
-  await expect(search.getByRole("searchbox", { name: "Search guides" })).toBeVisible();
+  await expect(
+    search.getByRole("searchbox", { name: "Search guides" }),
+  ).toBeVisible();
   await search
     .getByRole("searchbox", { name: "Search guides" })
     .fill("getting-started");
@@ -243,6 +245,27 @@ test("guide catalog provides a search form", async ({ page }) => {
   await expect(
     page.locator("[data-guide-card]", {
       hasText: "Creating your first Micronaut application",
+    }),
+  ).toBeVisible();
+});
+
+test("legacy latest guide links redirect to canonical catalog and tag paths", async ({
+  page,
+}) => {
+  await page.goto(appPath("/latest/index.html?source=legacy"));
+  await expect(page).toHaveURL(catalogUrlPattern("source=legacy"));
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Micronaut Guides" }),
+  ).toBeVisible();
+
+  await page.goto(appPath("/latest/tag-micronaut-data.html?source=legacy"));
+  await expect(page).toHaveURL(
+    tagUrlPattern("micronaut-data", "source=legacy"),
+  );
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Micronaut Guides: micronaut-data",
     }),
   ).toBeVisible();
 });
@@ -568,6 +591,18 @@ function tagHrefPattern(tag: string): RegExp {
     );
   }
   return new RegExp(`/guides/tag-${escapeRegExp(tag)}/$`);
+}
+
+function catalogUrlPattern(search: string): RegExp {
+  const root = isGuidesSurface() ? configuredGuidesRoot() : "/guides/";
+  return new RegExp(`${escapeRegExp(appPath(root))}\?${escapeRegExp(search)}$`);
+}
+
+function tagUrlPattern(tag: string, search: string): RegExp {
+  const path = isGuidesSurface()
+    ? `${configuredGuidesRoot()}tag-${tag}/`
+    : `/guides/tag-${tag}/`;
+  return new RegExp(`${escapeRegExp(appPath(path))}\?${escapeRegExp(search)}$`);
 }
 
 function isGuidesSurface(): boolean {
