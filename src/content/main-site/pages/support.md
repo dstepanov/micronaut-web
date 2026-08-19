@@ -12,6 +12,6 @@ layoutVariant: public-markdown
 
 The following companies offer commercial support for Micronaut Framework.
 
-[![Object Computing is proud to be home to the Micronaut framework](/micronaut-assets/main-site/wp-content/uploads/2021/05/OCI_HTM_V2_Colored.png)](https://objectcomputing.com/how-we-serve/accelerators/micronaut)
+[![Object Computing is proud to be home to the Micronaut framework](/micronaut-assets/main-site/wp-content/uploads/2021/05/OCI_HTM_V2_Colored.png)](http://objectcomputing.com/)
 
 [![Oracle Logo](/micronaut-assets/main-site/wp-content/uploads/2025/02/oracle.svg)](https://graal.cloud/gdk/about/#gdk-support)
