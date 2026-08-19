@@ -57,7 +57,6 @@ type MobileMenuLink = {
 const menuGroups = [
   {
     label: "Resources",
-    description: "News, events, support, roadmap, and public proof.",
     links: [
       {
         href: "/download/",
@@ -212,15 +211,7 @@ export function SiteHeader({
                   {group.label}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid w-[560px] gap-2 p-2">
-                    <div className="rounded-md bg-muted p-3">
-                      <p className="text-sm font-semibold text-foreground">
-                        {group.label}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {group.description}
-                      </p>
-                    </div>
+                  <div className="w-[560px] p-2">
                     <div className="grid grid-cols-2 gap-1">
                       {group.links.map((link) => (
                         <NavigationMenuLink
