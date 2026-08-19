@@ -595,14 +595,14 @@ function tagHrefPattern(tag: string): RegExp {
 
 function catalogUrlPattern(search: string): RegExp {
   const root = isGuidesSurface() ? configuredGuidesRoot() : "/guides/";
-  return new RegExp(`${escapeRegExp(appPath(root))}\?${escapeRegExp(search)}$`);
+  return new RegExp(`${escapeRegExp(appPath(root))}\\?${escapeRegExp(search)}$`);
 }
 
 function tagUrlPattern(tag: string, search: string): RegExp {
   const path = isGuidesSurface()
     ? `${configuredGuidesRoot()}tag-${tag}/`
     : `/guides/tag-${tag}/`;
-  return new RegExp(`${escapeRegExp(appPath(path))}\?${escapeRegExp(search)}$`);
+  return new RegExp(`${escapeRegExp(appPath(path))}\\?${escapeRegExp(search)}$`);
 }
 
 function isGuidesSurface(): boolean {
