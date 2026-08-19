@@ -732,7 +732,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.doesNotMatch(legacyRoute, /guideOverviewPath/);
   assert.match(
     legacyRoute,
-    /appendRequestSearch\(withBasePath\(props\.destination\), url\)/,
+    /preservingClientRedirect\(withBasePath\(props\.destination\)\)/,
   );
   assert.match(zipRoute, /productionUrl\("guides", option\.zipUrl\)/);
   assert.match(zipRoute, /redirect\(props\.zipUrl, 302\)/);

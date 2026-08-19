@@ -29,5 +29,11 @@ jobs:
       - name: Check script formatting
         run: npm run style:scripts
 
+      - name: Run docs tests
+        run: npm run test:docs
+
+      - name: Run guides tests
+        run: npm run test:guides
+
       - name: Run build checks and build site
         run: npm run build:main

@@ -334,6 +334,7 @@ test("docs page renders related latest guides from the guides manifest", async (
   await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
     await route.fulfill({
       contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
       body: JSON.stringify(relatedGuidesManifest()),
     });
   });
@@ -407,6 +408,7 @@ test("docs related guides show more link follows shorter result counts", async (
   await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
     await route.fulfill({
       contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
       body: JSON.stringify(relatedGuidesManifest()),
     });
   });
@@ -614,6 +616,7 @@ async function routeEmptyRelatedGuides(page: Page): Promise<void> {
   await page.route(/\/(?:guides|latest)\/manifest\.json$/, async (route) => {
     await route.fulfill({
       contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
       body: JSON.stringify({
         generatedAt: "2026-01-01T00:00:00.000Z",
         guideCount: 0,

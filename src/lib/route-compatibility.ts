@@ -168,3 +168,19 @@ export function appendRequestSearch(destination: string, requestUrl: URL) {
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}${requestUrl.search.slice(1)}${hash ? `#${hash}` : ""}`;
 }
+
+/**
+ * Produces a redirect page for static hosts, where HTTP redirects cannot keep
+ * the request query string. The browser appends that query to the destination.
+ */
+export function preservingClientRedirect(destination: string): Response {
+  const serializedDestination = JSON.stringify(destination);
+  return new Response(
+    `<!doctype html><meta charset="utf-8"><script>const destination=new URL(${serializedDestination},location.origin);for(const [key,value] of new URLSearchParams(location.search)){if(!destination.searchParams.has(key))destination.searchParams.append(key,value)}location.replace(destination.pathname+destination.search+destination.hash)</script>`,
+    {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+      },
+    },
+  );
+}

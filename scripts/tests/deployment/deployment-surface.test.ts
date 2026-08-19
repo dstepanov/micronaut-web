@@ -638,6 +638,21 @@ test("external source checkouts stay inside the GitHub workspace", async () => {
   assert.doesNotMatch(guidesWorkflow, /runner\.temp/);
 });
 
+test("validation runs fixture-based docs and guides tests without external checkouts", async () => {
+  const workflow = await fs.readFile(
+    path.join(projectDirectory, ".github", "workflows", "validate-build.yml"),
+    "utf8",
+  );
+
+  assert.match(workflow, /run:\s*npm run test:docs/);
+  assert.match(workflow, /run:\s*npm run test:guides/);
+  assert.doesNotMatch(
+    workflow,
+    /micronaut-(?:platform|docs|guides)/,
+    "Validation must rely on checked-in generated-content fixtures.",
+  );
+});
+
 test("docs workflow resolves platform refs as branches or tags", async () => {
   const workflow = await fs.readFile(
     path.join(projectDirectory, ".github", "workflows", "deploy-docs.yml"),
