@@ -165,10 +165,14 @@ async function pruneGuides(
       directory: temporaryDirectory,
       versionRoot: "",
     });
-    await fs.rm(path.join(temporaryDirectory, "latest", "guide"), {
-      force: true,
-      recursive: true,
-    });
+    await Promise.all(
+      ["guide", "assets"].map((entry) =>
+        fs.rm(path.join(temporaryDirectory, "latest", entry), {
+          force: true,
+          recursive: true,
+        }),
+      ),
+    );
     await writeNoJekyll(temporaryDirectory);
     await writeCustomDomain(temporaryDirectory, customDomain);
     await replaceDirectory(directory, temporaryDirectory);
