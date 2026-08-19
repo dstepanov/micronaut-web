@@ -1967,6 +1967,14 @@ test("docs search index includes generated headings, properties, classes, projec
   ].join("\n");
 
   const generatedItems = extractGeneratedDocSearchItems(project, html);
+  const introduction = generatedItems.find(
+    (item: any): any => item.href === "/docs/fixture/#fixture-introduction",
+  );
+  const client = generatedItems.find(
+    (item: any): any => item.href === "/docs/fixture/#fixture-client",
+  );
+  assert.equal(introduction?.weight, 2);
+  assert.equal(client?.weight, 1);
   assert.ok(
     generatedItems.some(
       (item: any): any =>

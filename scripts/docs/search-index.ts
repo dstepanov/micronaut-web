@@ -29,6 +29,7 @@ export interface SearchItem {
   href: string;
   terms: string;
   scope: string;
+  weight?: number;
 }
 
 export function buildDocsSearchIndex(
@@ -154,6 +155,7 @@ function extractHeadingItems(
         .filter(Boolean)
         .join(" "),
       scope: "Docs",
+      weight: match[1] === "1" ? 2 : 1,
     });
   }
   return items;

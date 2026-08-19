@@ -226,6 +226,24 @@ test("guide catalog search matches normalized category aliases", async ({
   expect(failures).toEqual([]);
 });
 
+test("guide catalog provides a search form", async ({ page }) => {
+  await page.goto(appPath("/guides/"));
+
+  const search = page.getByRole("search");
+  await expect(search.getByRole("searchbox", { name: "Search guides" })).toBeVisible();
+  await search
+    .getByRole("searchbox", { name: "Search guides" })
+    .fill("getting-started");
+  await search.getByRole("button", { name: "Search" }).click();
+
+  expect(new URL(page.url()).search).toBe("?q=getting-started");
+  await expect(
+    page.locator("[data-guide-card]", {
+      hasText: "Creating your first Micronaut application",
+    }),
+  ).toBeVisible();
+});
+
 test("guide overview redirects to the preferred variant and exposes variant navigation", async ({
   page,
 }) => {

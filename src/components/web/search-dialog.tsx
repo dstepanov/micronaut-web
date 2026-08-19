@@ -82,6 +82,29 @@ function matchesSearchItem(item: SearchItem, query: string) {
     .includes(normalized);
 }
 
+function searchScore(item: SearchItem, query: string) {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return 0;
+  }
+  const title = item.title.toLowerCase();
+  const description = item.description.toLowerCase();
+  const terms = item.terms.toLowerCase();
+  if (title.startsWith(normalized)) return 3;
+  if (title.includes(normalized)) return 2;
+  if (description.includes(normalized)) return 1;
+  return terms.includes(normalized) ? 1 : 0;
+}
+
+function sortDocsSearchItems(items: SearchItem[], query: string) {
+  return [...items].sort(
+    (left, right) =>
+      searchScore(right, query) - searchScore(left, query) ||
+      (right.weight || 0) - (left.weight || 0) ||
+      left.title.localeCompare(right.title),
+  );
+}
+
 export function SearchDialog({
   className,
   docsSearchIndexUrl,
@@ -122,10 +145,12 @@ export function SearchDialog({
     const source = generatedDocsItems.length
       ? generatedDocsItems
       : fallbackDocsItems;
-    return source
-      .filter((item) => docsScope === "All" || scopeForItem(item) === docsScope)
-      .filter((item) => matchesSearchItem(item, searchQuery))
-      .slice(0, 240);
+    return sortDocsSearchItems(
+      source
+        .filter((item) => docsScope === "All" || scopeForItem(item) === docsScope)
+        .filter((item) => matchesSearchItem(item, searchQuery)),
+      searchQuery,
+    ).slice(0, 240);
   }, [docsScope, fallbackDocsItems, generatedDocsItems, searchQuery]);
 
   useEffect(() => {
@@ -207,6 +232,7 @@ export function SearchDialog({
         title={dialogTitle}
         description={dialogDescription}
         className="max-w-2xl"
+        commandProps={mode === "docs" ? { shouldFilter: false } : undefined}
       >
         <CommandInput
           placeholder={placeholder}

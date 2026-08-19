@@ -1,6 +1,7 @@
 ---
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
 import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
@@ -205,6 +206,24 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
       <h1 class:list={["text-4xl font-bold tracking-tight md:text-5xl", !activeTag && "mt-5"]}>
         {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
       </h1>
+      <p class="mt-4 text-lg leading-8 text-muted-foreground">
+        Learn how to build Micronaut applications with focused tutorials, runnable examples, and language/build variants.
+      </p>
+      <form method="get" class="mt-5 flex max-w-xl gap-2" role="search">
+        {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
+        {selectedTag && <input type="hidden" name="tag" value={selectedTag} />}
+        {sortMode !== "latest" && <input type="hidden" name="sort" value={sortMode} />}
+        <label class="sr-only" for="guides-search">Search guides</label>
+        <Input
+          id="guides-search"
+          name="q"
+          type="search"
+          defaultValue={query}
+          placeholder="Search guides"
+          autoComplete="off"
+        />
+        <Button type="submit">Search</Button>
+      </form>
       {guideVersionOptions.length > 1 && (
         <label class="mt-5 inline-grid gap-1 text-xs font-medium text-muted-foreground">
           <span>Guides version</span>
