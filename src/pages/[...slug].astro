@@ -9,6 +9,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { FaqAccordion } from "@/components/web/faq-accordion";
+import DownloadRelease from "@/components/web/download-release.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
@@ -228,6 +229,7 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
         ) : (
           <>
             <MainSiteMarkdown html={contentHtml} />
+            {routeSlug === "download" && <DownloadRelease />}
             {contentHtml && <GeneratedDocsStaticEnhancer />}
           </>
         )}
