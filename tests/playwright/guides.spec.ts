@@ -252,6 +252,11 @@ test("guide catalog provides a search form", async ({ page }) => {
 test("legacy latest guide links redirect to canonical catalog and tag paths", async ({
   page,
 }) => {
+  test.skip(
+    !isStaticPreview(),
+    "Legacy static redirects are validated against the pruned deployment artifact.",
+  );
+
   await page.goto(appPath("/latest/index.html?source=legacy"));
   await expect(page).toHaveURL(catalogUrlPattern("source=legacy"));
   await expect(
@@ -568,7 +573,7 @@ function appPath(path: string): string {
 }
 
 function deployedGuidesPath(path: string): string {
-  if (!isGuidesSurface()) {
+  if (!isStaticPreview() || !isGuidesSurface()) {
     return path;
   }
   const root = configuredGuidesRoot();
@@ -626,6 +631,10 @@ function tagUrlPattern(tag: string, search: string): RegExp {
 
 function isGuidesSurface(): boolean {
   return process.env.MICRONAUT_DEPLOY_SURFACE === "guides";
+}
+
+function isStaticPreview(): boolean {
+  return process.env.PLAYWRIGHT_STATIC_PREVIEW === "true";
 }
 
 function configuredGuidesRoot(): string {
