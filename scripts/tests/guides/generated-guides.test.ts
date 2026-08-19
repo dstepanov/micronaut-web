@@ -147,14 +147,8 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   );
   assert.doesNotMatch(html, /__MICRONAUT_CALLOUT_|\uE000|\uE001/);
   assert.match(html, /https:\/\/launch\.micronaut\.io\?/);
-  assert.match(
-    html,
-    /href="https:\/\/guides\.micronaut\.io\/another-guide\.html"/,
-  );
-  assert.match(
-    html,
-    /href="https:\/\/guides\.micronaut\.io\/legacy-guide\.html"/,
-  );
+  assert.match(html, /href="https:\/\/guides\.micronaut\.io\/another-guide\/"/);
+  assert.match(html, /href="https:\/\/guides\.micronaut\.io\/legacy-guide\/"/);
   assert.match(
     html,
     /href="https:\/\/guides\.micronaut\.io\/micronaut-http-client-gradle-java\.zip"/,

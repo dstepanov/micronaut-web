@@ -18,14 +18,14 @@ export const productionHosts: Record<ProductionSurface, string> = {
   main: "https://micronaut.io",
   docs: "https://docs.micronaut.io",
   guides: "https://guides.micronaut.io",
-  assets: "https://micronaut.io"
+  assets: "https://micronaut.io",
 };
 
 const productionPathPrefixes: Record<ProductionSurface, string> = {
   main: "/",
   docs: "/",
   guides: "/",
-  assets: "/"
+  assets: "/",
 };
 
 export const coreDocsPreviewPath = "/docs/core/";
@@ -49,7 +49,8 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "alias",
     preservesSearch: true,
     preservesHash: "client",
-    notes: "The production docs host keeps the historical Core guide path; preview aliases it to /docs/core/."
+    notes:
+      "The production docs host keeps the historical Core guide path; preview aliases it to /docs/core/.",
   },
   {
     id: "docs-core-latest-guide-index",
@@ -62,7 +63,7 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "client",
-    notes: "Legacy Core index.html resolves to the canonical Core docs route."
+    notes: "Legacy Core index.html resolves to the canonical Core docs route.",
   },
   {
     id: "guides-latest-index-html",
@@ -75,7 +76,8 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "same-document",
-    notes: "The guides host redirects the historical latest index.html path to the root-level guide catalog."
+    notes:
+      "The guides host redirects the historical latest index.html path to the root-level guide catalog.",
   },
   {
     id: "guides-tag-html",
@@ -83,12 +85,13 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     sourcePath: "/latest/tag-{tag}.html",
     destinationSurface: "guides",
     previewDestinationPath: "/guides/tag-{tag}/",
-    productionDestinationPath: "/tag-{tag}.html",
+    productionDestinationPath: "/tag-{tag}/",
     status: 301,
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "same-document",
-    notes: "Generated guide tag pages keep their old .html aliases."
+    notes:
+      "Generated guide tag pages keep their old .html aliases and redirect to slash-style canonical routes.",
   },
   {
     id: "guides-detail-html",
@@ -96,12 +99,13 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     sourcePath: "/latest/{guide}.html",
     destinationSurface: "guides",
     previewDestinationPath: "/guides/{guide}/",
-    productionDestinationPath: "/{guide}.html",
+    productionDestinationPath: "/{guide}/",
     status: 301,
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "same-document",
-    notes: "Generated guide overview and variant .html pages redirect to slash-style preview routes."
+    notes:
+      "Generated guide overview and variant .html pages redirect to slash-style canonical routes.",
   },
   {
     id: "guides-zip",
@@ -114,7 +118,8 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "external-redirect",
     preservesSearch: false,
     preservesHash: "not-available",
-    notes: "Static preview download aliases hand ZIP requests to the production guides host."
+    notes:
+      "Static preview download aliases hand ZIP requests to the production guides host.",
   },
   {
     id: "blog-dated-html",
@@ -127,7 +132,8 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "same-document",
-    notes: "Dated Wordpress-era blog aliases remain generated from post metadata."
+    notes:
+      "Dated Wordpress-era blog aliases remain generated from post metadata.",
   },
   {
     id: "anchor-urls",
@@ -140,12 +146,15 @@ export const routeCompatibilityManifest: RouteCompatibilityEntry[] = [
     behavior: "redirect",
     preservesSearch: true,
     preservesHash: "client",
-    notes: "Client redirect pages preserve fragments; server-style static redirects cannot receive a fragment."
-  }
+    notes:
+      "Client redirect pages preserve fragments; server-style static redirects cannot receive a fragment.",
+  },
 ];
 
 export function routeCompatibilityEntry(id: string) {
-  const entry = routeCompatibilityManifest.find((candidate) => candidate.id === id);
+  const entry = routeCompatibilityManifest.find(
+    (candidate) => candidate.id === id,
+  );
   if (!entry) {
     throw new Error(`Unknown route compatibility entry: ${id}`);
   }
@@ -157,7 +166,10 @@ export function productionUrl(surface: ProductionSurface, path = "/") {
   const base = productionHosts[surface];
   const normalizedPrefix = prefix.endsWith("/") ? prefix : `${prefix}/`;
   const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
-  return new URL(`${normalizedPrefix}${normalizedPath}`.replace(/\/{2,}/g, "/"), base).toString();
+  return new URL(
+    `${normalizedPrefix}${normalizedPath}`.replace(/\/{2,}/g, "/"),
+    base,
+  ).toString();
 }
 
 export function appendRequestSearch(destination: string, requestUrl: URL) {
