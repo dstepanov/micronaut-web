@@ -334,10 +334,9 @@ function docsProjectSections(project: DocsCatalogProject): DocsSection[] {
 }
 
 function docsProjectReferences(project: DocsCatalogProject): CatalogLink[] {
-  return [
-    { label: "Guide", href: project.publishedGuideUrl },
-    { label: "Repository", href: project.repositoryUrl },
-  ].filter((reference) => reference.href);
+  return [{ label: "Repository", href: project.repositoryUrl }].filter(
+    (reference) => reference.href,
+  );
 }
 
 function docsProjectSearchTerms(project: DocsCatalogProject): string[] {

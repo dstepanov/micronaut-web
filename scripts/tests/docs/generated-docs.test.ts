@@ -27,6 +27,21 @@ const projectDirectory = path.resolve(
   "..",
 );
 
+test("module documentation references do not link to legacy guides", async () => {
+  const catalog = await fs.readFile(
+    path.join(projectDirectory, "src", "lib", "content-catalog.ts"),
+    "utf8",
+  );
+
+  const references = catalog.match(
+    /function docsProjectReferences[\s\S]*?\n}\n/,
+  )?.[0];
+
+  assert.ok(references);
+  assert.doesNotMatch(references, /label: "Guide"/);
+  assert.match(references, /label: "Repository"/);
+});
+
 test("generated docs are prepared before Astro dev and build", async (): Promise<void> => {
   const packageJson = JSON.parse(
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
