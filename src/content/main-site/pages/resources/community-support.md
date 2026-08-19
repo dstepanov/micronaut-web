@@ -62,6 +62,10 @@ Keep up with the latest news from the Micronaut team on Twitter!
 
 Stay up to date on all Framework-related news, releases, events, publications, and more.
 
+### [Micronaut Podcast](https://micronautpodcast.com/)
+
+Browse the Micronaut Podcast archive for conversations with the people building and using the framework.
+
 ### [Upcoming Events](https://micronaut.io/events/)
 
 Find out when Micronaut team members will be in your area for conferences and events! Want us to promote an upcoming event that’s not on our list? Share the details with us, and we’ll add it!
