@@ -29,23 +29,23 @@ jobs:
       - name: Check script formatting
         run: npm run style:scripts
 
-      - name: Run docs tests
+      - name: Build and validate docs surface
         env:
           ASTRO_BASE: /micronaut-docs-v2/
           MICRONAUT_DEPLOY_SURFACE: docs
           MICRONAUT_DOCS_ROOT: /latest
           MICRONAUT_DOCS_LATEST_ROOT: /latest
           PLAYWRIGHT_STATIC_PREVIEW: "true"
-        run: npm run test:docs
+        run: npm run build:docs
 
-      - name: Run guides tests
+      - name: Build and validate guides surface
         env:
           ASTRO_BASE: /micronaut-guides-v2/
           MICRONAUT_DEPLOY_SURFACE: guides
           MICRONAUT_GUIDES_ROOT: /
           MICRONAUT_GUIDES_LATEST_ROOT: /
           PLAYWRIGHT_STATIC_PREVIEW: "true"
-        run: npm run test:guides
+        run: npm run build:guides
 
       - name: Run build checks and build site
         run: npm run build:main

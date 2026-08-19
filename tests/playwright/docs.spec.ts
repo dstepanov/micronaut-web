@@ -872,7 +872,10 @@ function appPath(path: string): string {
 }
 
 function deployedDocsPath(path: string): string {
-  if (process.env.MICRONAUT_DEPLOY_SURFACE !== "docs") {
+  if (
+    process.env.PLAYWRIGHT_STATIC_PREVIEW !== "true" ||
+    process.env.MICRONAUT_DEPLOY_SURFACE !== "docs"
+  ) {
     return path;
   }
   const root = configuredDocsRoot();
