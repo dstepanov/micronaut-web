@@ -358,6 +358,7 @@ test("guides pruning publishes root-level guides and legacy latest redirects", a
     true,
   );
   assert.equal(await exists(path.join(dist, "latest", "guide")), false);
+  assert.equal(await exists(path.join(dist, "latest", "assets")), false);
   assert.equal(await exists(path.join(dist, "docs")), false);
   assert.equal(await exists(path.join(dist, "guides")), false);
   assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
