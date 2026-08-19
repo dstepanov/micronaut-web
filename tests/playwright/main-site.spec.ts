@@ -95,6 +95,34 @@ test("homepage code examples include a Python variant", async ({ page }) => {
   );
 });
 
+test("download page updates the release links from GitHub's latest release", async ({ page }) => {
+  await page.route("https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        tag_name: "v5.2.0",
+        html_url: "https://github.com/micronaut-projects/micronaut-starter/releases/tag/v5.2.0",
+        assets: [{
+          name: "micronaut-cli-5.2.0.zip",
+          browser_download_url: "https://github.com/micronaut-projects/micronaut-starter/releases/download/v5.2.0/micronaut-cli-5.2.0.zip"
+        }]
+      })
+    });
+  });
+
+  await page.goto(appPath("/download/"));
+
+  await expect(page.locator("[data-micronaut-download-version]")).toHaveText("v5.2.0");
+  await expect(page.locator("[data-micronaut-release-notes]")).toHaveAttribute(
+    "href",
+    "https://github.com/micronaut-projects/micronaut-starter/releases/tag/v5.2.0"
+  );
+  await expect(page.locator("[data-micronaut-download-binary]")).toHaveAttribute(
+    "href",
+    "https://github.com/micronaut-projects/micronaut-starter/releases/download/v5.2.0/micronaut-cli-5.2.0.zip"
+  );
+});
+
 test("GraalVM startup diagram stacks complete steps on narrow viewports", async ({
   page,
 }) => {
