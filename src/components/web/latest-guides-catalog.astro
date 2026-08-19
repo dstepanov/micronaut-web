@@ -4,7 +4,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
-import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
+import {
+  guideTagPath,
+  latestGuides,
+  type GeneratedGuide,
+} from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 
 type Props = {
@@ -191,6 +195,10 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
   const suffix = params.toString();
   return withBasePath(`${rootPath}${suffix ? `?${suffix}` : ""}`);
 }
+
+function tagHref(tag: string) {
+  return withBasePath(guideTagPath(tag, root).replace(/\.html$/, "/"));
+}
 ---
 
 <main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guides-catalog data-active-tag={activeTag || ""}>
@@ -276,7 +284,7 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
   {tags.length > 0 && (
     <section class="flex flex-wrap gap-2">
       {tags.slice(0, 80).map((tag) => (
-        <a href={filterHref({ tag })} class="no-underline" aria-label={`Filter guides tagged ${tag}`}>
+        <a href={tagHref(tag)} class="no-underline" aria-label={`Filter guides tagged ${tag}`}>
           <Badge variant={tag === selectedTag ? "default" : "outline"}>{tag}</Badge>
         </a>
       ))}

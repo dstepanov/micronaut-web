@@ -176,6 +176,9 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
     "href",
     guideHrefPattern("micronaut-http-client-gradle-java.html"),
   );
+  await expect(
+    page.getByRole("link", { name: "Filter guides tagged micronaut-data" }),
+  ).toHaveAttribute("href", tagHrefPattern("micronaut-data"));
 
   await card
     .getByRole("button", { name: `Choose variant for ${httpClientGuideTitle}` })
@@ -423,9 +426,11 @@ async function expectGuideCallouts(
     await expect(callouts.getByText(text).first()).toBeVisible();
   }
 
-  const values = await callouts.locator(".conum").evaluateAll((nodes) =>
-    nodes.map((node) => node.getAttribute("data-value")),
-  );
+  const values = await callouts
+    .locator(".conum")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("data-value")),
+    );
   expect(values).toEqual(expectedCallouts.map(([value]) => value));
 }
 
@@ -517,8 +522,7 @@ async function scrollToGeneratedHeading(
       ),
     );
     const heading = headings.find(
-      (element) =>
-        element.textContent?.replace(/\s+/g, " ").trim() === name,
+      (element) => element.textContent?.replace(/\s+/g, " ").trim() === name,
     );
     if (heading) {
       const targetTop = heading.getBoundingClientRect().top + window.scrollY;
@@ -555,6 +559,15 @@ function guideUrlPattern(slug: string): RegExp {
     );
   }
   return new RegExp(`/guides/${escapeRegExp(slug)}(?:\\.html|/)$`);
+}
+
+function tagHrefPattern(tag: string): RegExp {
+  if (isGuidesSurface()) {
+    return new RegExp(
+      `${escapeRegExp(appPath(`${configuredGuidesRoot()}/tag-${tag}/`))}$`,
+    );
+  }
+  return new RegExp(`/guides/tag-${escapeRegExp(tag)}/$`);
 }
 
 function isGuidesSurface(): boolean {
