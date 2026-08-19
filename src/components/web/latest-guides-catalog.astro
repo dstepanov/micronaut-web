@@ -27,45 +27,7 @@ const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
 const sortMode: SortMode = sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
 const rootPath = `${root.replace(/\/+$/, "")}/`;
-const categories = Array.from(new Set(guides.flatMap((guide) => guide.categories))).sort((left, right) => left.localeCompare(right));
 const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort((left, right) => left.localeCompare(right));
-const categoryCounts = categories
-  .map((category) => ({
-    label: category,
-    slug: categorySlug(category),
-    count: guides.filter((guide) => guide.categories.includes(category)).length
-  }))
-  .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
-const languageCounts = sortedOptionCounts(guides, (option) => option.languageLabel);
-const buildToolCounts = sortedOptionCounts(guides, (option) => option.buildToolLabel);
-const minutes = guides.map((guide) => guide.estimatedMinutes).filter((minute) => minute > 0).sort((left, right) => left - right);
-const medianMinutes = minutes.length ? minutes[Math.floor((minutes.length - 1) / 2)] : 0;
-const topCategoryLabels = categoryCounts.slice(0, 6).map((category) => category.label);
-const guideContentSummary = topCategoryLabels.length
-  ? `Follow focused tutorials across ${formatList(topCategoryLabels)}.`
-  : "Follow focused tutorials generated from guide metadata.";
-const contentStats = [
-  {
-    value: guides.length.toLocaleString(),
-    label: "Runnable guides",
-    copy: `${guides.reduce((total, guide) => total + guide.options.length, 0).toLocaleString()} generated language/build variants`
-  },
-  {
-    value: categories.length.toLocaleString(),
-    label: "Topics",
-    copy: categoryCounts.slice(0, 3).map((category) => category.label).join(", ") || "Generated from guide metadata"
-  },
-  {
-    value: languageCounts.length.toLocaleString(),
-    label: "Languages",
-    copy: languageCounts.slice(0, 3).map((language) => `${language.label} (${language.count})`).join(", ") || "Guide variants"
-  },
-  {
-    value: medianMinutes ? `${medianMinutes} min` : "Ready",
-    label: "Typical guide",
-    copy: buildToolCounts.slice(0, 3).map((tool) => `${tool.label} (${tool.count})`).join(", ") || "Runnable project paths"
-  }
-];
 const visibleGuides = sortGuides(
   guides.filter((guide) =>
     matchesQuery(guide, query) &&
@@ -140,40 +102,6 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
   });
 }
 
-function sortedOptionCounts(
-  guides: GeneratedGuide[],
-  labelForOption: (option: GeneratedGuide["options"][number]) => string
-) {
-  const counts = new Map<string, Set<string>>();
-  for (const guide of guides) {
-    for (const option of guide.options) {
-      const label = labelForOption(option);
-      if (!label) {
-        continue;
-      }
-      let guideSlugs = counts.get(label);
-      if (!guideSlugs) {
-        guideSlugs = new Set<string>();
-        counts.set(label, guideSlugs);
-      }
-      guideSlugs.add(guide.slug);
-    }
-  }
-  return Array.from(counts.entries())
-    .map(([label, guideSlugs]) => ({ label, count: guideSlugs.size }))
-    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
-}
-
-function formatList(items: string[]) {
-  if (items.length <= 1) {
-    return items.join("");
-  }
-  if (items.length === 2) {
-    return items.join(" and ");
-  }
-  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
-}
-
 function filterHref(next: Partial<{ q: string; category: string; tag: string; sort: SortMode }>) {
   const params = new URLSearchParams();
   const nextQuery = next.q ?? query;
@@ -204,8 +132,7 @@ function tagHref(tag: string) {
 <main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guides-catalog data-active-tag={activeTag || ""}>
   <header class="max-w-3xl">
     <div class="max-w-3xl">
-      {!activeTag && <Badge variant="secondary">Guides</Badge>}
-      <h1 class:list={["text-4xl font-bold tracking-tight md:text-5xl", !activeTag && "mt-5"]}>
+      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
         {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
       </h1>
       <p class="mt-4 text-lg leading-8 text-muted-foreground">
@@ -228,46 +155,6 @@ function tagHref(tag: string) {
       </form>
     </div>
   </header>
-
-  {!activeTag && (
-    <section
-      class="grid gap-4 rounded-xl border bg-muted/30 p-4 md:p-5"
-      aria-labelledby="guide-content-heading"
-      data-guides-content-section
-    >
-      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div class="max-w-3xl">
-          <Badge variant="outline">Content</Badge>
-          <h2 id="guide-content-heading" class="mt-3 text-2xl font-semibold tracking-tight">
-            Guide content for common Micronaut workflows
-          </h2>
-          <p class="mt-2 text-sm leading-6 text-muted-foreground">{guideContentSummary}</p>
-        </div>
-      </div>
-      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {contentStats.map((stat) => (
-          <div class="grid min-h-32 gap-2 rounded-lg border bg-card p-4">
-            <div class="text-2xl font-semibold">{stat.value}</div>
-            <h3 class="text-sm font-semibold">{stat.label}</h3>
-            <p class="text-sm leading-6 text-muted-foreground">{stat.copy}</p>
-          </div>
-        ))}
-      </div>
-      {categoryCounts.length > 0 && (
-        <div class="flex flex-wrap gap-2">
-          {categoryCounts.slice(0, 10).map((category) => (
-            <a
-              href={filterHref({ category: category.slug })}
-              class="no-underline"
-              aria-label={`Open guides in ${category.label}`}
-            >
-              <Badge variant="secondary">{category.label} · {category.count}</Badge>
-            </a>
-          ))}
-        </div>
-      )}
-    </section>
-  )}
 
   {!activeTag && recentGuides.length > 0 && (
     <section class="grid gap-4" data-guides-latest-section>

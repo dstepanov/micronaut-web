@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
@@ -255,25 +254,25 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
             </div>
             <div class="mt-5 grid gap-4 lg:grid-cols-2">
               {archivePosts.map((post) => (
-                <Card className="h-full transition hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md">
-                  <CardHeader>
-                    <div class="col-span-full flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      {post.entry.data.date && (
-                        <span>{postDateFormatter.format(post.entry.data.date)}</span>
-                      )}
-                      {post.entry.data.category && (
-                        <Badge variant="outline">{post.entry.data.category}</Badge>
-                      )}
-                    </div>
-                    <CardTitle className="col-span-full text-xl leading-7">{post.entry.data.title}</CardTitle>
-                    <CardDescription className="col-span-full line-clamp-3">{cleanExcerptText(post.entry.data.description)}</CardDescription>
-                  </CardHeader>
-                  <CardFooter className="mt-auto">
-                    <a href={withBasePath(post.href)} class="text-sm font-medium text-brand underline-offset-4 hover:underline">
-                      Read article -&gt;
-                    </a>
-                  </CardFooter>
-                </Card>
+                <a
+                  href={withBasePath(post.href)}
+                  class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
+                    <CardHeader>
+                      <div class="col-span-full flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {post.entry.data.date && (
+                          <span>{postDateFormatter.format(post.entry.data.date)}</span>
+                        )}
+                        {post.entry.data.category && (
+                          <Badge variant="outline">{post.entry.data.category}</Badge>
+                        )}
+                      </div>
+                      <CardTitle className="col-span-full text-xl leading-7">{post.entry.data.title}</CardTitle>
+                      <CardDescription className="col-span-full line-clamp-3">{cleanExcerptText(post.entry.data.description)}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </a>
               ))}
             </div>
             {blogArchivePage && blogArchiveTotalPages && blogArchiveTotalPages > 1 && (

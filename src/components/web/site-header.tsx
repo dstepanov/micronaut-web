@@ -45,6 +45,7 @@ const primaryLinks: Array<{
 }> = [
   { href: "/docs/", label: "Docs", surface: "docs" },
   { href: "/guides/", label: "Guides", surface: "guides" },
+  { href: "/blog/", label: "Blog", surface: "main" },
 ];
 
 type MobileMenuLink = {
@@ -55,24 +56,13 @@ type MobileMenuLink = {
 
 const menuGroups = [
   {
-    label: "Get started",
-    description: "Download the CLI and start a new project.",
+    label: "Resources",
+    description: "News, events, support, roadmap, and public proof.",
     links: [
       {
         href: "/download/",
         label: "Download",
         description: "Launch, CLI, and build-tool starter options.",
-      },
-    ],
-  },
-  {
-    label: "Resources",
-    description: "News, events, support, roadmap, and public proof.",
-    links: [
-      {
-        href: "/blog/",
-        label: "Blog",
-        description: "Project news and technical articles.",
       },
       {
         href: "/category/release-announcements/",
