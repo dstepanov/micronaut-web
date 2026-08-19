@@ -58,11 +58,11 @@ test("production url helper is host and surface aware", async (): Promise<void> 
   );
   assert.equal(
     productionUrl("guides", "/index.html"),
-    "https://guides.micronaut.io/latest/index.html",
+    "https://guides.micronaut.io/index.html",
   );
   assert.equal(
     productionUrl("guides", "micronaut-http-client.zip"),
-    "https://guides.micronaut.io/latest/micronaut-http-client.zip",
+    "https://guides.micronaut.io/micronaut-http-client.zip",
   );
 });
 
@@ -154,7 +154,7 @@ test("compatibility documentation covers production hosts and legacy matrix", as
   for (const expected of [
     "https://micronaut.io/",
     "https://docs.micronaut.io/",
-    "https://guides.micronaut.io/latest/index.html",
+    "https://guides.micronaut.io/",
     "`https://micronaut.io/core/`",
     "Deferred until `/core/` routing is resumed",
     "`https://docs.micronaut.io/latest/guide/index.html#ioc`",

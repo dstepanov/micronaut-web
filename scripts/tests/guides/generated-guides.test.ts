@@ -151,7 +151,7 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /href="\.\.\/legacy-guide\.html"/);
   assert.match(
     html,
-    /href="https:\/\/guides\.micronaut\.io\/latest\/micronaut-http-client-gradle-java\.zip"/,
+    /href="https:\/\/guides\.micronaut\.io\/micronaut-http-client-gradle-java\.zip"/,
   );
   assert.doesNotMatch(
     html,
@@ -847,7 +847,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     generatedDocsStaticEnhancer,
   );
   assert.doesNotMatch(generatedDocsStaticEnhancer, /define:vars/);
-  assert.match(guideCatalog, /version\.current \? rootPath : version\.href/);
+  assert.doesNotMatch(guideCatalog, /guides-version-selector|Guides version/);
 });
 
 function assertMicronautHttpClientGuideHasProperSnippets(source: string) {

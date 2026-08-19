@@ -562,7 +562,7 @@ function isGuidesSurface(): boolean {
 }
 
 function configuredGuidesRoot(): string {
-  return normalizeRoot(process.env.MICRONAUT_GUIDES_ROOT || "/latest");
+  return normalizeRoot(process.env.MICRONAUT_GUIDES_ROOT || "/");
 }
 
 function escapeRegExp(value: string): string {

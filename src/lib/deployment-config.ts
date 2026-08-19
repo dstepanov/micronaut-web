@@ -187,7 +187,7 @@ function externalRouteForSurface(
     return docsRouteWithRoot(path, "/latest", "/latest");
   }
   if (surface === "guides") {
-    return guidesRouteWithRoot(path, "/latest", "/latest");
+    return guidesRouteWithRoot(path, "/", "/");
   }
   return normalizeAbsolutePath(path);
 }

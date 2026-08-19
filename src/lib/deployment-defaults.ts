@@ -27,8 +27,8 @@ export function resolveDeploymentSettings(
     (deploySurface === "docs" ? "/latest" : docsRoot);
   const guidesRoot =
     env.MICRONAUT_GUIDES_ROOT ||
-    (deploySurface === "guides" ? "/latest" : "/guides");
-  const guidesLatestRoot = env.MICRONAUT_GUIDES_LATEST_ROOT || "/latest";
+    (deploySurface === "guides" ? "/" : "/guides");
+  const guidesLatestRoot = env.MICRONAUT_GUIDES_LATEST_ROOT || guidesRoot;
   const githubPagesOrigin = normalizedExternalOrigin(
     env.MICRONAUT_GITHUB_PAGES_ORIGIN ||
       env.DEFAULT_GITHUB_PAGES_ORIGIN ||

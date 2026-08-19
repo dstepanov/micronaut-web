@@ -87,8 +87,8 @@ jobs:
       - name: Build guides surface
         env:
           MICRONAUT_DEPLOY_SURFACE: guides
-          MICRONAUT_GUIDES_ROOT: /latest
-          MICRONAUT_GUIDES_LATEST_ROOT: /latest
+          MICRONAUT_GUIDES_ROOT: /
+          MICRONAUT_GUIDES_LATEST_ROOT: /
           MICRONAUT_GUIDES_DIR: ${{ github.workspace }}/external/micronaut-guides
           GUIDES_RENDER_ALL: "true"
           GUIDES_RENDER_STRICT: "true"

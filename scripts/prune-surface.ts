@@ -156,23 +156,19 @@ async function pruneGuides(
       path.join(directory, "_astro"),
       path.join(temporaryDirectory, "_astro"),
     );
+    await copyChildren(path.join(directory, "guides"), temporaryDirectory);
     await copyIfExists(
-      path.join(directory, "guides"),
+      path.join(directory, "latest"),
       path.join(temporaryDirectory, "latest"),
     );
     await hoistVersionedSurfaceAssets({
       directory: temporaryDirectory,
-      versionRoot: "latest",
+      versionRoot: "",
     });
     await fs.rm(path.join(temporaryDirectory, "latest", "guide"), {
       force: true,
       recursive: true,
     });
-    await writeRedirect(
-      path.join(temporaryDirectory, "index.html"),
-      withBase(base, "/latest/"),
-      "Micronaut latest guides",
-    );
     await writeNoJekyll(temporaryDirectory);
     await writeCustomDomain(temporaryDirectory, customDomain);
     await replaceDirectory(directory, temporaryDirectory);

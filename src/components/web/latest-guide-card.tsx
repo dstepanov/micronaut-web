@@ -29,7 +29,7 @@ import { withBasePath } from "@/lib/base-path";
 
 export function LatestGuideCard({
   guide,
-  root = "/latest",
+  root = "/guides",
 }: {
   guide: GeneratedGuide;
   root?: string;
