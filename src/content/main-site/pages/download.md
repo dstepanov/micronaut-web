@@ -17,7 +17,7 @@ layoutVariant: public-markdown
 - [Release Notes](https://github.com/micronaut-projects/micronaut-starter/releases/tag/v5.0.0)
 - [Binary](https://github.com/micronaut-projects/micronaut-starter/releases/download/v5.0.0/micronaut-cli-5.0.0.zip)
 
-For historical release notes, refer to [Github](https://github.com/micronaut-projects/micronaut-starter/releases)
+For historical release notes, refer to [GitHub](https://github.com/micronaut-projects/micronaut-platform/releases)
 
 ## Installing with SDKMAN!
 

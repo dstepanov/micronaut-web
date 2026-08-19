@@ -201,13 +201,10 @@ function filterHref(next: Partial<{ q: string; category: string; tag: string; so
 <main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guides-catalog data-active-tag={activeTag || ""}>
   <header class="max-w-3xl">
     <div class="max-w-3xl">
-      <Badge variant="secondary">{activeTag ? "Tag" : "Guides"}</Badge>
-      <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
+      {!activeTag && <Badge variant="secondary">Guides</Badge>}
+      <h1 class:list={["text-4xl font-bold tracking-tight md:text-5xl", !activeTag && "mt-5"]}>
         {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
       </h1>
-      <p class="mt-4 text-lg leading-8 text-muted-foreground">
-        Learn how to build Micronaut applications with focused tutorials, runnable examples, and language/build variants.
-      </p>
       {guideVersionOptions.length > 1 && (
         <label class="mt-5 inline-grid gap-1 text-xs font-medium text-muted-foreground">
           <span>Guides version</span>
