@@ -229,6 +229,6 @@ We have published an [upgrade to Micronaut framework 4](https://micronaut.io/202
 
 ## Next Steps
 
-Please refer to the [documentation](https://docs.micronaut.io/) for further details, try upgrading your applications and use [GitHub](https://github.com/micronaut-projects) to report any issues.
+Please refer to the [documentation](https://micronaut.io/docs/) for further details, try upgrading your applications and use [GitHub](https://github.com/micronaut-projects) to report any issues.
 
 Thanks to all those who contributed to this release! We look forward to your feedback.

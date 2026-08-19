@@ -21,7 +21,7 @@ It is with great excitement that the [Micronaut team](https://objectcomputing.co
 
 Over a year in the making, Micronaut 1.0 represents a major leap forward in our mission to enable developers to create efficient, low-memory-footprint microservices and serverless apps for the JVM.
 
-Micronaut includes [all the tools a modern developer needs](https://docs.micronaut.io) to effectively build microservices for the JVM without compromising memory footprint and startup time, including:
+Micronaut includes [all the tools a modern developer needs](https://micronaut.io/docs/) to effectively build microservices for the JVM without compromising memory footprint and startup time, including:
 
 - Integrated compile-time dependency injection and AOP
 - Cloud-native configuration management

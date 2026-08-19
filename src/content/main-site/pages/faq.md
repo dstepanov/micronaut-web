@@ -43,7 +43,7 @@ layoutVariant: public-markdown
   The Micronaut development team makes a priority of monitoring [Stack Overflow](http://stackoverflow.com/questions/tagged/micronaut) for technical questions. If you have a specific technical question about usage of the Framework, we recommend you post your question to Stack Overflow using the [#micronaut tag](http://stackoverflow.com/questions/tagged/micronaut).
 - ### [What is the best way to get started?](#what-is-the-best-way-to-get-started-learning-micronaut)
 
-  The main resource to learn about the Micronaut framework is [docs.micronaut.io](http://docs.micronaut.io).
+  The main resource to learn about the Micronaut framework is [Micronaut documentation](https://micronaut.io/docs/).
 
   In addition, step-by-step tutorials for solving common scenarios can be found in our [Micronaut Guides](https://micronaut.io/guides/).
 - ### [Can I contribute to the documentation?](#can-i-contribute-to-the-documentation)

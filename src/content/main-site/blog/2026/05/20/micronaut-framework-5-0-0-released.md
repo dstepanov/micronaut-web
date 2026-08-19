@@ -405,6 +405,6 @@ We have published an [upgrade to Micronaut framework 5 guide](https://github.com
 
 ## NEXT STEPS
 
-Please refer to the [documentation](https://docs.micronaut.io/) for further details, try upgrading your applications, and use [GitHub](https://github.com/micronaut-projects) to report any issues.
+Please refer to the [documentation](https://micronaut.io/docs/) for further details, try upgrading your applications, and use [GitHub](https://github.com/micronaut-projects) to report any issues.
 
 Thanks to all those who contributed to this release! We look forward to your feedback.

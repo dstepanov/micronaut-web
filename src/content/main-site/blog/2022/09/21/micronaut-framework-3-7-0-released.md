@@ -203,7 +203,7 @@ Several modules publish a BOM (Bill of Materials) module and/or use a Gradle Ver
 
 ## Community Feedback
 
-We want to thank all the contributors; the community is essential to the Framework’s success. Please try upgrading your existing applications to this new minor release and report any issues you find! See the [documentation](https://docs.micronaut.io) for further details and use [GitHub](https://github.com/micronaut-projects/) to report any issues.
+We want to thank all the contributors; the community is essential to the Framework’s success. Please try upgrading your existing applications to this new minor release and report any issues you find! See the [documentation](https://micronaut.io/docs/) for further details and use [GitHub](https://github.com/micronaut-projects/) to report any issues.
 
 ## Engage
 

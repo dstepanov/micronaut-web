@@ -28,7 +28,7 @@ Many Micronaut users deploy to the cloud. Cloud vendors are ready for 17. For ex
 
 ## Show modern code in our Documentation
 
-[Micronaut Guides](https://guides.micronaut.io/) and [Micronaut modules documentation](https://docs.micronaut.io/) embed code samples from real code. By setting a Java 17 baseline, we can update those code samples to use Java’s newest features which make Java a much more appealing language and development experience.
+[Micronaut Guides](https://guides.micronaut.io/) and [Micronaut modules documentation](https://micronaut.io/docs/) embed code samples from real code. By setting a Java 17 baseline, we can update those code samples to use Java’s newest features which make Java a much more appealing language and development experience.
 
 ## Performance improvements
 
