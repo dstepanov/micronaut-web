@@ -28,7 +28,7 @@ Many Micronaut users deploy to the cloud, and cloud vendors are preparing for Ja
 
 ## Show modern code in our documentation
 
-[Micronaut Guides](https://guides.micronaut.io/) and [Micronaut module documentation](https://docs.micronaut.io/) embed code samples from real applications. By setting a Java 25 baseline, we can update those samples to use modern Java features, making the language more appealing and improving the developer experience.
+[Micronaut Guides](https://guides.micronaut.io/) and [Micronaut module documentation](https://micronaut.io/docs/) embed code samples from real applications. By setting a Java 25 baseline, we can update those samples to use modern Java features, making the language more appealing and improving the developer experience.
 
 ## Performance improvements
 
