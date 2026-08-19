@@ -1,6 +1,6 @@
 ---
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
@@ -243,7 +243,6 @@ function tagHref(tag: string) {
           </h2>
           <p class="mt-2 text-sm leading-6 text-muted-foreground">{guideContentSummary}</p>
         </div>
-        <a href="#guides-list" class={buttonVariants({ variant: "outline" })}>Browse all guides</a>
       </div>
       <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {contentStats.map((stat) => (

@@ -114,7 +114,10 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
 const footerPageGroups: Array<MainSiteFooterGroup | { title: string; slugs: string[] }> = [
   {
     title: "Start",
-    slugs: ["download", "micronaut-success-stories"]
+    links: [
+      { label: "Download", href: "/download/" },
+      { label: "Success Stories", href: "/micronaut-success-stories/" }
+    ]
   },
   {
     title: "Resources",
