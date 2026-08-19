@@ -560,10 +560,25 @@ function appPath(path: string): string {
   const basePath = normalizeBasePath(
     process.env.PLAYWRIGHT_BASE_PATH || process.env.ASTRO_BASE,
   );
-  if (path === "/") {
+  const deployedPath = deployedGuidesPath(path);
+  if (deployedPath === "/") {
     return basePath;
   }
-  return `${basePath}${path.replace(/^\/+/, "")}`;
+  return `${basePath}${deployedPath.replace(/^\/+/, "")}`;
+}
+
+function deployedGuidesPath(path: string): string {
+  if (!isGuidesSurface()) {
+    return path;
+  }
+  const root = configuredGuidesRoot();
+  if (path === "/guides" || path === "/guides/") {
+    return root;
+  }
+  if (path.startsWith("/guides/")) {
+    return `${root}${path.slice("/guides/".length)}`;
+  }
+  return path;
 }
 
 function guideHrefPattern(file: string): RegExp {
@@ -595,14 +610,18 @@ function tagHrefPattern(tag: string): RegExp {
 
 function catalogUrlPattern(search: string): RegExp {
   const root = isGuidesSurface() ? configuredGuidesRoot() : "/guides/";
-  return new RegExp(`${escapeRegExp(appPath(root))}\\?${escapeRegExp(search)}$`);
+  return new RegExp(
+    `${escapeRegExp(appPath(root))}\\?${escapeRegExp(search)}$`,
+  );
 }
 
 function tagUrlPattern(tag: string, search: string): RegExp {
   const path = isGuidesSurface()
     ? `${configuredGuidesRoot()}tag-${tag}/`
     : `/guides/tag-${tag}/`;
-  return new RegExp(`${escapeRegExp(appPath(path))}\\?${escapeRegExp(search)}$`);
+  return new RegExp(
+    `${escapeRegExp(appPath(path))}\\?${escapeRegExp(search)}$`,
+  );
 }
 
 function isGuidesSurface(): boolean {
