@@ -135,9 +135,21 @@ const footerPageGroups: Array<MainSiteFooterGroup | { title: string; slugs: stri
   {
     title: "Policies",
     links: [
-      { label: "Code of Conduct", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md" },
       { label: "Governance", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/GOVERNANCE.md" },
-      { label: "Security Disclosure", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md" }
+      { label: "Maintainers", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/MAINTAINERS.md" },
+      { label: "Points of Contact", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/POINTS_OF_CONTACT.md" },
+      { label: "Contributing", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTING.md" },
+      { label: "Planning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/PLANNING.md" },
+      { label: "Software Versioning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/VERSIONS_POLICY.md" },
+      { label: "Release Management", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_MANAGEMENT.md" },
+      { label: "Release Cadence", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_CADENCE.md" },
+      { label: "Conflict Resolution", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONFLICT.md" },
+      { label: "Security Advisory Disclosure", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md" },
+      { label: "Code of Conduct", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md" },
+      { label: "Intellectual Property", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/INTELLECTUAL_PROPERTY.md" },
+      { label: "Contributor License Agreement", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md" },
+      { label: "Assets", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/ASSETS.md" },
+      { label: "Succession Planning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SUCCESSION.md" }
     ]
   }
 ];
