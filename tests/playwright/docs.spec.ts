@@ -542,8 +542,9 @@ function docsProjectHrefPattern(slug: string): RegExp {
 }
 
 function relatedGuideHrefPattern(file: string): RegExp {
+  const slug = file.replace(/\.html$/, "");
   return new RegExp(
-    `/(?:guides|latest|micronaut-guides-v2)/${escapeRegExp(file)}$`,
+    `/(?:guides|latest|micronaut-guides-v2)/${escapeRegExp(slug)}/$`,
   );
 }
 
