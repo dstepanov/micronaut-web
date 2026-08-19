@@ -316,18 +316,18 @@ test("docs project catalog uses unique project and category icons", async (): Pr
   assert.deepEqual(duplicateIcons, []);
 });
 
-test("docs project catalog places popular projects in their documentation sections", async (): Promise<void> => {
+test("docs project catalog retains a four-entry most popular landing-page section", async (): Promise<void> => {
   const catalog = JSON.parse(
     await fs.readFile(
       path.join(projectDirectory, "src", "data", "docs-projects.fixture.json"),
       "utf8",
     ),
   );
-  assert.equal(
-    catalog.categories.some(
+  assert.deepEqual(
+    catalog.categories.find(
       (category: any): boolean => category.slug === "most-popular",
-    ),
-    false,
+    )?.projectSlugs,
+    ["core", "data", "security", "openapi"],
   );
   assert.deepEqual(
     catalog.categories.find(
@@ -2677,6 +2677,7 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsIndexSource, /loadDocsProjectCatalog/);
   assert.match(docsPageSource, /loadDocsProjectCatalog/);
   assert.match(searchIndexRouteSource, /loadDocsProjectCatalog/);
+  assert.match(docsSidebarContentSource, /category\.slug !== "most-popular"/);
   assert.match(
     docsSidebarContentSource,
     /versionManifestHref="\/versions\.json"/,

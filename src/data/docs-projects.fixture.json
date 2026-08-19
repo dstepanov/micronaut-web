@@ -4,6 +4,18 @@
   "projectCount": 68,
   "categories": [
     {
+      "slug": "most-popular",
+      "name": "Most Popular",
+      "icon": "book-open",
+      "description": "Frequently used framework, data, security, API, messaging, and integration modules.",
+      "projectSlugs": [
+        "core",
+        "data",
+        "security",
+        "openapi"
+      ]
+    },
+    {
       "slug": "core",
       "name": "Core",
       "icon": "atom",
