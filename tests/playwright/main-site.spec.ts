@@ -119,7 +119,7 @@ test("GraalVM startup diagram stacks complete steps on narrow viewports", async 
   expect(nativeImageBox!.height).toBe(compileBox!.height);
 });
 
-test("footer exposes social media links as labelled icons", async ({
+test("footer exposes social and contact links as labelled icons", async ({
   page,
 }) => {
   await page.goto(appPath("/"));
@@ -127,6 +127,10 @@ test("footer exposes social media links as labelled icons", async ({
   const socialLinks = page.getByRole("navigation", {
     name: "Micronaut social links",
   });
+  await expect(socialLinks.getByRole("link", { name: "Email" })).toHaveAttribute(
+    "href",
+    "mailto:info@micronaut.io",
+  );
   await expect(
     socialLinks.getByRole("link", { name: "GitHub" }),
   ).toHaveAttribute("href", "https://github.com/micronaut-projects");
@@ -137,6 +141,9 @@ test("footer exposes social media links as labelled icons", async ({
     "href",
     "https://x.com/micronautfw",
   );
+  await expect(
+    socialLinks.getByRole("link", { name: "BlueSky" }),
+  ).toHaveAttribute("href", "https://bsky.app/profile/micronautfw.bsky.social");
   await expect(
     socialLinks.getByRole("link", { name: "YouTube" }),
   ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
