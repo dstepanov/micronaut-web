@@ -301,23 +301,43 @@ test("docs project catalog uses unique project and category icons", async (): Pr
   assert.deepEqual(duplicateIcons, []);
 });
 
-test("docs project catalog limits most popular projects to four entries", async (): Promise<void> => {
+test("docs project catalog places popular projects in their documentation sections", async (): Promise<void> => {
   const catalog = JSON.parse(
     await fs.readFile(
       path.join(projectDirectory, "src", "data", "docs-projects.fixture.json"),
       "utf8",
     ),
   );
-  const mostPopular = catalog.categories.find(
-    (category: any): boolean => category.slug === "most-popular",
+  assert.equal(
+    catalog.categories.some(
+      (category: any): boolean => category.slug === "most-popular",
+    ),
+    false,
   );
-
-  assert.deepEqual(mostPopular?.projectSlugs, [
-    "core",
-    "data",
-    "security",
-    "openapi",
-  ]);
+  assert.deepEqual(
+    catalog.categories.find(
+      (category: any): boolean => category.slug === "core",
+    )?.projectSlugs,
+    ["core"],
+  );
+  assert.deepEqual(
+    catalog.categories
+      .find((category: any): boolean => category.slug === "data-access")
+      ?.projectSlugs?.slice(0, 1),
+    ["data"],
+  );
+  assert.deepEqual(
+    catalog.categories.find(
+      (category: any): boolean => category.slug === "security",
+    )?.projectSlugs,
+    ["security"],
+  );
+  assert.equal(
+    catalog.categories
+      .find((category: any): boolean => category.slug === "api")
+      ?.projectSlugs?.includes("openapi"),
+    true,
+  );
 });
 
 test("docs renderer uses checked-in project metadata when external metadata is absent", async (t: any): Promise<any> => {

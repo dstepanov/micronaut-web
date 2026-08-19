@@ -4,15 +4,12 @@
   "projectCount": 68,
   "categories": [
     {
-      "slug": "most-popular",
-      "name": "Most Popular",
-      "icon": "book-open",
-      "description": "Frequently used framework, data, security, API, messaging, and integration modules.",
+      "slug": "core",
+      "name": "Core",
+      "icon": "atom",
+      "description": "Core framework runtime, HTTP, dependency injection, configuration, and native-image support.",
       "projectSlugs": [
-        "core",
-        "data",
-        "security",
-        "openapi"
+        "core"
       ]
     },
     {
@@ -63,6 +60,15 @@
         "r2dbc",
         "redis",
         "sql"
+      ]
+    },
+    {
+      "slug": "security",
+      "name": "Security",
+      "icon": "lock",
+      "description": "Authentication, authorization, token handling, and endpoint protection.",
+      "projectSlugs": [
+        "security"
       ]
     },
     {
@@ -235,9 +241,9 @@
       "platformVersionKey": "managed-micronaut-core",
       "version": "5.0.0",
       "icon": "image:micronaut-sally.svg",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "core",
       "categorySlugs": [
-        "most-popular"
+        "core"
       ],
       "guideTopicAliases": [
         "core-basics",
@@ -262,7 +268,6 @@
       "icon": "brand:junit5",
       "primaryCategory": "dev-and-test",
       "categorySlugs": [
-        "most-popular",
         "dev-and-test"
       ],
       "guideTopicAliases": [
@@ -289,7 +294,6 @@
       "icon": "brand:kotlin",
       "primaryCategory": "languages",
       "categorySlugs": [
-        "most-popular",
         "languages"
       ],
       "guideTopicAliases": [
@@ -408,9 +412,8 @@
       "platformVersionKey": "managed-micronaut-graphql",
       "version": "5.0.0",
       "icon": "brand:graphql",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "api",
       "categorySlugs": [
-        "most-popular",
         "api"
       ],
       "guideTopicAliases": [
@@ -455,9 +458,8 @@
       "platformVersionKey": "managed-micronaut-kafka",
       "version": "6.0.0",
       "icon": "brand:apachekafka",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "messaging",
       "categorySlugs": [
-        "most-popular",
         "messaging"
       ],
       "guideTopicAliases": [
@@ -645,7 +647,6 @@
       "icon": "lucide:cloud-cog",
       "primaryCategory": "cloud",
       "categorySlugs": [
-        "most-popular",
         "cloud"
       ],
       "guideTopicAliases": [
@@ -773,9 +774,8 @@
       "platformVersionKey": "managed-micronaut-openapi",
       "version": "7.0.0",
       "icon": "brand:openapiinitiative",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "api",
       "categorySlugs": [
-        "most-popular",
         "api"
       ],
       "guideTopicAliases": [
@@ -798,9 +798,9 @@
       "platformVersionKey": "managed-micronaut-security",
       "version": "5.0.0",
       "icon": "lucide:shield",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "security",
       "categorySlugs": [
-        "most-popular"
+        "security"
       ],
       "guideTopicAliases": [
         "micronaut-security",
@@ -945,9 +945,8 @@
       "platformVersionKey": "managed-micronaut-data",
       "version": "5.0.1",
       "icon": "lucide:table-properties",
-      "primaryCategory": "most-popular",
+      "primaryCategory": "data-access",
       "categorySlugs": [
-        "most-popular",
         "data-access"
       ],
       "guideTopicAliases": [
