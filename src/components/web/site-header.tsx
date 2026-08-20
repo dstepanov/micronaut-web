@@ -139,21 +139,28 @@ function MobileColorModeSwitch() {
   );
 }
 
-function isActiveMobileLink(link: MobileMenuLink, surface: SurfaceId) {
-  return Boolean(
-    link.surface && link.surface !== "main" && link.surface === surface,
-  );
+function isActivePrimaryLink(
+  link: { surface?: SurfaceId },
+  surface: SurfaceId,
+  isBlogRoute: boolean,
+) {
+  if (link.surface === "main") {
+    return isBlogRoute;
+  }
+  return link.surface === surface;
 }
 
 export function SiteHeader({
   docsSearchIndexUrl,
   surface = "main",
+  isBlogRoute = false,
   hideBrand = false,
   mainSitePages = [],
   navigationUrls,
 }: {
   docsSearchIndexUrl?: string;
   surface?: SurfaceId;
+  isBlogRoute?: boolean;
   hideBrand?: boolean;
   mainSitePages?: MainSiteSearchPage[];
   navigationUrls?: SiteSurfaceUrls;
@@ -194,10 +201,10 @@ export function SiteHeader({
                       ? surfaceHref(link.surface, link.href)
                       : link.href
                   }
-                  active={link.surface ? surface === link.surface : false}
+                  active={isActivePrimaryLink(link, surface, isBlogRoute)}
                   className={cn(
                     "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                    link.surface === surface &&
+                    isActivePrimaryLink(link, surface, isBlogRoute) &&
                       "bg-accent text-accent-foreground",
                   )}
                 >
@@ -296,7 +303,7 @@ export function SiteHeader({
                             <a
                               href={mobileLinkHref(link)}
                               aria-current={
-                                isActiveMobileLink(link, surface)
+                                isActivePrimaryLink(link, surface, isBlogRoute)
                                   ? "page"
                                   : undefined
                               }
@@ -305,7 +312,7 @@ export function SiteHeader({
                                 isBrowseGroup
                                   ? "flex min-h-14 items-center border bg-card px-3 py-3"
                                   : "px-3 py-2",
-                                isActiveMobileLink(link, surface) &&
+                                isActivePrimaryLink(link, surface, isBlogRoute) &&
                                   "bg-accent",
                               )}
                             >
