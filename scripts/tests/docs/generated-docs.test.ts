@@ -646,6 +646,8 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
       "",
       "<1> Snippet callout follows the generated card and may wrap",
       "    across a https://docs.micronaut.io/latest/guide/index.html#beanContext[Micronaut's Bean Context] continuation line.",
+      "Read more about the https://micronaut-projects.github.io/micronaut-docs-v2/latest/guide/#dataAccess[Configurations for Data Access] section.",
+      "See the https://micronaut-projects.github.io/micronaut-guides-v2/micronaut-jpa-hibernate-gradle-java/[JPA Guide].",
       "<2> The link:https://googleapis.dev/java/google-cloud-pubsub/latest/com/google/cloud/pubsub/v1/Publisher.html[Publisher] will be configured using a configuration named `batching`.",
       "<3> The link:https://googleapis.dev/java/google-cloud-pubsub/latest/com/google/cloud/pubsub/v1/Publisher.html[Publisher] will be configured using a configuration named `immediate`.",
       "",
@@ -773,6 +775,14 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   assert.match(
     generatedHtml,
     /href="https:\/\/docs\.micronaut\.io\/latest\/guide\/index\.html#beanContext"[^>]*>Micronaut&#8217;s Bean Context<\/a>/,
+  );
+  assert.match(
+    generatedHtml,
+    /href="https:\/\/docs\.micronaut\.io\/latest\/guide\/#dataAccess"[^>]*>Configurations for Data Access<\/a>/,
+  );
+  assert.match(
+    generatedHtml,
+    /href="https:\/\/guides\.micronaut\.io\/micronaut-jpa-hibernate-gradle-java\/"[^>]*>JPA Guide<\/a>/,
   );
   assert.match(
     generatedText,

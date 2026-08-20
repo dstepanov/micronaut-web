@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { attribute } from "../shared/html.ts";
+import { rewriteMicronautSiteUrl } from "../shared/micronaut-links.ts";
 import type { DocsProject } from "./project-manifest.ts";
 
 export function prefixIds(input: string, slug: string): string {
@@ -31,6 +32,10 @@ export function rewriteUrls(input: string, project: DocsProject): string {
   return input.replace(
     /\b(href|src)="([^"]*)"/g,
     (match: string, attributeName: string, value: string): string => {
+      const canonicalUrl = rewriteMicronautSiteUrl(value);
+      if (canonicalUrl) {
+        return `${attributeName}="${attribute(canonicalUrl)}"`;
+      }
       if (
         !value ||
         value.startsWith("#") ||

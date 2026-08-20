@@ -151,6 +151,14 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /href="https:\/\/guides\.micronaut\.io\/legacy-guide\/"/);
   assert.match(
     html,
+    /href="https:\/\/guides\.micronaut\.io\/micronaut-jpa-hibernate-gradle-java\/"/,
+  );
+  assert.match(
+    html,
+    /href="https:\/\/docs\.micronaut\.io\/latest\/guide\/#dataAccess"/,
+  );
+  assert.match(
+    html,
     /href="https:\/\/guides\.micronaut\.io\/micronaut-http-client-gradle-java\.zip"/,
   );
   assert.doesNotMatch(
@@ -1100,6 +1108,8 @@ async function writeGuideFixture(
       "callout::fixture[arg0=World]",
       "guideLink:another-guide[Another Guide]",
       "https://guides.micronaut.io/latest/legacy-guide.html[Legacy Guide]",
+      "https://micronaut-projects.github.io/micronaut-guides-v2/micronaut-jpa-hibernate-gradle-java/[JPA Guide]",
+      "https://micronaut-projects.github.io/micronaut-docs-v2/latest/guide/#dataAccess[Configurations for Data Access]",
       "link:@sourceDir@.zip[Download]",
       "",
       "diffLink::[]",
