@@ -229,6 +229,16 @@ test("guide catalog search matches normalized category aliases", async ({
   expect(failures).toEqual([]);
 });
 
+test("guide catalog displays the query from a direct search URL", async ({
+  page,
+}) => {
+  await page.goto(appPath("/guides/?q=spring-jpa"));
+
+  await expect(
+    page.getByRole("searchbox", { name: "Search guides" }),
+  ).toHaveValue("spring-jpa");
+});
+
 test("guide catalog provides a search form", async ({ page }) => {
   await page.goto(appPath("/guides/"));
 
