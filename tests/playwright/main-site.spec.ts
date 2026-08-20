@@ -77,6 +77,20 @@ test("desktop navigation links directly to the blog", async ({ page }) => {
   ).toHaveAttribute("href", /\/blog\/$/);
 });
 
+test("desktop navigation highlights Blog only on blog routes", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.goto(appPath("/"));
+  await expect(
+    page.locator("header").getByRole("link", { name: "Blog", exact: true }),
+  ).not.toHaveAttribute("data-active");
+
+  await page.goto(appPath("/blog/"));
+  await expect(
+    page.locator("header").getByRole("link", { name: "Blog", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+});
+
 test("desktop header enlarges the brand without horizontal overflow", async ({
   page,
 }) => {

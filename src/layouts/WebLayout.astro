@@ -158,7 +158,12 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
       )}
       {!hideHeader && !shouldUseRemoteHeader && (
         <div class={siteHeaderFrameClass}>
-          <SiteHeader surface={surface} mainSitePages={mainSitePages} client:load />
+          <SiteHeader
+            surface={surface}
+            isBlogRoute={routePath === "/blog" || routePath.startsWith("/blog/")}
+            mainSitePages={mainSitePages}
+            client:load
+          />
         </div>
       )}
       <slot />
