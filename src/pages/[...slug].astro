@@ -12,6 +12,7 @@ import { FaqAccordion } from "@/components/web/faq-accordion";
 import DownloadRelease from "@/components/web/download-release.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
+import CommercialSupport from "@/components/web/commercial-support.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
 import { withBasePath } from "@/lib/base-path";
 import {
@@ -92,6 +93,7 @@ const isBlogArchiveRoute = routeSlug === "blog"
   || routeSlug.startsWith("tag/")
   || routeSlug.startsWith("category/");
 const isFaqPage = routeSlug === "faq";
+const isCommercialSupportPage = routeSlug === "support";
 const usesPublicMarkdownLayout = "layoutVariant" in pageData && pageData.layoutVariant === "public-markdown";
 const archivePosts = await getBlogPostsForArchive(routeSlug);
 const regularBlogPostCount = routeSlug === "blog"
@@ -211,7 +213,9 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
           </header>
         )}
 
-        {isFaqPage && faqItems.length > 0 ? (
+        {isCommercialSupportPage ? (
+          <CommercialSupport />
+        ) : isFaqPage && faqItems.length > 0 ? (
           <section class="grid gap-8">
             <header class="max-w-3xl">
               <Badge variant="secondary">{pageData.eyebrow}</Badge>

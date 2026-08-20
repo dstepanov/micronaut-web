@@ -2,9 +2,9 @@
 order: 12
 title: Commercial Support
 eyebrow: Resources
-description: Review the lifecycle stages of previous and current versions of the Micronaut framework.
+description: Get expert commercial support for Micronaut applications from trusted providers.
 sourceUrl: https://micronaut.io/support/
-intro: 'The Commercial Support source page is intentionally short: it points users to companies that offer commercial support for Micronaut Framework.'
+intro: "Find commercial support options for your Micronaut applications."
 layoutVariant: public-markdown
 ---
 
