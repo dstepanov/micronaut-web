@@ -36,10 +36,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
-    addPath(
-      `tag-${tagSlug(tag)}`,
-      guideTagPath(tag, guidesRoot).replace(/\.html$/, "/"),
-    );
+    const destination = guideTagPath(tag, guidesRoot).replace(/\.html$/, "/");
+    const canonicalTagSlug = tagSlug(tag);
+    addPath(`tag-${canonicalTagSlug}`, destination);
+    addPath(`tag-${canonicalTagSlug.replaceAll("-", "_")}`, destination);
   }
   for (const guide of manifest.guides) {
     const overviewOption = preferredGuideOption(guide);

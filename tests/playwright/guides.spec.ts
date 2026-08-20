@@ -287,6 +287,11 @@ test("legacy latest guide links redirect to canonical catalog and tag paths", as
     }),
   ).toBeVisible();
 
+  await page.goto(appPath("/latest/tag-micronaut_data.html?source=legacy"));
+  await expect(page).toHaveURL(
+    tagUrlPattern("micronaut-data", "source=legacy"),
+  );
+
   await page.goto(
     appPath("/latest/micronaut-http-client-gradle-java.html?source=legacy"),
   );
