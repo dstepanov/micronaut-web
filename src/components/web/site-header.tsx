@@ -171,7 +171,7 @@ export function SiteHeader({
 
   return (
     <header className="border-b bg-card/95 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[var(--page-max)] items-center gap-2 px-4 sm:px-6 lg:gap-4 xl:px-0">
+      <div className="mx-auto flex h-14 max-w-[var(--page-max)] items-center gap-2 px-4 sm:px-6 lg:h-16 lg:gap-4 xl:px-0">
         {!hideBrand ? (
           <a
             href={surfaceHref("main", "/")}
@@ -180,7 +180,7 @@ export function SiteHeader({
           >
             <MicronautLogo
               assetBaseUrl={navigationUrls?.main}
-              className="h-9 w-[156px] sm:h-11 sm:w-[192px]"
+              className="h-9 w-[156px] sm:h-11 sm:w-[192px] lg:h-[3.25rem]"
             />
           </a>
         ) : null}
@@ -196,7 +196,7 @@ export function SiteHeader({
                   }
                   active={link.surface ? surface === link.surface : false}
                   className={cn(
-                    "h-10 rounded-md px-3 py-2 text-base font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                    "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
                     link.surface === surface &&
                       "bg-accent text-accent-foreground",
                   )}
@@ -207,7 +207,7 @@ export function SiteHeader({
             ))}
             {desktopMenuGroups.map((group) => (
               <NavigationMenuItem key={group.label}>
-                <NavigationMenuTrigger className="h-10 bg-transparent px-3 text-base font-semibold">
+                <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.88rem]">
                   {group.label}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -237,7 +237,7 @@ export function SiteHeader({
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
           <SearchDialog
-            className="h-10 w-10 justify-start px-2 text-base sm:w-56 sm:px-3 xl:w-[300px]"
+            className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]"
             mainSitePages={mainSitePages}
             mode={surface === "docs" ? "docs" : "site"}
             navigationUrls={navigationUrls}
@@ -246,7 +246,7 @@ export function SiteHeader({
           <Button
             variant="outline"
             size="sm"
-            className="hidden h-10 px-4 text-base lg:inline-flex"
+            className="hidden h-9 lg:inline-flex"
             asChild
           >
             <a href="https://launch.micronaut.io">Launch</a>
