@@ -77,6 +77,20 @@ test("desktop navigation links directly to the blog", async ({ page }) => {
   ).toHaveAttribute("href", /\/blog\/$/);
 });
 
+test("desktop header enlarges the brand without horizontal overflow", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(appPath("/"));
+
+  const header = page.locator("header");
+  await expect(header.locator(":scope > div")).toHaveCSS("height", "64px");
+  await expect(
+    header.locator('a[aria-label="Micronaut home"] img:visible'),
+  ).toHaveCSS("height", "52px");
+  await expectNoHorizontalOverflow(page);
+});
+
 test("main-site runtime scripts do not include build-time content processors", async ({
   page,
 }) => {
