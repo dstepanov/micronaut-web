@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { renderAsciiDoc } from "../asciidoc/rendering.ts";
 import { optimizeImages as optimizeGeneratedGuideHtml } from "../shared/generated-html.ts";
+import { rewriteMicronautSiteUrl } from "../shared/micronaut-links.ts";
 import { guideExtensionRegistry } from "./extensions/index.ts";
 import type { Guide, GuideOption, GuideRenderContext } from "./model.ts";
 import { productionUrl } from "../../src/lib/route-compatibility.ts";
@@ -155,6 +156,10 @@ function rewriteGuideUrls(input: string, slug: string): string {
   return input.replace(
     /\b(href|src)="([^"]*)"/g,
     (match: string, attributeName: string, value: string): string => {
+      const canonicalUrl = rewriteMicronautSiteUrl(value);
+      if (canonicalUrl) {
+        return `${attributeName}="${canonicalUrl}"`;
+      }
       const legacyGuidePath =
         /^https:\/\/guides\.micronaut\.io\/latest\/([^?#]+)([?#].*)?$/i.exec(
           value,
