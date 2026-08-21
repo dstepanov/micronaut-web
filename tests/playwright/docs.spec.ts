@@ -378,7 +378,9 @@ test("docs page renders related latest guides from the guides manifest", async (
     .locator("[data-generated-docs]")
     .evaluate((root) =>
       Array.from(root.children)
-        .filter((child) => child.tagName.toLowerCase() !== "script")
+        .filter(
+          (child) => !["script", "style"].includes(child.tagName.toLowerCase()),
+        )
         .slice(0, 3)
         .map((child) => {
           const element = child as HTMLElement;

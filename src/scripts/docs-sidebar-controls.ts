@@ -39,9 +39,17 @@ document.addEventListener("keydown", (event) => {
     setSidebarOpen(!sidebarIsOpen());
   }
 });
-mobileNavigationTrigger?.addEventListener("click", () => mobileNavigation?.showModal());
-mobileNavigationClose?.addEventListener("click", () => mobileNavigation?.close());
+mobileNavigationTrigger?.addEventListener("click", () =>
+  mobileNavigation?.showModal(),
+);
+mobileNavigationClose?.addEventListener("click", () =>
+  mobileNavigation?.close(),
+);
 mobileNavigation?.addEventListener("click", (event) => {
   if (event.target === mobileNavigation) mobileNavigation.close();
-  if ((event.target as Element).closest("a[href]")) mobileNavigation.close();
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest("a[href]");
+  if (link && !event.target.closest("[data-docs-project-section-toggle]")) {
+    mobileNavigation.close();
+  }
 });

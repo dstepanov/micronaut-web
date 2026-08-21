@@ -13,7 +13,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DocsRelatedGuides } from "@/components/web/docs-related-guides";
+import DocsRelatedGuides from "@/components/web/docs-related-guides.astro";
 import DocsShell from "@/components/web/docs-shell.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
@@ -145,7 +145,6 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
                   <div class="generated-docs-content" set:html={generatedDocHtmlParts.titleHtml} />
                 )}
                 <DocsRelatedGuides
-                  client:visible
                   manifestUrl={guidesManifestUrl}
                   topicAliases={relatedGuideTopicAliases}
                 />
@@ -162,7 +161,6 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
           <>
             {shouldRenderRelatedGuides && (
               <DocsRelatedGuides
-                client:visible
                 manifestUrl={guidesManifestUrl}
                 topicAliases={relatedGuideTopicAliases}
               />
