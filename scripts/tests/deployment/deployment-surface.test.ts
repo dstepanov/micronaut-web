@@ -449,6 +449,16 @@ test("docs and guides production layouts load the shared header shell from the m
     ),
     "utf8",
   );
+  const shellClient = await fs.readFile(
+    path.join(
+      projectDirectory,
+      "src",
+      "components",
+      "web",
+      "site-header-shell-client.tsx",
+    ),
+    "utf8",
+  );
   const shellBuild = await fs.readFile(
     path.join(projectDirectory, "scripts", "build-site-header-shell.ts"),
     "utf8",
@@ -466,9 +476,10 @@ test("docs and guides production layouts load the shared header shell from the m
   assert.match(layout, /resolvedCanonicalUrl/);
   assert.match(layout, /canonicalSurfaceUrl\(canonicalSurface, routePath\)/);
   assert.match(astroConfig, /site:\s*deploymentConfig\.site/);
-  assert.match(shell, /createRoot/);
+  assert.match(shell, /import\("\.\/site-header-shell-client"\)/);
+  assert.match(shellClient, /createRoot/);
   assert.match(shell, /@\/styles\/globals\.css/);
-  assert.match(shell, /SiteHeader/);
+  assert.match(shellClient, /SiteHeader/);
   assert.match(
     shellBuild,
     /"process\.env\.NODE_ENV":\s*JSON\.stringify\("production"\)/,

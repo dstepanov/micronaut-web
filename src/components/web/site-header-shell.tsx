@@ -1,55 +1,45 @@
-import { createRoot } from "react-dom/client";
-
-import { SiteHeader } from "@/components/web/site-header";
-import type { SiteSurfaceUrls } from "@/lib/base-path";
 import "@/styles/globals.css";
-
-type HeaderSurface = "main" | "docs" | "guides";
-
-type HeaderElement = HTMLElement & {
-  dataset: DOMStringMap & {
-    docsSearchIndexUrl?: string;
-    docsUrl?: string;
-    guidesUrl?: string;
-    mainUrl?: string;
-    surface?: string;
-  };
-};
 
 const headerSelector = "[data-micronaut-site-header]";
 const styleSelector = "link[data-micronaut-site-header-style]";
-const mountedHeaders = new WeakSet<HTMLElement>();
+let headerClient: Promise<typeof import("./site-header-shell-client")> | undefined;
 
 ensureShellStyles();
 mountAll();
 
 window.MicronautSiteHeader = {
-  mount: mountHeader,
+  mount: loadHeader,
   mountAll,
 };
 
 function mountAll(): void {
-  for (const element of document.querySelectorAll<HTMLElement>(
-    headerSelector,
-  )) {
-    mountHeader(element);
+  for (const element of document.querySelectorAll<HTMLElement>(headerSelector)) {
+    element.addEventListener("pointerenter", loadHeader, { once: true });
+    element.addEventListener("focusin", loadHeader, { once: true });
+    element.addEventListener("touchstart", loadHeader, { once: true, passive: true });
   }
+
+  document.addEventListener("click", (event) => {
+    const trigger = (event.target as Element | null)?.closest<HTMLElement>(
+      "[data-micronaut-header-interaction]",
+    );
+    if (!trigger) return;
+    event.preventDefault();
+    headerClient ||= import("./site-header-shell-client");
+    void headerClient.then(({ mountAll: mountHeaderClient }) => {
+      mountHeaderClient();
+      requestAnimationFrame(() => {
+        document
+          .querySelector<HTMLElement>(trigger.dataset.micronautHeaderInteraction || "")
+          ?.click();
+      });
+    });
+  });
 }
 
-function mountHeader(element: HTMLElement): void {
-  if (mountedHeaders.has(element)) {
-    return;
-  }
-  mountedHeaders.add(element);
-  const headerElement = element as HeaderElement;
-  const urls = navigationUrls(headerElement);
-  createRoot(headerElement).render(
-    <SiteHeader
-      docsSearchIndexUrl={headerElement.dataset.docsSearchIndexUrl}
-      navigationUrls={urls}
-      surface={surface(headerElement.dataset.surface)}
-    />,
-  );
+function loadHeader(): void {
+  headerClient ||= import("./site-header-shell-client");
+  void headerClient.then(({ mountAll: mountHeaderClient }) => mountHeaderClient());
 }
 
 function ensureShellStyles(): void {
@@ -65,19 +55,4 @@ function ensureShellStyles(): void {
   link.href = new URL("site-header.css", script.src).toString();
   link.dataset.micronautSiteHeaderStyle = "";
   document.head.append(link);
-}
-
-function navigationUrls(element: HeaderElement): SiteSurfaceUrls {
-  return {
-    main: element.dataset.mainUrl,
-    docs: element.dataset.docsUrl,
-    guides: element.dataset.guidesUrl,
-  };
-}
-
-function surface(value: string | undefined): HeaderSurface {
-  if (value === "main" || value === "docs" || value === "guides") {
-    return value;
-  }
-  return "main";
 }

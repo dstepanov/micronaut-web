@@ -1,9 +1,5 @@
 ---
 import DocsSidebarContent from "@/components/web/docs-sidebar-content.astro";
-import {
-  DocsSidebarMobileSheet,
-  DocsSidebarRailControl,
-} from "@/components/web/docs-sidebar-controls";
 import DocsScrollSpy from "@/components/web/docs-scroll-spy.astro";
 import type { DocsProjectCatalog } from "@/lib/content-catalog";
 
@@ -59,24 +55,56 @@ const {
             activeSections={activeSections}
             instanceId="desktop"
           />
-          <DocsSidebarRailControl client:load />
+          <button
+            type="button"
+            class="docs-sidebar-rail-control"
+            data-docs-sidebar-toggle
+            aria-label="Toggle Sidebar"
+            aria-expanded="true"
+            title="Toggle Sidebar"
+          >
+            <span class="sr-only">Toggle Sidebar</span>
+          </button>
         </div>
       </div>
     </aside>
     <main data-slot="sidebar-inset" class="relative flex w-full min-w-0 flex-1 flex-col bg-background">
       <div class="sticky top-14 z-30 flex h-11 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
         <span class="text-sm font-medium text-foreground">Docs</span>
-        <DocsSidebarMobileSheet client:load>
-          <DocsSidebarContent
-            projectCatalog={projectCatalog}
-            activeSlug={activeSlug}
-            activeSections={activeSections}
-            instanceId="mobile"
-          />
-        </DocsSidebarMobileSheet>
+        <button
+          type="button"
+          class="inline-flex size-8 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          data-docs-mobile-nav-trigger
+          aria-label="Open docs navigation"
+        >
+          <span aria-hidden="true">☰</span>
+          <span class="sr-only">Open docs navigation</span>
+        </button>
+        <dialog
+          class="m-0 h-full w-[calc(100vw-1rem)] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground shadow-xl backdrop:bg-black/50"
+          data-docs-mobile-nav
+          aria-label="Docs navigation"
+        >
+          <div class="flex items-center justify-between border-b px-4 py-3">
+            <span class="font-semibold">Docs navigation</span>
+            <button type="button" data-docs-mobile-nav-close aria-label="Close docs navigation">×</button>
+          </div>
+          <div class="docs-sidebar-mobile-sheet-body">
+            <DocsSidebarContent
+              projectCatalog={projectCatalog}
+              activeSlug={activeSlug}
+              activeSections={activeSections}
+              instanceId="mobile"
+            />
+          </div>
+        </dialog>
       </div>
       <slot />
     </main>
   </div>
   <DocsScrollSpy />
 </div>
+
+<script>
+  import "@/scripts/docs-sidebar-controls";
+</script>
