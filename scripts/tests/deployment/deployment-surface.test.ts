@@ -477,6 +477,8 @@ test("docs and guides production layouts load the shared header shell from the m
   assert.match(layout, /canonicalSurfaceUrl\(canonicalSurface, routePath\)/);
   assert.match(astroConfig, /site:\s*deploymentConfig\.site/);
   assert.match(shell, /import\("\.\/site-header-shell-client"\)/);
+  assert.match(shell, /requestIdleCallback/);
+  assert.match(shell, /scheduleHeaderLoad\(\)/);
   assert.match(shellClient, /createRoot/);
   assert.match(shell, /@\/styles\/globals\.css/);
   assert.match(shellClient, /SiteHeader/);

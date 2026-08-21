@@ -6,6 +6,7 @@ let headerClient: Promise<typeof import("./site-header-shell-client")> | undefin
 
 ensureShellStyles();
 mountAll();
+scheduleHeaderLoad();
 
 window.MicronautSiteHeader = {
   mount: loadHeader,
@@ -40,6 +41,20 @@ function mountAll(): void {
 function loadHeader(): void {
   headerClient ||= import("./site-header-shell-client");
   void headerClient.then(({ mountAll: mountHeaderClient }) => mountHeaderClient());
+}
+
+function scheduleHeaderLoad(): void {
+  const idleWindow = window as Window & {
+    requestIdleCallback?: (
+      callback: () => void,
+      options?: { timeout?: number },
+    ) => number;
+  };
+  if (idleWindow.requestIdleCallback) {
+    idleWindow.requestIdleCallback(loadHeader, { timeout: 250 });
+    return;
+  }
+  window.setTimeout(loadHeader, 0);
 }
 
 function ensureShellStyles(): void {
