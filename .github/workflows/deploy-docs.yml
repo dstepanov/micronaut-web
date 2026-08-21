@@ -94,9 +94,10 @@ jobs:
             echo "::error::Platform release version must use major.minor.patch format; received '$DOCS_VERSION'."
             exit 1
           fi
-          publish_latest="$REQUESTED_PUBLISH_LATEST"
-          if [ "$IS_PLATFORM_RELEASE" = "true" ]; then
-            publish_latest="$(node --input-type=module --eval 'import { isNewestPublishedDocsVersion } from "./scripts/update-docs-version-manifest.ts"; process.stdout.write(String(await isNewestPublishedDocsVersion({ publishedDirectory: "published-docs", version: process.env.DOCS_VERSION })));')"
+          is_newest="$(node --input-type=module --eval 'import { isNewestPublishedDocsVersion } from "./scripts/update-docs-version-manifest.ts"; process.stdout.write(String(await isNewestPublishedDocsVersion({ publishedDirectory: "published-docs", version: process.env.DOCS_VERSION })));')"
+          publish_latest=false
+          if [ "$REQUESTED_PUBLISH_LATEST" = "true" ] && [ "$is_newest" = "true" ]; then
+            publish_latest=true
           fi
           echo "docs_version=$DOCS_VERSION" >> "$GITHUB_OUTPUT"
           echo "platform_ref=${PLATFORM_REF:-$DOCS_VERSION}" >> "$GITHUB_OUTPUT"
