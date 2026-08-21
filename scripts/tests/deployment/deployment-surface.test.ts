@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { pruneSurface } from "../../prune-surface.ts";
 import { publishDocsSurface } from "../../publish-docs-surface.ts";
 import { configurePagesDeployment } from "../../configure-pages-deployment.ts";
+import { purgeDocsPatchVersions } from "../../purge-docs-patch-versions.ts";
 import { updateDocsVersionManifest } from "../../update-docs-version-manifest.ts";
 
 const projectDirectory = path.resolve(
@@ -513,7 +514,7 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     assert.match(workflow, /target_repository:/);
     assert.match(
       workflow,
-      /repository:\s*\$\{\{ inputs\.target_repository \}\}/,
+      /repository:\s*\$\{\{ inputs\.target_repository(?: \|\| '[^']+')? \}\}/,
     );
     assert.match(
       workflow,
@@ -521,7 +522,7 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     );
     assert.match(
       workflow,
-      /git push origin HEAD:\$\{\{ inputs\.target_branch \}\}/,
+      /git push origin HEAD:\$\{\{ inputs\.target_branch(?: \|\| '[^']+')? \}\}/,
     );
     assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
     assert.doesNotMatch(workflow, /upload-pages-artifact/);
@@ -664,8 +665,16 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
     "utf8",
   );
 
-  assert.match(workflow, /DOCS_VERSION:\s*\$\{\{ inputs\.docs_version \}\}/);
-  assert.match(workflow, /PLATFORM_REF:\s*\$\{\{ inputs\.platform_ref \}\}/);
+  assert.match(workflow, /platform-released/);
+  assert.match(
+    workflow,
+    /DOCS_VERSION:\s*\$\{\{ github\.event\.client_payload\.version \|\| inputs\.docs_version \}\}/,
+  );
+  assert.match(
+    workflow,
+    /PLATFORM_REF:\s*\$\{\{ github\.event\.client_payload\.sha \|\| inputs\.platform_ref \}\}/,
+  );
+  assert.match(workflow, /purge-docs-patch-versions\.ts/);
   assert.match(workflow, /effective_ref="\$\{PLATFORM_REF:-\$DOCS_VERSION\}"/);
   assert.match(
     workflow,
@@ -694,6 +703,38 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
   );
   assert.doesNotMatch(workflow, /default:\s*main/);
   assert.doesNotMatch(workflow, /ref:\s*\$\{\{ inputs\.platform_ref \}\}/);
+});
+
+test("platform patch releases remove only earlier patches for their minor line", async (t) => {
+  const published = await temporaryDirectory(t);
+  await writeFiles(published, [
+    "5.0.0/index.html",
+    "5.0.0.html",
+    "5.0.1/index.html",
+    "5.0.1.html",
+    "5.1.0/index.html",
+    "5.1.0.html",
+    "4.9.9/index.html",
+    "latest/index.html",
+  ]);
+
+  assert.deepEqual(
+    await purgeDocsPatchVersions({
+      publishedDirectory: published,
+      version: "5.0.1",
+    }),
+    ["5.0.0", "5.0.0.html"],
+  );
+
+  await assert.rejects(
+    fs.access(path.join(published, "5.0.0/index.html")),
+    /ENOENT/,
+  );
+  await assert.rejects(fs.access(path.join(published, "5.0.0.html")), /ENOENT/);
+  await fs.access(path.join(published, "5.0.1/index.html"));
+  await fs.access(path.join(published, "5.1.0/index.html"));
+  await fs.access(path.join(published, "4.9.9/index.html"));
+  await fs.access(path.join(published, "latest/index.html"));
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {
