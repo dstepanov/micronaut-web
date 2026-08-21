@@ -456,6 +456,10 @@ test("generated docs page fits the mobile viewport", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Open docs navigation" }),
   ).toBeVisible();
+  const mobileNavigationTrigger = page.getByRole("button", {
+    name: "Open docs navigation",
+  });
+  expect((await mobileNavigationTrigger.boundingBox())?.x).toBeLessThan(64);
   await expect(
     page.locator(".docs-code-snippet-template").first(),
   ).toBeVisible();
