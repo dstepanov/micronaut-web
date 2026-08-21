@@ -49,8 +49,7 @@ async function buildSiteHeaderShell(): Promise<void> {
           "site-header-shell.tsx",
         ),
         fileName: () => "site-header.js",
-        formats: ["iife"],
-        name: "MicronautSiteHeaderShell",
+        formats: ["es"],
       },
       outDir: distDirectory,
       rollupOptions: {
@@ -68,7 +67,6 @@ async function buildSiteHeaderShell(): Promise<void> {
             assetInfo.name?.endsWith(".css")
               ? "site-header.css"
               : "[name][extname]",
-          extend: true,
         },
       },
       sourcemap: false,

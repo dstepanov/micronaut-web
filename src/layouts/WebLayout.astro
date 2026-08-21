@@ -163,11 +163,27 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
                       {link.label}
                     </a>
                   ))}
+                  <button
+                    type="button"
+                    class="rounded-md border px-2 py-1 text-muted-foreground hover:text-foreground"
+                    data-micronaut-header-interaction='[aria-label="Search Micronaut"]'
+                    aria-label="Search Micronaut"
+                  >
+                    Search
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-md border px-2 py-1 text-muted-foreground hover:text-foreground"
+                    data-micronaut-header-interaction='[role="switch"]'
+                    aria-label="Switch theme"
+                  >
+                    Theme
+                  </button>
                 </span>
               </div>
             </nav>
           </div>
-          <script src={remoteHeaderScriptUrl} defer></script>
+          <script type="module" src={remoteHeaderScriptUrl}></script>
         </>
       )}
       {!hideHeader && !shouldUseRemoteHeader && (
