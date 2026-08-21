@@ -247,12 +247,16 @@ Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `s
 
 Standalone docs and guides builds do not publish their own header shell. In production they render a small static fallback header, load the header stylesheet and React shell from the configured main-site URL, then mount the current `SiteHeader` implementation from `micronaut-web`. This keeps the top navigation owned by the web repository even when docs and guides content are generated from separate repositories. The fallback links use `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, and `MICRONAUT_GUIDES_SITE_URL`, so split-repo Pages deployments can point at the correct published artifacts without hard-coded repository names.
 
-The main workflow, `.github/workflows/deploy-web.yml`, runs on pushes to `main`, builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned `dist` directory as the GitHub Pages artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides and does not render generated docs/guides content. The docs and guides workflows are manual publish jobs in this repository:
+### GitHub Actions
 
-- `.github/workflows/deploy-docs.yml` publishes to `micronaut-projects/micronaut-docs-v2` by default.
-- `.github/workflows/deploy-guides.yml` publishes to `micronaut-projects/micronaut-guides-v2` by default.
-- The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact.
-- The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
+| Workflow | Trigger | Summary |
+| --- | --- | --- |
+| [`Validate Build`](.github/workflows/validate-build.yml) | Pull requests | Checks script formatting and builds the docs, guides, and main-site surfaces. Generated external content is disabled for this validation build. |
+| [`Deploy Web`](.github/workflows/deploy-web.yml) | Pushes to `main` or manual dispatch | Builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides. |
+| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch | Builds a requested Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` by default. It can also update `/latest`. |
+| [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Builds Micronaut Guides and publishes it to `micronaut-projects/micronaut-guides-v2:gh-pages` by default. A `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
+
+The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact. The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
 
 The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `GH_TOKEN` with `contents:write` access to that target repository.
 
