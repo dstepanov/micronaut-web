@@ -170,7 +170,7 @@ export function SiteHeader({
   const mobileLinkHref = (link: MobileMenuLink) =>
     link.surface
       ? withConfiguredSurfacePath(link.surface, link.href, navigationUrls)
-      : link.href;
+      : withConfiguredBasePath(link.href, navigationUrls);
   const desktopPrimaryLinks = primaryLinks;
   const desktopMenuGroups = menuGroups.filter(
     (group) => group.label !== "Foundation",
@@ -244,7 +244,7 @@ export function SiteHeader({
         </NavigationMenu>
         <div className="ml-auto flex min-w-0 items-center gap-2">
           <SearchDialog
-            className="h-9 w-9 justify-start px-2 text-sm sm:w-52 sm:px-3 xl:w-[280px]"
+            className="h-9 w-9 justify-center px-0 text-sm sm:w-52 sm:justify-start sm:px-3 xl:w-[280px]"
             mainSitePages={mainSitePages}
             mode={surface === "docs" ? "docs" : "site"}
             navigationUrls={navigationUrls}
