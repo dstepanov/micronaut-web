@@ -317,7 +317,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               {story.logo ? (
                 <div class="flex h-16 min-w-0 items-center">
                   <span class:list={["inline-flex h-14 max-w-[12rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card", story.logoInvertOnDark && !story.logoDark && "dark:!bg-white"]}>
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
+                    <img src={responsiveLogoSources[story.logo]?.src ?? story.logo} srcset={responsiveLogoSources[story.logo]?.srcset} sizes={responsiveLogoSources[story.logo]?.sizes} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={responsiveLogoSources[story.logo]?.width ?? story.logoDimensions?.width} height={responsiveLogoSources[story.logo]?.height ?? story.logoDimensions?.height} />
                     {story.logoDark ? (
                       <img src={story.logoDark} alt={`${story.organization} logo`} class:list={["hidden max-h-full max-w-full object-contain object-left dark:block", story.logoClass]} loading="lazy" width={story.logoDarkDimensions?.width} height={story.logoDarkDimensions?.height} />
                     ) : null}
@@ -348,7 +348,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               <CardHeader className="gap-3 px-5">
                 {story.logo ? (
                   <span class:list={["inline-flex h-11 max-w-[10rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card", story.logoInvertOnDark && !story.logoDark && "dark:!bg-white"]}>
-                    <img src={story.logo} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={story.logoDimensions?.width} height={story.logoDimensions?.height} />
+                    <img src={responsiveLogoSources[story.logo]?.src ?? story.logo} srcset={responsiveLogoSources[story.logo]?.srcset} sizes={responsiveLogoSources[story.logo]?.sizes} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={responsiveLogoSources[story.logo]?.width ?? story.logoDimensions?.width} height={responsiveLogoSources[story.logo]?.height ?? story.logoDimensions?.height} />
                     {story.logoDark ? (
                       <img src={story.logoDark} alt={`${story.organization} logo`} class:list={["hidden max-h-full max-w-full object-contain object-left dark:block", story.logoClass]} loading="lazy" width={story.logoDarkDimensions?.width} height={story.logoDarkDimensions?.height} />
                     ) : null}
