@@ -3,12 +3,17 @@ const host = `http://127.0.0.1:${port}`;
 const surface = process.env.MICRONAUT_DEPLOY_SURFACE || "main";
 
 const surfacePaths = {
-  main: ["/micronaut-web/"],
+  main: [
+    "/micronaut-web/",
+    "/micronaut-web/2019/10/07/micronaut-aop-awesome-flexibility-without-the-complexity/",
+    "/micronaut-web/2025/06/30/transitioning-to-virtual-threads-using-the-micronaut-loom-carrier/",
+    "/micronaut-web/2026/05/20/micronaut-framework-5-0-0-released/",
+  ],
   docs: [
     "/micronaut-docs-v2/latest/",
     "/micronaut-docs-v2/latest/core/",
     "/micronaut-docs-v2/latest/data/",
-    "/micronaut-docs-v2/latest/oracle-cloud/",
+    "/micronaut-docs-v2/latest/oracle-cloud/index.html",
   ],
   guides: [
     "/micronaut-guides-v2/",
