@@ -1,4 +1,4 @@
-import { createRoot } from "react-dom/client";
+import { hydrateRoot } from "react-dom/client";
 
 import { SiteHeader } from "@/components/web/site-header";
 import type { SiteSurfaceUrls } from "@/lib/base-path";
@@ -23,7 +23,8 @@ export function mountAll(): void {
     if (mountedHeaders.has(element)) continue;
     mountedHeaders.add(element);
     const header = element as HeaderElement;
-    createRoot(header).render(
+    hydrateRoot(
+      header,
       <SiteHeader
         docsSearchIndexUrl={header.dataset.docsSearchIndexUrl}
         navigationUrls={navigationUrls(header)}
