@@ -114,6 +114,25 @@ test("desktop navigation links directly to the blog", async ({ page }) => {
   ).toHaveAttribute("href", /\/blog\/$/);
 });
 
+test("theme query parameter presets the selected color mode", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (new URLSearchParams(window.location.search).get("theme") === "dark") {
+      localStorage.setItem("micronaut-web-theme-mode", "light");
+    }
+  });
+
+  await page.goto(`${appPath("/")}?theme=dark`);
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveAttribute("data-theme-mode", "dark");
+
+  await page.goto(appPath("/"));
+  await expect(page.locator("html")).toHaveClass(/dark/);
+
+  await page.goto(`${appPath("/")}?theme=light`);
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveAttribute("data-theme-mode", "light");
+});
+
 test("desktop navigation highlights Blog only on blog routes", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
 

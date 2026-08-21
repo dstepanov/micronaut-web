@@ -1,7 +1,11 @@
 ---
 import "@/styles/globals.css";
 import { SiteHeader } from "@/components/web/site-header";
-import { LEGACY_THEME_STORAGE_KEY, THEME_MODE_STORAGE_KEY } from "@/lib/experience-theme";
+import {
+  LEGACY_THEME_STORAGE_KEY,
+  THEME_MODE_QUERY_PARAMETER,
+  THEME_MODE_STORAGE_KEY,
+} from "@/lib/experience-theme";
 import { getMainSitePageSummaries } from "@/lib/main-site-content";
 import { withBasePath } from "@/lib/base-path";
 import {
@@ -74,6 +78,7 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
       is:inline
       define:vars={{
         legacyThemeStorageKey: LEGACY_THEME_STORAGE_KEY,
+        themeModeQueryParameter: THEME_MODE_QUERY_PARAMETER,
         themeModeStorageKey: THEME_MODE_STORAGE_KEY
       }}
     >
@@ -91,13 +96,22 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
         };
         let themeMode = preferredThemeMode;
         try {
-          const storedMode = localStorage.getItem(themeModeStorageKey);
-          const legacyMode = localStorage.getItem(legacyThemeStorageKey);
-          if (isThemeMode(storedMode)) {
-            themeMode = storedMode;
-          } else if (legacyMode === "light" || legacyMode === "dark") {
-            themeMode = legacyMode;
-            localStorage.setItem(themeModeStorageKey, legacyMode);
+          const presetMode = new URLSearchParams(window.location.search).get(
+            themeModeQueryParameter,
+          );
+          if (isThemeMode(presetMode)) {
+            themeMode = presetMode;
+            localStorage.setItem(themeModeStorageKey, presetMode);
+            localStorage.removeItem(legacyThemeStorageKey);
+          } else {
+            const storedMode = localStorage.getItem(themeModeStorageKey);
+            const legacyMode = localStorage.getItem(legacyThemeStorageKey);
+            if (isThemeMode(storedMode)) {
+              themeMode = storedMode;
+            } else if (legacyMode === "light" || legacyMode === "dark") {
+              themeMode = legacyMode;
+              localStorage.setItem(themeModeStorageKey, legacyMode);
+            }
           }
         } catch {
           themeMode = preferredThemeMode;
