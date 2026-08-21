@@ -476,6 +476,8 @@ Run generated-content processing at build time. Syntax highlighting, Asciidoctor
 
 Use `is:inline` only for intentional critical scripts, such as the early theme script that prevents a visible color-mode flash. Non-critical scripts should be processed by Astro so they can be bundled, deduplicated, and cached.
 
+To open any Astro-rendered page with a chosen color mode, add `?theme=dark` or `?theme=light` to its URL. The preset overrides the saved mode and becomes the saved preference for subsequent navigation.
+
 Keep shared CSS focused. Global design tokens and cross-surface primitives belong in `src/styles/globals.css`, but route-specific styling should stay close to the route or component that needs it. Avoid adding one-off page styles to the global baseline.
 
 Deduplicate public assets before publishing. Prefer canonical asset paths for shared logos, brand files, PDFs, and generated content assets, and keep legacy copies only when external compatibility requires them.
