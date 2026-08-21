@@ -189,6 +189,46 @@ test("homepage code examples include a Python variant", async ({ page }) => {
   );
 });
 
+test("homepage serves responsive customer logos without SVG path errors", async ({
+  page,
+}) => {
+  const svgPathErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      message.text().includes("<path> attribute d")
+    ) {
+      svgPathErrors.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(appPath("/"));
+
+  const marquee = page.locator(".customer-logo-marquee");
+  await marquee.scrollIntoViewIfNeeded();
+
+  for (const [name, widths] of [
+    ["Samsung SmartThings", "111w|222w"],
+    ["Mojang", "100w|200w"],
+    ["Minecraft", "111w|222w"],
+  ] as const) {
+    const image = marquee.locator(`img[alt="${name} logo"]`).first();
+    await expect(image).toHaveAttribute("srcset", /\.webp/);
+    await expect
+      .poll(() =>
+        image.evaluate((element) => (element as HTMLImageElement).currentSrc),
+      )
+      .toMatch(new RegExp(`(?:${widths})\\.webp$`));
+  }
+
+  await expect(page.locator("#server-groovy-tab svg path")).toHaveAttribute(
+    "d",
+    /-1\.622-2\.692-2\.36-3\.951z/,
+  );
+  expect(svgPathErrors).toEqual([]);
+});
+
 test("download page updates the release links from GitHub's latest release", async ({ page }) => {
   await page.route("https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest", async (route) => {
     await route.fulfill({

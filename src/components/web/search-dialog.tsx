@@ -214,7 +214,7 @@ export function SearchDialog({
         onClick={() => setOpen(true)}
       >
         <Search />
-        <span className="hidden min-w-32 text-left text-muted-foreground/90 sm:inline">
+        <span className="hidden min-w-32 text-left text-muted-foreground sm:inline">
           {resolvedButtonLabel}
         </span>
         <kbd
