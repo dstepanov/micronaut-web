@@ -18,6 +18,9 @@ const generatedDocsProjectCatalogFile = join(
 );
 
 export async function loadDocsProjectCatalog(): Promise<DocsProjectCatalog> {
+  if (process.env.MICRONAUT_DOCS_CATALOG_FALLBACK === "true") {
+    return fallbackDocsProjectCatalog as DocsProjectCatalog;
+  }
   try {
     return JSON.parse(
       await readFile(generatedDocsProjectCatalogFile, "utf8"),

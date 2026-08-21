@@ -39,6 +39,7 @@ jobs:
           MICRONAUT_GUIDES_ROOT: /
           MICRONAUT_GUIDES_LATEST_ROOT: /
           MICRONAUT_PREPARE_GENERATED_CONTENT: "false"
+          MICRONAUT_DOCS_CATALOG_FALLBACK: "true"
         run: npm run build:surface -- --surface ${{ matrix.surface }}
 
       - name: Run Lighthouse CI for light and dark themes
