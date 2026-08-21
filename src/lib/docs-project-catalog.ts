@@ -18,7 +18,10 @@ const generatedDocsProjectCatalogFile = join(
 );
 
 export async function loadDocsProjectCatalog(): Promise<DocsProjectCatalog> {
-  if (process.env.MICRONAUT_DOCS_CATALOG_FALLBACK === "true") {
+  if (
+    process.env.MICRONAUT_DOCS_CATALOG_FALLBACK === "true" &&
+    import.meta.env.PROD
+  ) {
     return fallbackDocsProjectCatalog as DocsProjectCatalog;
   }
   try {
