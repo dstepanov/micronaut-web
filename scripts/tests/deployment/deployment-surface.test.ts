@@ -559,6 +559,30 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   assert.doesNotMatch(guidesWorkflow, /ASTRO_BASE:\s*\/micronaut-guides-v2\//);
 });
 
+test("published docs republish workflow dispatches versions oldest first", async () => {
+  const [republishWorkflow, docsWorkflow] = await Promise.all(
+    ["republish-published-docs.yml", "deploy-docs.yml"].map(
+      async (workflow) =>
+        fs.readFile(
+          path.join(projectDirectory, ".github", "workflows", workflow),
+          "utf8",
+        ),
+    ),
+  );
+
+  assert.match(republishWorkflow, /schedule:/);
+  assert.match(republishWorkflow, /workflow_dispatch:/);
+  assert.match(republishWorkflow, /actions:\s*write/);
+  assert.match(republishWorkflow, /repository:\s*\$\{\{ inputs\.target_repository/);
+  assert.match(republishWorkflow, /path:\s*published-docs/);
+  assert.match(republishWorkflow, /grep -E '.*\[0-9\].*\\\.\[0-9\].*\\\.\[0-9\]/);
+  assert.match(republishWorkflow, /sort -V/);
+  assert.match(republishWorkflow, /gh workflow run deploy-docs\.yml/);
+  assert.match(republishWorkflow, /publish_latest=false/);
+  assert.match(republishWorkflow, /gh run watch .*--exit-status/);
+  assert.match(docsWorkflow, /republish_request_id:/);
+});
+
 test("local surface build defaults match the transferred repositories", async () => {
   const buildSurface = await fs.readFile(
     path.join(projectDirectory, "scripts", "build-surface.ts"),

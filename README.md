@@ -302,6 +302,8 @@ The docs merge stores deployment metadata with the published artifact. If the ba
 
 The docs workflow does not check out or render Micronaut Guides.
 
+`.github/workflows/republish-published-docs.yml` runs weekly and can also be started manually. It reads the version folders already published to the docs Pages branch, filters them to `major.minor.patch` releases, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. The republish jobs leave `/latest` unchanged.
+
 The published docs branch layout is:
 
 - `/index.html`: docs selector/index.

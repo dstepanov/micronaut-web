@@ -32,6 +32,9 @@ on:
       platform_ref:
         description: Optional platform branch, tag, or SHA. Defaults to docs_version, with v-prefixed tag fallback.
         required: false
+      republish_request_id:
+        description: Internal identifier used by the published-docs republish workflow
+        required: false
 
 permissions:
   contents: write
@@ -40,7 +43,7 @@ concurrency:
   group: docs-pages
   cancel-in-progress: false
 
-run-name: Publish docs ${{ github.event.client_payload.version || inputs.docs_version }}
+run-name: Publish docs ${{ github.event.client_payload.version || inputs.docs_version }}${{ inputs.republish_request_id && format(' (republish {0})', inputs.republish_request_id) || '' }}
 
 jobs:
   publish:
