@@ -1,6 +1,9 @@
 name: Deploy Guides
 
 on:
+  repository_dispatch:
+    types:
+      - guides-updated
   workflow_dispatch:
     inputs:
       target_repository:
@@ -27,6 +30,8 @@ concurrency:
   group: guides-pages
   cancel-in-progress: false
 
+run-name: Publish guides from ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}
+
 jobs:
   publish:
     name: Build and publish guides
@@ -38,7 +43,7 @@ jobs:
       - name: Validate GitHub token
         env:
           HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository }}
+          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
         run: |
           if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_GH_TOKEN" != "true" ]; then
             echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
@@ -48,16 +53,16 @@ jobs:
       - name: Check out guides Pages repository
         uses: actions/checkout@v7
         with:
-          repository: ${{ inputs.target_repository }}
-          ref: ${{ inputs.target_branch }}
+          repository: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
+          ref: ${{ inputs.target_branch || 'gh-pages' }}
           path: published-guides
           token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Check out guides project
         uses: actions/checkout@v7
         with:
-          repository: ${{ inputs.guides_repository }}
-          ref: ${{ inputs.guides_ref }}
+          repository: ${{ inputs.guides_repository || 'micronaut-projects/micronaut-guides' }}
+          ref: ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}
           path: external/micronaut-guides
 
       - name: Set up Node
@@ -80,7 +85,7 @@ jobs:
           CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
           CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_GUIDES_CUSTOM_DOMAIN }}
           CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_GUIDES_BASE }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository }}
+          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
           PUBLISHED_DIRECTORY: published-guides
         run: node scripts/configure-pages-deployment.ts --surface guides --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
 
@@ -106,8 +111,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "Publish Micronaut guides from ${{ inputs.guides_ref }}"
-            git push origin HEAD:${{ inputs.target_branch }}
+            git commit -m "Publish Micronaut guides from ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}"
+            git push origin HEAD:${{ inputs.target_branch || 'gh-pages' }}
           else
             echo "Guides Pages branch is already up to date."
           fi
