@@ -16,6 +16,7 @@ published-docs/
 published-guides/
 playwright-report/
 test-results/
+.lighthouseci/
 
 # Generated docs output
 src/content/generated-docs/*.html

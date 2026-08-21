@@ -29,6 +29,7 @@
     "build:main": "node scripts/build-surface.ts --surface main",
     "build:docs": "node scripts/build-surface.ts --surface docs",
     "build:guides": "node scripts/build-surface.ts --surface guides",
+    "audit:lighthouse": "lhci autorun",
     "prune:surface": "node scripts/prune-surface.ts",
     "update:docs-versions": "node scripts/update-docs-version-manifest.ts",
     "publish:docs-surface": "node scripts/publish-docs-surface.ts",
@@ -58,6 +59,7 @@
     "tailwindcss": "4.3.3"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/js-yaml": "^4.0.9",
