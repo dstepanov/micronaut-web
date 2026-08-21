@@ -2,7 +2,7 @@
 import { ArrowRightIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -84,12 +84,16 @@ const showMoreHref = withSurfacePath(
           </div>
         </CardContent>
         <CardFooter>
-          <Button asChild size="sm" variant="outline">
-            <a data-related-guide-read>
-              Read guide
-              <ArrowRightIcon className="docs-related-guides-icon" />
-            </a>
-          </Button>
+          <a
+            class:list={[
+              buttonVariants({ size: "sm", variant: "outline" }),
+              "flex-nowrap",
+            ]}
+            data-related-guide-read
+          >
+            Read guide
+            <ArrowRightIcon className="docs-related-guides-icon" />
+          </a>
         </CardFooter>
       </Card>
       <div class="docs-related-guides-spacer" aria-hidden="true"></div>
@@ -98,12 +102,18 @@ const showMoreHref = withSurfacePath(
 
   <template data-docs-related-guides-more-template>
     <div class="docs-related-guides-more-row">
-      <Button asChild size="sm" variant="link" className="docs-related-guides-more-button">
-        <a href={showMoreHref} data-docs-related-guides-show-more>
-          Show more
-          <ArrowRightIcon className="docs-related-guides-icon" />
-        </a>
-      </Button>
+      <a
+        class:list={[
+          buttonVariants({ size: "sm", variant: "link" }),
+          "docs-related-guides-more-button",
+          "flex-nowrap",
+        ]}
+        href={showMoreHref}
+        data-docs-related-guides-show-more
+      >
+        Show more
+        <ArrowRightIcon className="docs-related-guides-icon" />
+      </a>
     </div>
   </template>
 </section>
