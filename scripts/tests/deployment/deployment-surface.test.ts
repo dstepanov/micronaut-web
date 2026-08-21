@@ -9,7 +9,10 @@ import { pruneSurface } from "../../prune-surface.ts";
 import { publishDocsSurface } from "../../publish-docs-surface.ts";
 import { configurePagesDeployment } from "../../configure-pages-deployment.ts";
 import { purgeDocsPatchVersions } from "../../purge-docs-patch-versions.ts";
-import { updateDocsVersionManifest } from "../../update-docs-version-manifest.ts";
+import {
+  isNewestPublishedDocsVersion,
+  updateDocsVersionManifest,
+} from "../../update-docs-version-manifest.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -735,6 +738,20 @@ test("platform patch releases remove only earlier patches for their minor line",
   await fs.access(path.join(published, "5.1.0/index.html"));
   await fs.access(path.join(published, "4.9.9/index.html"));
   await fs.access(path.join(published, "latest/index.html"));
+  assert.equal(
+    await isNewestPublishedDocsVersion({
+      publishedDirectory: published,
+      version: "5.0.1",
+    }),
+    false,
+  );
+  assert.equal(
+    await isNewestPublishedDocsVersion({
+      publishedDirectory: published,
+      version: "5.2.0",
+    }),
+    true,
+  );
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {

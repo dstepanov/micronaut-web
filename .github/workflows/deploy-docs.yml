@@ -50,28 +50,6 @@ jobs:
       - name: Check out Micronaut web
         uses: actions/checkout@v7
 
-      - name: Resolve docs release
-        id: release
-        env:
-          DOCS_VERSION: ${{ github.event.client_payload.version || inputs.docs_version }}
-          PLATFORM_REF: ${{ github.event.client_payload.sha || inputs.platform_ref }}
-          PUBLISH_LATEST: ${{ inputs.publish_latest || 'true' }}
-          IS_PLATFORM_RELEASE: ${{ github.event_name == 'repository_dispatch' }}
-        run: |
-          set -euo pipefail
-          if [ -z "$DOCS_VERSION" ]; then
-            echo "::error::Provide docs_version or a platform-released payload version."
-            exit 1
-          fi
-          if [ "$IS_PLATFORM_RELEASE" = "true" ] && ! [[ "$DOCS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Platform release version must use major.minor.patch format; received '$DOCS_VERSION'."
-            exit 1
-          fi
-          echo "docs_version=$DOCS_VERSION" >> "$GITHUB_OUTPUT"
-          echo "platform_ref=${PLATFORM_REF:-$DOCS_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "publish_latest=$PUBLISH_LATEST" >> "$GITHUB_OUTPUT"
-          echo "purge_patches=$IS_PLATFORM_RELEASE" >> "$GITHUB_OUTPUT"
-
       - name: Validate GitHub token
         env:
           HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
@@ -89,6 +67,41 @@ jobs:
           ref: ${{ inputs.target_branch || 'gh-pages' }}
           path: published-docs
           token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Resolve docs release
+        id: release
+        env:
+          DOCS_VERSION: ${{ github.event.client_payload.version || inputs.docs_version }}
+          PLATFORM_REF: ${{ github.event.client_payload.sha || inputs.platform_ref }}
+          REQUESTED_PUBLISH_LATEST: ${{ inputs.publish_latest || 'true' }}
+          IS_PLATFORM_RELEASE: ${{ github.event_name == 'repository_dispatch' }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DOCS_VERSION" ]; then
+            echo "::error::Provide docs_version or a platform-released payload version."
+            exit 1
+          fi
+          if [ "$IS_PLATFORM_RELEASE" = "true" ] && ! [[ "$DOCS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Platform release version must use major.minor.patch format; received '$DOCS_VERSION'."
+            exit 1
+          fi
+          publish_latest="$REQUESTED_PUBLISH_LATEST"
+          if [ "$IS_PLATFORM_RELEASE" = "true" ]; then
+            publish_latest="$(node --input-type=module --eval 'import { isNewestPublishedDocsVersion } from "./scripts/update-docs-version-manifest.ts"; process.stdout.write(String(await isNewestPublishedDocsVersion({ publishedDirectory: "published-docs", version: process.env.DOCS_VERSION })));')"
+          fi
+          echo "docs_version=$DOCS_VERSION" >> "$GITHUB_OUTPUT"
+          echo "platform_ref=${PLATFORM_REF:-$DOCS_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "publish_latest=$publish_latest" >> "$GITHUB_OUTPUT"
+          echo "purge_patches=$IS_PLATFORM_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Check out platform project
         env:
@@ -129,15 +142,6 @@ jobs:
           fi
 
           git -C "$target" rev-parse --short HEAD
-
-      - name: Set up Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install Node dependencies
-        run: npm ci
 
       - name: Install Playwright Chromium
         run: npx playwright install chromium
