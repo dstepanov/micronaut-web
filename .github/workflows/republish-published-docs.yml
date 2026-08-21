@@ -1,0 +1,99 @@
+name: Republish Published Docs
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      target_repository:
+        description: Repository that owns the docs GitHub Pages branch
+        required: false
+        default: micronaut-projects/micronaut-docs-v2
+      target_branch:
+        description: GitHub Pages source branch in the docs repository
+        required: false
+        default: gh-pages
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: republish-published-docs
+  cancel-in-progress: false
+
+jobs:
+  republish:
+    name: Republish published docs from oldest to newest
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
+      TARGET_BRANCH: ${{ inputs.target_branch || 'gh-pages' }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+    steps:
+      - name: Check out published docs
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
+          ref: ${{ inputs.target_branch || 'gh-pages' }}
+          path: published-docs
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Find published versions
+        id: versions
+        run: |
+          set -euo pipefail
+          mapfile -t versions < <(
+            find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V
+          )
+
+          if [ "${#versions[@]}" -eq 0 ]; then
+            echo "No published docs versions were found in ${TARGET_REPOSITORY}:${TARGET_BRANCH}."
+            echo "has_versions=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf 'Published versions, oldest first:\n%s\n' "${versions[*]}"
+          printf '%s\n' "${versions[@]}" > "$RUNNER_TEMP/published-docs-versions"
+          echo "has_versions=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger and wait for each republish
+        if: steps.versions.outputs.has_versions == 'true'
+        env:
+          VERSION_FILE: ${{ runner.temp }}/published-docs-versions
+          REQUEST_PREFIX: republish-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r version; do
+            request_id="${REQUEST_PREFIX}-${version}"
+            title="Publish docs ${version} (republish ${request_id})"
+            echo "Dispatching ${version}."
+            gh workflow run deploy-docs.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref "$GITHUB_REF_NAME" \
+              --field "docs_version=$version" \
+              --field "publish_latest=false" \
+              --field "target_repository=$TARGET_REPOSITORY" \
+              --field "target_branch=$TARGET_BRANCH" \
+              --field "republish_request_id=$request_id"
+
+            run_id=""
+            for attempt in {1..24}; do
+              run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-docs.yml --event workflow_dispatch --limit 50 --json databaseId,displayTitle | jq -r --arg title "$title" '.[] | select(.displayTitle == $title) | .databaseId' | head -n 1)"
+              if [ -n "$run_id" ]; then
+                break
+              fi
+              sleep 5
+            done
+
+            if [ -z "$run_id" ]; then
+              echo "::error::Could not find the workflow run for ${version}."
+              exit 1
+            fi
+
+            echo "Waiting for docs publish run ${run_id} (${version})."
+            gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          done < "$VERSION_FILE"
