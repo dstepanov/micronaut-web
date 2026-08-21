@@ -27,7 +27,8 @@ if (!(surface in surfacePaths)) {
   throw new Error(`Unsupported Lighthouse CI surface: ${surface}`);
 }
 
-const urls = process.env.LHCI_URLS?.split(",").filter(Boolean) ||
+const urls =
+  process.env.LHCI_URLS?.split(",").filter(Boolean) ||
   surfacePaths[surface].flatMap((path) =>
     ["light", "dark"].map((theme) => `${host}${path}?theme=${theme}`),
   );
