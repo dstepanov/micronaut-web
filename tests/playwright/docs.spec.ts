@@ -364,6 +364,19 @@ test("docs page renders related latest guides from the guides manifest", async (
     /\/(?:guides|latest|micronaut-guides-v2)\/\?q=micronaut-data$/,
   );
   await expect(relatedGuides.locator('[data-slot="card"]')).toHaveCount(3);
+  const guideActionLinks = relatedGuides.locator(
+    "[data-related-guide-read], [data-docs-related-guides-show-more]",
+  );
+  await expect(guideActionLinks).toHaveCount(4);
+  expect(
+    await guideActionLinks.evaluateAll((links) =>
+      links.every(
+        (link) =>
+          getComputedStyle(link).display.includes("flex") &&
+          getComputedStyle(link).flexWrap === "nowrap",
+      ),
+    ),
+  ).toBe(true);
   await expectShowMoreBelowCard(relatedGuides, 2);
   await expect(relatedGuides.locator('[data-slot="card-title"] a')).toHaveText([
     "Build reactive repositories with Micronaut Data R2DBC",
