@@ -57,12 +57,6 @@ const docsSearchIndexUrl = externalSurfacePath(
   "docs",
   "/docs/search-index.json"
 );
-const remoteHeaderLinks = [
-  { label: "Docs", href: externalSurfacePath("docs", "/docs/") },
-  { label: "Guides", href: externalSurfacePath("guides", "/guides/") },
-  { label: "Blog", href: externalSurfacePath("main", "/blog/") },
-  { label: "Launch", href: "https://launch.micronaut.io" }
-];
 const siteHeaderFrameClass = "sticky top-0 z-40";
 ---
 
@@ -143,45 +137,11 @@ const siteHeaderFrameClass = "sticky top-0 z-40";
             data-docs-search-index-url={docsSearchIndexUrl}
             class={siteHeaderFrameClass}
           >
-            <nav
-              class="border-b bg-card/95 px-4 py-3 text-sm backdrop-blur-xl"
-              aria-label="Micronaut navigation"
-            >
-              <div class="mx-auto flex max-w-[var(--page-max)] flex-wrap items-center gap-3">
-                <a
-                  class="font-semibold text-foreground no-underline"
-                  href={externalSurfaceUrls.main}
-                >
-                  Micronaut
-                </a>
-                <span class="ml-auto flex flex-wrap items-center gap-3">
-                  {remoteHeaderLinks.map((link) => (
-                    <a
-                      class="text-muted-foreground no-underline hover:text-foreground"
-                      href={link.href}
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                  <button
-                    type="button"
-                    class="rounded-md border px-2 py-1 text-muted-foreground hover:text-foreground"
-                    data-micronaut-header-interaction='[aria-label="Search Micronaut"]'
-                    aria-label="Search Micronaut"
-                  >
-                    Search
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-md border px-2 py-1 text-muted-foreground hover:text-foreground"
-                    data-micronaut-header-interaction='[role="switch"]'
-                    aria-label="Switch theme"
-                  >
-                    Theme
-                  </button>
-                </span>
-              </div>
-            </nav>
+            <SiteHeader
+              docsSearchIndexUrl={docsSearchIndexUrl}
+              navigationUrls={externalSurfaceUrls}
+              surface={surface}
+            />
           </div>
           <script type="module" src={remoteHeaderScriptUrl}></script>
         </>
