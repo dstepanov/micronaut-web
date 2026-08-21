@@ -135,17 +135,22 @@ const mainSiteFooterGroups = await getMainSiteFooterGroups();
       <p>Micronaut® is a project of the Commonhaus Foundation.</p>
       <a
         href="https://www.commonhaus.org/"
+        aria-label="Commonhaus Foundation"
         class="inline-flex rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <img
           src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal.svg")}
           alt="Commonhaus Foundation"
+          width="1350"
+          height="286"
           class="h-8 w-auto dark:hidden"
         />
         <img
           src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal-light.svg")}
           alt=""
           aria-hidden="true"
+          width="800"
+          height="350"
           class="hidden h-20 w-auto dark:block"
         />
       </a>

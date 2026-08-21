@@ -208,7 +208,7 @@ test("homepage code examples include a Python variant", async ({ page }) => {
   );
 });
 
-test("homepage serves responsive customer logos without SVG path errors", async ({
+test("homepage addresses PageSpeed image and accessibility findings", async ({
   page,
 }) => {
   const svgPathErrors: string[] = [];
@@ -222,7 +222,7 @@ test("homepage serves responsive customer logos without SVG path errors", async 
   });
 
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(appPath("/"));
+  await page.goto(`${appPath("/")}?theme=dark`);
 
   const marquee = page.locator(".customer-logo-marquee");
   await marquee.scrollIntoViewIfNeeded();
@@ -232,14 +232,40 @@ test("homepage serves responsive customer logos without SVG path errors", async 
     ["Mojang", "100w|200w"],
     ["Minecraft", "111w|222w"],
   ] as const) {
-    const image = marquee.locator(`img[alt="${name} logo"]`).first();
-    await expect(image).toHaveAttribute("srcset", /\.webp/);
-    await expect
-      .poll(() =>
-        image.evaluate((element) => (element as HTMLImageElement).currentSrc),
-      )
-      .toMatch(new RegExp(`(?:${widths})\\.webp$`));
+    const images = page.locator(`img[alt="${name} logo"]`);
+    expect(await images.count()).toBeGreaterThan(0);
+    for (const image of await images.all()) {
+      await expect(image).toHaveAttribute("srcset", /\.webp/);
+      await expect
+        .poll(() =>
+          image.evaluate((element) => (element as HTMLImageElement).currentSrc),
+        )
+        .toMatch(new RegExp(`(?:${widths})\\.webp$`));
+    }
   }
+
+  const commonhausLink = page.getByRole("link", {
+    name: "Commonhaus Foundation",
+  });
+  await commonhausLink.scrollIntoViewIfNeeded();
+  await expect(commonhausLink).toBeVisible();
+  await expect(commonhausLink.locator("img")).toHaveCount(2);
+  await expect(commonhausLink.locator("img").nth(0)).toHaveAttribute(
+    "width",
+    "1350",
+  );
+  await expect(commonhausLink.locator("img").nth(0)).toHaveAttribute(
+    "height",
+    "286",
+  );
+  await expect(commonhausLink.locator("img").nth(1)).toHaveAttribute(
+    "width",
+    "800",
+  );
+  await expect(commonhausLink.locator("img").nth(1)).toHaveAttribute(
+    "height",
+    "350",
+  );
 
   await expect(page.locator("#server-groovy-tab svg path")).toHaveAttribute(
     "d",
