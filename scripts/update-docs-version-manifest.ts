@@ -145,6 +145,18 @@ export async function readPublishedVersions(
   }));
 }
 
+export async function isNewestPublishedDocsVersion({
+  publishedDirectory,
+  version,
+}: {
+  publishedDirectory: string;
+  version: string;
+}): Promise<boolean> {
+  return !(await readPublishedVersions(publishedDirectory)).some(
+    (published) => compareVersions(published.label, version) > 0,
+  );
+}
+
 async function readExistingLatestVersionName(publishedDirectory?: string) {
   if (!publishedDirectory) {
     return undefined;
