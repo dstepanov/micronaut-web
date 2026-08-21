@@ -54,3 +54,4 @@ jobs:
           name: lighthouse-${{ matrix.surface }}
           path: .lighthouseci
           if-no-files-found: warn
+          include-hidden-files: true
