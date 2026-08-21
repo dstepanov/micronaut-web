@@ -253,7 +253,7 @@ Standalone docs and guides builds do not publish their own header shell. In prod
 | --- | --- | --- |
 | [`Validate Build`](.github/workflows/validate-build.yml) | Pull requests | Checks script formatting and builds the docs, guides, and main-site surfaces. Generated external content is disabled for this validation build. |
 | [`Deploy Web`](.github/workflows/deploy-web.yml) | Pushes to `main` or manual dispatch | Builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides. |
-| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch | Builds a requested Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` by default. It can also update `/latest`. |
+| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds a requested Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` by default. Platform release events publish the exact supplied revision and retain only the newest patch for that major/minor line. |
 | [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Builds Micronaut Guides and publishes it to `micronaut-projects/micronaut-guides-v2:gh-pages` by default. A `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
 
 The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact. The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
@@ -285,17 +285,18 @@ All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-co
 
 ### Docs Versions and Latest
 
-Docs are versioned. The docs publish workflow accepts `docs_version`, for example `4.10.14`, and `publish_latest`.
+Docs are versioned. The docs publish workflow accepts `docs_version`, for example `4.10.14`, and `publish_latest`. It also accepts a `platform-released` repository-dispatch event from Micronaut Platform with a `client_payload.version` in `major.minor.patch` format and an optional `client_payload.sha` for the exact source revision.
 
 The docs workflow:
 
 1. Checks out this repository.
 2. Checks out the target docs Pages repository on `target_branch`, normally `gh-pages`.
 3. Checks out the requested Micronaut Platform ref for docs sources and metadata.
-4. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from existing version folders plus the version currently being published.
-5. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
-6. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
-7. Commits and pushes the branch.
+4. For a `platform-released` patch, removes all published directories and compatibility redirects for earlier patches in the same major/minor line. For example, publishing `5.0.1` removes `5.0.0` but retains `5.1.0` and other major/minor lines.
+5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the retained version folders plus the version currently being published.
+6. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
+7. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
+8. Commits and pushes the branch.
 
 The docs merge stores deployment metadata with the published artifact. If the base or complete surface URLs change, retained version HTML and text assets are migrated to the new deployment values before unused shared assets are pruned. This allows a one-time move from the repository-path Pages URL to a root custom domain without rebuilding every historical docs source.
 
