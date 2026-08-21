@@ -22,6 +22,43 @@ test("collapsed mobile navigation exposes primary destinations", async ({
   expect(failures).toEqual([]);
 });
 
+test("mobile header centers the search icon and navigates to Download", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+
+  await page.setViewportSize({ width: 390, height: 860 });
+  await page.goto(appPath("/"));
+  await expectSiteHeaderHydrated(page);
+
+  const searchButton = page.getByRole("button", { name: "Search Micronaut" });
+  const [buttonBox, iconBox] = await Promise.all([
+    searchButton.boundingBox(),
+    searchButton.locator("svg").boundingBox(),
+  ]);
+  expect(buttonBox).not.toBeNull();
+  expect(iconBox).not.toBeNull();
+  expect(
+    Math.abs(
+      iconBox!.x + iconBox!.width / 2 - (buttonBox!.x + buttonBox!.width / 2),
+    ),
+  ).toBeLessThanOrEqual(1);
+
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const dialog = page.getByRole("dialog", { name: "Micronaut" });
+  const downloadLink = dialog
+    .locator('[data-mobile-navigation-group="Resources"]')
+    .getByRole("link", { name: "Download", exact: true });
+  await expect(downloadLink).toHaveAttribute("href", appPath("/download/"));
+  await downloadLink.click();
+  await expect(page).toHaveURL(appPath("/download/"));
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Micronaut Download" }),
+  ).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  expect(failures).toEqual([]);
+});
+
 test("tablet navigation stays collapsed and can select docs, guides, and blog", async ({
   page,
 }) => {
