@@ -38,7 +38,7 @@ jobs:
           MICRONAUT_DOCS_LATEST_ROOT: /latest
           MICRONAUT_GUIDES_ROOT: /
           MICRONAUT_GUIDES_LATEST_ROOT: /
-          DOCS_PROJECT_SLUGS: core,data,oracle-cloud
+          MICRONAUT_PREPARE_GENERATED_CONTENT: "false"
         run: npm run build:surface -- --surface ${{ matrix.surface }}
 
       - name: Run Lighthouse CI for light and dark themes
