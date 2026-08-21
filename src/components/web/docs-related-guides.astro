@@ -1,0 +1,113 @@
+---
+import { ArrowRightIcon } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { withSurfacePath } from "@/lib/base-path";
+
+interface Props {
+  manifestUrl: string;
+  topicAliases: string[];
+}
+
+const { manifestUrl, topicAliases } = Astro.props;
+const primaryTopic = topicAliases.find((alias) => alias.trim());
+const showMoreHref = withSurfacePath(
+  "guides",
+  primaryTopic
+    ? `/guides/?q=${encodeURIComponent(primaryTopic)}`
+    : "/guides/",
+);
+---
+
+<section
+  class="docs-related-guides"
+  data-docs-related-guides
+  data-manifest-url={manifestUrl}
+  data-topic-aliases={JSON.stringify(topicAliases)}
+  aria-busy="true"
+>
+  <div class="docs-related-guides-header">
+    <div class="docs-related-guides-heading-wrap">
+      <h2 class="docs-related-guides-heading">Latest guides</h2>
+    </div>
+  </div>
+  <div class="docs-related-guides-grid" data-docs-related-guides-grid>
+    {[0, 1, 2].map(() => (
+      <Card className="docs-related-guide-card" aria-hidden="true">
+        <CardHeader>
+          <div class="docs-related-guide-skeleton-badges">
+            <Skeleton className="docs-related-guide-skeleton-badge-primary" />
+            <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
+          </div>
+          <Skeleton className="docs-related-guide-skeleton-title" />
+          <div class="docs-related-guide-skeleton-description">
+            <Skeleton className="docs-related-guide-skeleton-line-full" />
+            <Skeleton className="docs-related-guide-skeleton-line-short" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="docs-related-guide-skeleton-meta" />
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="docs-related-guide-skeleton-button" />
+        </CardFooter>
+      </Card>
+    ))}
+  </div>
+
+  <template data-docs-related-guide-template>
+    <div class="docs-related-guide-item">
+      <Card className="docs-related-guide-card">
+        <CardHeader>
+          <div class="docs-related-guide-badges" data-related-guide-badges>
+            <Badge variant="outline" data-related-guide-badge></Badge>
+          </div>
+          <CardTitle className="docs-related-guide-title">
+            <a class="docs-related-guide-title-link" data-related-guide-title></a>
+          </CardTitle>
+          <CardDescription className="docs-related-guide-description" data-related-guide-description></CardDescription>
+        </CardHeader>
+        <CardContent className="docs-related-guide-meta-content">
+          <div class="docs-related-guide-meta">
+            <time data-related-guide-date></time>
+            <span data-related-guide-minutes></span>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button asChild size="sm" variant="outline">
+            <a data-related-guide-read>
+              Read guide
+              <ArrowRightIcon className="docs-related-guides-icon" />
+            </a>
+          </Button>
+        </CardFooter>
+      </Card>
+      <div class="docs-related-guides-spacer" aria-hidden="true"></div>
+    </div>
+  </template>
+
+  <template data-docs-related-guides-more-template>
+    <div class="docs-related-guides-more-row">
+      <Button asChild size="sm" variant="link" className="docs-related-guides-more-button">
+        <a href={showMoreHref} data-docs-related-guides-show-more>
+          Show more
+          <ArrowRightIcon className="docs-related-guides-icon" />
+        </a>
+      </Button>
+    </div>
+  </template>
+</section>
+
+<script>
+  import "@/scripts/docs-related-guides";
+</script>
