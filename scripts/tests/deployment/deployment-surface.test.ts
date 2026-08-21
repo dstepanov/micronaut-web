@@ -573,7 +573,7 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   assert.doesNotMatch(guidesWorkflow, /ASTRO_BASE:\s*\/micronaut-guides-v2\//);
 });
 
-test("published docs republish workflow dispatches versions oldest first", async () => {
+test("published docs republish workflow refreshes latest after older versions", async () => {
   const [republishWorkflow, docsWorkflow] = await Promise.all(
     ["republish-published-docs.yml", "deploy-docs.yml"].map(async (workflow) =>
       fs.readFile(
@@ -597,7 +597,9 @@ test("published docs republish workflow dispatches versions oldest first", async
   );
   assert.match(republishWorkflow, /sort -V/);
   assert.match(republishWorkflow, /gh workflow run deploy-docs\.yml/);
-  assert.match(republishWorkflow, /publish_latest=false/);
+  assert.match(republishWorkflow, /latest_version=/);
+  assert.match(republishWorkflow, /if \[ "\$version" = "\$LATEST_VERSION" \]/);
+  assert.match(republishWorkflow, /--field "publish_latest=\$publish_latest"/);
   assert.match(republishWorkflow, /gh run watch .*--exit-status/);
   assert.match(docsWorkflow, /republish_request_id:/);
 });

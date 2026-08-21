@@ -56,8 +56,10 @@ jobs:
             exit 0
           fi
 
+          latest_version="${versions[$((${#versions[@]} - 1))]}"
           printf 'Published versions, oldest first:\n%s\n' "${versions[*]}"
           printf '%s\n' "${versions[@]}" > "$RUNNER_TEMP/published-docs-versions"
+          echo "latest_version=$latest_version" >> "$GITHUB_OUTPUT"
           echo "has_versions=true" >> "$GITHUB_OUTPUT"
 
       - name: Trigger and wait for each republish
@@ -65,17 +67,22 @@ jobs:
         env:
           VERSION_FILE: ${{ runner.temp }}/published-docs-versions
           REQUEST_PREFIX: republish-${{ github.run_id }}
+          LATEST_VERSION: ${{ steps.versions.outputs.latest_version }}
         run: |
           set -euo pipefail
           while IFS= read -r version; do
             request_id="${REQUEST_PREFIX}-${version}"
             title="Publish docs ${version} (republish ${request_id})"
+            publish_latest=false
+            if [ "$version" = "$LATEST_VERSION" ]; then
+              publish_latest=true
+            fi
             echo "Dispatching ${version}."
             gh workflow run deploy-docs.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref "$GITHUB_REF_NAME" \
               --field "docs_version=$version" \
-              --field "publish_latest=false" \
+              --field "publish_latest=$publish_latest" \
               --field "target_repository=$TARGET_REPOSITORY" \
               --field "target_branch=$TARGET_BRANCH" \
               --field "republish_request_id=$request_id"
