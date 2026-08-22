@@ -43,6 +43,7 @@ export async function renderGuideOption(
       extension_registry: guideExtensionRegistry(asciidoctor, context),
     },
     fatalDiagnostic: isFatalGuideDiagnostic,
+    ignoredDiagnostic: isIgnoredGuideDiagnostic,
   });
 
   html = rewriteGuideUrls(html, guide.slug);
@@ -51,10 +52,17 @@ export async function renderGuideOption(
 }
 
 export function isFatalGuideDiagnostic(diagnostic: string): boolean {
-  return ![
+  return !isIgnoredGuideDiagnostic(diagnostic);
+}
+
+// Heading shapes that upstream guide sources are known to contain and that we
+// cannot fix here. They are dropped rather than warned so that every diagnostic
+// that does reach the log is one worth acting on.
+export function isIgnoredGuideDiagnostic(diagnostic: string): boolean {
+  return [
     /section title out of sequence: expected level \d+, got level \d+/i,
     /level 0 sections can only be used when doctype is book/i,
-  ].some((nonFatalGuideDiagnostic) => nonFatalGuideDiagnostic.test(diagnostic));
+  ].some((ignoredGuideDiagnostic) => ignoredGuideDiagnostic.test(diagnostic));
 }
 
 async function guideRenderContext({

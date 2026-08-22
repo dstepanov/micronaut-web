@@ -1,4 +1,6 @@
 // @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
+import { createHash } from "node:crypto";
+
 import { Html5Converter } from "@asciidoctor/core";
 import type { Registry } from "@asciidoctor/core";
 
@@ -21,6 +23,7 @@ type RenderAsciiDocOptions = {
   convertOptions: AsciidoctorConvertOptions;
   diagnosticsLabel?: string;
   fatalDiagnostic?: (diagnostic: string) => boolean;
+  ignoredDiagnostic?: (diagnostic: string) => boolean;
   strict?: boolean;
 };
 
@@ -32,8 +35,15 @@ type AsciidoctorNode = {
   attributes?: Record<string, unknown>;
   hasTitle?: () => boolean;
   getAttribute?: (name: string) => unknown;
+  getDocument?: () => { getAttribute?: (name: string) => unknown } | undefined;
   getSource?: () => string;
 };
+
+// Each renderAsciiDoc call gets its own converter instance, so a per-instance
+// listing counter restarts at zero for every call. Docs pages concatenate one
+// render per table-of-contents node under a single project id prefix, so the
+// counter alone would repeat ids across sections of the same page.
+const LISTING_ID_SEED_ATTRIBUTE = "micronaut-listing-id-seed";
 
 type AsciidoctorDiagnostic = {
   getSeverity(): string;
@@ -58,7 +68,7 @@ class MicronautComponentHtmlConverter extends Html5Converter {
     return renderListingSnippetCard({
       descriptionHtml: "",
       footerHtml,
-      id: node.id || `generated-listing-snippet-${generatedIndex}`,
+      id: node.id || listingSnippetId(node, generatedIndex),
       language: listingBlockLanguage(node),
       source: node.getSource?.() || "",
       titleHtml: node.hasTitle?.() ? String(node.title || "") : "",
@@ -85,6 +95,7 @@ export async function renderAsciiDoc({
   convertOptions,
   diagnosticsLabel = "AsciiDoc source",
   fatalDiagnostic,
+  ignoredDiagnostic,
   strict = false,
 }: RenderAsciiDocOptions): Promise<string> {
   const logger = asciidoctor.MemoryLogger.create();
@@ -105,6 +116,10 @@ export async function renderAsciiDoc({
         header_footer: false,
         safe: "unsafe",
         ...convertOptions,
+        attributes: {
+          ...(convertOptions.attributes as Record<string, unknown>),
+          [LISTING_ID_SEED_ATTRIBUTE]: listingIdSeed(diagnosticsLabel, source),
+        },
         converter: convertOptions.converter || MicronautComponentHtmlConverter,
         extension_registry: extensionRegistry,
       }),
@@ -113,29 +128,48 @@ export async function renderAsciiDoc({
     asciidoctor.LoggerManager.setLogger(previousLogger);
   }
 
+  // Ignored diagnostics are dropped in both modes so that a strict render never
+  // reports less than a lenient one; everything that survives is reported in
+  // both, and strict additionally fails on the fatal subset.
   const diagnostics = logger
     .getMessages()
     .map(formatAsciidoctorDiagnostic)
-    .filter((diagnostic) => !isHandledCalloutDiagnostic(diagnostic));
-  if (diagnostics.length) {
-    let diagnosticsToWarn = diagnostics;
-    if (strict) {
-      const fatalDiagnostics = fatalDiagnostic
-        ? diagnostics.filter(fatalDiagnostic)
-        : diagnostics;
-      if (fatalDiagnostics.length) {
-        throw new Error(
-          `Asciidoctor diagnostics for ${diagnosticsLabel}: ${fatalDiagnostics.join("; ")}`,
-        );
-      }
-      diagnosticsToWarn = fatalDiagnostic ? fatalDiagnostics : diagnostics;
+    .filter(
+      (diagnostic) =>
+        !isHandledCalloutDiagnostic(diagnostic) &&
+        !ignoredDiagnostic?.(diagnostic),
+    );
+  if (strict) {
+    const fatalDiagnostics = fatalDiagnostic
+      ? diagnostics.filter(fatalDiagnostic)
+      : diagnostics;
+    if (fatalDiagnostics.length) {
+      throw new Error(
+        `Asciidoctor diagnostics for ${diagnosticsLabel}: ${fatalDiagnostics.join("; ")}`,
+      );
     }
-    for (const diagnostic of diagnosticsToWarn) {
-      console.warn(diagnostic);
-    }
+  }
+  for (const diagnostic of diagnostics) {
+    console.warn(diagnostic);
   }
 
   return html;
+}
+
+function listingSnippetId(node: AsciidoctorNode, index: number): string {
+  const seed = node.getDocument?.()?.getAttribute?.(LISTING_ID_SEED_ATTRIBUTE);
+  return seed
+    ? `generated-listing-snippet-${seed}-${index}`
+    : `generated-listing-snippet-${index}`;
+}
+
+function listingIdSeed(diagnosticsLabel: string, source: string): string {
+  return createHash("sha1")
+    .update(diagnosticsLabel)
+    .update("\0")
+    .update(source)
+    .digest("hex")
+    .slice(0, 8);
 }
 
 function isSnippetCalloutValidationBlock(node: unknown): boolean {
