@@ -2103,6 +2103,42 @@ test("a table of contents that repeats a section key gets distinct anchors", asy
   );
 });
 
+test("a section key that already carries the project prefix does not collide with the bare key", async (t: any): Promise<any> => {
+  // micronaut-security has `security-installation` at the top level and
+  // `installation` nested under `oauth`. They are distinct TOC keys, but once
+  // every id is prefixed with the project slug they become the same anchor.
+  const { ids, html } = await renderMultiSectionFixture(t, [
+    {
+      id: "fixture-installation",
+      title: "Installation",
+      body: ["Top level body.", ""].join("\n"),
+    },
+    {
+      id: "oauth",
+      title: "OAuth",
+      body: ["OAuth body.", ""].join("\n"),
+      child: {
+        id: "installation",
+        title: "Installation",
+        body: ["Nested body.", ""].join("\n"),
+      },
+    },
+  ]);
+
+  assert.deepEqual(
+    ids.filter((id, index): boolean => ids.indexOf(id) !== index),
+    [],
+  );
+  assert.ok(ids.includes("fixture-installation"));
+  assert.ok(ids.includes("fixture-installation-2"));
+  assert.equal(
+    [...html.matchAll(/class="guide-section-heading">\s*<h[12] id="([^"]+)"/g)]
+      .map((match): string => match[1])
+      .filter((id): boolean => id.startsWith("fixture-installation")).length,
+    2,
+  );
+});
+
 test("docs strict diagnostic filter only fails render-stopping diagnostics", (): void => {
   const allowedWarnings = [
     "asciidoctor: WARN: <stdin>:5: no callout found for <1>",
