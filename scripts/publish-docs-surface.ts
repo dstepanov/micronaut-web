@@ -198,21 +198,54 @@ async function rewriteVersionRootToLatest(
     return;
   }
   const normalizedBase = normalizeBase(base);
-  const replacements: Array<[string, string]> = [
-    [`${normalizedBase}${version}/`, `${normalizedBase}latest/`],
-    [`${normalizedBase}${version}.html`, `${normalizedBase}latest.html`],
-  ];
+  const versionRoot = `${normalizedBase}${version}`;
+  const latestRoot = `${normalizedBase}latest`;
 
   for (const file of await listTextFiles(latestDirectory)) {
     const source = await fs.readFile(file, "utf8");
-    const rewritten = replacements.reduce(
-      (value, [from, to]) => value.replaceAll(from, to),
-      source,
+    const rewritten = rewriteQuotedUrls(source, (url) =>
+      url
+        .replaceAll(`${versionRoot}/`, `${latestRoot}/`)
+        .replaceAll(`${versionRoot}.html`, `${latestRoot}.html`),
     );
     if (rewritten !== source) {
       await fs.writeFile(file, rewritten, "utf8");
     }
   }
+}
+
+/**
+ * Rewrites only quoted values that are URLs — HTML attributes, JSON strings,
+ * JS string literals. On a root-base deployment the version root is a short
+ * path like `/5.1.1/`, and a whole-file replace would also rewrite that string
+ * where it appears in documentation prose. Requiring a quoted value that starts
+ * like a URL keeps the rewrite to links and leaves body text alone.
+ */
+function rewriteQuotedUrls(
+  source: string,
+  rewriteUrl: (url: string) => string,
+) {
+  return source.replace(
+    /(["'])([^"'\n]*)\1/g,
+    (match, quote: string, value: string) => {
+      if (!isUrlValue(value)) {
+        return match;
+      }
+      const rewritten = rewriteUrl(value);
+      return rewritten === value ? match : `${quote}${rewritten}${quote}`;
+    },
+  );
+}
+
+function isUrlValue(value: string) {
+  return (
+    // Root-relative links, and srcset lists, which start with one.
+    value.startsWith("/") ||
+    // Absolute and protocol-relative links, including canonical URLs.
+    /^(?:https?:)?\/\//.test(value) ||
+    // `<meta http-equiv="refresh" content="0;url=…">`.
+    /\burl=(?:\/|(?:https?:)?\/\/)/.test(value)
+  );
 }
 
 async function migratePublishedDeployment(

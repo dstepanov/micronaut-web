@@ -186,8 +186,10 @@ export function productionUrl(surface: ProductionSurface, path = "/") {
 export function preservingClientRedirect(
   destination: string,
   title = "the current page",
+  site?: URL | string,
 ): Response {
   const serializedDestination = JSON.stringify(destination);
+  const canonicalUrl = canonicalDestinationUrl(destination, site);
   return new Response(
     [
       "<!doctype html>",
@@ -196,6 +198,9 @@ export function preservingClientRedirect(
       '<meta charset="utf-8" />',
       '<meta name="robots" content="noindex" />',
       `<meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
+      ...(canonicalUrl
+        ? [`<link rel="canonical" href="${htmlAttribute(canonicalUrl)}" />`]
+        : []),
       `<title>Redirecting to ${htmlText(title)}</title>`,
       "<script>",
       `location.replace(${serializedDestination} + location.search + location.hash);`,
@@ -213,6 +218,22 @@ export function preservingClientRedirect(
       },
     },
   );
+}
+
+/**
+ * Points search engines at the destination the way a server redirect would.
+ * `site` comes from the Astro build (`Astro.site` / `context.site`); when it is
+ * not configured the tag is omitted rather than guessed at.
+ */
+function canonicalDestinationUrl(destination: string, site?: URL | string) {
+  if (!site) {
+    return undefined;
+  }
+  try {
+    return new URL(destination, site).toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function htmlAttribute(value: string) {

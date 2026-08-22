@@ -6,10 +6,11 @@ import {
   routeCompatibilityEntry,
 } from "@/lib/route-compatibility";
 
-export const GET: APIRoute = () => {
+export const GET: APIRoute = ({ site }) => {
   const compatibility = routeCompatibilityEntry("docs-core-latest-guide-index");
   return preservingClientRedirect(
     withBasePath(compatibility.previewDestinationPath),
     "Micronaut Core docs",
+    site,
   );
 };

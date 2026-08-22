@@ -89,6 +89,25 @@ test("static redirects carry both the query string and the fragment", async (): 
   );
 });
 
+test("static redirects point search engines at the destination", async (): Promise<void> => {
+  const { preservingClientRedirect } = await routeCompatibility;
+
+  const withSite = await preservingClientRedirect(
+    "/micronaut-web/2026/01/01/example/",
+    "the Micronaut blog post",
+    new URL("https://micronaut-projects.github.io/"),
+  ).text();
+  assert.match(
+    withSite,
+    /<link rel="canonical" href="https:\/\/micronaut-projects\.github\.io\/micronaut-web\/2026\/01\/01\/example\/" \/>/,
+  );
+
+  // Without a configured site there is nothing to resolve against, so the tag
+  // is omitted rather than guessed at.
+  const withoutSite = await preservingClientRedirect("/docs/core/").text();
+  assert.doesNotMatch(withoutSite, /rel="canonical"/);
+});
+
 test("every compatibility redirect route uses the shared redirect helper", async (): Promise<void> => {
   const routeFiles = [
     "src/pages/latest/[page].html.ts",
