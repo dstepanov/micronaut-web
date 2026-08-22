@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { micronautExtensionRegistry } from "../../asciidoc/extensions/index.ts";
 import { renderAsciiDoc } from "../../asciidoc/rendering.ts";
+import { prefixIds } from "../../docs/urls.ts";
 import { guideExtensionRegistry } from "../../guides/extensions/index.ts";
 import type { GuideRenderContext } from "../../guides/model.ts";
 
@@ -52,7 +53,7 @@ test("AsciiDoc snippets render directly through generated React components", asy
   assert.equal(count(html, /data-copy-active-snippet/g), 18);
   assert.ok(count(html, /docs-code-callouts/g) >= 3);
 
-  assert.match(html, /id="generated-listing-snippet-0"/);
+  assert.match(html, /id="generated-listing-snippet-[0-9a-f]{8}-0"/);
   assert.match(html, /data-slot="card"/);
   assert.match(html, /data-slot="card-header"/);
   assert.match(html, /data-slot="card-content"/);
@@ -468,6 +469,87 @@ test("generated snippet ids stay unique without shared render state", async (): 
 
   assert.equal(ids.length, 2);
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test("listing snippet ids stay unique across the renders a docs page concatenates", async (): Promise<void> => {
+  // renderProject renders one fragment per table-of-contents node, concatenates
+  // them, and prefixes every id with the same project slug. Identical listings
+  // in two section files must still end up with distinct ids.
+  const source = ["[source,java]", "----", "class Example {}", "----"].join(
+    "\n",
+  );
+  const renderSection = (file: string): Promise<string> =>
+    renderAsciiDoc({
+      asciidoctor,
+      source,
+      diagnosticsLabel: `core/${file}`,
+      convertOptions: {
+        attributes: {
+          icons: "font",
+          idprefix: "",
+          idseparator: "-",
+        },
+        base_dir: fixtureDirectory,
+      },
+    });
+
+  const page = prefixIds(
+    [await renderSection("one.adoc"), await renderSection("two.adoc")].join(
+      "\n",
+    ),
+    "core",
+  );
+  const ids = [...page.matchAll(/\bid="([^"]+)"/g)].map(
+    (match): string => match[1],
+  );
+
+  assert.ok(ids.length >= 6);
+  assert.deepEqual(
+    ids.filter((id, index): boolean => ids.indexOf(id) !== index),
+    [],
+  );
+});
+
+test("strict rendering reports every diagnostic a non-strict render reports", async (): Promise<void> => {
+  const source = ["= Title", "", "=== Out of sequence", "", "Body.", ""].join(
+    "\n",
+  );
+  const renderCollectingWarnings = async (
+    strict: boolean,
+  ): Promise<string[]> => {
+    const warnings: string[] = [];
+    const previousWarn = console.warn;
+    console.warn = (...args: unknown[]): void => {
+      warnings.push(args.join(" "));
+    };
+    try {
+      await renderAsciiDoc({
+        asciidoctor,
+        source,
+        diagnosticsLabel: "strict-diagnostics",
+        strict,
+        fatalDiagnostic: (diagnostic): boolean =>
+          /include file not found/i.test(diagnostic),
+        convertOptions: {
+          attributes: {
+            icons: "font",
+            idprefix: "",
+            idseparator: "-",
+          },
+          base_dir: fixtureDirectory,
+        },
+      });
+    } finally {
+      console.warn = previousWarn;
+    }
+    return warnings;
+  };
+
+  const lenientWarnings = await renderCollectingWarnings(false);
+  const strictWarnings = await renderCollectingWarnings(true);
+
+  assert.match(lenientWarnings.join("\n"), /section title out of sequence/);
+  assert.deepEqual(strictWarnings, lenientWarnings);
 });
 
 test("guide macro block processors render snippet gallery macros", async (): Promise<void> => {

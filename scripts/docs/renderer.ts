@@ -95,6 +95,7 @@ async function renderNode(
       }),
     },
     fatalDiagnostic: isFatalDocsDiagnostic,
+    ignoredDiagnostic: isIgnoredDocsDiagnostic,
   });
 
   let htmlContent = `${sectionHeading(context.project, node)}\n${converted}\n`;
@@ -110,6 +111,15 @@ export function isFatalDocsDiagnostic(diagnostic: string): boolean {
     /include file not readable/i,
     /include file has illegal reference to ancestor/i,
   ].some((fatalWarning) => fatalWarning.test(diagnostic));
+}
+
+// Source shapes that synced upstream docs are known to contain and that we
+// cannot fix here. They are dropped rather than warned so that every diagnostic
+// that does reach the log is one worth acting on.
+export function isIgnoredDocsDiagnostic(diagnostic: string): boolean {
+  return [/section title out of sequence/i, /unterminated listing block/i].some(
+    (ignoredWarning) => ignoredWarning.test(diagnostic),
+  );
 }
 
 function sectionHeading(project: DocsProject, node: TocNode): string {
