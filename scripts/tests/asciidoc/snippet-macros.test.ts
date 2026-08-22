@@ -240,6 +240,81 @@ describe("dependency macros", () => {
   });
 });
 
+describe("dependency macros with scopes", () => {
+  test("map scopes to both build tools and wrap Maven annotation processor paths", async () => {
+    const cards = snippetCards(
+      await renderDocs(
+        [
+          "dependency::micronaut-inject-java[scope=annotationProcessor,version=4.9.0]",
+          "",
+          "dependency::validation[scope=test,classifier=tests]",
+          "",
+          "dependency::micronaut-data-tx[gradleScope=api,mavenScope=provided]",
+        ].join("\n"),
+      ),
+    );
+
+    assert.deepEqual(
+      cards.map((card) => card.panels.map((panel) => panel.code)),
+      [
+        [
+          'annotationProcessor("io.micronaut:micronaut-inject-java:4.9.0")',
+          [
+            "<annotationProcessorPaths>",
+            "    <path>",
+            "        <groupId>io.micronaut</groupId>",
+            "        <artifactId>micronaut-inject-java</artifactId>",
+            "        <version>4.9.0</version>",
+            "    </path>",
+            "</annotationProcessorPaths>",
+          ].join("\n"),
+        ],
+        [
+          'testImplementation("io.micronaut:validation::tests")',
+          [
+            "<dependency>",
+            "    <groupId>io.micronaut</groupId>",
+            "    <artifactId>validation</artifactId>",
+            "    <scope>test</scope>",
+            "    <classifier>tests</classifier>",
+            "</dependency>",
+          ].join("\n"),
+        ],
+        [
+          'api("io.micronaut:micronaut-data-tx")',
+          [
+            "<dependency>",
+            "    <groupId>io.micronaut</groupId>",
+            "    <artifactId>micronaut-data-tx</artifactId>",
+            "    <scope>provided</scope>",
+            "</dependency>",
+          ].join("\n"),
+        ],
+      ],
+    );
+  });
+
+  test("prefix bare artifacts with micronaut- only inside the io.micronaut group", async () => {
+    const cards = snippetCards(
+      await renderDocs(
+        [
+          "dependency::kafka[groupId=io.micronaut.kafka]",
+          "",
+          "dependency::postgresql[groupId=org.postgresql,version=42.7.3]",
+        ].join("\n"),
+      ),
+    );
+
+    assert.deepEqual(
+      cards.map((card) => card.panels[0].code),
+      [
+        'implementation("io.micronaut.kafka:micronaut-kafka")',
+        'implementation("org.postgresql:postgresql:42.7.3")',
+      ],
+    );
+  });
+});
+
 describe("configuration blocks", () => {
   test("offer every configuration format as a tab", async () => {
     const [card] = snippetCards(

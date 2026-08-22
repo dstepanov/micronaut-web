@@ -16,7 +16,17 @@ import {
   missingNotePayload,
   stringAttributes,
 } from "../../asciidoc/extensions/block-payload.ts";
-import { renderSnippetBlock } from "../../asciidoc/extensions/snippet-block-renderer.ts";
+import {
+  type SnippetPayload,
+  renderSnippetBlock,
+} from "../../asciidoc/extensions/snippet-block-renderer.ts";
+import {
+  type Dependency,
+  gradleDependencyLine,
+  gradleScope,
+  mavenDependencyLines,
+  mavenScope,
+} from "../../shared/dependency-coordinates.ts";
 import type { GuideRenderContext } from "../model.ts";
 
 const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
@@ -40,12 +50,7 @@ export function registerGuideDependenciesBlock(
           this,
           parent as Block | Section,
           dependencySnippetPayload(
-            [
-              {
-                attributes: stringAttributes(attrs),
-                target: String(target),
-              },
-            ],
+            [{ attributes: stringAttributes(attrs), target: String(target) }],
             context,
           ),
           { manualCallouts: "inline" },
@@ -79,180 +84,68 @@ export function registerGuideDependenciesBlock(
   });
 }
 
-function dependencySnippetPayload(
-  dependencies: { target: string; attributes: Record<string, string> }[],
+// One card for the active build tool: Gradle lines or Maven XML for every
+// dependency in the group.
+export function dependencySnippetPayload(
+  macros: MacroPayload[],
   context: GuideRenderContext,
-): Record<string, unknown> {
-  if (!dependencies.length) {
+): SnippetPayload {
+  if (!macros.length) {
     return missingNotePayload("Missing dependency.");
   }
+  const language = String(context.option.language || "").toLowerCase();
+  const dependencies = macros.map((macro) =>
+    guideDependency(macro.target, macro.attributes, language),
+  );
 
-  const buildTool = String(context.option.buildTool || "").toLowerCase();
-  if (buildTool === "maven") {
+  if (String(context.option.buildTool || "").toLowerCase() === "maven") {
     return {
       kind: "dependency",
+      title: "pom.xml",
       samples: [
         {
-          highlighterLanguage: "xml",
           language: "maven",
-          source: mavenDependencySource(dependencies, context),
+          highlighterLanguage: "xml",
+          source: dependencies
+            .flatMap((dependency) =>
+              mavenDependencyLines(dependency, {
+                explicitCompileScope: true,
+                language,
+              }),
+            )
+            .join("\n"),
         },
       ],
-      title: "pom.xml",
     };
   }
-
   return {
     kind: "dependency",
+    title: "build.gradle",
     samples: [
       {
-        highlighterLanguage: "groovy",
         language: "gradle",
-        source: gradleDependencySource(dependencies, context),
+        highlighterLanguage: "groovy",
+        source: dependencies.map(gradleDependencyLine).join("\n"),
       },
     ],
-    title: "build.gradle",
   };
 }
 
-function gradleDependencySource(
-  dependencies: { target: string; attributes: Record<string, string> }[],
-  context: GuideRenderContext,
-): string {
-  return dependencies
-    .map(({ target, attributes }): string => {
-      let rendered = toGradleScope(attributes, context) || "implementation";
-      if (pomDependency(attributes)) {
-        rendered += " platform";
-      }
-      return `${rendered}("${groupId(attributes)}:${target.trim()}${attributes.version ? `:${attributes.version}` : ""}")${dependencyCalloutMarker(attributes)}`;
-    })
-    .join("\n");
-}
-
-function mavenDependencySource(
-  dependencies: { target: string; attributes: Record<string, string> }[],
-  context: GuideRenderContext,
-): string {
-  return dependencies
-    .flatMap(({ target, attributes }): string[] => {
-      const gradleScope = toGradleScope(attributes, context);
-      if (gradleScope === "annotationProcessor" || gradleScope === "kapt") {
-        return mavenAnnotationProcessorDependencyLines(
-          target,
-          attributes,
-          context,
-        );
-      }
-      return mavenDependencyLines(target, attributes);
-    })
-    .join("\n");
-}
-
-function mavenAnnotationProcessorDependencyLines(
+// Guide macros name the artifact directly and carry the group in attributes;
+// `groupdId` is a typo that existing guides rely on.
+function guideDependency(
   target: string,
   attributes: Record<string, string>,
-  context: GuideRenderContext,
-): string[] {
-  const elementName =
-    String(context.option.language || "").toLowerCase() === "kotlin"
-      ? "annotationProcessorPath"
-      : "path";
-  return [
-    "<!-- Add the following to your annotationProcessorPaths element -->",
-    `<${elementName}>${dependencyCalloutMarker(attributes)}`,
-    `    <groupId>${groupId(attributes)}</groupId>`,
-    `    <artifactId>${target.trim()}</artifactId>`,
-    ...versionLines(attributes, true),
-    `</${elementName}>`,
-  ];
-}
-
-function mavenDependencyLines(
-  target: string,
-  attributes: Record<string, string>,
-): string[] {
-  const pom = pomDependency(attributes);
-  return [
-    ...(pom
-      ? ["<!-- Add the following to your dependencyManagement element -->"]
-      : []),
-    `<dependency>${dependencyCalloutMarker(attributes)}`,
-    `    <groupId>${groupId(attributes)}</groupId>`,
-    `    <artifactId>${target.trim()}</artifactId>`,
-    ...versionLines(attributes, false),
-    ...(pom
-      ? ["    <type>pom</type>", "    <scope>import</scope>"]
-      : [`    <scope>${toMavenScope(attributes) || "compile"}</scope>`]),
-    "</dependency>",
-    ...(pom ? [""] : []),
-  ];
-}
-
-function versionLines(
-  attributes: Record<string, string>,
-  includeVersionProperty: boolean,
-): string[] {
-  if (attributes.version) {
-    return [`    <version>${attributes.version}</version>`];
-  }
-  if (includeVersionProperty && attributes.versionProperty) {
-    return [`    <version>${attributes.versionProperty}</version>`];
-  }
-  return [];
-}
-
-function groupId(attributes: Record<string, string>): string {
-  return attributes.groupId || attributes.groupdId || "io.micronaut";
-}
-
-function pomDependency(attributes: Record<string, string>): boolean {
-  return String(attributes.pom || "false").toLowerCase() === "true";
-}
-
-function dependencyCalloutMarker(attributes: Record<string, string>): string {
-  const callout = attributes.callout;
-  return callout && /^\d+$/.test(callout) ? ` // <${callout}>` : "";
-}
-
-function toMavenScope(attributes: Record<string, string>): string | undefined {
-  const scope = attributes.scope;
-  if (!scope) {
-    return undefined;
-  }
-  const scopes: Record<string, string> = {
-    annotationProcessor: "compile",
-    api: "compile",
-    compileOnly: "provided",
-    implementation: "compile",
-    runtimeOnly: "runtime",
-    testCompile: "test",
-    testImplementation: "test",
-    testRuntimeOnly: "test",
+  language: string,
+): Dependency {
+  return {
+    groupId: attributes.groupId || attributes.groupdId || "io.micronaut",
+    artifactId: target.trim(),
+    version: attributes.version,
+    gradleScope: gradleScope(attributes.scope, language),
+    mavenScope: mavenScope(attributes.scope),
+    pom: String(attributes.pom || "false").toLowerCase() === "true",
+    versionProperty: attributes.versionProperty,
+    callout: attributes.callout,
   };
-  return scopes[scope] || scope;
-}
-
-function toGradleScope(
-  attributes: Record<string, string>,
-  context: GuideRenderContext,
-): string | undefined {
-  const scope = attributes.scope;
-  if (!scope) {
-    return undefined;
-  }
-  const language = String(context.option.language || "").toLowerCase();
-  const scopes: Record<string, string> = {
-    compile: "implementation",
-    provided: "developmentOnly",
-    test: "testImplementation",
-    testCompile: "testImplementation",
-  };
-  if (scope === "annotationProcessor" && language === "kotlin") {
-    return "kapt";
-  }
-  if (scope === "annotationProcessor" && language === "groovy") {
-    return "compileOnly";
-  }
-  return scopes[scope] || scope;
 }
