@@ -119,6 +119,28 @@ function rewriteGuideLines(
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    // Grouping runs before the single-colon macro rewrite: guide sources write
+    // `dependency:x[]` inside `:dependencies:` and a rewritten line would
+    // otherwise escape the group as a standalone macro.
+    if (line === ":dependencies:") {
+      dependencyGroup = !dependencyGroup;
+      if (!dependencyGroup) {
+        const { bodyLines, nextIndex } = collectFollowingCalloutLines(
+          lines,
+          index + 1,
+        );
+        output.push(
+          ...dependencyGroupBlockLines(groupedDependencies, bodyLines),
+        );
+        groupedDependencies = [];
+        index = nextIndex - 1;
+      }
+      continue;
+    }
+    if (dependencyGroup && line.startsWith("dependency:")) {
+      groupedDependencies.push(line);
+      continue;
+    }
     const expandedContent = expandedGuideContentLines(line, context);
     if (expandedContent) {
       output.push(...expandedContent);
@@ -138,25 +160,6 @@ function rewriteGuideLines(
     if (excludeBlock) {
       output.push(...excludeBlock.lines);
       index = excludeBlock.nextIndex - 1;
-      continue;
-    }
-    if (line === ":dependencies:") {
-      dependencyGroup = !dependencyGroup;
-      if (!dependencyGroup) {
-        const { bodyLines, nextIndex } = collectFollowingCalloutLines(
-          lines,
-          index + 1,
-        );
-        output.push(
-          ...dependencyGroupBlockLines(groupedDependencies, bodyLines),
-        );
-        groupedDependencies = [];
-        index = nextIndex - 1;
-      }
-      continue;
-    }
-    if (dependencyGroup && line.startsWith("dependency:")) {
-      groupedDependencies.push(line);
       continue;
     }
     output.push(line);

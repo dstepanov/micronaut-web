@@ -95,6 +95,34 @@ export function extractTaggedSourceWithDiagnostics(
   };
 }
 
+// Snippet sources are shown without the indentation they had inside their
+// enclosing class or block: the common leading whitespace is removed and the
+// requested indent, if any, is applied to every line instead.
+export function normalizeSnippetIndent(
+  source: string,
+  indentValue: string | undefined,
+): string {
+  // Leading tabs count as four columns so that a tab-indented file and a
+  // space-indented file de-indent the same way.
+  const lines = trimBlankLines(source.split(/\r?\n/)).map((line) =>
+    line.replace(/^[ \t]+/, (leading) => leading.replaceAll("\t", "    ")),
+  );
+  const nonBlank = lines.filter((line) => line.trim());
+  const commonIndent = nonBlank.length
+    ? Math.min(...nonBlank.map((line) => line.match(/^ */)?.[0].length ?? 0))
+    : 0;
+  const indent = Number.parseInt(indentValue || "0", 10);
+  const prefix =
+    Number.isFinite(indent) && indent > 0 ? " ".repeat(indent) : "";
+  return lines
+    .map((line) =>
+      line.trim()
+        ? prefix + line.slice(Math.min(commonIndent, line.length))
+        : "",
+    )
+    .join("\n");
+}
+
 function trimBlankLines(lines: string[]): string[] {
   let start = 0;
   let end = lines.length;

@@ -881,6 +881,58 @@ test("guide dependencies group renders DependencyMacroSubstitution-compatible sn
   assert.doesNotMatch(mavenConverted, /:dependencies:|dependency:{1,2}/);
 });
 
+test("single-colon dependency lines inside a dependencies group render one grouped card", async (): Promise<void> => {
+  // Guide sources write the legacy single-colon form inside `:dependencies:`;
+  // it must group exactly like the double-colon form.
+  const source = [
+    ":dependencies:",
+    "dependency:micronaut-validation[groupId=io.micronaut.validation,callout=1]",
+    "dependency:micronaut-http-client[groupId=io.micronaut,callout=2]",
+    ":dependencies:",
+    "<1> Validation.",
+    "<2> HTTP client.",
+  ].join("\n");
+
+  const converted = await renderGuideSource(source, { buildTool: "gradle" });
+  const text = textOnly(converted);
+
+  assert.equal(count(converted, /docs-snippet-template docs-code-block/g), 1);
+  assert.match(
+    text,
+    /implementation\("io\.micronaut\.validation:micronaut-validation"\)[\s\S]*implementation\("io\.micronaut:micronaut-http-client"\)/,
+  );
+  assert.match(text, /Validation\./);
+  assert.match(text, /HTTP client\./);
+  assert.doesNotMatch(converted, /:dependencies:|dependency:{1,2}micronaut/);
+});
+
+test("tagged guide source snippets are de-indented like docs snippets", async (): Promise<void> => {
+  const converted = await renderGuideSource(
+    "source:GalleryController[tags=index]\n",
+    { buildTool: "gradle", language: "java" },
+  );
+  const code = /<pre[^>]*>([\s\S]*?)<\/pre>/.exec(converted)?.[1] || "";
+  // Shiki emits one `span.line` per source line; keep the callout number so
+  // the marker position is asserted too.
+  const lines = code
+    .split("\n")
+    .map((line): string =>
+      textOnly(
+        line.replace(
+          /<i class="conum" data-value="(\d+)"><\/i>/g,
+          "&lt;$1&gt;",
+        ),
+      ),
+    )
+    .filter(Boolean);
+
+  assert.deepEqual(lines, [
+    "String index() { // <1>",
+    'return "gallery";',
+    "}",
+  ]);
+});
+
 async function renderSnippetGalleryFixture(): Promise<{
   converted: string;
   html: string;

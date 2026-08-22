@@ -4,7 +4,32 @@ import test from "node:test";
 import {
   extractTaggedSource,
   extractTaggedSourceWithDiagnostics,
+  normalizeSnippetIndent,
 } from "../../shared/tagged-source.ts";
+
+test("normalizeSnippetIndent strips the common indent and applies the requested one", (): void => {
+  const region = [
+    "",
+    "    String index() {",
+    '        return "tagged";',
+    "",
+    "    }",
+    "",
+  ].join("\n");
+
+  assert.equal(
+    normalizeSnippetIndent(region, undefined),
+    ["String index() {", '    return "tagged";', "", "}"].join("\n"),
+  );
+  assert.equal(
+    normalizeSnippetIndent(region, "2"),
+    ["  String index() {", '      return "tagged";', "", "  }"].join("\n"),
+  );
+  assert.equal(
+    normalizeSnippetIndent("\tfoo\n\t\tbar", "0"),
+    ["foo", "    bar"].join("\n"),
+  );
+});
 
 test("extractTaggedSource removes nested tag directives from selected regions", (): void => {
   const source = `
