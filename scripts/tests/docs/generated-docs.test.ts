@@ -1914,9 +1914,16 @@ test("strict docs renderer allows known upstream source-shape warnings", async (
   assert.match(generatedHtml, /Out-of-sequence heading/);
 });
 
+type FixtureSection = {
+  id: string;
+  title: string;
+  body: string;
+  child?: { id: string; title: string; body: string };
+};
+
 async function writeMultiSectionGuide(
   docsDirectory: any,
-  sections: Array<{ id: string; title: string; body: string }>,
+  sections: FixtureSection[],
 ): Promise<any> {
   const guideDirectory = path.join(
     docsDirectory,
@@ -1932,7 +1939,15 @@ async function writeMultiSectionGuide(
     path.join(guideDirectory, "toc.yml"),
     [
       "title: Fixture Docs",
-      ...sections.map((section): string => `${section.id}: ${section.title}`),
+      ...sections.flatMap((section): string[] =>
+        section.child
+          ? [
+              `${section.id}:`,
+              `  title: ${section.title}`,
+              `  ${section.child.id}: ${section.child.title}`,
+            ]
+          : [`${section.id}: ${section.title}`],
+      ),
       "",
     ].join("\n"),
     "utf8",
@@ -1943,12 +1958,22 @@ async function writeMultiSectionGuide(
       section.body,
       "utf8",
     );
+    if (section.child) {
+      await fs.mkdir(path.join(guideDirectory, section.id), {
+        recursive: true,
+      });
+      await fs.writeFile(
+        path.join(guideDirectory, section.id, `${section.child.id}.adoc`),
+        section.child.body,
+        "utf8",
+      );
+    }
   }
 }
 
 async function renderMultiSectionFixture(
   t: any,
-  sections: Array<{ id: string; title: string; body: string }>,
+  sections: FixtureSection[],
 ): Promise<{ ids: string[]; html: string }> {
   const temporaryDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "micronaut-web-docs-duplicate-anchors-"),
@@ -2039,6 +2064,43 @@ test("section anchors outrank content headings that slug to the same id", async 
   );
   assert.ok(ids.includes("fixture-certificates"));
   assert.ok(ids.includes("fixture-certificates-2"));
+});
+
+test("a table of contents that repeats a section key gets distinct anchors", async (t: any): Promise<any> => {
+  // Section ids come straight from toc.yml keys, and the same key can appear at
+  // two nesting levels. Both become section headings on one page.
+  const { ids, html } = await renderMultiSectionFixture(t, [
+    {
+      id: "installation",
+      title: "Installation",
+      body: ["Top level body.", ""].join("\n"),
+    },
+    {
+      id: "oauth",
+      title: "OAuth",
+      body: ["OAuth body.", ""].join("\n"),
+      child: {
+        id: "installation",
+        title: "Installation",
+        body: ["Nested body.", ""].join("\n"),
+      },
+    },
+  ]);
+
+  assert.deepEqual(
+    ids.filter((id, index): boolean => ids.indexOf(id) !== index),
+    [],
+  );
+  assert.ok(ids.includes("fixture-installation"));
+  assert.ok(ids.includes("fixture-installation-2"));
+  // Both remain section headings, so the sidebar and search index still see two
+  // navigable sections rather than one.
+  assert.equal(
+    [...html.matchAll(/class="guide-section-heading">\s*<h[12] id="([^"]+)"/g)]
+      .map((match): string => match[1])
+      .filter((id): boolean => id.startsWith("fixture-installation")).length,
+    2,
+  );
 });
 
 test("docs strict diagnostic filter only fails render-stopping diagnostics", (): void => {

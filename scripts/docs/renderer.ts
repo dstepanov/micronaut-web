@@ -13,7 +13,7 @@ import {
 } from "./project-manifest.ts";
 import { docsSnippetSamples } from "./snippet-samples.ts";
 import { type TocNode, readGuideToc } from "./toc.ts";
-import { prefixIds, rewriteUrls, uniquifyIds } from "./urls.ts";
+import { claimId, prefixIds, rewriteUrls, uniquifyIds } from "./urls.ts";
 
 type DocsRenderContext = {
   project: DocsProject;
@@ -24,6 +24,7 @@ type DocsRenderContext = {
   attributes: Properties;
   renderOptions: { strict?: boolean };
   claimedIds: Set<string>;
+  reservedSectionIds: ReadonlySet<string>;
 };
 
 export async function renderProject(
@@ -61,9 +62,11 @@ export async function renderProject(
     guideSourceDirectory,
     attributes,
     renderOptions,
-    // Section headings anchor the page navigation, so they claim their ids
-    // before any content heading gets the chance to.
-    claimedIds: tocNodeIds(toc.children),
+    claimedIds: new Set<string>(),
+    // Section headings anchor the page navigation, so every section id is
+    // spoken for before any content heading gets the chance to take one, even
+    // for sections that appear later in the page.
+    reservedSectionIds: tocNodeIds(toc.children),
   };
 
   let content = `<span class="project-document-anchor" id="${attribute(project.slug)}-docs" aria-hidden="true"></span>\n`;
@@ -102,7 +105,10 @@ async function renderNode(
     ignoredDiagnostic: isIgnoredDocsDiagnostic,
   });
 
-  let htmlContent = `${sectionHeading(context.project, node)}\n${uniquifyIds(converted, context.claimedIds)}\n`;
+  // Claimed in document order: the first section to use an id keeps it, and a
+  // table of contents that repeats a key gets the repeat suffixed.
+  const sectionId = claimId(node.id, context.claimedIds);
+  let htmlContent = `${sectionHeading(context.project, node, sectionId)}\n${uniquifyIds(converted, context.claimedIds, context.reservedSectionIds)}\n`;
   for (const child of node.children) {
     htmlContent += await renderNode(asciidoctor, context, child);
   }
@@ -140,9 +146,13 @@ function tocNodeIds(nodes: TocNode[]): Set<string> {
   return ids;
 }
 
-function sectionHeading(project: DocsProject, node: TocNode): string {
+function sectionHeading(
+  project: DocsProject,
+  node: TocNode,
+  sectionId: string,
+): string {
   const headingLevel = node.level === 0 ? 1 : 2;
-  const id = attribute(node.id);
+  const id = attribute(sectionId);
   const editUrl = `${sourceDocsEditUrl(project)}/guide/${node.file}`;
   return `<div class="guide-section-heading">
     <h${headingLevel} id="${id}"><a class="anchor" href="#${id}"></a>${html(node.number)} ${html(node.title)}</h${headingLevel}>
