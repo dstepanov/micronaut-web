@@ -12,6 +12,7 @@ import { codeToHtml } from "shiki";
 
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
 import { html } from "../../shared/html.ts";
+import { documentRenderIdSeed } from "../../shared/render-id-seed.ts";
 import {
   normalizeEmptyPropertiesAssignmentHighlighting,
   normalizeStandaloneCalloutLines,
@@ -139,7 +140,7 @@ export async function renderSnippetBlockWithCalloutReader(
   );
   const rendered = await renderSnippetPayloadCards({
     footerHtml: await snippetFooterHtml(processor, parent, payloadWithCallouts),
-    idSeed: snippetIdSeed(reader, payloadWithCallouts),
+    idSeed: snippetIdSeed(parent, reader, payloadWithCallouts),
     payload: payloadWithCallouts,
   });
   const manualCalloutHtml = await manualCalloutsHtml(
@@ -456,12 +457,18 @@ function calloutNumberFromLine(line: string): string {
   return /^<(\d+)>/.exec(String(line || "").trim())?.[1] || "1";
 }
 
+// The reader cursor is only unique within a single render. A docs page
+// concatenates one render per table-of-contents node, so two sections that
+// resolve the same snippet at the same cursor would otherwise hash to the same
+// id; the per-render seed keeps them apart.
 function snippetIdSeed(
+  parent: Block | Section,
   reader: Reader | CalloutReader | undefined,
   payload: SnippetPayload,
 ): string {
   const cursor = (reader as Reader | undefined)?.cursor;
   return [
+    documentRenderIdSeed(parent),
     cursor?.path || cursor?.file || "",
     cursor?.lineno || "",
     payload.kind || "",

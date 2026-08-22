@@ -1,8 +1,12 @@
 // @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import { createHash } from "node:crypto";
-
 import { Html5Converter } from "@asciidoctor/core";
 import type { Registry } from "@asciidoctor/core";
+
+import {
+  RENDER_ID_SEED_ATTRIBUTE,
+  documentRenderIdSeed,
+  renderIdSeed,
+} from "../shared/render-id-seed.ts";
 
 import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
@@ -38,12 +42,6 @@ type AsciidoctorNode = {
   getDocument?: () => { getAttribute?: (name: string) => unknown } | undefined;
   getSource?: () => string;
 };
-
-// Each renderAsciiDoc call gets its own converter instance, so a per-instance
-// listing counter restarts at zero for every call. Docs pages concatenate one
-// render per table-of-contents node under a single project id prefix, so the
-// counter alone would repeat ids across sections of the same page.
-const LISTING_ID_SEED_ATTRIBUTE = "micronaut-listing-id-seed";
 
 type AsciidoctorDiagnostic = {
   getSeverity(): string;
@@ -118,7 +116,7 @@ export async function renderAsciiDoc({
         ...convertOptions,
         attributes: {
           ...(convertOptions.attributes as Record<string, unknown>),
-          [LISTING_ID_SEED_ATTRIBUTE]: listingIdSeed(diagnosticsLabel, source),
+          [RENDER_ID_SEED_ATTRIBUTE]: renderIdSeed(diagnosticsLabel, source),
         },
         converter: convertOptions.converter || MicronautComponentHtmlConverter,
         extension_registry: extensionRegistry,
@@ -156,20 +154,14 @@ export async function renderAsciiDoc({
   return html;
 }
 
+// Each renderAsciiDoc call gets its own converter instance, so the listing
+// counter restarts at zero every call; the render seed keeps ids distinct once
+// a page concatenates several renders under one project prefix.
 function listingSnippetId(node: AsciidoctorNode, index: number): string {
-  const seed = node.getDocument?.()?.getAttribute?.(LISTING_ID_SEED_ATTRIBUTE);
+  const seed = documentRenderIdSeed(node);
   return seed
     ? `generated-listing-snippet-${seed}-${index}`
     : `generated-listing-snippet-${index}`;
-}
-
-function listingIdSeed(diagnosticsLabel: string, source: string): string {
-  return createHash("sha1")
-    .update(diagnosticsLabel)
-    .update("\0")
-    .update(source)
-    .digest("hex")
-    .slice(0, 8);
 }
 
 function isSnippetCalloutValidationBlock(node: unknown): boolean {

@@ -510,6 +510,53 @@ test("listing snippet ids stay unique across the renders a docs page concatenate
   );
 });
 
+test("snippet macro ids stay unique across the renders a docs page concatenates", async (): Promise<void> => {
+  // The reader cursor repeats across renders, so the same snippet macro at the
+  // same line in two section files hashed to the same id before the render seed
+  // was folded in.
+  const source = [
+    "== Section",
+    "",
+    "snippet::controller[title=Controller variants]",
+    "",
+  ].join("\n");
+  const renderSection = (file: string): Promise<string> =>
+    renderAsciiDoc({
+      asciidoctor,
+      source,
+      diagnosticsLabel: `core/${file}`,
+      convertOptions: {
+        attributes: {
+          icons: "font",
+          idprefix: "",
+          idseparator: "-",
+        },
+        base_dir: fixtureDirectory,
+        extension_registry: micronautExtensionRegistry(
+          asciidoctor,
+          { attributes: { projectGroup: "io.micronaut" } },
+          { snippetSamples: fixtureSnippetSamples },
+        ),
+      },
+    });
+
+  const page = prefixIds(
+    [await renderSection("one.adoc"), await renderSection("two.adoc")].join(
+      "\n",
+    ),
+    "core",
+  );
+  const snippetIds = [...page.matchAll(/\bid="([^"]+)"/g)]
+    .map((match): string => match[1])
+    .filter((id): boolean => id.includes("generated-docs-snippet"));
+
+  assert.ok(snippetIds.length >= 2);
+  assert.deepEqual(
+    snippetIds.filter((id, index): boolean => snippetIds.indexOf(id) !== index),
+    [],
+  );
+});
+
 test("strict rendering reports every diagnostic a non-strict render reports", async (): Promise<void> => {
   const source = ["= Title", "", "=== Out of sequence", "", "Body.", ""].join(
     "\n",
