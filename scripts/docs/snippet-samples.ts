@@ -3,6 +3,7 @@ import path from "node:path";
 
 import {
   extractTaggedSourceWithDiagnostics,
+  normalizeSnippetIndent,
   type TaggedSourceDiagnostic,
 } from "../shared/tagged-source.ts";
 import type { Properties } from "./project-manifest.ts";
@@ -246,26 +247,4 @@ function sortSnippetDirectories(directories: string[]): string[] {
   return directories.sort(
     (left, right) => rank(left) - rank(right) || left.localeCompare(right),
   );
-}
-
-function normalizeSnippetIndent(
-  source: string,
-  indentValue: string | undefined,
-): string {
-  const lines = source.replace(/\s+$/, "").split(/\r?\n/);
-  const nonBlank = lines.filter((line) => line.trim());
-  const commonIndent = nonBlank.length
-    ? Math.min(
-        ...nonBlank.map(
-          (line) =>
-            (line.match(/^[ \t]*/)?.[0] ?? "").replaceAll("\t", "    ").length,
-        ),
-      )
-    : 0;
-  const indent = Number.parseInt(indentValue || "0", 10);
-  const prefix =
-    Number.isFinite(indent) && indent > 0 ? " ".repeat(indent) : "";
-  return lines
-    .map((line) => prefix + line.slice(Math.min(commonIndent, line.length)))
-    .join("\n");
 }

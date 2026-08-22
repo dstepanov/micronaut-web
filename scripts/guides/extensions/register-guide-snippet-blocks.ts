@@ -25,6 +25,7 @@ import {
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import {
   extractTaggedSourceWithDiagnostics,
+  normalizeSnippetIndent,
   type TaggedSourceDiagnostic,
 } from "../../shared/tagged-source.ts";
 import {
@@ -258,7 +259,7 @@ function syntheticResourceSnippetPayload(
     samples: [
       {
         language: "xml",
-        source: normalizeIndent(
+        source: normalizeSnippetIndent(
           graalPyMavenPluginSource(packages),
           attributes.indent,
         ),
@@ -352,7 +353,10 @@ async function readSnippetSource(
   if (options.stripLicenseHeader) {
     source = stripLicenseHeader(source);
   }
-  return { ok: true, source: normalizeIndent(source, attributes.indent) };
+  return {
+    ok: true,
+    source: normalizeSnippetIndent(source, attributes.indent),
+  };
 }
 
 function snippetPayload(
@@ -591,22 +595,6 @@ function stripLicenseHeader(source: string): string {
     /^\/\*[\s\S]*?Licensed under the Apache License[\s\S]*?\*\/\s*/i,
     "",
   );
-}
-
-function normalizeIndent(
-  source: string,
-  indentValue: string | undefined,
-): string {
-  const indent = Number.parseInt(indentValue || "0", 10);
-  if (!Number.isFinite(indent) || indent <= 0) {
-    return source.trim();
-  }
-  const prefix = " ".repeat(indent);
-  return source
-    .trim()
-    .split(/\r?\n/)
-    .map((line) => `${prefix}${line}`)
-    .join("\n");
 }
 
 function languageForFile(file: string, fallback = "text"): string {
