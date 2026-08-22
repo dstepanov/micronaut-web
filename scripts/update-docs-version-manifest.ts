@@ -114,7 +114,7 @@ async function resolveLatestVersionName({
   );
 }
 
-export async function readPublishedVersions(
+async function readPublishedVersions(
   publishedDirectory: string,
 ): Promise<DocsVersionOption[]> {
   let entries: Dirent[];

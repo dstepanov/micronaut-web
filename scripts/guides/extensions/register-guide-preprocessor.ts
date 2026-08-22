@@ -101,7 +101,7 @@ export function prepareGuideSourceForExtensions(
   );
 }
 
-export function rewriteGuideSourceForExtensions(
+function rewriteGuideSourceForExtensions(
   source: string,
   context: GuideRenderContext,
 ): string {

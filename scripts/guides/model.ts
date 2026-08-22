@@ -60,8 +60,8 @@ export const DEFAULT_GUIDE_SLUGS = [
   "micronaut-data-jdbc-repository",
 ];
 
-export const DEFAULT_LANGUAGES = ["java", "kotlin", "groovy"];
-export const DEFAULT_BUILD_TOOLS = ["gradle", "maven"];
+const DEFAULT_LANGUAGES = ["java", "kotlin", "groovy"];
+const DEFAULT_BUILD_TOOLS = ["gradle", "maven"];
 
 export async function readGuides(
   guidesRepositoryDirectory: string,
@@ -141,28 +141,12 @@ export function defaultGuideOption(guide: Guide): GuideOption | undefined {
   );
 }
 
-export function guideOptionFile(
+function guideOptionFile(
   slug: string,
   buildTool: string,
   language: string,
 ): string {
   return `${slug}-${buildTool}-${language}.html`;
-}
-
-export function guideOverviewFile(slug: string): string {
-  return `${slug}.html`;
-}
-
-export function tagPageFile(tag: string): string {
-  return `tag-${tagSlug(tag)}.html`;
-}
-
-export function tagSlug(tag: string): string {
-  return String(tag || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export function languageExtension(language: string): string {
