@@ -1,6 +1,7 @@
 // Attribute parsing shared by the block and inline macro processors. Asciidoctor
 // hands macros either a parsed attribute map or, for some inline shapes, the
 // raw attribute text, so lookups fall back to scanning that text.
+import { escapeRegExp } from "../../shared/html.ts";
 
 export type MacroAttributes = Record<string, unknown> & {
   text?: unknown;
@@ -55,8 +56,12 @@ function cleanMacroAttributeValue(value: string, name: string): string {
   return trimmed;
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// The link text of an inline macro: `macro:target[text]` or `text=...`.
+export function macroText(attrs: MacroAttributes): string {
+  const positional = Array.isArray(attrs.$positional)
+    ? String(attrs.$positional[0] ?? "")
+    : "";
+  return macroAttribute(attrs, "text") || positional;
 }
 
 export function record(value: unknown): Record<string, unknown> {

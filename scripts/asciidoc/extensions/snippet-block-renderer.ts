@@ -12,6 +12,14 @@ import { codeToHtml } from "shiki";
 
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
 import { html } from "../../shared/html.ts";
+import {
+  type CalloutItem,
+  type CalloutReader,
+  calloutNumberFromLine,
+  isCalloutListItem,
+  readCalloutListItems,
+  readLeadingBlankLines,
+} from "../callouts.ts";
 import { record } from "./macro-attributes.ts";
 import { documentRenderIdSeed } from "../../shared/render-id-seed.ts";
 import {
@@ -97,18 +105,6 @@ type ComponentListItemNode = {
   precomputeText?: () => Promise<void>;
 };
 
-type CalloutItem = {
-  line: string;
-  number: string;
-  text: string;
-};
-
-export type CalloutReader = {
-  peekLine(): Promise<string | undefined>;
-  readLine(): Promise<string | undefined>;
-  unshiftLines(lines: string[]): void;
-};
-
 export async function renderSnippetBlock(
   processor: ComponentBlockProcessor,
   parent: Block | Section,
@@ -119,7 +115,7 @@ export async function renderSnippetBlock(
     options.reader || (parent.document as { reader?: Reader }).reader;
   const manualCalloutLines: string[] = [];
   const payloadWithCallouts = await absorbFollowingCalloutLines(
-    reader,
+    reader as CalloutReader | undefined,
     payload,
     options.manualCallouts === "inline"
       ? (lines: string[]): void => {
@@ -427,10 +423,6 @@ async function manualCalloutsHtml(
   ).join("\n");
 }
 
-function calloutNumberFromLine(line: string): string {
-  return /^<(\d+)>/.exec(String(line || "").trim())?.[1] || "1";
-}
-
 // The reader cursor is only unique within a single render. A docs page
 // concatenates one render per table-of-contents node, so two sections that
 // resolve the same snippet at the same cursor would otherwise hash to the same
@@ -440,7 +432,8 @@ function snippetIdSeed(
   reader: Reader | CalloutReader | undefined,
   payload: SnippetPayload,
 ): string {
-  const cursor = (reader as Reader | undefined)?.cursor;
+  const cursor = (reader as { cursor?: Record<string, unknown> } | undefined)
+    ?.cursor;
   return [
     documentRenderIdSeed(parent),
     cursor?.path || cursor?.file || "",
@@ -571,88 +564,6 @@ async function absorbFollowingCalloutLines(
   };
 }
 
-function isCalloutListItem(line: string): boolean {
-  return /^<(\.|\d+)>/.test(line);
-}
-
-async function readLeadingBlankLines(reader: CalloutReader): Promise<string[]> {
-  const lines: string[] = [];
-  for (;;) {
-    const line = await reader.peekLine();
-    if (line === undefined || line.trim()) {
-      return lines;
-    }
-    lines.push((await reader.readLine()) || "");
-  }
-}
-
-async function readCalloutListItems(
-  reader: CalloutReader,
-): Promise<CalloutItem[]> {
-  const items: CalloutItem[] = [];
-  let nextCallout = 1;
-  for (;;) {
-    const line = await reader.peekLine();
-    if (line === undefined) {
-      return items;
-    }
-    const match = /^<(\.|\d+)>\s*(.*)$/.exec(line);
-    if (match) {
-      await reader.readLine();
-      const number =
-        match[1] === "." ? String(nextCallout) : String(Number(match[1]));
-      nextCallout = Number(number) + 1;
-      const itemLines = [line.replace(/^<(\.|\d+)>/, `<${number}>`)];
-      const textLines = [match[2]];
-      await readCalloutContinuationLines(reader, itemLines, textLines);
-      items.push({
-        line: itemLines.join("\n"),
-        number,
-        text: textLines.join("\n"),
-      });
-      continue;
-    }
-    if (
-      items.length &&
-      !line.trim() &&
-      (await nextNonBlankLineIsCallout(reader))
-    ) {
-      await reader.readLine();
-      continue;
-    }
-    return items;
-  }
-}
-
-async function readCalloutContinuationLines(
-  reader: CalloutReader,
-  itemLines: string[],
-  textLines: string[],
-): Promise<void> {
-  for (;;) {
-    const line = await reader.peekLine();
-    if (line === undefined || isCalloutListItem(line)) {
-      return;
-    }
-    if (!line.trim()) {
-      if (await nextNonBlankLineIsCallout(reader)) {
-        await reader.readLine();
-      }
-      return;
-    }
-    if (!isIndentedContinuationLine(line)) {
-      return;
-    }
-    const continuationLine = (await reader.readLine()) || "";
-    itemLines.push(continuationLine);
-    textLines.push(continuationLine.trim());
-  }
-}
-
-function isIndentedContinuationLine(line: string): boolean {
-  return /^[ \t]+\S/.test(line);
-}
-
 function payloadCalloutNumbers(payload: SnippetPayload): Set<string> {
   const numbers = new Set<string>();
   for (const sample of normalizeSnippetSamples(payload.samples)) {
@@ -698,25 +609,6 @@ function manualCalloutBlockLines(items: CalloutItem[]): string[] {
   }
   lines.push("");
   return lines;
-}
-
-async function nextNonBlankLineIsCallout(
-  reader: CalloutReader,
-): Promise<boolean> {
-  const consumed = [];
-  for (;;) {
-    const line = await reader.readLine();
-    if (line === undefined) {
-      reader.unshiftLines(consumed);
-      return false;
-    }
-    consumed.push(line);
-    if (!line.trim()) {
-      continue;
-    }
-    reader.unshiftLines(consumed);
-    return isCalloutListItem(line);
-  }
 }
 
 function isCalloutList(node: unknown): node is ComponentBlockNode {
