@@ -13,7 +13,13 @@ import {
 } from "./project-manifest.ts";
 import { docsSnippetSamples } from "./snippet-samples.ts";
 import { type TocNode, readGuideToc } from "./toc.ts";
-import { claimId, prefixIds, rewriteUrls, uniquifyIds } from "./urls.ts";
+import {
+  claimId,
+  prefixIds,
+  prefixedId,
+  rewriteUrls,
+  uniquifyIds,
+} from "./urls.ts";
 
 type DocsRenderContext = {
   project: DocsProject;
@@ -66,7 +72,7 @@ export async function renderProject(
     // Section headings anchor the page navigation, so every section id is
     // spoken for before any content heading gets the chance to take one, even
     // for sections that appear later in the page.
-    reservedSectionIds: tocNodeIds(toc.children),
+    reservedSectionIds: tocNodeIds(toc.children, project.slug),
   };
 
   let content = `<span class="project-document-anchor" id="${attribute(project.slug)}-docs" aria-hidden="true"></span>\n`;
@@ -107,8 +113,8 @@ async function renderNode(
 
   // Claimed in document order: the first section to use an id keeps it, and a
   // table of contents that repeats a key gets the repeat suffixed.
-  const sectionId = claimId(node.id, context.claimedIds);
-  let htmlContent = `${sectionHeading(context.project, node, sectionId)}\n${uniquifyIds(converted, context.claimedIds, context.reservedSectionIds)}\n`;
+  const sectionId = claimId(node.id, context.project.slug, context.claimedIds);
+  let htmlContent = `${sectionHeading(context.project, node, sectionId)}\n${uniquifyIds(converted, context.project.slug, context.claimedIds, context.reservedSectionIds)}\n`;
   for (const child of node.children) {
     htmlContent += await renderNode(asciidoctor, context, child);
   }
@@ -132,10 +138,10 @@ export function isIgnoredDocsDiagnostic(diagnostic: string): boolean {
   );
 }
 
-function tocNodeIds(nodes: TocNode[]): Set<string> {
+function tocNodeIds(nodes: TocNode[], slug: string): Set<string> {
   const ids = new Set<string>();
   const visit = (node: TocNode): void => {
-    ids.add(node.id);
+    ids.add(prefixedId(node.id, slug));
     for (const child of node.children) {
       visit(child);
     }

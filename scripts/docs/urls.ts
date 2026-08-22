@@ -7,25 +7,37 @@ import type { DocsProject } from "./project-manifest.ts";
 // Matches real id attributes only, so data-*-id attributes are left alone.
 const ID_ATTRIBUTE_PATTERN = /(?<![-\w])id="([^"]+)"/g;
 
+// The id an element ends up with once prefixIds has run. Kept as the single
+// rule so claiming and prefixing cannot disagree about what collides.
+export function prefixedId(id: string, slug: string): string {
+  const prefix = `${slug}-`;
+  return id.startsWith(prefix) ? id : `${prefix}${id}`;
+}
+
 // Claims an id for one page, suffixing it when something already took it.
-// reservedIds holds ids that are spoken for but not yet emitted, so an element
-// appearing earlier in the page cannot take one.
+// Ids are compared in their final prefixed form: a table-of-contents key that
+// already carries the project slug must collide with the bare key it would
+// otherwise be prefixed into. reservedIds holds ids that are spoken for but
+// not yet emitted, so an element appearing earlier in the page cannot take one.
+// Always returns the prefixed id, which prefixIds then leaves untouched.
 export function claimId(
   id: string,
+  slug: string,
   claimedIds: Set<string>,
   reservedIds?: ReadonlySet<string>,
 ): string {
+  const key = prefixedId(id, slug);
   const taken = (candidate: string): boolean =>
     claimedIds.has(candidate) || Boolean(reservedIds?.has(candidate));
-  if (!taken(id)) {
-    claimedIds.add(id);
-    return id;
+  if (!taken(key)) {
+    claimedIds.add(key);
+    return key;
   }
   let suffix = 2;
-  while (taken(`${id}-${suffix}`)) {
+  while (taken(`${key}-${suffix}`)) {
     suffix += 1;
   }
-  const unique = `${id}-${suffix}`;
+  const unique = `${key}-${suffix}`;
   claimedIds.add(unique);
   return unique;
 }
@@ -37,6 +49,7 @@ export function claimId(
 // navigation links to as reservedIds so content headings never take those.
 export function uniquifyIds(
   fragment: string,
+  slug: string,
   claimedIds: Set<string>,
   reservedIds?: ReadonlySet<string>,
 ): string {
@@ -45,8 +58,9 @@ export function uniquifyIds(
   const uniquified = fragment.replace(
     ID_ATTRIBUTE_PATTERN,
     (match: string, id: string): string => {
-      const unique = claimId(id, claimedIds, reservedIds);
-      if (unique === id) {
+      const unique = claimId(id, slug, claimedIds, reservedIds);
+      if (unique === prefixedId(id, slug)) {
+        // No collision: leave the bare id for prefixIds to prefix as before.
         return match;
       }
       if (!renames.has(id)) {
@@ -74,11 +88,13 @@ export function uniquifyIds(
 export function prefixIds(input: string, slug: string): string {
   const prefix = `${slug}-`;
   return input
-    .replace(/\bid="([^"]+)"/g, (match: string, id: string): string =>
-      id.startsWith(prefix) ? match : `id="${prefix}${id}"`,
+    .replace(
+      /\bid="([^"]+)"/g,
+      (_match: string, id: string): string => `id="${prefixedId(id, slug)}"`,
     )
-    .replace(/\bhref="#([^"]+)"/g, (match: string, id: string): string =>
-      id.startsWith(prefix) ? match : `href="#${prefix}${id}"`,
+    .replace(
+      /\bhref="#([^"]+)"/g,
+      (_match: string, id: string): string => `href="#${prefixedId(id, slug)}"`,
     )
     .replace(
       /\b(aria-activedescendant|aria-controls|aria-describedby|aria-labelledby|aria-owns|for)="([^"]+)"/g,
