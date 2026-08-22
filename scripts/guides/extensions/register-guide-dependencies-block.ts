@@ -1,15 +1,9 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import type {
-  Block,
-  BlockMacroProcessor,
-  BlockProcessor,
-  BlockProcessorDslInterface,
-  MacroProcessorDslInterface,
-  Reader,
-  Registry,
-  Section,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
 
+import {
+  defineBlock,
+  defineBlockMacro,
+} from "../../asciidoc/extensions/define.ts";
 import {
   type MacroPayload,
   parseAttributeList,
@@ -36,55 +30,36 @@ export function registerGuideDependenciesBlock(
   registry: Registry,
   context: GuideRenderContext,
 ): void {
-  registry.blockMacro(
-    "dependency",
-    function registerGuideDependencyMacro(
-      this: MacroProcessorDslInterface,
-    ): void {
-      this.process(async function processGuideDependencyMacro(
-        this: BlockMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Promise<Block> {
-        return renderSnippetBlock(
-          this,
-          parent as Block | Section,
-          dependencySnippetPayload(
-            [{ attributes: stringAttributes(attrs), target: String(target) }],
-            context,
-          ),
-          { manualCallouts: "inline" },
-        );
-      });
-    },
-  );
+  defineBlockMacro(registry, "dependency", function (parent, target, attrs) {
+    return renderSnippetBlock(
+      this,
+      parent,
+      dependencySnippetPayload(
+        [{ attributes: stringAttributes(attrs), target }],
+        context,
+      ),
+      { manualCallouts: "inline" },
+    );
+  });
 
-  registry.block(function registerGuideDependenciesBlock(
-    this: BlockProcessorDslInterface,
-  ): void {
-    this.named(GUIDE_DEPENDENCIES_BLOCK);
-    this.onContext("open");
-    this.process(async function processGuideDependenciesBlock(
-      this: BlockProcessor,
-      parent: unknown,
-      reader: unknown,
-      _attrs: unknown,
-    ): Promise<Block> {
-      // The preprocessor wraps a `:dependencies:` group's macros in this
-      // block; the callout list that follows the block stays in the document
-      // reader, which renderSnippetBlock reads by default.
-      const macros = (await (reader as Reader).readLines())
+  // The preprocessor wraps a `:dependencies:` group's macros in this block;
+  // the callout list that follows the block stays in the document reader,
+  // which renderSnippetBlock reads by default.
+  defineBlock(
+    registry,
+    { name: GUIDE_DEPENDENCIES_BLOCK, context: "open" },
+    async function (parent, reader) {
+      const macros = (await reader.readLines())
         .map(parseDependencyMacroLine)
         .filter((macro): macro is MacroPayload => Boolean(macro));
       return renderSnippetBlock(
         this,
-        parent as Block | Section,
+        parent,
         dependencySnippetPayload(macros, context),
         { manualCallouts: "inline" },
       );
-    });
-  });
+    },
+  );
 }
 
 function parseDependencyMacroLine(line: string): MacroPayload | undefined {

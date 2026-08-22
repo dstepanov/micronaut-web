@@ -1,13 +1,12 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import type {
-  DocumentProcessorDslInterface,
-  Reader,
-  Registry,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
 
+import {
+  definePreprocessor,
+  replaceReaderLines,
+} from "../../asciidoc/extensions/define.ts";
 import { parseAttributeList } from "../../asciidoc/extensions/macro-attributes.ts";
 import { splitList } from "../../shared/cli.ts";
 import {
@@ -52,17 +51,6 @@ type ExcludeDirective = {
   values: string[];
 };
 
-type ConstructableReader = Reader & {
-  constructor: new (
-    document: unknown,
-    lines: string[],
-    cursor: unknown,
-    options: Record<string, unknown>,
-  ) => Reader;
-  cursor: unknown;
-  lines: string[];
-};
-
 type PrepareOptions = {
   appendLicense?: boolean;
   // Files being expanded up the call chain, so an include cycle becomes a
@@ -80,25 +68,16 @@ export function registerGuidePreprocessor(
   registry: Registry,
   context: GuideRenderContext,
 ): void {
-  registry.preprocessor(function registerGuidePreprocessor(
-    this: DocumentProcessorDslInterface,
-  ): void {
-    this.process(function processGuidePreprocessor(
-      document: unknown,
-      reader: unknown,
-    ): Reader {
-      const sourceReader = reader as ConstructableReader;
-      return new sourceReader.constructor(
-        document,
-        prepareGuideSourceForExtensions(
-          sourceReader.lines.join("\n"),
-          context,
-        ).split(/\r?\n/),
-        sourceReader.cursor,
-        {},
-      );
-    });
-  });
+  definePreprocessor(registry, (document, reader) =>
+    replaceReaderLines(
+      document,
+      reader,
+      prepareGuideSourceForExtensions(
+        reader.getLines().join("\n"),
+        context,
+      ).split(/\r?\n/),
+    ),
+  );
 }
 
 export function prepareGuideSourceForExtensions(
@@ -389,19 +368,22 @@ function replaceGuideTemplateArguments(
   source: string,
   attributes: Record<string, string>,
 ): string {
-  return source.replace(/\{(\d+)(?:_([UL]))?}/g, (match, index, transform) => {
-    const value = attributes[`arg${index}`];
-    if (value === undefined) {
-      return match;
-    }
-    if (transform === "U") {
-      return value.toUpperCase();
-    }
-    if (transform === "L") {
-      return value.toLowerCase();
-    }
-    return value;
-  });
+  return source.replace(
+    /\{(\d+)(?:_([UL]))?}/g,
+    (match: string, index: string, transform: string | undefined): string => {
+      const value = attributes[`arg${index}`];
+      if (value === undefined) {
+        return match;
+      }
+      if (transform === "U") {
+        return value.toUpperCase();
+      }
+      if (transform === "L") {
+        return value.toLowerCase();
+      }
+      return value;
+    },
+  );
 }
 
 function calloutNumber(
@@ -471,16 +453,24 @@ function replacePlaceholders(
     .replaceAll("@api@", "https://docs.micronaut.io/latest/api");
 
   text = rewriteIncludeTargets(text, context);
-  text = text.replace(/@([\w-]*):?cli-command@/g, (_match, appName) =>
-    cliCommandForApp(findApp(context.guide, appName || "default")),
+  text = text.replace(
+    /@([\w-]*):?cli-command@/g,
+    (_match: string, appName: string): string =>
+      cliCommandForApp(findApp(context.guide, appName || "default")),
   );
-  text = text.replace(/@([\w-]*):?features@/g, (_match, appName) =>
-    appFeatures(context.guide, context.option, appName || "default").join(","),
+  text = text.replace(
+    /@([\w-]*):?features@/g,
+    (_match: string, appName: string): string =>
+      appFeatures(context.guide, context.option, appName || "default").join(
+        ",",
+      ),
   );
-  text = text.replace(/@([\w-]*):?features-words@/g, (_match, appName) =>
-    featuresWords(
-      appFeatures(context.guide, context.option, appName || "default"),
-    ),
+  text = text.replace(
+    /@([\w-]*):?features-words@/g,
+    (_match: string, appName: string): string =>
+      featuresWords(
+        appFeatures(context.guide, context.option, appName || "default"),
+      ),
   );
   return text;
 }
@@ -491,7 +481,7 @@ function rewriteIncludeTargets(
 ): string {
   return source.replace(
     /^include::([^\[]+)\[([^\]]*)]/gm,
-    (match, target, attributes) => {
+    (match: string, target: string, attributes: string): string => {
       const resolved = resolveGuideIncludeTarget(target, context);
       return resolved ? `include::${resolved}[${attributes}]` : match;
     },

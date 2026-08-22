@@ -1,37 +1,16 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import type {
-  Block,
-  Inline,
-  InlineMacroProcessor,
-  InlineMacroProcessorDslInterface,
-  Registry,
-} from "@asciidoctor/core";
-import {
-  type MacroAttributes,
-  macroText,
-} from "../../asciidoc/extensions/macro-attributes.ts";
+import type { Registry } from "@asciidoctor/core";
+
+import { defineInlineMacro } from "../../asciidoc/extensions/define.ts";
+import { macroText } from "../../asciidoc/extensions/macro-attributes.ts";
 
 export function registerGuideLinkMacro(registry: Registry): void {
-  registry.inlineMacro(
+  defineInlineMacro(
+    registry,
     "guideLink",
-    function registerGuideLinkMacro(
-      this: InlineMacroProcessorDslInterface,
-    ): void {
-      this.process(function processGuideLinkMacro(
-        this: InlineMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Inline {
-        return this.createInline(
-          parent as Block,
-          "anchor",
-          macroText(attrs as MacroAttributes),
-          {
-            type: "link",
-            target: `${String(target)}.html`,
-          },
-        );
+    function (parent, target, attributes) {
+      return this.createInline(parent, "anchor", macroText(attributes), {
+        type: "link",
+        target: `${target}.html`,
       });
     },
   );

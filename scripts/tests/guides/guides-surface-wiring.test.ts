@@ -275,7 +275,7 @@ test("latest guide replacement routes and parallel generated-content preparation
       ),
     (error: any): boolean => error?.code === "ENOENT",
   );
-  assert.match(guidesExtensions, /registry\.block/);
+  assert.match(guidesExtensions, /defineBlock\(/);
   assert.match(guidesExtensions, /renderSnippetBlock\(/);
   assert.doesNotMatch(guidesExtensions, /normalizeAsciiDocCallouts/);
   assert.doesNotMatch(guidesExtensions, /normalizeOrphanCalloutLists/);

@@ -1,9 +1,6 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import type {
-  Document,
-  DocumentProcessorDslInterface,
-  Registry,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
+
+import { defineTreeProcessor } from "./define.ts";
 
 type ComponentBlockNode = {
   blocks?: ComponentBlockNode[];
@@ -12,13 +9,11 @@ type ComponentBlockNode = {
 
 const footerNodes = new WeakMap<object, ComponentBlockNode>();
 
+// Detaches the callout list that follows an ordinary listing so the converter
+// can render it inside the listing's card footer instead of after the card.
 export function registerComponentFooterProcessor(registry: Registry): void {
-  registry.treeProcessor(function registerComponentFooterProcessor(
-    this: DocumentProcessorDslInterface,
-  ): void {
-    this.process(function processComponentFooters(document: unknown): void {
-      attachComponentFooters(document as Document);
-    });
+  defineTreeProcessor(registry, (document) => {
+    attachComponentFooters(document as unknown as ComponentBlockNode);
   });
 }
 
@@ -30,38 +25,18 @@ export async function componentFooterHtml(
   return footerNode ? String(await renderFooter(footerNode)) : "";
 }
 
-function attachComponentFooters(parent: Document | ComponentBlockNode): void {
+function attachComponentFooters(parent: ComponentBlockNode): void {
   const blocks = parent.blocks || [];
   for (let index = 0; index < blocks.length; index += 1) {
     const block = blocks[index];
     attachComponentFooters(block);
 
-    if (isRenderableListingBlock(block)) {
-      attachFollowingCalloutList(blocks, index, block);
+    if (block.context === "listing") {
+      const next = blocks[index + 1];
+      if (next && next.context === "colist") {
+        footerNodes.set(block, next);
+        blocks.splice(index + 1, 1);
+      }
     }
   }
-}
-
-function attachFollowingCalloutList(
-  blocks: ComponentBlockNode[],
-  index: number,
-  target: ComponentBlockNode,
-): void {
-  const next = blocks[index + 1];
-  if (isCalloutList(next)) {
-    footerNodes.set(target, next);
-    blocks.splice(index + 1, 1);
-  }
-}
-
-function isRenderableListingBlock(node: unknown): node is ComponentBlockNode {
-  return isComponentBlockNode(node) && node.context === "listing";
-}
-
-function isCalloutList(node: unknown): node is ComponentBlockNode {
-  return isComponentBlockNode(node) && node.context === "colist";
-}
-
-function isComponentBlockNode(node: unknown): node is ComponentBlockNode {
-  return Boolean(node && typeof node === "object");
 }

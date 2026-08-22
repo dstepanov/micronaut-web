@@ -1,11 +1,4 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import type {
-  Block,
-  BlockMacroProcessor,
-  MacroProcessorDslInterface,
-  Registry,
-  Section,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
 
 import {
   type Dependency,
@@ -14,6 +7,7 @@ import {
   mavenDependencyXml,
   mavenScope,
 } from "../../shared/dependency-coordinates.ts";
+import { defineBlockMacro } from "./define.ts";
 import { type MacroAttributes, macroAttribute } from "./macro-attributes.ts";
 import {
   type SnippetPayload,
@@ -28,21 +22,15 @@ export function registerDependencyBlock(
   registry: Registry,
   context: DependencyContext,
 ): void {
-  registry.blockMacro(
+  defineBlockMacro(
+    registry,
     "dependency",
-    function registerDependencyMacro(this: MacroProcessorDslInterface): void {
-      this.process(async function processDependencyMacro(
-        this: BlockMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Promise<Block> {
-        return renderSnippetBlock(
-          this,
-          parent as Block | Section,
-          dependencyPayload(String(target), attrs as MacroAttributes, context),
-        );
-      });
+    function (parent, target, attributes) {
+      return renderSnippetBlock(
+        this,
+        parent,
+        dependencyPayload(target, attributes, context),
+      );
     },
   );
 }

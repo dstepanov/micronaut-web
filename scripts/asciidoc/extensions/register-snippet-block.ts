@@ -1,12 +1,7 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
-import type {
-  Block,
-  BlockMacroProcessor,
-  MacroProcessorDslInterface,
-  Registry,
-  Section,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
 
+import { splitList } from "../../shared/cli.ts";
+import { defineBlockMacro } from "./define.ts";
 import {
   type MacroAttributes,
   macroAttribute,
@@ -16,63 +11,51 @@ import {
   type SnippetSample,
   renderSnippetBlock,
 } from "./snippet-block-renderer.ts";
-import { splitList } from "../../shared/cli.ts";
 
-type SnippetSamplesResolver = (
-  target: string,
-  attrs: MacroAttributes,
-  context: Record<string, unknown>,
-) => SnippetSample[];
+// Declared as a method so resolvers that type their own context (the docs
+// resolver takes a SnippetContext) remain assignable.
+export type SnippetSamplesResolver = {
+  resolve(
+    target: string,
+    attrs: MacroAttributes,
+    context: Record<string, unknown>,
+  ): SnippetSample[];
+}["resolve"];
 
 export function registerSnippetBlock(
   registry: Registry,
   context: Record<string, unknown>,
-  options: { snippetSamples: unknown },
+  options: { snippetSamples: SnippetSamplesResolver },
 ): void {
-  registry.blockMacro(
-    "snippet",
-    function registerSnippetMacro(this: MacroProcessorDslInterface): void {
-      this.process(async function processSnippetMacro(
-        this: BlockMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Promise<Block | undefined> {
-        const attributes = attrs as MacroAttributes;
-        const samples = snippetSamples(
-          String(target),
-          attributes,
-          context,
-          options.snippetSamples,
-        );
-        if (!samples.length) {
-          return undefined;
-        }
-        return renderSnippetBlock(this, parent as Block | Section, {
-          kind: "code",
-          title: macroAttribute(attributes, "title") || "",
-          description: macroAttribute(attributes, "description") || "",
-          samples,
-        });
-      });
-    },
-  );
+  defineBlockMacro(registry, "snippet", function (parent, target, attributes) {
+    const samples = snippetSamples(
+      target,
+      attributes,
+      context,
+      options.snippetSamples,
+    );
+    if (!samples.length) {
+      return undefined;
+    }
+    return renderSnippetBlock(this, parent, {
+      kind: "code",
+      title: macroAttribute(attributes, "title") || "",
+      description: macroAttribute(attributes, "description") || "",
+      samples,
+    });
+  });
 }
 
 function snippetSamples(
   target: string,
   attrs: MacroAttributes,
   context: Record<string, unknown>,
-  resolveSamples: unknown,
+  resolveSamples: SnippetSamplesResolver,
 ): SnippetSample[] {
-  if (typeof resolveSamples !== "function") {
-    return [];
-  }
-  const resolver = resolveSamples as SnippetSamplesResolver;
   const samples: SnippetSample[] = [];
   for (const snippetTarget of splitList(target)) {
     const targetSamples = normalizeSamples(
-      resolver(snippetTarget, attrs, context),
+      resolveSamples(snippetTarget, attrs, context),
     );
     samples.push(
       ...targetSamples.map((sample) => ({

@@ -8,9 +8,9 @@ import { fileURLToPath } from "node:url";
 import type { Block, BlockProcessor, Reader, Section } from "@asciidoctor/core";
 import type { OnResolveArgs, PluginBuild } from "esbuild";
 import { build } from "esbuild";
-import { codeToHtml } from "shiki";
 
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
+import { highlightCodeSnippetHtml } from "../../../src/lib/docs-code-highlighting.ts";
 import { html } from "../../shared/html.ts";
 import {
   type CalloutItem,
@@ -22,11 +22,7 @@ import {
 } from "../callouts.ts";
 import { record } from "./macro-attributes.ts";
 import { documentRenderIdSeed } from "../../shared/render-id-seed.ts";
-import {
-  normalizeEmptyPropertiesAssignmentHighlighting,
-  normalizeStandaloneCalloutLines,
-  shikiLanguage,
-} from "../../shared/highlight.ts";
+import { normalizeStandaloneCalloutLines } from "../../shared/highlight.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -35,8 +31,6 @@ const projectDirectory = path.resolve(
   "..",
 );
 const MANUAL_CALLOUTS_CLASS = "asciidoc-manual-callouts";
-const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
-const CALLOUT_MARKER_SUFFIX = "__";
 
 let componentRendererPromise: Promise<ComponentRenderer> | undefined;
 
@@ -452,46 +446,19 @@ function snippetIdSeed(
   ].join(":");
 }
 
-async function highlightedCodeInnerHtml(
+// Highlights with the same Shiki setup the main site uses; the display
+// language decides whether standalone callout markers move onto the next
+// property line before highlighting.
+function highlightedCodeInnerHtml(
   source: unknown,
   highlighterLanguage: string,
   displayLanguage: string,
 ): Promise<string> {
-  const markedSource = encodeCalloutMarkers(
+  return highlightCodeSnippetHtml(
     normalizeStandaloneCalloutLines(
       String(source || "").trimEnd(),
       displayLanguage,
     ),
-  );
-  let highlighted;
-  try {
-    highlighted = await codeToHtml(markedSource, {
-      lang: shikiLanguage(highlighterLanguage),
-      themes: {
-        light: "github-light-default",
-        dark: "github-dark-default",
-      },
-    });
-  } catch {
-    highlighted = await codeToHtml(markedSource, {
-      lang: "text",
-      themes: {
-        light: "github-light-default",
-        dark: "github-dark-default",
-      },
-    });
-  }
-
-  return normalizeEmptyPropertiesAssignmentHighlighting(
-    codeElementInnerHtml(highlighted)
-      .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
-      .replace(
-        new RegExp(
-          `${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`,
-          "g",
-        ),
-        '<i class="conum" data-value="$1"></i>',
-      ),
     highlighterLanguage,
   );
 }
@@ -512,18 +479,6 @@ export async function precomputeGeneratedInlineText(
   for (const block of node.blocks || []) {
     await precomputeGeneratedInlineText(block);
   }
-}
-
-function codeElementInnerHtml(value: string): string {
-  return /<code(?:\s[^>]*)?>([\s\S]*)<\/code>/.exec(value)?.[1] || value;
-}
-
-function encodeCalloutMarkers(source: string): string {
-  return source.replace(
-    /<!--(\d+)-->|<(\d+)>/g,
-    (_match: string, xmlCommentNumber: string, angleNumber: string): string =>
-      `${CALLOUT_MARKER_PREFIX}${xmlCommentNumber || angleNumber}${CALLOUT_MARKER_SUFFIX}`,
-  );
 }
 
 async function absorbFollowingCalloutLines(
