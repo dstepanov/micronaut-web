@@ -16,14 +16,10 @@ import {
   missingNotePayload,
   stringAttributes,
 } from "../../asciidoc/extensions/block-payload.ts";
-import {
-  renderSnippetBlock,
-  renderSnippetBlockWithCalloutReader,
-} from "../../asciidoc/extensions/snippet-block-renderer.ts";
+import { renderSnippetBlock } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import type { GuideRenderContext } from "../model.ts";
 
 const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
-const GUIDE_DEPENDENCY_BLOCK = "guide-dependency";
 
 export function registerGuideDependenciesBlock(
   registry: Registry,
@@ -52,37 +48,11 @@ export function registerGuideDependenciesBlock(
             ],
             context,
           ),
-          undefined,
-          { collectManualCallouts: true },
+          { manualCallouts: "inline" },
         );
       });
     },
   );
-
-  registry.block(function registerGuideDependencyBlock(
-    this: BlockProcessorDslInterface,
-  ): void {
-    this.named(GUIDE_DEPENDENCY_BLOCK);
-    this.onContext("open");
-    this.process(async function processGuideDependencyBlock(
-      this: BlockProcessor,
-      parent: unknown,
-      reader: unknown,
-      attrs: unknown,
-    ): Promise<Block> {
-      const attributes = attrs as Record<string, unknown>;
-      const payload = decodeBlockPayload<MacroPayload>(attributes.payload);
-      return renderGuideDependencyBlock(
-        this,
-        parent as Block | Section,
-        reader as Reader,
-        dependencySnippetPayload(
-          [{ target: payload.target, attributes: payload.attributes }],
-          context,
-        ),
-      );
-    });
-  });
 
   registry.block(function registerGuideDependenciesBlock(
     this: BlockProcessorDslInterface,
@@ -99,31 +69,14 @@ export function registerGuideDependenciesBlock(
       const payload = decodeBlockPayload<{ dependencies: MacroPayload[] }>(
         attributes.payload,
       );
-      return renderGuideDependencyBlock(
+      return renderSnippetBlock(
         this,
         parent as Block | Section,
-        reader as Reader,
         dependencySnippetPayload(payload.dependencies, context),
+        { manualCallouts: "inline", reader: reader as Reader },
       );
     });
   });
-}
-
-function renderGuideDependencyBlock(
-  processor: BlockProcessor,
-  parent: Block | Section,
-  reader: Reader,
-  payload: Record<string, unknown>,
-): Promise<Block> {
-  return renderSnippetBlockWithCalloutReader(
-    processor,
-    parent,
-    payload,
-    reader,
-    {
-      collectManualCallouts: true,
-    },
-  );
 }
 
 function dependencySnippetPayload(

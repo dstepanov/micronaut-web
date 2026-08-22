@@ -5,7 +5,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { encodeBlockPayload } from "../../asciidoc/extensions/block-payload.ts";
 import { micronautExtensionRegistry } from "../../asciidoc/extensions/index.ts";
 import { renderAsciiDoc } from "../../asciidoc/rendering.ts";
 import { prefixIds } from "../../docs/urls.ts";
@@ -27,29 +26,17 @@ const fixtureDirectory = path.join(
 );
 
 test("AsciiDoc snippets render directly through generated React components", async (): Promise<void> => {
-  const { converted, html } = await renderSnippetGalleryFixture();
+  const html = await renderSnippetGalleryFixture();
   const globalsCss = await fs.readFile(
     path.join(projectDirectory, "src", "styles", "globals.css"),
     "utf8",
   );
   const text = textOnly(html);
 
-  assert.doesNotMatch(converted, /\blistingblock\b/);
-  assert.doesNotMatch(
-    converted,
-    /\[(?:snippet|dependency),payload=|docs-snippet-callout-validation/,
-  );
-  assert.match(converted, /docs-code-snippet-template/);
-
   assert.doesNotMatch(html, /\blistingblock\b/);
-  assert.doesNotMatch(
-    html,
-    /\[(?:snippet|dependency),payload=|docs-snippet-callout-validation/,
-  );
   assert.equal(count(html, /docs-code-snippet-template/g), 17);
   assert.equal(count(html, /docs-dependency-template/g), 1);
   assert.equal(count(html, /docs-properties-template/g), 1);
-  assert.doesNotMatch(html, /docs-properties-count/);
   assert.equal(count(html, /docs-snippet-template docs-code-block/g), 18);
   assert.equal(count(html, /data-copy-active-snippet/g), 18);
   assert.ok(count(html, /docs-code-callouts/g) >= 3);
@@ -148,7 +135,7 @@ test("AsciiDoc snippets render directly through generated React components", asy
   );
 });
 
-test("snippet, dependency, and configuration block processors render React snippet components", async (): Promise<void> => {
+test("snippet and dependency macros and configuration blocks render React snippet components", async (): Promise<void> => {
   const context = {
     attributes: {
       projectGroup: "io.micronaut",
@@ -157,13 +144,9 @@ test("snippet, dependency, and configuration block processors render React snipp
   const converted = await renderAsciiDoc({
     asciidoctor,
     source: [
-      "[snippet,target=controller,title=Controller Block]",
-      "--",
-      "--",
+      "snippet::controller[title=Controller Block]",
       "",
-      "[dependency,target=micronaut-http-client,groupId=io.micronaut,title=HTTP Client Block]",
-      "--",
-      "--",
+      "dependency::micronaut-http-client[groupId=io.micronaut,title=HTTP Client Block]",
       "",
       "[configuration,title=Configuration Block]",
       "----",
@@ -370,23 +353,11 @@ test("properties listing snippets format empty dotted assignments like indexed a
   );
 });
 
-test("snippet block processor absorbs following callout lines from the document reader", async (): Promise<void> => {
+test("snippet macros absorb following callout lines from the document reader", async (): Promise<void> => {
   const converted = await renderAsciiDoc({
     asciidoctor,
     source: [
-      snippetBlock("code", {
-        samples: [
-          {
-            language: "java",
-            source: [
-              "class Example {",
-              "    void one() {} // <2>",
-              "    void two() {} // <4>",
-              "}",
-            ].join("\n"),
-          },
-        ],
-      }),
+      "snippet::callouts[]",
       "<2> First source callout.",
       "<4> Second source callout.",
       "<5> Manual callout.",
@@ -398,6 +369,11 @@ test("snippet block processor absorbs following callout lines from the document 
         idseparator: "-",
       },
       base_dir: fixtureDirectory,
+      extension_registry: micronautExtensionRegistry(
+        asciidoctor,
+        {},
+        { snippetSamples: fixtureSnippetSamples },
+      ),
     },
   });
   const text = textOnly(converted);
@@ -446,15 +422,11 @@ test("listing callout footers render attribute-backed inline links", async (): P
 });
 
 test("generated snippet ids stay unique without shared render state", async (): Promise<void> => {
-  const repeatedPayload = {
-    samples: [{ language: "java", source: "class Example {}" }],
-  };
   const converted = await renderAsciiDoc({
     asciidoctor,
-    source: [
-      snippetBlock("code", repeatedPayload),
-      snippetBlock("code", repeatedPayload),
-    ].join("\n"),
+    source: ["snippet::controller[]", "", "snippet::controller[]", ""].join(
+      "\n",
+    ),
     convertOptions: {
       attributes: {
         icons: "font",
@@ -462,6 +434,11 @@ test("generated snippet ids stay unique without shared render state", async (): 
         idseparator: "-",
       },
       base_dir: fixtureDirectory,
+      extension_registry: micronautExtensionRegistry(
+        asciidoctor,
+        {},
+        { snippetSamples: fixtureSnippetSamples },
+      ),
     },
   });
   const ids = [...converted.matchAll(/\bid="(generated-docs-snippet[^"]*)"/g)]
@@ -933,10 +910,7 @@ test("tagged guide source snippets are de-indented like docs snippets", async ()
   ]);
 });
 
-async function renderSnippetGalleryFixture(): Promise<{
-  converted: string;
-  html: string;
-}> {
+async function renderSnippetGalleryFixture(): Promise<string> {
   const context = {
     attributes: {
       projectGroup: "io.micronaut",
@@ -946,7 +920,7 @@ async function renderSnippetGalleryFixture(): Promise<{
     path.join(fixtureDirectory, "snippet-gallery.adoc"),
     "utf8",
   );
-  const converted = await renderAsciiDoc({
+  return renderAsciiDoc({
     asciidoctor,
     source,
     convertOptions: {
@@ -961,11 +935,6 @@ async function renderSnippetGalleryFixture(): Promise<{
       }),
     },
   });
-
-  return {
-    converted,
-    html: converted,
-  };
 }
 
 function renderGuideSource(
@@ -989,81 +958,6 @@ function renderGuideSource(
       base_dir: context.guide.directory,
       extension_registry: guideExtensionRegistry(asciidoctor, context),
     },
-  });
-}
-
-function snippetBlock(kind: any, payload: any): any {
-  return snippetBlockLines(kind, payload, {
-    surroundWithBlankLines: false,
-  }).join("\n");
-}
-
-function snippetBlockLines(
-  kind: any,
-  payload: any,
-  options: { surroundWithBlankLines?: boolean } = {},
-): any {
-  const normalized = normalizeSnippetPayload(payload);
-  const lines = [];
-  if (options.surroundWithBlankLines !== false) {
-    lines.push("");
-  }
-  lines.push(snippetBlockAttributeLine(kind, normalized));
-  lines.push("--");
-  lines.push("--");
-  lines.push(...snippetCalloutValidationLines(normalized.samples));
-  if (options.surroundWithBlankLines !== false) {
-    lines.push("");
-  }
-  return lines;
-}
-
-function snippetBlockAttributeLine(kind: any, payload: any): any {
-  // Encode through the production contract so a change to the encoder shape
-  // is exercised by these tests rather than masked by a local copy.
-  return `[${kind === "dependency" ? "dependency" : "snippet"},payload=${encodeBlockPayload({ ...payload, kind })}]`;
-}
-
-function snippetCalloutValidationLines(samples: any): any {
-  const source = (Array.isArray(samples) ? samples : [])
-    .map((sample: any): any => sample.source || "")
-    .filter((sampleSource: any): any => /<\d+>|<!--\d+-->/.test(sampleSource))
-    .join("\n");
-  if (!source) {
-    return [];
-  }
-  const longestHyphenRun = Math.max(
-    3,
-    ...Array.from(String(source).matchAll(/^-{4,}$/gm)).map(
-      (match: any): any => match[0].length,
-    ),
-  );
-  const delimiter = "-".repeat(longestHyphenRun + 1);
-  return ["[.docs-snippet-callout-validation]", delimiter, source, delimiter];
-}
-
-function normalizeSnippetPayload(payload: any): any {
-  return {
-    ...payload,
-    description: payload?.description || "",
-    samples: normalizeSnippetSamples(payload?.samples),
-    title: payload?.title || "",
-  };
-}
-
-function normalizeSnippetSamples(samples: any): any {
-  return (Array.isArray(samples) ? samples : []).map((sample: any): any => {
-    const normalized: any = {
-      language: sample.language || "text",
-      source: String(sample.source || "").trimEnd(),
-    };
-    if (sample.group) {
-      normalized.group = String(sample.group);
-    }
-    if (sample.highlighterLanguage) {
-      normalized.highlighterLanguage = sample.highlighterLanguage;
-    }
-    return normalized;
   });
 }
 
@@ -1164,6 +1058,18 @@ function fixtureSnippetSamples(target: any): any {
             "    String index() {",
             "        'Hello World'",
             "    }",
+            "}",
+          ].join("\n"),
+        },
+      ];
+    case "callouts":
+      return [
+        {
+          language: "java",
+          source: [
+            "class Example {",
+            "    void one() {} // <2>",
+            "    void two() {} // <4>",
             "}",
           ].join("\n"),
         },

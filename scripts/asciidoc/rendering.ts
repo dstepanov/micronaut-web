@@ -57,10 +57,6 @@ class MicronautComponentHtmlConverter extends Html5Converter {
   private micronautListingIndex = 0;
 
   override async convert_listing(node: AsciidoctorNode): Promise<string> {
-    if (isSnippetCalloutValidationBlock(node)) {
-      return "";
-    }
-
     const footerHtml = await this.footerHtml(node);
     const generatedIndex = this.micronautListingIndex;
     this.micronautListingIndex += 1;
@@ -102,13 +98,9 @@ export async function renderAsciiDoc({
   const logger = asciidoctor.MemoryLogger.create();
   const previousLogger = asciidoctor.LoggerManager.getLogger();
   let html;
-  const hasExtensionRegistry = Boolean(convertOptions.extension_registry);
   const extensionRegistry = registerComponentRenderingExtensions(
     asciidoctor,
     convertOptions.extension_registry,
-    {
-      registerSnippetPayloadBlocks: !hasExtensionRegistry,
-    },
   );
   try {
     asciidoctor.LoggerManager.setLogger(logger);
@@ -165,15 +157,6 @@ function listingSnippetId(node: AsciidoctorNode, index: number): string {
   return seed
     ? `generated-listing-snippet-${seed}-${index}`
     : `generated-listing-snippet-${index}`;
-}
-
-function isSnippetCalloutValidationBlock(node: unknown): boolean {
-  const candidate = node as { context?: unknown; role?: unknown };
-  return (
-    Boolean(node && typeof node === "object") &&
-    candidate.context === "listing" &&
-    candidate.role === "docs-snippet-callout-validation"
-  );
 }
 
 function listingBlockLanguage(node: AsciidoctorNode): string {

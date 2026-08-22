@@ -2,22 +2,13 @@
 import type {
   Block,
   BlockMacroProcessor,
-  BlockProcessor,
-  BlockProcessorDslInterface,
   MacroProcessorDslInterface,
   Registry,
   Section,
 } from "@asciidoctor/core";
 
-import { decodeBlockPayload } from "./block-payload.ts";
-import {
-  type MacroAttributes,
-  blockTarget,
-  macroAttribute,
-} from "./macro-attributes.ts";
+import { type MacroAttributes, macroAttribute } from "./macro-attributes.ts";
 import { renderSnippetBlock } from "./snippet-block-renderer.ts";
-
-const DEPENDENCY_BLOCK = "dependency";
 
 type DependencyContext = Record<string, unknown> & {
   attributes?: Record<string, string | undefined>;
@@ -71,33 +62,6 @@ export function registerDependencyBlock(
       });
     },
   );
-
-  registry.block(function registerDependencyBlock(
-    this: BlockProcessorDslInterface,
-  ): void {
-    this.named(DEPENDENCY_BLOCK);
-    this.onContext("open");
-    this.process(async function processDependencyBlock(
-      this: BlockProcessor,
-      parent: unknown,
-      _reader: unknown,
-      attrs: unknown,
-    ): Promise<Block | undefined> {
-      const attributes = attrs as Record<string, unknown>;
-      const blockParent = parent as Block | Section;
-      if (attributes?.payload) {
-        return renderSnippetBlock(
-          this,
-          blockParent,
-          decodeBlockPayload<DependencyPayload>(attributes.payload),
-        );
-      }
-      return renderSnippetBlock(this, blockParent, {
-        ...dependencyPayload(blockTarget(attributes), attributes, context),
-        kind: "dependency",
-      });
-    });
-  });
 }
 
 function dependencyPayload(

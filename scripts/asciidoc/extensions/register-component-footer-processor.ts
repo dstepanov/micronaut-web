@@ -8,7 +8,6 @@ import type {
 type ComponentBlockNode = {
   blocks?: ComponentBlockNode[];
   context?: string;
-  role?: string | string[];
 };
 
 const footerNodes = new WeakMap<object, ComponentBlockNode>();
@@ -56,19 +55,7 @@ function attachFollowingCalloutList(
 }
 
 function isRenderableListingBlock(node: unknown): node is ComponentBlockNode {
-  return (
-    isComponentBlockNode(node) &&
-    node.context === "listing" &&
-    !isSnippetCalloutValidationBlock(node)
-  );
-}
-
-function isSnippetCalloutValidationBlock(node: unknown): boolean {
-  return (
-    isComponentBlockNode(node) &&
-    node.context === "listing" &&
-    node.role === "docs-snippet-callout-validation"
-  );
+  return isComponentBlockNode(node) && node.context === "listing";
 }
 
 function isCalloutList(node: unknown): node is ComponentBlockNode {
