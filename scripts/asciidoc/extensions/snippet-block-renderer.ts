@@ -164,7 +164,7 @@ type RenderedSnippetCards = {
   html: string;
 };
 
-export async function renderSnippetPayloadCards({
+async function renderSnippetPayloadCards({
   footerHtml,
   idSeed,
   payload,

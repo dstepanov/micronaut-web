@@ -131,7 +131,7 @@ function guideContentParseTarget(
     : holder;
 }
 
-export async function includeGuideAdoc(
+async function includeGuideAdoc(
   file: string,
   context: GuideRenderContext,
   includeStack: Set<string> = new Set(),
