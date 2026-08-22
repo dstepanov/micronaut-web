@@ -219,7 +219,7 @@ describe("diagnostics", () => {
           /Asciidoctor diagnostics for core\/broken\.adoc/,
         );
         assert.match(error.message, /include file not found/);
-        assert.match(error.message, /<stdin>: line 1/);
+        assert.match(error.message, /<stdin>(?:: line |:)1\b/);
         return true;
       },
     );

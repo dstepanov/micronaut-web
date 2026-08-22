@@ -45,10 +45,12 @@ type AsciidoctorNode = {
 
 type AsciidoctorDiagnostic = {
   getSeverity(): string;
-  getSourceLocation?: () => {
-    getPath?: () => string | undefined;
-    getLineNumber?: () => number | undefined;
-  };
+  getSourceLocation?: () =>
+    | {
+        getPath?: () => string | undefined;
+        getLineNumber?: () => number | undefined;
+      }
+    | undefined;
   getText(): string;
 };
 
