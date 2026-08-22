@@ -12,6 +12,7 @@ import { codeToHtml } from "shiki";
 
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
 import { html } from "../../shared/html.ts";
+import { record } from "./macro-attributes.ts";
 import { documentRenderIdSeed } from "../../shared/render-id-seed.ts";
 import {
   normalizeEmptyPropertiesAssignmentHighlighting,
@@ -799,10 +800,4 @@ function inlineTitleHtml(value: unknown): string {
     /`([^`\r\n]+)`/g,
     (_match: string, code: string): string => `<code>${code}</code>`,
   );
-}
-
-function record(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 }

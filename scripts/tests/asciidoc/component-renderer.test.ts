@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { encodeBlockPayload } from "../../asciidoc/extensions/block-payload.ts";
 import { micronautExtensionRegistry } from "../../asciidoc/extensions/index.ts";
 import { renderAsciiDoc } from "../../asciidoc/rendering.ts";
 import { prefixIds } from "../../docs/urls.ts";
@@ -935,10 +936,9 @@ function snippetBlockLines(
 }
 
 function snippetBlockAttributeLine(kind: any, payload: any): any {
-  return `[${kind === "dependency" ? "dependency" : "snippet"},payload=${Buffer.from(
-    JSON.stringify({ ...payload, kind }),
-    "utf8",
-  ).toString("base64url")}]`;
+  // Encode through the production contract so a change to the encoder shape
+  // is exercised by these tests rather than masked by a local copy.
+  return `[${kind === "dependency" ? "dependency" : "snippet"},payload=${encodeBlockPayload({ ...payload, kind })}]`;
 }
 
 function snippetCalloutValidationLines(samples: any): any {

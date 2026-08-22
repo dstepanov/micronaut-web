@@ -11,6 +11,8 @@ import type {
 } from "@asciidoctor/core";
 
 import type { GuideRenderContext } from "../model.ts";
+import { decodeBlockPayload } from "../../asciidoc/extensions/block-payload.ts";
+import { guideContentParseTarget } from "./register-guide-content-block.ts";
 
 const DEFAULT_MIN_JDK = 21;
 
@@ -137,14 +139,6 @@ async function renderExcludeLines(
   return holder;
 }
 
-function guideContentParseTarget(
-  parent: Block | Section,
-  holder: Block,
-  lines: string[],
-): Block | Section {
-  return lines.some((line) => /^={1,6}\s+\S/.test(line)) ? parent : holder;
-}
-
 function blockValues(attributes: Record<string, unknown>): string[] {
   return Object.entries(attributes)
     .filter(([key]) => /^\d+$/.test(key) && Number(key) > 1)
@@ -165,9 +159,7 @@ function excludePayloadFromValue(value: unknown): ExcludePayload {
     return { lines: [], values: [] };
   }
   try {
-    const payload = JSON.parse(
-      Buffer.from(value, "base64url").toString("utf8"),
-    ) as Partial<ExcludePayload>;
+    const payload = decodeBlockPayload<Partial<ExcludePayload>>(value);
     return {
       lines: Array.isArray(payload.lines)
         ? payload.lines.map((line) => String(line))

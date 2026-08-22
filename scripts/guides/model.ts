@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { isDirectory, isRegularFile } from "../shared/files.ts";
+import { record } from "../asciidoc/extensions/macro-attributes.ts";
 
 export interface GuideApp {
   name: string;
@@ -335,10 +336,4 @@ function optionalStringOrNumber(value: unknown): string | number | undefined {
   return typeof value === "string" || typeof value === "number"
     ? value
     : undefined;
-}
-
-function record(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 }

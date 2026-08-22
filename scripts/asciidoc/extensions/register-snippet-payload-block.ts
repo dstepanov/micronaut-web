@@ -7,6 +7,7 @@ import type {
   Section,
 } from "@asciidoctor/core";
 
+import { decodeBlockPayload } from "./block-payload.ts";
 import {
   type SnippetPayload,
   renderSnippetBlock,
@@ -29,17 +30,11 @@ export function registerSnippetPayloadBlock(
     ): Promise<Block | undefined> {
       const attributes = attrs as Record<string, unknown>;
       const payload = attributes?.payload
-        ? snippetPayloadFromValue(attributes.payload)
+        ? decodeBlockPayload<SnippetPayload>(attributes.payload)
         : undefined;
       return payload
         ? renderSnippetBlock(this, parent as Block | Section, payload)
         : undefined;
     });
   });
-}
-
-function snippetPayloadFromValue(value: unknown): SnippetPayload {
-  return JSON.parse(
-    Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  ) as SnippetPayload;
 }

@@ -14,6 +14,12 @@ import type {
 } from "@asciidoctor/core";
 
 import {
+  type MacroPayload,
+  decodeBlockPayload,
+  macroPayload,
+  missingNotePayload,
+} from "../../asciidoc/extensions/block-payload.ts";
+import {
   renderSnippetBlock,
   renderSnippetBlockWithCalloutReader,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
@@ -38,13 +44,8 @@ const GRAALPY_PYTHON_PACKAGES_BY_FEATURE = new Map([
   ["graalpy-pygal", ["pygal==3.0.4"]],
 ]);
 
-type GuideMacroPayload = {
-  attributes: Record<string, string>;
-  target: string;
-};
-
 type GuideSnippetPayloadResolver = (
-  payload: GuideMacroPayload,
+  payload: MacroPayload,
 ) => Promise<Record<string, unknown>>;
 
 type GuideSnippetPayload = {
@@ -132,7 +133,7 @@ function registerGuideSnippetBlock(
         return renderSnippetBlock(
           this,
           parent as Block | Section,
-          await resolvePayload(guideMacroPayload(String(target), attrs)),
+          await resolvePayload(macroPayload(String(target), attrs)),
           undefined,
           { collectManualCallouts: true },
         );
@@ -155,33 +156,14 @@ function registerGuideSnippetBlock(
       return renderSnippetBlockWithCalloutReader(
         this,
         parent as Block | Section,
-        await resolvePayload(guideMacroPayloadFromValue(attributes.payload)),
+        await resolvePayload(
+          decodeBlockPayload<MacroPayload>(attributes.payload),
+        ),
         reader as Reader,
         { collectManualCallouts: true },
       );
     });
   });
-}
-
-function guideMacroPayloadFromValue(value: unknown): GuideMacroPayload {
-  return JSON.parse(
-    Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  ) as GuideMacroPayload;
-}
-
-function guideMacroPayload(target: string, attrs: unknown): GuideMacroPayload {
-  return {
-    attributes: guideMacroAttributes(attrs),
-    target,
-  };
-}
-
-function guideMacroAttributes(attrs: unknown): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries((attrs || {}) as Record<string, unknown>).map(
-      ([key, value]) => [key, String(value)],
-    ),
-  );
 }
 
 async function sourceSnippetPayload(
@@ -195,38 +177,17 @@ async function sourceSnippetPayload(
     return missingNotePayload(`Missing source \`${target.trim()}\`.`);
   }
 
-  let source = await fs.readFile(file, "utf8");
-  const taggedSource = extractTaggedSourceWithDiagnostics(
-    source,
-    tagSelection(attributes),
+  const read = await readSnippetSource(file, attributes, context, {
+    stripLicenseHeader: !attributes.tags && !attributes.tag,
+  });
+  if (!read.ok) {
+    return read.payload;
+  }
+  return snippetPayload(
+    relativeGuideFile(context, file),
+    languageForFile(file, context.option.language),
+    read.source,
   );
-  if (taggedSource.diagnostics.length) {
-    return missingNotePayload(
-      taggedSourceDiagnosticMessage(
-        taggedSource.diagnostics,
-        relativeGuideFile(context, file),
-      ),
-    );
-  }
-  source = taggedSource.source;
-  source = normalizeSourceCalloutMarkers(source);
-  if (!attributes.tags && !attributes.tag) {
-    source = stripLicenseHeader(source);
-  }
-  source = normalizeIndent(source, attributes.indent);
-  const title = path
-    .relative(context.guide.directory, file)
-    .replaceAll(path.sep, "/");
-  return {
-    kind: "code",
-    title,
-    samples: [
-      {
-        language: languageForFile(file, context.option.language),
-        source,
-      },
-    ],
-  };
 }
 
 async function resourceSnippetPayload(
@@ -254,35 +215,15 @@ async function resourceSnippetPayload(
     return missingNotePayload(`Missing resource \`${target.trim()}\`.`);
   }
 
-  let source = await fs.readFile(file, "utf8");
-  const taggedSource = extractTaggedSourceWithDiagnostics(
-    source,
-    tagSelection(attributes),
-  );
-  if (taggedSource.diagnostics.length) {
-    return missingNotePayload(
-      taggedSourceDiagnosticMessage(
-        taggedSource.diagnostics,
-        relativeGuideFile(context, file),
-      ),
-    );
+  const read = await readSnippetSource(file, attributes, context);
+  if (!read.ok) {
+    return read.payload;
   }
-  source = taggedSource.source;
-  source = normalizeSourceCalloutMarkers(source);
-  source = normalizeIndent(source, attributes.indent);
-  const title = path
-    .relative(context.guide.directory, file)
-    .replaceAll(path.sep, "/");
-  return {
-    kind: "code",
-    title,
-    samples: [
-      {
-        language: languageForFile(file),
-        source,
-      },
-    ],
-  };
+  return snippetPayload(
+    relativeGuideFile(context, file),
+    languageForFile(file),
+    read.source,
+  );
 }
 
 function syntheticResourceSnippetPayload(
@@ -373,45 +314,53 @@ async function zipIncludeSnippetPayload(
   if (!file) {
     return missingNotePayload(`Missing zip include \`${target.trim()}\`.`);
   }
-  let source = await fs.readFile(file, "utf8");
+  const read = await readSnippetSource(file, attributes, context);
+  if (!read.ok) {
+    return read.payload;
+  }
+  return snippetPayload(target.trim(), languageForFile(file), read.source);
+}
+
+type SnippetSourceRead =
+  { ok: true; source: string } | { ok: false; payload: GuideSnippetPayload };
+
+// Every guide snippet kind reads a file, selects the requested tag regions,
+// and normalizes callout markers and indentation the same way; only license
+// stripping varies, and only untagged main sources strip it.
+async function readSnippetSource(
+  file: string,
+  attributes: Record<string, string>,
+  context: GuideRenderContext,
+  options: { stripLicenseHeader?: boolean } = {},
+): Promise<SnippetSourceRead> {
   const taggedSource = extractTaggedSourceWithDiagnostics(
-    source,
+    await fs.readFile(file, "utf8"),
     tagSelection(attributes),
   );
   if (taggedSource.diagnostics.length) {
-    return missingNotePayload(
-      taggedSourceDiagnosticMessage(
-        taggedSource.diagnostics,
-        relativeGuideFile(context, file),
+    return {
+      ok: false,
+      payload: missingNotePayload(
+        taggedSourceDiagnosticMessage(
+          taggedSource.diagnostics,
+          relativeGuideFile(context, file),
+        ),
       ),
-    );
+    };
   }
-  source = taggedSource.source;
-  source = normalizeSourceCalloutMarkers(source);
-  source = normalizeIndent(source, attributes.indent);
-  return {
-    kind: "code",
-    title: target.trim(),
-    samples: [
-      {
-        language: languageForFile(file),
-        source,
-      },
-    ],
-  };
+  let source = normalizeSourceCalloutMarkers(taggedSource.source);
+  if (options.stripLicenseHeader) {
+    source = stripLicenseHeader(source);
+  }
+  return { ok: true, source: normalizeIndent(source, attributes.indent) };
 }
 
-function missingNotePayload(message: string): GuideSnippetPayload {
-  return {
-    kind: "code",
-    samples: [
-      {
-        language: "text",
-        source: `NOTE: ${message}`,
-      },
-    ],
-    title: "",
-  };
+function snippetPayload(
+  title: string,
+  language: string,
+  source: string,
+): GuideSnippetPayload {
+  return { kind: "code", title, samples: [{ language, source }] };
 }
 
 function taggedSourceDiagnosticMessage(

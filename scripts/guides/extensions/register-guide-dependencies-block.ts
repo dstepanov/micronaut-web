@@ -11,6 +11,12 @@ import type {
 } from "@asciidoctor/core";
 
 import {
+  type MacroPayload,
+  decodeBlockPayload,
+  missingNotePayload,
+  stringAttributes,
+} from "../../asciidoc/extensions/block-payload.ts";
+import {
   renderSnippetBlock,
   renderSnippetBlockWithCalloutReader,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
@@ -40,7 +46,7 @@ export function registerGuideDependenciesBlock(
           dependencySnippetPayload(
             [
               {
-                attributes: guideMacroAttributes(attrs),
+                attributes: stringAttributes(attrs),
                 target: String(target),
               },
             ],
@@ -65,7 +71,7 @@ export function registerGuideDependenciesBlock(
       attrs: unknown,
     ): Promise<Block> {
       const attributes = attrs as Record<string, unknown>;
-      const payload = guideMacroPayloadFromValue(attributes.payload);
+      const payload = decodeBlockPayload<MacroPayload>(attributes.payload);
       return renderGuideDependencyBlock(
         this,
         parent as Block | Section,
@@ -90,7 +96,9 @@ export function registerGuideDependenciesBlock(
       attrs: unknown,
     ): Promise<Block> {
       const attributes = attrs as Record<string, unknown>;
-      const payload = guideDependencyPayloadFromValue(attributes.payload);
+      const payload = decodeBlockPayload<{ dependencies: MacroPayload[] }>(
+        attributes.payload,
+      );
       return renderGuideDependencyBlock(
         this,
         parent as Block | Section,
@@ -254,14 +262,6 @@ function dependencyCalloutMarker(attributes: Record<string, string>): string {
   return callout && /^\d+$/.test(callout) ? ` // <${callout}>` : "";
 }
 
-function guideMacroAttributes(attrs: unknown): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries((attrs || {}) as Record<string, unknown>).map(
-      ([key, value]) => [key, String(value)],
-    ),
-  );
-}
-
 function toMavenScope(attributes: Record<string, string>): string | undefined {
   const scope = attributes.scope;
   if (!scope) {
@@ -302,34 +302,4 @@ function toGradleScope(
     return "compileOnly";
   }
   return scopes[scope] || scope;
-}
-
-function missingNotePayload(message: string): Record<string, unknown> {
-  return {
-    kind: "code",
-    samples: [
-      {
-        language: "text",
-        source: `NOTE: ${message}`,
-      },
-    ],
-    title: "",
-  };
-}
-
-function guideMacroPayloadFromValue(value: unknown): {
-  attributes: Record<string, string>;
-  target: string;
-} {
-  return JSON.parse(
-    Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  );
-}
-
-function guideDependencyPayloadFromValue(value: unknown): {
-  dependencies: { attributes: Record<string, string>; target: string }[];
-} {
-  return JSON.parse(
-    Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  );
 }

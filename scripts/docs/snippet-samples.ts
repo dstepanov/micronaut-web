@@ -6,11 +6,10 @@ import {
   type TaggedSourceDiagnostic,
 } from "../shared/tagged-source.ts";
 import type { Properties } from "./project-manifest.ts";
-
-type MacroAttributes = Record<string, unknown> & {
-  text?: unknown;
-  $positional?: unknown;
-};
+import {
+  type MacroAttributes,
+  macroAttribute,
+} from "../asciidoc/extensions/macro-attributes.ts";
 
 type SnippetContext = {
   submoduleDirectory: string;
@@ -269,53 +268,4 @@ function normalizeSnippetIndent(
   return lines
     .map((line) => prefix + line.slice(Math.min(commonIndent, line.length)))
     .join("\n");
-}
-
-function macroAttribute(
-  attrs: MacroAttributes | undefined,
-  name: string,
-): string | undefined {
-  if (attrs?.[name] !== undefined) {
-    return cleanMacroAttributeValue(String(attrs[name]), name);
-  }
-  const positional = Array.isArray(attrs?.$positional)
-    ? attrs.$positional.join(",")
-    : undefined;
-  const text = attrs?.text || positional;
-  if (typeof text === "string") {
-    const match = new RegExp(
-      `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,
-    ).exec(text);
-    if (match) {
-      return cleanMacroAttributeValue(
-        (match[1] ?? match[2] ?? match[3] ?? "").trim(),
-        name,
-      );
-    }
-  }
-  return undefined;
-}
-
-function cleanMacroAttributeValue(value: string, name: string): string {
-  if (name !== "title") {
-    return value;
-  }
-  const trimmed = value.trim();
-  if (
-    (trimmed.startsWith('"') && !trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && !trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1);
-  }
-  if (
-    (!trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (!trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(0, -1);
-  }
-  return trimmed;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
