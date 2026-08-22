@@ -7,12 +7,12 @@ import type {
   Section,
 } from "@asciidoctor/core";
 
-type GuideMacroPayload = {
-  attributes: Record<string, string>;
-  target: string;
-};
+import {
+  type MacroPayload,
+  decodeBlockPayload,
+} from "../../asciidoc/extensions/block-payload.ts";
 
-type GuideContentResolver = (payload: GuideMacroPayload) => Promise<string[]>;
+export type GuideContentResolver = (payload: MacroPayload) => Promise<string[]>;
 
 export function registerGuideContentBlock(
   registry: Registry,
@@ -38,7 +38,7 @@ export function registerGuideContentBlock(
         {},
       );
       const lines = await resolveLines(
-        guideMacroPayloadFromValue(attributes.payload),
+        decodeBlockPayload<MacroPayload>(attributes.payload),
       );
       await this.parseContent(
         guideContentParseTarget(parent, holder, lines),
@@ -49,7 +49,9 @@ export function registerGuideContentBlock(
   });
 }
 
-function guideContentParseTarget(
+// Lines that introduce a section must be parsed against the real parent so the
+// section lands in the document outline rather than inside a holder block.
+export function guideContentParseTarget(
   parent: unknown,
   holder: Block,
   lines: string[],
@@ -57,10 +59,4 @@ function guideContentParseTarget(
   return lines.some((line) => /^={1,6}\s+\S/.test(line))
     ? (parent as Block | Section)
     : holder;
-}
-
-function guideMacroPayloadFromValue(value: unknown): GuideMacroPayload {
-  return JSON.parse(
-    Buffer.from(String(value || ""), "base64url").toString("utf8"),
-  ) as GuideMacroPayload;
 }

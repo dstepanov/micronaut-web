@@ -15,6 +15,7 @@ import {
   languageExtension,
   type GuideRenderContext,
 } from "../model.ts";
+import { encodeBlockPayload } from "../../asciidoc/extensions/block-payload.ts";
 
 const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
 const DEPENDENCY_LINE = /^dependency:{1,2}([^\[]*)\[(.*)]\s*$/;
@@ -417,16 +418,12 @@ function guideBlockLines(
 ): string[] {
   return [
     "",
-    `[${blockName},payload=${encodePayload(payload)}]`,
+    `[${blockName},payload=${encodeBlockPayload(payload)}]`,
     "--",
     ...bodyLines,
     "--",
     "",
   ];
-}
-
-function encodePayload(payload: unknown): string {
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
 }
 
 function parseAttributes(

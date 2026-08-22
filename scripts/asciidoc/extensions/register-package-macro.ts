@@ -6,17 +6,13 @@ import type {
   InlineMacroProcessorDslInterface,
   Registry,
 } from "@asciidoctor/core";
+import { type MacroAttributes, macroAttribute } from "./macro-attributes.ts";
 
 type PackageMacroContext = {
   project?: {
     slug?: string;
   };
   attributes?: Record<string, unknown>;
-};
-
-type MacroAttributes = Record<string, unknown> & {
-  text?: unknown;
-  $positional?: unknown;
 };
 
 export function registerPackageMacro(
@@ -70,30 +66,4 @@ function macroText(attrs: MacroAttributes): string {
     ? String(attrs.$positional[0] ?? "")
     : "";
   return macroAttribute(attrs, "text") || positional;
-}
-
-function macroAttribute(
-  attrs: MacroAttributes | undefined,
-  name: string,
-): string | undefined {
-  if (attrs?.[name] !== undefined) {
-    return String(attrs[name]);
-  }
-  const positional = Array.isArray(attrs?.$positional)
-    ? attrs.$positional.join(",")
-    : undefined;
-  const text = attrs?.text || positional;
-  if (typeof text === "string") {
-    const match = new RegExp(
-      `(?:^|,)\\s*${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^,]+))`,
-    ).exec(text);
-    if (match) {
-      return (match[1] ?? match[2] ?? match[3] ?? "").trim();
-    }
-  }
-  return undefined;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

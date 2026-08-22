@@ -10,7 +10,15 @@ import type {
   Section,
 } from "@asciidoctor/core";
 import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
-import { registerGuideContentBlock } from "./register-guide-content-block.ts";
+import {
+  type MacroPayload,
+  macroPayload,
+} from "../../asciidoc/extensions/block-payload.ts";
+import {
+  type GuideContentResolver,
+  guideContentParseTarget,
+  registerGuideContentBlock,
+} from "./register-guide-content-block.ts";
 import { prepareGuideSourceForExtensions } from "./register-guide-preprocessor.ts";
 
 const GUIDE_COMMON_BLOCK = "guide-common";
@@ -19,13 +27,6 @@ const GUIDE_DIFF_LINK_BLOCK = "guide-diff-link";
 const GUIDE_EXTERNAL_BLOCK = "guide-external";
 const GUIDE_EXTERNAL_TEMPLATE_BLOCK = "guide-external-template";
 const GUIDE_ROCKER_BLOCK = "guide-rocker";
-
-type GuideMacroPayload = {
-  attributes: Record<string, string>;
-  target: string;
-};
-
-type GuideContentResolver = (payload: GuideMacroPayload) => Promise<string[]>;
 
 export function registerGuideContentBlocks(
   registry: Registry,
@@ -108,9 +109,7 @@ function registerGuideContentMacro(
           "",
           {},
         );
-        const lines = await resolveLines(
-          guideMacroPayload(String(target), attrs),
-        );
+        const lines = await resolveLines(macroPayload(String(target), attrs));
         await this.parseContent(
           guideContentParseTarget(parent, holder, lines),
           lines,
@@ -119,16 +118,6 @@ function registerGuideContentMacro(
       });
     },
   );
-}
-
-function guideContentParseTarget(
-  parent: unknown,
-  holder: Block,
-  lines: string[],
-): Block | Section {
-  return lines.some((line) => /^={1,6}\s+\S/.test(line))
-    ? (parent as Block | Section)
-    : holder;
 }
 
 async function includeGuideAdoc(
@@ -246,21 +235,6 @@ export function replaceGuideTemplateArguments(
     }
     return value;
   });
-}
-
-function guideMacroPayload(target: string, attrs: unknown): GuideMacroPayload {
-  return {
-    attributes: guideMacroAttributes(attrs),
-    target,
-  };
-}
-
-function guideMacroAttributes(attrs: unknown): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries((attrs || {}) as Record<string, unknown>).map(
-      ([key, value]) => [key, String(value)],
-    ),
-  );
 }
 
 function calloutNumber(attributes: Record<string, string>): string {

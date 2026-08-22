@@ -49,6 +49,24 @@ The old `normalizeAsciiDocSource(...)` function and the old pre-conversion
 snippet/dependency expansion helpers are not used. Equivalent behavior now lives
 in register files under `scripts/asciidoc/extensions/`.
 
+## Shared Extension Helpers
+
+Two modules under `scripts/asciidoc/extensions/` hold the helpers that every
+register file would otherwise copy. New processors should import from them
+rather than redefining the logic locally.
+
+- `macro-attributes.ts` owns `macroAttribute(...)`, which reads a macro
+  attribute from Asciidoctor's parsed map or falls back to scanning the raw
+  attribute text, plus `blockTarget(...)`, the `MacroAttributes` type, and the
+  `record(...)` guard.
+- `block-payload.ts` owns the `[name,payload=...]` contract. The guide
+  preprocessor is the only producer and calls `encodeBlockPayload(...)`; every
+  block processor that consumes a payload calls `decodeBlockPayload(...)`. It
+  also provides `macroPayload(...)`, `stringAttributes(...)`, and
+  `missingNotePayload(...)`. Keeping both sides in one module means the shared
+  AsciiDoc tests exercise the real encoder, so a change to the payload shape
+  fails those tests instead of being masked by a test-local copy.
+
 ## Guide Extensions
 
 `scripts/guides/extensions/index.ts` creates the guide registry and registers all
