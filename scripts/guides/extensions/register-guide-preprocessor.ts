@@ -8,17 +8,18 @@ import type {
   Registry,
 } from "@asciidoctor/core";
 
+import { parseAttributeList } from "../../asciidoc/extensions/macro-attributes.ts";
+import { splitList } from "../../shared/cli.ts";
 import {
   appFeatures,
   cliCommandForApp,
   featuresWords,
+  guideSourceRoots,
   languageExtension,
   type GuideRenderContext,
 } from "../model.ts";
-import { encodeBlockPayload } from "../../asciidoc/extensions/block-payload.ts";
 
-const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
-const DEPENDENCY_LINE = /^dependency:{1,2}([^\[]*)\[(.*)]\s*$/;
+export const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
 const CALLOUT_LINE_MACRO = /^callout:{1,2}([^\[]+)\[([^\]]*)]\s*$/;
 const EXCLUDE_DIRECTIVE_LINE =
   /^:(exclude-for-languages|exclude-for-build|exclude-for-jdk-lower-than):(.*)$/;
@@ -62,6 +63,19 @@ type ConstructableReader = Reader & {
   lines: string[];
 };
 
+type PrepareOptions = {
+  appendLicense?: boolean;
+  // Files being expanded up the call chain, so an include cycle becomes a
+  // note in the output rather than unbounded recursion.
+  includeStack?: ReadonlySet<string>;
+};
+
+// The guide preprocessor turns guide source into plain AsciiDoc before
+// parsing: placeholders are substituted, `common::`/`external::`/`callout::`
+// macros are expanded in place (their includes and callout lists must reach
+// the document reader), legacy exclude directives become Asciidoctor
+// conditionals, single-colon macros become block macros and `:dependencies:`
+// groups become a `[guide-dependencies]` block whose body lists the macros.
 export function registerGuidePreprocessor(
   registry: Registry,
   context: GuideRenderContext,
@@ -90,32 +104,27 @@ export function registerGuidePreprocessor(
 export function prepareGuideSourceForExtensions(
   source: string,
   context: GuideRenderContext,
-  options: { appendLicense?: boolean } = {},
+  options: PrepareOptions = {},
 ): string {
   const withLicense =
     options.appendLicense === false
       ? source
       : `${source.replace(/\s+$/, "")}\n\n${LICENSE_INCLUDE}\n`;
-  return rewriteGuideSourceForExtensions(
-    replacePlaceholders(withLicense, context),
+  return rewriteGuideLines(
+    replacePlaceholders(withLicense, context).split(/\r?\n/),
     context,
-  );
-}
-
-function rewriteGuideSourceForExtensions(
-  source: string,
-  context: GuideRenderContext,
-): string {
-  return rewriteGuideLines(source.split(/\r?\n/), context).join("\n");
+    options.includeStack || new Set(),
+  ).join("\n");
 }
 
 function rewriteGuideLines(
   lines: string[],
   context: GuideRenderContext,
+  includeStack: ReadonlySet<string>,
 ): string[] {
   const output: string[] = [];
-  let dependencyGroup = false;
-  let groupedDependencies: string[] = [];
+  const excludes = new ExcludeConditionals(context);
+  let dependencyGroup: string[] | undefined;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -123,30 +132,32 @@ function rewriteGuideLines(
     // `dependency:x[]` inside `:dependencies:` and a rewritten line would
     // otherwise escape the group as a standalone macro.
     if (line === ":dependencies:") {
-      dependencyGroup = !dependencyGroup;
-      if (!dependencyGroup) {
-        const { bodyLines, nextIndex } = collectFollowingCalloutLines(
-          lines,
-          index + 1,
-        );
-        output.push(
-          ...dependencyGroupBlockLines(groupedDependencies, bodyLines),
-        );
-        groupedDependencies = [];
-        index = nextIndex - 1;
+      if (dependencyGroup) {
+        output.push(...dependencyGroupBlockLines(dependencyGroup));
+        dependencyGroup = undefined;
+      } else {
+        dependencyGroup = [];
       }
       continue;
     }
     if (dependencyGroup && line.startsWith("dependency:")) {
-      groupedDependencies.push(line);
+      dependencyGroup.push(line.replace(/^dependency:(?!:)/, "dependency::"));
       continue;
     }
-    const expandedContent = expandedGuideContentLines(line, context);
+    const expandedContent = expandedGuideContentLines(
+      line,
+      context,
+      includeStack,
+    );
     if (expandedContent) {
       output.push(...expandedContent);
       continue;
     }
-    const expandedCallout = expandedGuideCalloutLines(line, context);
+    const expandedCallout = expandedGuideCalloutLines(
+      line,
+      context,
+      includeStack,
+    );
     if (expandedCallout) {
       output.push(...expandedCallout);
       continue;
@@ -156,24 +167,129 @@ function rewriteGuideLines(
       output.push(...legacyBlockMacro);
       continue;
     }
-    const excludeBlock = legacyExcludeBlockLines(lines, index, context);
-    if (excludeBlock) {
-      output.push(...excludeBlock.lines);
-      index = excludeBlock.nextIndex - 1;
+    const directive = parseExcludeDirective(line);
+    if (directive) {
+      const adjacent = adjacentExcludeDirectives(lines, index, directive);
+      output.push(...excludes.directive(directive, adjacent.values));
+      index = adjacent.nextIndex - 1;
       continue;
     }
     output.push(line);
   }
 
-  if (groupedDependencies.length) {
-    output.push(...dependencyGroupBlockLines(groupedDependencies));
+  if (dependencyGroup) {
+    output.push(...dependencyGroupBlockLines(dependencyGroup));
   }
+  output.push(...excludes.closeAll());
   return output;
+}
+
+// Legacy exclude directives are rewritten to Asciidoctor's own conditionals:
+// `:exclude-for-languages:groovy,kotlin` opens one `ifeval` per value (all
+// must hold for the body to render) and the bare directive closes them. The
+// rules that guide sources rely on are kept: directives written on adjacent
+// lines merge into one group, a closing directive with no open group is a
+// no-op, closing an outer group also closes groups nested inside it, and a
+// group left open runs to the end of the file.
+class ExcludeConditionals {
+  private readonly open: Array<{ name: ExcludeMacroName; count: number }> = [];
+
+  private readonly context: GuideRenderContext;
+
+  constructor(context: GuideRenderContext) {
+    this.context = context;
+  }
+
+  directive(directive: ExcludeDirective, values: string[]): string[] {
+    if (!values.length) {
+      return this.close(directive.name);
+    }
+    const conditions = values
+      .map((value) => this.condition(directive.name, value))
+      .filter((condition): condition is string => Boolean(condition));
+    this.open.push({ name: directive.name, count: conditions.length });
+    // Asciidoctor drops the directive lines without separating blocks, so a
+    // blank line keeps the body from joining the paragraph before it.
+    return ["", ...conditions.map((condition) => `ifeval::[${condition}]`)];
+  }
+
+  closeAll(): string[] {
+    const lines: string[] = [];
+    while (this.open.length) {
+      lines.push(...endifLines(this.open.pop()!.count));
+    }
+    return lines.length ? [...lines, ""] : lines;
+  }
+
+  private close(name: ExcludeMacroName): string[] {
+    const matching = this.open.findLastIndex((entry) => entry.name === name);
+    if (matching < 0) {
+      return [];
+    }
+    const lines: string[] = [];
+    while (this.open.length > matching) {
+      lines.push(...endifLines(this.open.pop()!.count));
+    }
+    return [...lines, ""];
+  }
+
+  private condition(name: ExcludeMacroName, value: string): string | undefined {
+    const { guide, option } = this.context;
+    if (name === "exclude-for-languages") {
+      return `"${option.language.toLowerCase()}" != "${value.toLowerCase()}"`;
+    }
+    if (name === "exclude-for-build") {
+      return `"${option.buildTool.toLowerCase()}" != "${value.toLowerCase()}"`;
+    }
+    const threshold = Number.parseInt(value, 10);
+    if (!Number.isFinite(threshold)) {
+      return undefined;
+    }
+    const guideMinJdk = Number.parseInt(
+      String(guide.minimumJavaVersion || DEFAULT_MIN_JDK),
+      10,
+    );
+    return `${guideMinJdk} < ${threshold}`;
+  }
+}
+
+function endifLines(count: number): string[] {
+  return Array.from({ length: count }, () => "endif::[]");
+}
+
+function adjacentExcludeDirectives(
+  lines: string[],
+  startIndex: number,
+  directive: ExcludeDirective,
+): { values: string[]; nextIndex: number } {
+  const values = [...directive.values];
+  let index = startIndex + 1;
+  while (values.length && index < lines.length) {
+    const next = parseExcludeDirective(lines[index]);
+    if (!next || next.name !== directive.name || !next.values.length) {
+      break;
+    }
+    values.push(...next.values);
+    index += 1;
+  }
+  return { values, nextIndex: index };
+}
+
+function parseExcludeDirective(line: string): ExcludeDirective | undefined {
+  const match = EXCLUDE_DIRECTIVE_LINE.exec(line);
+  if (!match) {
+    return undefined;
+  }
+  return {
+    name: match[1] as ExcludeMacroName,
+    values: splitList(match[2]),
+  };
 }
 
 function expandedGuideContentLines(
   line: string,
   context: GuideRenderContext,
+  includeStack: ReadonlySet<string>,
 ): string[] | undefined {
   const match = EXPANDED_CONTENT_MACRO_LINE.exec(line);
   if (!match) {
@@ -189,28 +305,20 @@ function expandedGuideContentLines(
     macroName === "common" || macroName === "common-template"
       ? commonSnippetPath(context.guidesDirectory, target)
       : externalPath(context.guidesDirectory, target);
-  try {
-    let source = readFileSync(file, "utf8");
-    if (macroName.endsWith("-template")) {
-      const attributes = parseAttributes(rawAttributes);
-      source = source
-        .split(/\r?\n/)
-        .map((sourceLine) =>
-          replaceGuideTemplateArguments(sourceLine, attributes),
+  return expandGuideInclude(file, context, includeStack, (source) =>
+    macroName.endsWith("-template")
+      ? replaceGuideTemplateArguments(
+          source,
+          parseAttributeList(rawAttributes).attributes,
         )
-        .join("\n");
-    }
-    return prepareGuideSourceForExtensions(source, context, {
-      appendLicense: false,
-    }).split(/\r?\n/);
-  } catch {
-    return [`NOTE: Missing include \`${path.basename(file)}\`.`];
-  }
+      : source,
+  );
 }
 
 function expandedGuideCalloutLines(
   line: string,
   context: GuideRenderContext,
+  includeStack: ReadonlySet<string>,
 ): string[] | undefined {
   const match = CALLOUT_LINE_MACRO.exec(line);
   if (!match) {
@@ -218,7 +326,7 @@ function expandedGuideCalloutLines(
   }
 
   const [, target, rawAttributes] = match;
-  const attributes = parseAttributes(rawAttributes);
+  const parsed = parseAttributeList(rawAttributes);
   const file = path.join(
     context.guidesDirectory,
     "src",
@@ -227,27 +335,38 @@ function expandedGuideCalloutLines(
     "callouts",
     `callout-${ensureSuffix(target.trim(), ".adoc")}`,
   );
+  const explicitNumber = calloutNumber(parsed.attributes, parsed.positional);
+  return expandGuideInclude(file, context, includeStack, (source) =>
+    replaceGuideTemplateArguments(source, parsed.attributes),
+  ).map((sourceLine) =>
+    explicitNumber
+      ? sourceLine.replace(/^<\.>/, `<${explicitNumber}>`)
+      : sourceLine,
+  );
+}
+
+// Reads an included guide source, applies the macro's own substitution and
+// expands it like the guide itself so nested macros resolve too.
+function expandGuideInclude(
+  file: string,
+  context: GuideRenderContext,
+  includeStack: ReadonlySet<string>,
+  substitute: (source: string) => string,
+): string[] {
+  const normalized = path.resolve(file);
+  if (includeStack.has(normalized)) {
+    return [`NOTE: Skipped recursive include \`${path.basename(file)}\`.`];
+  }
+  let source: string;
   try {
-    const explicitNumber = calloutNumber(attributes);
-    return prepareGuideSourceForExtensions(
-      readFileSync(file, "utf8"),
-      context,
-      {
-        appendLicense: false,
-      },
-    )
-      .split(/\r?\n/)
-      .map((sourceLine) =>
-        replaceGuideTemplateArguments(sourceLine, attributes),
-      )
-      .map((sourceLine) => {
-        return explicitNumber
-          ? sourceLine.replace(/^<\.>/, `<${explicitNumber}>`)
-          : sourceLine;
-      });
+    source = readFileSync(normalized, "utf8");
   } catch {
     return [`NOTE: Missing include \`${path.basename(file)}\`.`];
   }
+  return prepareGuideSourceForExtensions(substitute(source), context, {
+    appendLicense: false,
+    includeStack: new Set([...includeStack, normalized]),
+  }).split(/\r?\n/);
 }
 
 function legacyLineBlockMacroLines(line: string): string[] | undefined {
@@ -257,268 +376,20 @@ function legacyLineBlockMacroLines(line: string): string[] | undefined {
     : undefined;
 }
 
-function legacyExcludeBlockLines(
-  lines: string[],
-  startIndex: number,
-  context: GuideRenderContext,
-): { lines: string[]; nextIndex: number } | undefined {
-  const directive = parseExcludeDirective(lines[startIndex]);
-  if (!directive) {
-    return undefined;
+// Callouts that follow the closing delimiter stay in the document reader,
+// where the block processor reads them like any snippet macro does.
+function dependencyGroupBlockLines(macroLines: string[]): string[] {
+  if (!macroLines.length) {
+    return [];
   }
-  if (!directive.values.length) {
-    return { lines: [], nextIndex: startIndex + 1 };
-  }
-
-  const values = [...directive.values];
-  let index = startIndex + 1;
-  while (index < lines.length) {
-    const nextDirective = parseExcludeDirective(lines[index]);
-    if (
-      !nextDirective ||
-      nextDirective.name !== directive.name ||
-      !nextDirective.values.length
-    ) {
-      break;
-    }
-    values.push(...nextDirective.values);
-    index += 1;
-  }
-
-  const bodyLines: string[] = [];
-  while (index < lines.length) {
-    const nextDirective = parseExcludeDirective(lines[index]);
-    if (
-      nextDirective &&
-      nextDirective.name === directive.name &&
-      !nextDirective.values.length
-    ) {
-      index += 1;
-      break;
-    }
-    bodyLines.push(lines[index]);
-    index += 1;
-  }
-
-  return {
-    lines: shouldExcludeDirective(directive.name, values, context)
-      ? []
-      : ["", ...rewriteGuideLines(bodyLines, context), ""],
-    nextIndex: index,
-  };
-}
-
-function shouldExcludeDirective(
-  name: ExcludeMacroName,
-  values: string[],
-  context: GuideRenderContext,
-): boolean {
-  if (name === "exclude-for-languages") {
-    return values.some(
-      (value) => value.toLowerCase() === context.option.language.toLowerCase(),
-    );
-  }
-  if (name === "exclude-for-build") {
-    return values.some(
-      (value) => value.toLowerCase() === context.option.buildTool.toLowerCase(),
-    );
-  }
-  const threshold = Number.parseInt(values[0] || "", 10);
-  const guideMinJdk = Number.parseInt(
-    String(context.guide.minimumJavaVersion || DEFAULT_MIN_JDK),
-    10,
-  );
-  return Number.isFinite(threshold) && guideMinJdk >= threshold;
-}
-
-function parseExcludeDirective(line: string): ExcludeDirective | undefined {
-  const match = EXCLUDE_DIRECTIVE_LINE.exec(line);
-  if (!match) {
-    return undefined;
-  }
-  return {
-    name: match[1] as ExcludeMacroName,
-    values: splitExcludeDirectiveValues(match[2]),
-  };
-}
-
-function splitExcludeDirectiveValues(value: string): string[] {
-  return value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function dependencyGroupBlockLines(
-  lines: string[],
-  bodyLines: string[] = [],
-): string[] {
-  const dependencies = lines
-    .map((line) => DEPENDENCY_LINE.exec(line))
-    .filter((match): match is RegExpExecArray => Boolean(match))
-    .map((match) => ({
-      attributes: parseAttributes(match[2]),
-      target: match[1].trim(),
-    }));
-  return dependencies.length
-    ? guideBlockLines(GUIDE_DEPENDENCIES_BLOCK, { dependencies }, bodyLines)
-    : [];
-}
-
-function collectFollowingCalloutLines(
-  lines: string[],
-  startIndex: number,
-): { bodyLines: string[]; nextIndex: number } {
-  const bodyLines: string[] = [];
-  let index = startIndex;
-  let found = false;
-  while (index < lines.length) {
-    const line = lines[index];
-    if (!line.trim()) {
-      if (nextNonBlankLineStartsCallout(lines, index + 1)) {
-        bodyLines.push(line);
-        index += 1;
-        continue;
-      }
-      break;
-    }
-    if (isCalloutListLine(line)) {
-      bodyLines.push(line);
-      found = true;
-      index += 1;
-      continue;
-    }
-    break;
-  }
-  return {
-    bodyLines: found ? bodyLines : [],
-    nextIndex: found ? index : startIndex,
-  };
-}
-
-function nextNonBlankLineStartsCallout(
-  lines: string[],
-  startIndex: number,
-): boolean {
-  for (let index = startIndex; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (!line.trim()) {
-      continue;
-    }
-    return isCalloutListLine(line);
-  }
-  return false;
-}
-
-function isCalloutListLine(line: string): boolean {
-  return /^<(\.|\d+)>/.test(line);
-}
-
-function guideBlockLines(
-  blockName: string,
-  payload: unknown,
-  bodyLines: string[] = [],
-): string[] {
-  return [
-    "",
-    `[${blockName},payload=${encodeBlockPayload(payload)}]`,
-    "--",
-    ...bodyLines,
-    "--",
-    "",
-  ];
-}
-
-function parseAttributes(
-  source: unknown,
-): Record<string, string> & { _positional?: string[] } {
-  return parseAttributeList(String(source || ""), {
-    positionalKey: "_positional",
-  }) as Record<string, string> & { _positional?: string[] };
-}
-
-function parseAttributeList(
-  value: string,
-  options: {
-    includeText?: boolean;
-    positionalKey?: "$positional" | "_positional";
-  } = {},
-): Record<string, string | string[]> & {
-  $positional?: string[];
-  _positional?: string[];
-  text?: string;
-} {
-  const attributes: Record<string, string | string[]> = {};
-  const positional: string[] = [];
-  if (options.includeText) {
-    attributes.text = value;
-  }
-  for (const item of splitAttributeList(value)) {
-    const separator = item.indexOf("=");
-    if (separator < 0) {
-      const positionalValue = stripQuotes(item);
-      if (positionalValue) {
-        positional.push(positionalValue);
-      }
-      continue;
-    }
-    const key = item.slice(0, separator).trim();
-    const raw = item.slice(separator + 1).trim();
-    if (key) {
-      attributes[key] = stripQuotes(raw);
-    }
-  }
-  if (options.positionalKey && positional.length) {
-    attributes[options.positionalKey] = positional;
-  }
-  return attributes;
-}
-
-function splitAttributeList(value: string): string[] {
-  const items: string[] = [];
-  let current = "";
-  let quote = "";
-  for (const char of value || "") {
-    if (quote) {
-      if (char === quote) {
-        quote = "";
-      }
-      current += char;
-      continue;
-    }
-    if (char === '"' || char === "'") {
-      quote = char;
-      current += char;
-      continue;
-    }
-    if (char === ",") {
-      items.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  if (current.trim()) {
-    items.push(current.trim());
-  }
-  return items;
-}
-
-function stripQuotes(value: string): string {
-  if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
-  ) {
-    return value.slice(1, -1);
-  }
-  return value;
+  return ["", `[${GUIDE_DEPENDENCIES_BLOCK}]`, "--", ...macroLines, "--"];
 }
 
 function replaceGuideTemplateArguments(
-  line: string,
+  source: string,
   attributes: Record<string, string>,
 ): string {
-  return line.replace(/\{(\d+)(?:_([UL]))?}/g, (match, index, transform) => {
+  return source.replace(/\{(\d+)(?:_([UL]))?}/g, (match, index, transform) => {
     const value = attributes[`arg${index}`];
     if (value === undefined) {
       return match;
@@ -534,13 +405,14 @@ function replaceGuideTemplateArguments(
 }
 
 function calloutNumber(
-  attributes: Record<string, string> & { _positional?: string[] },
+  attributes: Record<string, string>,
+  positional: string[],
 ): string {
   const number =
     attributes.number ||
     attributes.callout ||
-    attributes._positional?.[1] ||
-    attributes._positional?.[0] ||
+    positional[1] ||
+    positional[0] ||
     "";
   return /^\d+$/.test(number) ? number : "";
 }
@@ -638,8 +510,7 @@ function resolveGuideIncludeTarget(
       "@languageextension@",
       languageExtension(context.option.language),
     );
-  const candidates = includeTargetCandidates(normalized, context);
-  for (const candidate of candidates) {
+  for (const candidate of includeTargetCandidates(normalized, context)) {
     const found = findExistingIncludeTarget(candidate, context);
     if (found) {
       return found;
@@ -691,13 +562,6 @@ function findExistingIncludeTarget(
     }
   }
   return "";
-}
-
-function guideSourceRoots(context: GuideRenderContext): string[] {
-  if (!context.guide.base) {
-    return [];
-  }
-  return [path.join(context.guidesDirectory, "guides", context.guide.base)];
 }
 
 function findApp(

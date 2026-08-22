@@ -13,7 +13,7 @@ import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
 import {
   type MacroPayload,
   macroPayload,
-} from "../../asciidoc/extensions/block-payload.ts";
+} from "../../asciidoc/extensions/macro-attributes.ts";
 
 type GuideContentResolver = (payload: MacroPayload) => Promise<string[]>;
 

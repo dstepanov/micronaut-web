@@ -337,3 +337,12 @@ function optionalStringOrNumber(value: unknown): string | number | undefined {
     ? value
     : undefined;
 }
+
+// A guide may build on another guide's sources (`base` in metadata.json);
+// snippet and include lookups fall back to that guide's directory.
+export function guideSourceRoots(context: GuideRenderContext): string[] {
+  if (!context.guide.base) {
+    return [];
+  }
+  return [path.join(context.guidesDirectory, "guides", context.guide.base)];
+}

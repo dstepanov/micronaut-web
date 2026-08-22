@@ -4,7 +4,7 @@ import path from "node:path";
 import {
   extractTaggedSourceWithDiagnostics,
   normalizeSnippetIndent,
-  type TaggedSourceDiagnostic,
+  taggedSourceDiagnosticMessage,
 } from "../shared/tagged-source.ts";
 import type { Properties } from "./project-manifest.ts";
 import {
@@ -69,11 +69,10 @@ export function docsSnippetSamples(
         if (taggedSource.diagnostics.length) {
           samples.push({
             language,
-            source: taggedSourceDiagnosticNote(
+            source: `NOTE: ${taggedSourceDiagnosticMessage(
               taggedSource.diagnostics,
-              file,
-              context,
-            ),
+              relativeSnippetFile(file, context),
+            )}`,
           });
           if (dedupeProjectBaseLanguages) {
             matchedProjectBaseLanguages.add(language);
@@ -104,37 +103,6 @@ export function docsSnippetSamples(
     });
   }
   return samples;
-}
-
-function taggedSourceDiagnosticNote(
-  diagnostics: TaggedSourceDiagnostic[],
-  file: string,
-  context: SnippetContext,
-): string {
-  const missingTags = diagnostics
-    .filter((diagnostic) => diagnostic.reason === "missing-tag")
-    .map((diagnostic) => diagnostic.tag);
-  const emptyTags = diagnostics
-    .filter((diagnostic) => diagnostic.reason === "empty-tag")
-    .map((diagnostic) => diagnostic.tag);
-  return `NOTE: ${[
-    missingTags.length
-      ? `Missing ${tagNoun(missingTags)} ${formatTags(missingTags)}`
-      : "",
-    emptyTags.length
-      ? `Empty ${tagNoun(emptyTags)} ${formatTags(emptyTags)}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("; ")} in \`${relativeSnippetFile(file, context)}\`.`;
-}
-
-function tagNoun(tags: string[]): string {
-  return tags.length === 1 ? "tag" : "tags";
-}
-
-function formatTags(tags: string[]): string {
-  return tags.map((tag) => `\`${tag}\``).join(", ");
 }
 
 function relativeSnippetFile(file: string, context: SnippetContext): string {

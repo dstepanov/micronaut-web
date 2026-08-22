@@ -12,12 +12,12 @@ import type {
 
 import {
   type MacroPayload,
-  decodeBlockPayload,
-  missingNotePayload,
+  parseAttributeList,
   stringAttributes,
-} from "../../asciidoc/extensions/block-payload.ts";
+} from "../../asciidoc/extensions/macro-attributes.ts";
 import {
   type SnippetPayload,
+  missingNotePayload,
   renderSnippetBlock,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import {
@@ -28,8 +28,9 @@ import {
   mavenScope,
 } from "../../shared/dependency-coordinates.ts";
 import type { GuideRenderContext } from "../model.ts";
+import { GUIDE_DEPENDENCIES_BLOCK } from "./register-guide-preprocessor.ts";
 
-const GUIDE_DEPENDENCIES_BLOCK = "guide-dependencies";
+const DEPENDENCY_MACRO_LINE = /^dependency::([^\[]*)\[(.*)]\s*$/;
 
 export function registerGuideDependenciesBlock(
   registry: Registry,
@@ -68,20 +69,32 @@ export function registerGuideDependenciesBlock(
       this: BlockProcessor,
       parent: unknown,
       reader: unknown,
-      attrs: unknown,
+      _attrs: unknown,
     ): Promise<Block> {
-      const attributes = attrs as Record<string, unknown>;
-      const payload = decodeBlockPayload<{ dependencies: MacroPayload[] }>(
-        attributes.payload,
-      );
+      // The preprocessor wraps a `:dependencies:` group's macros in this
+      // block; the callout list that follows the block stays in the document
+      // reader, which renderSnippetBlock reads by default.
+      const macros = (await (reader as Reader).readLines())
+        .map(parseDependencyMacroLine)
+        .filter((macro): macro is MacroPayload => Boolean(macro));
       return renderSnippetBlock(
         this,
         parent as Block | Section,
-        dependencySnippetPayload(payload.dependencies, context),
-        { manualCallouts: "inline", reader: reader as Reader },
+        dependencySnippetPayload(macros, context),
+        { manualCallouts: "inline" },
       );
     });
   });
+}
+
+function parseDependencyMacroLine(line: string): MacroPayload | undefined {
+  const match = DEPENDENCY_MACRO_LINE.exec(line);
+  return match
+    ? {
+        attributes: parseAttributeList(match[2]).attributes,
+        target: match[1].trim(),
+      }
+    : undefined;
 }
 
 // One card for the active build tool: Gradle lines or Maven XML for every

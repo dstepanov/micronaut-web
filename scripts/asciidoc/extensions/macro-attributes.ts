@@ -69,3 +69,87 @@ export function record(value: unknown): Record<string, unknown> {
     ? (value as Record<string, unknown>)
     : {};
 }
+
+// Parses the attribute text of a macro written as plain source text, e.g. the
+// body lines of a `[guide-dependencies]` block or a `callout::x[arg0=1]` line
+// the preprocessor expands before Asciidoctor sees it.
+export function parseAttributeList(value: string): {
+  attributes: Record<string, string>;
+  positional: string[];
+} {
+  const attributes: Record<string, string> = {};
+  const positional: string[] = [];
+  for (const item of splitAttributeList(value)) {
+    const separator = item.indexOf("=");
+    if (separator < 0) {
+      const positionalValue = stripQuotes(item);
+      if (positionalValue) {
+        positional.push(positionalValue);
+      }
+      continue;
+    }
+    const key = item.slice(0, separator).trim();
+    if (key) {
+      attributes[key] = stripQuotes(item.slice(separator + 1).trim());
+    }
+  }
+  return { attributes, positional };
+}
+
+function splitAttributeList(value: string): string[] {
+  const items: string[] = [];
+  let current = "";
+  let quote = "";
+  for (const char of value || "") {
+    if (quote) {
+      if (char === quote) {
+        quote = "";
+      }
+      current += char;
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === ",") {
+      items.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) {
+    items.push(current.trim());
+  }
+  return items;
+}
+
+function stripQuotes(value: string): string {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
+// The target and attributes of a block macro as the guide processors use
+// them. Asciidoctor attribute values may be numbers or booleans; the
+// processors agree on strings.
+export type MacroPayload = {
+  attributes: Record<string, string>;
+  target: string;
+};
+
+export function macroPayload(target: string, attrs: unknown): MacroPayload {
+  return { attributes: stringAttributes(attrs), target };
+}
+
+export function stringAttributes(attrs: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(record(attrs)).map(([key, value]) => [key, String(value)]),
+  );
+}
