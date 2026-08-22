@@ -558,6 +558,37 @@ test("snippet macro ids stay unique across the renders a docs page concatenates"
   );
 });
 
+test("listings that include a tagged source file without selecting a tag do not leak the directives", async (): Promise<void> => {
+  // Asciidoctor only processes tag directives when a tag is requested; an
+  // untagged include passes `// tag::x[]` lines through verbatim and the
+  // converter would highlight them as code. micronaut-test's Concurrency
+  // section includes ConcurrentTestsSpec.kt exactly this way.
+  const render = (include: string): Promise<string> =>
+    renderAsciiDoc({
+      asciidoctor,
+      source: ["[source,kotlin]", "----", include, "----", ""].join("\n"),
+      diagnosticsLabel: "tagged-include",
+      convertOptions: {
+        attributes: { icons: "font", idprefix: "", idseparator: "-" },
+        base_dir: path.join(fixtureDirectory, "tagged-include"),
+      },
+    });
+
+  const untagged = textOnly(await render("include::Sample.kt[]"));
+  assert.doesNotMatch(untagged, /\b(?:tag|end)::/);
+  assert.match(untagged, /import a\.b/);
+  assert.match(untagged, /class A/);
+  // Code that precedes a trailing directive on the same line is kept.
+  assert.match(untagged, /val trailing = 1/);
+
+  // A tagged include is selected and stripped by Asciidoctor itself; the
+  // converter must not alter that path.
+  const tagged = textOnly(await render("include::Sample.kt[tag=x]"));
+  assert.doesNotMatch(tagged, /\b(?:tag|end)::/);
+  assert.match(tagged, /class A/);
+  assert.doesNotMatch(tagged, /import a\.b|val trailing/);
+});
+
 test("strict rendering reports every diagnostic a non-strict render reports", async (): Promise<void> => {
   const source = ["= Title", "", "=== Out of sequence", "", "Body.", ""].join(
     "\n",
