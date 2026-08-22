@@ -6,7 +6,10 @@ import { registerConfigurationBlock } from "./register-configuration-block.ts";
 import { registerDependencyBlock } from "./register-dependency-block.ts";
 import { registerDocsSourcePreprocessor } from "./register-docs-source-preprocessor.ts";
 import { registerPackageMacro } from "./register-package-macro.ts";
-import { registerSnippetBlock } from "./register-snippet-block.ts";
+import {
+  type SnippetSamplesResolver,
+  registerSnippetBlock,
+} from "./register-snippet-block.ts";
 
 const componentRenderingRegistries = new WeakSet<Registry>();
 
@@ -19,7 +22,7 @@ type DocsExtensionContext = {
 export function micronautExtensionRegistry(
   asciidoctor: typeof import("@asciidoctor/core"),
   context: DocsExtensionContext,
-  options: { snippetSamples: unknown },
+  options: { snippetSamples: SnippetSamplesResolver },
 ): Registry {
   const registry = asciidoctor.Extensions.create();
   registerDocsSourcePreprocessor(registry);

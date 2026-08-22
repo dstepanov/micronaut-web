@@ -1,4 +1,3 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { Html5Converter } from "@asciidoctor/core";
 import type { Registry } from "@asciidoctor/core";
 
@@ -32,11 +31,11 @@ type RenderAsciiDocOptions = {
   strict?: boolean;
 };
 
+// The listing node as the converter receives it. Only the members the card
+// needs are modelled; Asciidoctor.js types the converter callback as `any`.
 type AsciidoctorNode = {
   id?: string;
   title?: unknown;
-  context?: unknown;
-  role?: unknown;
   attributes?: Record<string, unknown>;
   hasTitle?: () => boolean;
   getAttribute?: (name: string) => unknown;
@@ -97,7 +96,7 @@ export async function renderAsciiDoc({
 }: RenderAsciiDocOptions): Promise<string> {
   const logger = asciidoctor.MemoryLogger.create();
   const previousLogger = asciidoctor.LoggerManager.getLogger();
-  let html;
+  let html: string;
   const extensionRegistry = registerComponentRenderingExtensions(
     asciidoctor,
     convertOptions.extension_registry,

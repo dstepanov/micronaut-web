@@ -1,19 +1,14 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import type {
-  Block,
-  BlockMacroProcessor,
-  MacroProcessorDslInterface,
-  Registry,
-  Section,
-} from "@asciidoctor/core";
-import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
+import type { Block, Registry, Section } from "@asciidoctor/core";
+
+import { defineBlockMacro } from "../../asciidoc/extensions/define.ts";
 import {
   type MacroPayload,
   macroPayload,
 } from "../../asciidoc/extensions/macro-attributes.ts";
+import { appFeatures, type Guide, type GuideRenderContext } from "../model.ts";
 
 type GuideContentResolver = (payload: MacroPayload) => Promise<string[]>;
 
@@ -39,42 +34,25 @@ function registerGuideContentMacro(
   macroName: string,
   resolveLines: GuideContentResolver,
 ): void {
-  registry.blockMacro(
-    macroName,
-    function registerGuideContentMacro(this: MacroProcessorDslInterface): void {
-      this.process(async function processGuideContentMacro(
-        this: BlockMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Promise<Block> {
-        const holder = this.createBlock(
-          parent as Block | Section,
-          "open",
-          "",
-          {},
-        );
-        const lines = await resolveLines(macroPayload(String(target), attrs));
-        await this.parseContent(
-          guideContentParseTarget(parent, holder, lines),
-          lines,
-        );
-        return holder;
-      });
-    },
-  );
+  defineBlockMacro(registry, macroName, async function (parent, target, attrs) {
+    const holder = this.createBlock(parent, "open", "", {});
+    const lines = await resolveLines(macroPayload(target, attrs));
+    await this.parseContent(
+      guideContentParseTarget(parent, holder, lines),
+      lines,
+    );
+    return holder;
+  });
 }
 
 // Lines that introduce a section must be parsed against the real parent so the
 // section lands in the document outline rather than inside a holder block.
 function guideContentParseTarget(
-  parent: unknown,
+  parent: Block | Section,
   holder: Block,
   lines: string[],
 ): Block | Section {
-  return lines.some((line) => /^={1,6}\s+\S/.test(line))
-    ? (parent as Block | Section)
-    : holder;
+  return lines.some((line) => /^={1,6}\s+\S/.test(line)) ? parent : holder;
 }
 
 async function includeGuideRocker(

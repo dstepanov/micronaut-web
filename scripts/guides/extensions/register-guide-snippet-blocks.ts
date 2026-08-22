@@ -1,20 +1,15 @@
-// @ts-nocheck -- @asciidoctor/core does not model async extension callbacks.
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import type {
-  Block,
-  BlockMacroProcessor,
-  MacroProcessorDslInterface,
-  Registry,
-  Section,
-} from "@asciidoctor/core";
+import type { Registry } from "@asciidoctor/core";
 
+import { defineBlockMacro } from "../../asciidoc/extensions/define.ts";
 import {
   type MacroPayload,
   macroPayload,
 } from "../../asciidoc/extensions/macro-attributes.ts";
 import {
+  type SnippetPayload,
   missingNotePayload,
   renderSnippetBlock,
 } from "../../asciidoc/extensions/snippet-block-renderer.ts";
@@ -36,18 +31,9 @@ const GRAALPY_PYTHON_PACKAGES_BY_FEATURE = new Map([
   ["graalpy-pygal", ["pygal==3.0.4"]],
 ]);
 
-type GuideSnippetPayloadResolver = (
+type SnippetPayloadResolver = (
   payload: MacroPayload,
-) => Promise<Record<string, unknown>>;
-
-type GuideSnippetPayload = {
-  kind: "code";
-  title: string;
-  samples: Array<{
-    language: string;
-    source: string;
-  }>;
-};
+) => Promise<SnippetPayload>;
 
 type SourceSnippetKind = "main" | "test" | "raw-test";
 type ResourceSourceSet = "main" | "test";
@@ -84,26 +70,16 @@ export function registerGuideSnippetBlocks(
 function registerGuideSnippetBlock(
   registry: Registry,
   macroName: string,
-  resolvePayload: GuideSnippetPayloadResolver,
+  resolvePayload: SnippetPayloadResolver,
 ): void {
-  registry.blockMacro(
-    macroName,
-    function registerGuideSnippetMacro(this: MacroProcessorDslInterface): void {
-      this.process(async function processGuideSnippetMacro(
-        this: BlockMacroProcessor,
-        parent: unknown,
-        target: unknown,
-        attrs: unknown,
-      ): Promise<Block> {
-        return renderSnippetBlock(
-          this,
-          parent as Block | Section,
-          await resolvePayload(macroPayload(String(target), attrs)),
-          { manualCallouts: "inline" },
-        );
-      });
-    },
-  );
+  defineBlockMacro(registry, macroName, async function (parent, target, attrs) {
+    return renderSnippetBlock(
+      this,
+      parent,
+      await resolvePayload(macroPayload(target, attrs)),
+      { manualCallouts: "inline" },
+    );
+  });
 }
 
 async function sourceSnippetPayload(
@@ -111,7 +87,7 @@ async function sourceSnippetPayload(
   attributes: Record<string, string>,
   context: GuideRenderContext,
   kind: SourceSnippetKind,
-): Promise<GuideSnippetPayload> {
+): Promise<SnippetPayload> {
   const file = await findSourceFile(target.trim(), attributes, context, kind);
   if (!file) {
     return missingNotePayload(`Missing source \`${target.trim()}\`.`);
@@ -135,7 +111,7 @@ async function resourceSnippetPayload(
   attributes: Record<string, string>,
   context: GuideRenderContext,
   sourceSet: ResourceSourceSet,
-): Promise<GuideSnippetPayload> {
+): Promise<SnippetPayload> {
   const file = await findResourceFile(
     target.trim(),
     attributes,
@@ -171,7 +147,7 @@ function syntheticResourceSnippetPayload(
   attributes: Record<string, string>,
   context: GuideRenderContext,
   sourceSet: ResourceSourceSet,
-): GuideSnippetPayload | undefined {
+): SnippetPayload | undefined {
   if (
     sourceSet !== "main" ||
     context.option.buildTool !== "maven" ||
@@ -246,7 +222,7 @@ async function zipIncludeSnippetPayload(
   target: string,
   attributes: Record<string, string>,
   context: GuideRenderContext,
-): Promise<GuideSnippetPayload> {
+): Promise<SnippetPayload> {
   const file = await findFileInSourceRoots(target.trim(), attributes, context);
   if (!file) {
     return missingNotePayload(`Missing zip include \`${target.trim()}\`.`);
@@ -259,7 +235,7 @@ async function zipIncludeSnippetPayload(
 }
 
 type SnippetSourceRead =
-  { ok: true; source: string } | { ok: false; payload: GuideSnippetPayload };
+  { ok: true; source: string } | { ok: false; payload: SnippetPayload };
 
 // Every guide snippet kind reads a file, selects the requested tag regions,
 // and normalizes callout markers and indentation the same way; only license
@@ -299,7 +275,7 @@ function snippetPayload(
   title: string,
   language: string,
   source: string,
-): GuideSnippetPayload {
+): SnippetPayload {
   return { kind: "code", title, samples: [{ language, source }] };
 }
 

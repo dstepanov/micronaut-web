@@ -2,7 +2,7 @@ import * as parse5 from "parse5";
 import { codeToHtml } from "shiki";
 import type { DefaultTreeAdapterMap } from "parse5";
 
-import { normalizeEmptyPropertiesAssignmentHighlighting } from "./properties-highlight-normalization";
+import { normalizeEmptyPropertiesAssignmentHighlighting } from "./properties-highlight-normalization.ts";
 
 type HighlightableVariant = {
   code: string;
@@ -22,16 +22,27 @@ const shikiThemes = {
 const calloutMarkerPrefix = "__MICRONAUT_CALLOUT_";
 const calloutMarkerSuffix = "__";
 
+// Docs and guides language names that differ from the Shiki grammar name.
+// HOCON has no Shiki grammar; the properties grammar is the closest match.
 const shikiLanguageAliases: Record<string, string> = {
   bash: "shellscript",
+  cmd: "shellscript",
+  commandline: "shellscript",
+  conf: "properties",
   console: "shellscript",
   gradle: "kotlin",
   "gradle-groovy": "groovy",
   "gradle-kotlin": "kotlin",
-  hocon: "hocon",
+  graphqls: "graphql",
+  "groovy-config": "groovy",
+  hocon: "properties",
+  "json-config": "json",
   maven: "xml",
+  mysql: "sql",
+  plaintext: "text",
   pom: "xml",
   properties: "properties",
+  props: "properties",
   sh: "shellscript",
   shell: "shellscript",
   text: "text",
@@ -84,8 +95,8 @@ export async function highlightCodeSnippetExamples<T extends HighlightableExampl
   );
 }
 
-function shikiLanguage(language: string) {
-  const normalized = language.trim().toLowerCase();
+export function shikiLanguage(language: string) {
+  const normalized = String(language || "text").trim().toLowerCase();
   return shikiLanguageAliases[normalized] || normalized || "text";
 }
 
@@ -110,8 +121,15 @@ function extractCodeHtml(source: string) {
   return code.childNodes.map((child) => serializeNode(child)).join("");
 }
 
+// Callout markers are hidden from the grammar as plain identifiers and turned
+// back into `<i class="conum">` after highlighting. XML sources write them as
+// comments (`<!--1-->`) so the marker does not break the markup.
 function encodeCalloutMarkers(source: string) {
-  return source.replace(/<(\d+)>/g, `${calloutMarkerPrefix}$1${calloutMarkerSuffix}`);
+  return source.replace(
+    /<!--(\d+)-->|<(\d+)>/g,
+    (_match, commentNumber: string, angleNumber: string) =>
+      `${calloutMarkerPrefix}${commentNumber || angleNumber}${calloutMarkerSuffix}`
+  );
 }
 
 function firstDescendant<T extends DefaultTreeAdapterMap["node"]>(
