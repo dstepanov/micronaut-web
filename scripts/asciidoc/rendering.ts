@@ -7,6 +7,7 @@ import {
   documentRenderIdSeed,
   renderIdSeed,
 } from "../shared/render-id-seed.ts";
+import { extractTaggedSource } from "../shared/tagged-source.ts";
 
 import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
@@ -68,7 +69,9 @@ class MicronautComponentHtmlConverter extends Html5Converter {
       footerHtml,
       id: node.id || listingSnippetId(node, generatedIndex),
       language: listingBlockLanguage(node),
-      source: node.getSource?.() || "",
+      // Asciidoctor leaves tag directives in place unless the include selected
+      // a tag, so strip them here the same way snippet sources are stripped.
+      source: extractTaggedSource(node.getSource?.() || "", undefined),
       titleHtml: node.hasTitle?.() ? String(node.title || "") : "",
     });
   }

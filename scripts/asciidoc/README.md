@@ -138,7 +138,8 @@ the render.
 `MicronautComponentHtmlConverter` only handles regular Asciidoctor nodes that are
 still best rendered by a converter:
 
-- ordinary listing blocks
+- ordinary listing blocks, with any `tag::`/`end::` directives stripped from
+  the source, since Asciidoctor only removes them when an include selects a tag
 - configuration property tables
 
 Snippet and dependency macro output is handled by block processors. The
