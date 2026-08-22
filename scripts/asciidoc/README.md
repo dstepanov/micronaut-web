@@ -187,7 +187,16 @@ The current pipeline does not use:
 - `scripts/guides/preprocessor.ts`
 - `scripts/guides/guide-blocks.ts`
 - pre-conversion snippet or dependency expansion outside Asciidoctor extensions
-- AsciiDoc HTML postprocessing for snippets or callouts
+- AsciiDoc HTML postprocessing for snippets or callouts, including the
+  `highlightListingBlocks(...)` post-processing highlighter
+- `[snippet,payload=...]`, `[dependency,payload=...]` and
+  `[guide-dependencies,payload=...]` blocks carrying base64 JSON; block
+  processors read their body and the document reader instead
+- `docs-snippet-callout-validation` listings
+- `[guide-*]` open-block forms of the guide macros and block-processor copies
+  of `common::`, `external::`, `callout::` and the exclude directives
+- `@ts-nocheck` register files; extensions are registered through the typed
+  helpers in `extensions/define.ts`
 
 All snippet, dependency, callout, guide macro, and configuration rendering must
 stay inside the AsciiDoc rendering pipeline.
