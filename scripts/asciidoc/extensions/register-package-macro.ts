@@ -6,18 +6,13 @@ import type {
   InlineMacroProcessorDslInterface,
   Registry,
 } from "@asciidoctor/core";
-import { type MacroAttributes, macroAttribute } from "./macro-attributes.ts";
 
-type PackageMacroContext = {
-  project?: {
-    slug?: string;
-  };
-  attributes?: Record<string, unknown>;
-};
+import { type ApiMacroContext, packageLink } from "../api-links.ts";
+import type { MacroAttributes } from "./macro-attributes.ts";
 
 export function registerPackageMacro(
   registry: Registry,
-  context: PackageMacroContext,
+  context: ApiMacroContext,
 ): void {
   registry.inlineMacro(
     "pkg",
@@ -33,7 +28,7 @@ export function registerPackageMacro(
         const link = packageLink(
           context,
           String(target),
-          attrs as Record<string, unknown>,
+          attrs as MacroAttributes,
         );
         return this.createInline(parent as Block, "anchor", link.label, {
           type: "link",
@@ -42,28 +37,4 @@ export function registerPackageMacro(
       });
     },
   );
-}
-
-function packageLink(
-  context: PackageMacroContext,
-  target: string,
-  attrs: MacroAttributes,
-): { href: string; label: string } {
-  let packageName = target;
-  if (!packageName.startsWith("io.micronaut.")) {
-    packageName = `io.micronaut.${packageName}`;
-  }
-  const projectSlug =
-    context.project?.slug || String(context.attributes?.projectSlug || "core");
-  return {
-    href: `assets/${projectSlug}/docs/api/${packageName.replaceAll(".", "/")}/package-summary.html`,
-    label: macroText(attrs) || packageName,
-  };
-}
-
-function macroText(attrs: MacroAttributes): string {
-  const positional = Array.isArray(attrs.$positional)
-    ? String(attrs.$positional[0] ?? "")
-    : "";
-  return macroAttribute(attrs, "text") || positional;
 }

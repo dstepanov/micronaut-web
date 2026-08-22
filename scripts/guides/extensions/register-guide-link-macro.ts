@@ -8,7 +8,7 @@ import type {
 } from "@asciidoctor/core";
 import {
   type MacroAttributes,
-  macroAttribute,
+  macroText,
 } from "../../asciidoc/extensions/macro-attributes.ts";
 
 export function registerGuideLinkMacro(registry: Registry): void {
@@ -26,7 +26,7 @@ export function registerGuideLinkMacro(registry: Registry): void {
         return this.createInline(
           parent as Block,
           "anchor",
-          String(macroText(attrs as Record<string, unknown>)),
+          macroText(attrs as MacroAttributes),
           {
             type: "link",
             target: `${String(target)}.html`,
@@ -35,11 +35,4 @@ export function registerGuideLinkMacro(registry: Registry): void {
       });
     },
   );
-}
-
-function macroText(attrs: MacroAttributes): string {
-  const positional = Array.isArray(attrs.$positional)
-    ? String(attrs.$positional[0] ?? "")
-    : "";
-  return macroAttribute(attrs, "text") || positional;
 }
