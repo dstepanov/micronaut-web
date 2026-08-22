@@ -18,6 +18,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
     }));
 };
 
-export const GET: APIRoute<{ destination: string }> = ({ props }) => {
-  return preservingClientRedirect(props.destination, "the Micronaut blog post");
+export const GET: APIRoute<{ destination: string }> = ({ props, site }) => {
+  return preservingClientRedirect(
+    props.destination,
+    "the Micronaut blog post",
+    site,
+  );
 };

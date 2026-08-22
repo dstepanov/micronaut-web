@@ -887,6 +887,53 @@ test("the published latest tree links to itself, not to the version it was built
   assert.match(versionIndex, /href="\/micronaut-docs-v2\/5\.1\.1\/core\/"/);
 });
 
+test("the latest re-root only rewrites URLs, not prose that mentions the version", async (t) => {
+  const dist = await temporaryDirectory(t);
+  const published = await temporaryDirectory(t);
+
+  // A root base makes the version root a short path like `/5.1.1/`, which also
+  // appears in ordinary documentation text on a custom-domain deployment.
+  await fs.mkdir(path.join(dist, "5.1.1"), { recursive: true });
+  await fs.writeFile(
+    path.join(dist, "5.1.1", "index.html"),
+    [
+      '<link rel="canonical" href="https://docs.example.test/5.1.1/" />',
+      '<a href="/5.1.1/core/">Core</a>',
+      '<meta http-equiv="refresh" content="0;url=/5.1.1/core/" />',
+      "<p>Upgrade notes for /5.1.1/ are published with each release.</p>",
+      "<code>curl https://example.test/other/5.1.1/artifact.jar</code>",
+    ].join("\n"),
+    "utf8",
+  );
+
+  await publishDocsSurface({
+    distDirectory: dist,
+    publishedDirectory: published,
+    version: "5.1.1",
+    base: "/",
+    latest: true,
+  });
+
+  const latestIndex = await fs.readFile(
+    path.join(published, "latest", "index.html"),
+    "utf8",
+  );
+
+  assert.match(latestIndex, /href="\/latest\/core\/"/);
+  assert.match(latestIndex, /href="https:\/\/docs\.example\.test\/latest\/"/);
+  assert.match(latestIndex, /content="0;url=\/latest\/core\/"/);
+  assert.match(
+    latestIndex,
+    /Upgrade notes for \/5\.1\.1\/ are published/,
+    "documentation prose must not be rewritten",
+  );
+  assert.match(
+    latestIndex,
+    /https:\/\/example\.test\/other\/5\.1\.1\/artifact\.jar/,
+    "unrelated URLs in body text must not be rewritten",
+  );
+});
+
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {
   const published = await temporaryDirectory(t);
   const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
