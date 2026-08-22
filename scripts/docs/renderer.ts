@@ -13,7 +13,7 @@ import {
 } from "./project-manifest.ts";
 import { docsSnippetSamples } from "./snippet-samples.ts";
 import { type TocNode, readGuideToc } from "./toc.ts";
-import { prefixIds, rewriteUrls } from "./urls.ts";
+import { prefixIds, rewriteUrls, uniquifyIds } from "./urls.ts";
 
 type DocsRenderContext = {
   project: DocsProject;
@@ -23,6 +23,7 @@ type DocsRenderContext = {
   guideSourceDirectory: string;
   attributes: Properties;
   renderOptions: { strict?: boolean };
+  claimedIds: Set<string>;
 };
 
 export async function renderProject(
@@ -60,6 +61,9 @@ export async function renderProject(
     guideSourceDirectory,
     attributes,
     renderOptions,
+    // Section headings anchor the page navigation, so they claim their ids
+    // before any content heading gets the chance to.
+    claimedIds: tocNodeIds(toc.children),
   };
 
   let content = `<span class="project-document-anchor" id="${attribute(project.slug)}-docs" aria-hidden="true"></span>\n`;
@@ -98,7 +102,7 @@ async function renderNode(
     ignoredDiagnostic: isIgnoredDocsDiagnostic,
   });
 
-  let htmlContent = `${sectionHeading(context.project, node)}\n${converted}\n`;
+  let htmlContent = `${sectionHeading(context.project, node)}\n${uniquifyIds(converted, context.claimedIds)}\n`;
   for (const child of node.children) {
     htmlContent += await renderNode(asciidoctor, context, child);
   }
@@ -120,6 +124,20 @@ export function isIgnoredDocsDiagnostic(diagnostic: string): boolean {
   return [/section title out of sequence/i, /unterminated listing block/i].some(
     (ignoredWarning) => ignoredWarning.test(diagnostic),
   );
+}
+
+function tocNodeIds(nodes: TocNode[]): Set<string> {
+  const ids = new Set<string>();
+  const visit = (node: TocNode): void => {
+    ids.add(node.id);
+    for (const child of node.children) {
+      visit(child);
+    }
+  };
+  for (const node of nodes) {
+    visit(node);
+  }
+  return ids;
 }
 
 function sectionHeading(project: DocsProject, node: TocNode): string {
