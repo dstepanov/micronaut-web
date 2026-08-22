@@ -172,27 +172,56 @@ export function productionUrl(surface: ProductionSurface, path = "/") {
   ).toString();
 }
 
-export function appendRequestSearch(destination: string, requestUrl: URL) {
-  if (!requestUrl.search) {
-    return destination;
-  }
-  const [path, hash = ""] = destination.split("#", 2);
-  const separator = path.includes("?") ? "&" : "?";
-  return `${path}${separator}${requestUrl.search.slice(1)}${hash ? `#${hash}` : ""}`;
-}
-
 /**
- * Produces a redirect page for static hosts, where HTTP redirects cannot keep
- * the request query string. The browser appends that query to the destination.
+ * Produces a redirect page for static hosts, where an HTTP redirect is not
+ * available and a bare `<meta http-equiv="refresh">` drops both the request
+ * query string and the fragment. The page keeps the crawler-facing markup of a
+ * static redirect and lets the browser carry `?query` and `#fragment` across.
+ *
+ * This is the single redirect shape for every entry in
+ * `routeCompatibilityManifest`. `scripts/prune-surface.ts` writes the same
+ * document for the redirect stubs it generates at publish time; keep the two in
+ * step.
  */
-export function preservingClientRedirect(destination: string): Response {
+export function preservingClientRedirect(
+  destination: string,
+  title = "the current page",
+): Response {
   const serializedDestination = JSON.stringify(destination);
   return new Response(
-    `<!doctype html><meta charset="utf-8"><script>const destination=new URL(${serializedDestination},location.origin);for(const [key,value] of new URLSearchParams(location.search)){if(!destination.searchParams.has(key))destination.searchParams.append(key,value)}location.replace(destination.pathname+destination.search+destination.hash)</script>`,
+    [
+      "<!doctype html>",
+      '<html lang="en">',
+      "<head>",
+      '<meta charset="utf-8" />',
+      '<meta name="robots" content="noindex" />',
+      `<meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
+      `<title>Redirecting to ${htmlText(title)}</title>`,
+      "<script>",
+      `location.replace(${serializedDestination} + location.search + location.hash);`,
+      "</script>",
+      "</head>",
+      "<body>",
+      `<a href="${htmlAttribute(destination)}">Continue to ${htmlText(title)}</a>`,
+      "</body>",
+      "</html>",
+      "",
+    ].join("\n"),
     {
       headers: {
         "content-type": "text/html; charset=utf-8",
       },
     },
   );
+}
+
+function htmlAttribute(value: string) {
+  return htmlText(value).replaceAll('"', "&quot;");
+}
+
+function htmlText(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

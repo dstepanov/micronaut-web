@@ -23,17 +23,34 @@ const forbiddenBrowserRuntimePatterns = [
       /from\s*["'](?:js-yaml|smol-toml)["']|import\(["'](?:js-yaml|smol-toml)["']\)|js-yaml|smol-toml/,
   },
   {
+    label: "HTML parser package",
+    pattern: /from\s*["']parse5["']|import\(["']parse5["']\)/,
+  },
+  {
     label: "generated-content configuration conversion helper",
     pattern:
       /\b(?:registerConfigurationBlock|processConfigurationBlock|configurationSamples|parseConfigurationSource|toJavaProperties|flattenConfiguration|formatPropertiesValue|toTomlSource|formatTomlValue|toGroovyConfig|formatGroovyEntry|formatGroovyKey|formatGroovyValue|toHocon|formatHoconValue|stringifyToml|parseToml)\b/,
   },
 ];
 
+/**
+ * `_astro` holds the per-surface island bundles; `shell` holds the standalone
+ * site header that docs and guides load cross-origin from the main site. The
+ * shell is the payload hardest to roll back once published, so it is scanned on
+ * the same terms.
+ */
+const browserRuntimeDirectories = ["_astro", "shell"];
+
 export async function forbiddenBrowserRuntimeAssetMatches(
   distDirectory: string,
 ): Promise<ForbiddenBrowserRuntimeAssetMatch[]> {
-  const assetsDirectory = path.join(distDirectory, "_astro");
-  const files = await listFiles(assetsDirectory);
+  const files = (
+    await Promise.all(
+      browserRuntimeDirectories.map((directory) =>
+        listFiles(path.join(distDirectory, directory)),
+      ),
+    )
+  ).flat();
   const matches: ForbiddenBrowserRuntimeAssetMatch[] = [];
 
   for (const file of files.filter(

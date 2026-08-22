@@ -9,7 +9,7 @@ import {
   tagSlug,
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
-import { appendRequestSearch } from "@/lib/route-compatibility";
+import { preservingClientRedirect } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
 const guidesRoot = "/guides";
@@ -61,13 +61,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return paths;
 };
 
-export const GET: APIRoute<{ destination: string }> = ({
-  props,
-  redirect,
-  url,
-}) => {
-  return redirect(
-    appendRequestSearch(withBasePath(props.destination), url),
-    301,
+export const GET: APIRoute<{ destination: string }> = ({ props }) => {
+  return preservingClientRedirect(
+    withBasePath(props.destination),
+    "the Micronaut guide",
   );
 };

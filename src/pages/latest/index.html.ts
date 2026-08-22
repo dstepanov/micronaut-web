@@ -4,5 +4,8 @@ import { withBasePath } from "@/lib/base-path";
 import { preservingClientRedirect } from "@/lib/route-compatibility";
 
 export const GET: APIRoute = () => {
-  return preservingClientRedirect(withBasePath("/guides/"));
+  return preservingClientRedirect(
+    withBasePath("/guides/"),
+    "the Micronaut guides catalog",
+  );
 };

@@ -26,8 +26,8 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install chromium
 
-      - name: Check script formatting
-        run: npm run style:scripts
+      - name: Run checks
+        run: npm run check
 
       - name: Build and validate docs surface
         env:

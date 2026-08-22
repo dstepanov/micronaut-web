@@ -24,7 +24,10 @@ async function main(): Promise<void> {
   );
   const env = surfaceEnvironment(surface);
 
-  await run("build", "npm", ["run", "build:site"], env);
+  // `build:artifact`, not `build:site`: surface builds must not re-run the full
+  // check. CI runs `npm run check` once, and a publish should not be blocked by
+  // a browser test unrelated to the artifact being produced.
+  await run("build", "npm", ["run", "build:artifact"], env);
   await run(
     "prune",
     process.execPath,
