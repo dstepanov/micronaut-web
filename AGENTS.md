@@ -54,6 +54,10 @@ Use the current repository structure as the source of truth. Do not apply Gradle
 
 ## Verification
 
+When working in a git worktree (for example under `.claude/worktrees/`), run
+`npm ci` in that worktree first; Node otherwise resolves the parent checkout's
+`node_modules`, whose versions may not match `package-lock.json`.
+
 After UI or layout changes, run the narrowest relevant checks first, then broader checks as needed:
 
 1. `npm run typecheck`

@@ -193,3 +193,28 @@ jobs:
           else
             echo "Docs Pages branch is already up to date."
           fi
+
+      # Pages builds the branch asynchronously, and a second push while a build
+      # is still queued leaves the site reporting "Page build failed" for content
+      # that is in fact served. Finish only once the pushed commit is built, so
+      # the per-version republish runs cannot overlap.
+      - name: Wait for docs Pages build
+        working-directory: published-docs
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
+        run: |
+          sha="$(git rev-parse HEAD)"
+          for attempt in $(seq 1 60); do
+            read -r status commit < <(gh api "repos/${TARGET_REPOSITORY}/pages/builds/latest" --jq '"\(.status) \(.commit)"')
+            if [ "$commit" = "$sha" ] && [ "$status" = "built" ]; then
+              exit 0
+            fi
+            if [ "$commit" = "$sha" ] && [ "$status" = "errored" ]; then
+              echo "::error::GitHub Pages build failed for ${TARGET_REPOSITORY}@${sha}."
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "::error::Timed out waiting for the GitHub Pages build of ${TARGET_REPOSITORY}@${sha}."
+          exit 1
