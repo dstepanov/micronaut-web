@@ -147,8 +147,6 @@ jobs:
 
           git -C "$target" rev-parse --short HEAD
 
-      - name: Install Playwright Chromium
-        run: npx playwright install chromium
 
       - name: Configure docs deployment
         env:
@@ -162,16 +160,11 @@ jobs:
           PUBLISHED_DIRECTORY: published-docs
         run: node scripts/configure-pages-deployment.ts --surface docs --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
 
-      - name: Build docs version manifest
-        if: steps.release.outputs.purge_patches != 'true'
-        run: node scripts/update-docs-version-manifest.ts --published-dir published-docs --version "${{ steps.release.outputs.docs_version }}" --latest "${{ steps.release.outputs.publish_latest }}"
-
       - name: Purge superseded patch docs
         if: steps.release.outputs.purge_patches == 'true'
         run: node scripts/purge-docs-patch-versions.ts --published-dir published-docs --version "${{ steps.release.outputs.docs_version }}"
 
-      - name: Build docs version manifest after purging patches
-        if: steps.release.outputs.purge_patches == 'true'
+      - name: Build docs version manifest
         run: node scripts/update-docs-version-manifest.ts --published-dir published-docs --version "${{ steps.release.outputs.docs_version }}" --latest "${{ steps.release.outputs.publish_latest }}"
 
       - name: Build docs surface

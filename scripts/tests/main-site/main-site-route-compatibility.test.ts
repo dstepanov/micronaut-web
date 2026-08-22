@@ -66,24 +66,54 @@ test("production url helper is host and surface aware", async (): Promise<void> 
   );
 });
 
-test("redirect helpers preserve query strings without losing hashes", async (): Promise<void> => {
-  const { appendRequestSearch } = await routeCompatibility;
-  const requestUrl = new URL(
-    "https://docs.micronaut.io/latest/guide/index.html?q=bean&sort=title",
-  );
+test("static redirects carry both the query string and the fragment", async (): Promise<void> => {
+  const { preservingClientRedirect } = await routeCompatibility;
+  const body = await preservingClientRedirect(
+    "/docs/core/",
+    "Micronaut Core docs",
+  ).text();
 
-  assert.equal(
-    appendRequestSearch("/docs/core/", requestUrl),
-    "/docs/core/?q=bean&sort=title",
+  // A bare meta refresh drops both; the script is what keeps deep links working.
+  assert.match(
+    body,
+    /<meta http-equiv="refresh" content="0;url=\/docs\/core\/"/,
   );
-  assert.equal(
-    appendRequestSearch("/docs/core/#ioc", requestUrl),
-    "/docs/core/?q=bean&sort=title#ioc",
+  assert.match(
+    body,
+    /location\.replace\("\/docs\/core\/" \+ location\.search \+ location\.hash\)/,
   );
-  assert.equal(
-    appendRequestSearch("/docs/core/?existing=true", requestUrl),
-    "/docs/core/?existing=true&q=bean&sort=title",
+  assert.match(body, /<meta name="robots" content="noindex"/);
+  assert.match(
+    body,
+    /<a href="\/docs\/core\/">Continue to Micronaut Core docs<\/a>/,
   );
+});
+
+test("every compatibility redirect route uses the shared redirect helper", async (): Promise<void> => {
+  const routeFiles = [
+    "src/pages/latest/[page].html.ts",
+    "src/pages/latest/index.html.ts",
+    "src/pages/latest/guide/index.html.ts",
+    "src/pages/guides/[slug].html.ts",
+    "src/pages/blog/[legacySlug].html.ts",
+  ];
+
+  for (const routeFile of routeFiles) {
+    const source = await fs.readFile(
+      path.join(projectDirectory, routeFile),
+      "utf8",
+    );
+    assert.match(
+      source,
+      /preservingClientRedirect\(/,
+      `${routeFile} should redirect through preservingClientRedirect`,
+    );
+    assert.doesNotMatch(
+      source,
+      /\bredirect\(/,
+      `${routeFile} should not use Astro's redirect, which drops the fragment in a static build`,
+    );
+  }
 });
 
 test("new route files use the compatibility manifest", async (): Promise<void> => {

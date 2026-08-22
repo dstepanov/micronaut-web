@@ -3,6 +3,7 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import { withBasePath } from "@/lib/base-path";
 import { getLegacyBlogRedirects } from "@/lib/blog-redirects";
 import { getBlogPosts } from "@/lib/main-site-content";
+import { preservingClientRedirect } from "@/lib/route-compatibility";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getBlogPosts();
@@ -17,6 +18,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
     }));
 };
 
-export const GET: APIRoute<{ destination: string }> = ({ props, redirect }) => {
-  return redirect(props.destination, 301);
+export const GET: APIRoute<{ destination: string }> = ({ props }) => {
+  return preservingClientRedirect(props.destination, "the Micronaut blog post");
 };

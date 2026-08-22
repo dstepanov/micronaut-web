@@ -42,11 +42,7 @@ export async function purgeDocsPatchVersions({
   const removed: string[] = [];
   for (const entry of entries) {
     const entryVersion = versionFromPublishedEntry(entry.name, entry.isFile());
-    if (
-      !entryVersion ||
-      entryVersion === release.version ||
-      !isPatchReleaseForMinor(entryVersion, release)
-    ) {
+    if (!entryVersion || !isSupersededPatch(entryVersion, release)) {
       continue;
     }
     await fs.rm(path.join(publishedDirectory, entry.name), {
@@ -69,6 +65,7 @@ function parsePatchRelease(version?: string) {
     version: version as string,
     major: match[1],
     minor: match[2],
+    patch: Number(match[3]),
   };
 }
 
@@ -77,12 +74,21 @@ function versionFromPublishedEntry(name: string, isFile: boolean) {
   return /^\d+\.\d+\.\d+$/.test(version) ? version : undefined;
 }
 
-function isPatchReleaseForMinor(
+/**
+ * Only patches strictly older than the release being published are superseded.
+ * Publishing an older patch must never delete a newer one, so a replayed or
+ * re-dispatched release event cannot destroy published docs.
+ */
+function isSupersededPatch(
   version: string,
-  release: { major: string; minor: string },
+  release: { major: string; minor: string; patch: number },
 ) {
-  const [major, minor] = version.split(".");
-  return major === release.major && minor === release.minor;
+  const [major, minor, patch] = version.split(".");
+  return (
+    major === release.major &&
+    minor === release.minor &&
+    Number(patch) < release.patch
+  );
 }
 
 function isMainModule() {

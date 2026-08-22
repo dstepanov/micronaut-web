@@ -124,9 +124,12 @@ export async function publishDocsSurface({
   );
 
   if (latest) {
-    await replaceIfExists(
-      versionSource,
-      path.join(publishedDirectory, "latest"),
+    const latestDirectory = path.join(publishedDirectory, "latest");
+    await replaceIfExists(versionSource, latestDirectory);
+    await rewriteVersionRootToLatest(
+      latestDirectory,
+      currentDeployment.base,
+      publishVersion,
     );
     await writeRedirect(
       path.join(publishedDirectory, "latest.html"),
@@ -177,6 +180,39 @@ async function writeVersionsJson(
     `${JSON.stringify(payload, null, 2)}\n`,
     "utf8",
   );
+}
+
+/**
+ * The docs surface is built once, rooted at the version being published, and
+ * that same tree is copied to `/latest`. Without this pass every link, canonical
+ * URL, and redirect stub inside `/latest` points back at `/<version>/`, so
+ * visitors who enter at `/latest/` are moved onto a version-pinned tree that the
+ * next patch release deletes. Re-root the copy so `/latest` links to itself.
+ */
+async function rewriteVersionRootToLatest(
+  latestDirectory: string,
+  base: string,
+  version: string,
+) {
+  if (!(await exists(latestDirectory))) {
+    return;
+  }
+  const normalizedBase = normalizeBase(base);
+  const replacements: Array<[string, string]> = [
+    [`${normalizedBase}${version}/`, `${normalizedBase}latest/`],
+    [`${normalizedBase}${version}.html`, `${normalizedBase}latest.html`],
+  ];
+
+  for (const file of await listTextFiles(latestDirectory)) {
+    const source = await fs.readFile(file, "utf8");
+    const rewritten = replacements.reduce(
+      (value, [from, to]) => value.replaceAll(from, to),
+      source,
+    );
+    if (rewritten !== source) {
+      await fs.writeFile(file, rewritten, "utf8");
+    }
+  }
 }
 
 async function migratePublishedDeployment(

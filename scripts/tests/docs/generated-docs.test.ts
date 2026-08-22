@@ -133,29 +133,40 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
     "astro dev",
   );
   assertScriptOrder(
-    packageJson.scripts.build,
+    packageJson.scripts["build:artifact"],
     "npm run prepare:generated-content",
     "astro build",
   );
   assertScriptOrder(
-    packageJson.scripts.build,
+    packageJson.scripts["build:artifact"],
     "astro build",
     "node scripts/build-site-header-shell.ts",
   );
+  // The shell is a browser payload, so it must exist before it is asserted on.
   assertScriptOrder(
-    packageJson.scripts.build,
+    packageJson.scripts["build:artifact"],
     "node scripts/build-site-header-shell.ts",
-    "node scripts/prepare-template-artifacts.ts",
+    "node scripts/assert-browser-runtime-assets.ts",
   );
   assertScriptOrder(
-    packageJson.scripts["build:site"],
-    "astro build",
-    "node scripts/build-site-header-shell.ts",
-  );
-  assertScriptOrder(
-    packageJson.scripts["build:site"],
-    "node scripts/build-site-header-shell.ts",
+    packageJson.scripts["build:artifact"],
+    "node scripts/assert-browser-runtime-assets.ts",
     "node scripts/prepare-template-artifacts.ts",
+  );
+
+  // `build` and `build:site` are the human entry points and keep running the
+  // full check first; surface builds go straight to `build:artifact`.
+  for (const script of ["build", "build:site"]) {
+    assertScriptOrder(
+      packageJson.scripts[script],
+      "npm run check",
+      "npm run build:artifact",
+    );
+  }
+  assert.doesNotMatch(
+    packageJson.scripts["build:artifact"],
+    /npm run check/,
+    "build:artifact must not re-run the check suite",
   );
 });
 

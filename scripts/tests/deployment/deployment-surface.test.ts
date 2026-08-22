@@ -551,14 +551,12 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   );
   assert.match(docsWorkflow, /path:\s*published-docs/);
   assert.match(docsWorkflow, /working-directory:\s*published-docs/);
-  assert.match(docsWorkflow, /npx playwright install chromium/);
   assert.match(
     guidesWorkflow,
     /default:\s*micronaut-projects\/micronaut-guides-v2/,
   );
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
-  assert.match(guidesWorkflow, /npx playwright install chromium/);
   assert.match(docsWorkflow, /GH_TOKEN/);
   assert.match(guidesWorkflow, /GH_TOKEN/);
   assert.match(docsWorkflow, /configure-pages-deployment\.ts --surface docs/);
@@ -566,6 +564,12 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     guidesWorkflow,
     /configure-pages-deployment\.ts --surface guides/,
   );
+  // Publishing builds the artifact only; a browser test unrelated to the
+  // artifact must not be able to block a docs or guides release.
+  for (const workflow of branchWorkflows) {
+    assert.doesNotMatch(workflow, /npx playwright install chromium/);
+    assert.doesNotMatch(workflow, /run: npm run check/);
+  }
   assert.match(docsWorkflow, /MICRONAUT_DOCS_CUSTOM_DOMAIN/);
   assert.match(guidesWorkflow, /MICRONAUT_GUIDES_CUSTOM_DOMAIN/);
   assert.match(docsWorkflow, /--base "\$ASTRO_BASE"/);
@@ -753,7 +757,7 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
   assert.doesNotMatch(workflow, /ref:\s*\$\{\{ inputs\.platform_ref \}\}/);
 });
 
-test("platform patch releases remove only earlier patches for their minor line", async (t) => {
+test("platform patch releases remove superseded patches for their minor line", async (t) => {
   const published = await temporaryDirectory(t);
   await writeFiles(published, [
     "5.0.0/index.html",
@@ -797,6 +801,90 @@ test("platform patch releases remove only earlier patches for their minor line",
     }),
     true,
   );
+});
+
+test("publishing an older patch never removes newer published patches", async (t) => {
+  const published = await temporaryDirectory(t);
+  await writeFiles(published, [
+    "5.0.0/index.html",
+    "5.0.1/index.html",
+    "5.0.1.html",
+    "5.0.3/index.html",
+    "5.0.3.html",
+  ]);
+
+  // A replayed or re-dispatched release event for an older tag must not destroy
+  // docs that are newer than the version being published.
+  assert.deepEqual(
+    await purgeDocsPatchVersions({
+      publishedDirectory: published,
+      version: "5.0.1",
+    }),
+    ["5.0.0"],
+  );
+
+  await fs.access(path.join(published, "5.0.1/index.html"));
+  await fs.access(path.join(published, "5.0.3/index.html"));
+  await fs.access(path.join(published, "5.0.3.html"));
+});
+
+test("the published latest tree links to itself, not to the version it was built from", async (t) => {
+  const dist = await temporaryDirectory(t);
+  const published = await temporaryDirectory(t);
+  const base = "/micronaut-docs-v2/";
+
+  await writeFiles(dist, ["_astro/app.css"]);
+  await fs.mkdir(path.join(dist, "5.1.1", "core"), { recursive: true });
+  await fs.writeFile(
+    path.join(dist, "5.1.1", "index.html"),
+    [
+      '<link rel="canonical" href="https://docs.example.test/micronaut-docs-v2/5.1.1/" />',
+      '<a href="/micronaut-docs-v2/5.1.1/core/">Core</a>',
+      '<a href="/micronaut-docs-v2/5.1.1/data/">Data</a>',
+    ].join("\n"),
+    "utf8",
+  );
+  await fs.writeFile(
+    path.join(dist, "5.1.1", "core", "index.html"),
+    '<a href="/micronaut-docs-v2/5.1.1/">Index</a>',
+    "utf8",
+  );
+
+  await publishDocsSurface({
+    distDirectory: dist,
+    publishedDirectory: published,
+    version: "5.1.1",
+    base,
+    latest: true,
+  });
+
+  const latestIndex = await fs.readFile(
+    path.join(published, "latest", "index.html"),
+    "utf8",
+  );
+  assert.doesNotMatch(
+    latestIndex,
+    /micronaut-docs-v2\/5\.1\.1\//,
+    "the latest tree must not link back into the version directory a later patch deletes",
+  );
+  assert.match(latestIndex, /href="\/micronaut-docs-v2\/latest\/core\/"/);
+  assert.match(
+    latestIndex,
+    /rel="canonical" href="https:\/\/docs\.example\.test\/micronaut-docs-v2\/latest\/"/,
+  );
+
+  const latestCore = await fs.readFile(
+    path.join(published, "latest", "core", "index.html"),
+    "utf8",
+  );
+  assert.match(latestCore, /href="\/micronaut-docs-v2\/latest\/"/);
+
+  // The version directory itself keeps its own roots.
+  const versionIndex = await fs.readFile(
+    path.join(published, "5.1.1", "index.html"),
+    "utf8",
+  );
+  assert.match(versionIndex, /href="\/micronaut-docs-v2\/5\.1\.1\/core\/"/);
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {
