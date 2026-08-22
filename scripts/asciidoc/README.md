@@ -42,8 +42,9 @@ The docs registry registers:
 - the `pkg:` inline macro
 - the `snippet::target[]` block macro
 - the `dependency::target[]` block macro
-- shared component rendering extensions for `[snippet]`, `[dependency]`, and
-  `[configuration]` blocks
+- the shared component rendering extensions: the `[configuration]` listing
+  block and the tree processor that attaches a following callout list to an
+  ordinary listing
 
 The old `normalizeAsciiDocSource(...)` function and the old pre-conversion
 snippet/dependency expansion helpers are not used. Equivalent behavior now lives
@@ -57,15 +58,12 @@ rather than redefining the logic locally.
 
 - `macro-attributes.ts` owns `macroAttribute(...)`, which reads a macro
   attribute from Asciidoctor's parsed map or falls back to scanning the raw
-  attribute text, plus `blockTarget(...)`, the `MacroAttributes` type, and the
+  attribute text, plus the `MacroAttributes` type and the
   `record(...)` guard.
-- `block-payload.ts` owns the `[name,payload=...]` contract. The guide
-  preprocessor is the only producer and calls `encodeBlockPayload(...)`; every
-  block processor that consumes a payload calls `decodeBlockPayload(...)`. It
-  also provides `macroPayload(...)`, `stringAttributes(...)`, and
-  `missingNotePayload(...)`. Keeping both sides in one module means the shared
-  AsciiDoc tests exercise the real encoder, so a change to the payload shape
-  fails those tests instead of being masked by a test-local copy.
+- `block-payload.ts` owns the `[guide-dependencies,payload=...]` contract
+  between the guide preprocessor, which groups `:dependencies:` sections, and
+  the block processor that renders them. It also provides
+  `macroPayload(...)`, `stringAttributes(...)`, and `missingNotePayload(...)`.
 
 ## Guide Extensions
 
@@ -75,21 +73,20 @@ guide-specific Asciidoctor behavior.
 The guide registry registers:
 
 - `registerGuidePreprocessor(...)`, which replaces guide placeholders, appends
-  the license include, rewrites include targets, and groups `:dependencies:`
-  sections. Legacy guide exclude directives such as
-  `:exclude-for-languages:groovy` are syntax-rewritten into exclude macros so
-  the exclude processors own the filtering behavior.
+  the license include, rewrites include targets, groups `:dependencies:`
+  sections, expands `common::`, `external::`, the `-template` variants and
+  `callout::` in place, and resolves legacy exclude directives such as
+  `:exclude-for-languages:groovy`. These expansions must happen before parsing
+  because the included source may itself contain `include::` directives and
+  callout lists that the snippet macros absorb from the document reader.
 - `registerGuideSnippetBlocks(...)`, which registers `source::`, `test::`,
   `rawTest::`, `resource::`, `testResource::`, and `zipInclude::` block macros
   and renders them as snippet cards.
 - `registerGuideDependenciesBlock(...)`, which registers the `dependency::`
   block macro and renders grouped `:dependencies:` blocks as Gradle or Maven
   snippets.
-- `registerGuideExcludeBlocks(...)`, which registers official Asciidoctor
-  extension blocks and block macros for language/build/JDK exclusions.
-- `registerGuideContentBlocks(...)`, which registers `common::`,
-  `common-template::`, `external::`, `external-template::`, `rocker::`,
-  `diffLink::`, and `callout::` block macros.
+- `registerGuideContentBlocks(...)`, which registers the `rocker::` and
+  `diffLink::` block macros.
 - `registerGuideLinkMacro(...)`, which handles guide links.
 
 There is no `scripts/guides/preprocessor.ts` or `scripts/guides/guide-blocks.ts`
@@ -135,12 +132,10 @@ the render.
 
 ## Component Converter
 
-`MicronautComponentHtmlConverter` only handles regular Asciidoctor nodes that are
-still best rendered by a converter:
-
-- ordinary listing blocks, with any `tag::`/`end::` directives stripped from
-  the source, since Asciidoctor only removes them when an include selects a tag
-- configuration property tables
+`MicronautComponentHtmlConverter` only handles ordinary listing blocks, with any
+`tag::`/`end::` directives stripped from the source, since Asciidoctor only
+removes them when an include selects a tag. Generated configuration property
+tables are not rendered: the preprocessor drops their includes.
 
 Snippet and dependency macro output is handled by block processors. The
 converter should not own guide macro expansion, snippet payload resolution, or
@@ -152,8 +147,6 @@ Shiki highlighting runs during build/server-side rendering.
 
 - Snippet panels are highlighted while rendering the generated snippet card.
 - Ordinary listing blocks are highlighted through the component converter.
-- Configuration property tables keep their table HTML and are wrapped in shared
-  snippet card chrome.
 
 The browser enhancer does not perform syntax highlighting.
 

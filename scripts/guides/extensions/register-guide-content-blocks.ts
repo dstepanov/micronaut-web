@@ -14,79 +14,24 @@ import {
   type MacroPayload,
   macroPayload,
 } from "../../asciidoc/extensions/block-payload.ts";
-import {
-  type GuideContentResolver,
-  guideContentParseTarget,
-  registerGuideContentBlock,
-} from "./register-guide-content-block.ts";
-import { prepareGuideSourceForExtensions } from "./register-guide-preprocessor.ts";
 
-const GUIDE_COMMON_BLOCK = "guide-common";
-const GUIDE_COMMON_TEMPLATE_BLOCK = "guide-common-template";
-const GUIDE_DIFF_LINK_BLOCK = "guide-diff-link";
-const GUIDE_EXTERNAL_BLOCK = "guide-external";
-const GUIDE_EXTERNAL_TEMPLATE_BLOCK = "guide-external-template";
-const GUIDE_ROCKER_BLOCK = "guide-rocker";
+type GuideContentResolver = (payload: MacroPayload) => Promise<string[]>;
 
+// Content macros whose output is plain AsciiDoc without includes or
+// conditionals, so it can be parsed in place. Macros that expand to guide
+// source (`common::`, `external::`, `callout::`, the templates) are expanded
+// by the preprocessor instead, because their includes and callout lines must
+// reach the document reader.
 export function registerGuideContentBlocks(
   registry: Registry,
   context: GuideRenderContext,
 ): void {
-  registerGuideContent(registry, "common", GUIDE_COMMON_BLOCK, (payload) =>
-    payload.target.trim() === "header-top.adoc"
-      ? Promise.resolve([])
-      : includeGuideAdoc(
-          commonSnippetPath(context.guidesDirectory, payload.target),
-          context,
-        ),
-  );
-  registerGuideContent(
-    registry,
-    "common-template",
-    GUIDE_COMMON_TEMPLATE_BLOCK,
-    (payload) =>
-      includeGuideTemplate(
-        commonSnippetPath(context.guidesDirectory, payload.target),
-        payload.attributes,
-        context,
-      ),
-  );
-  registerGuideContent(registry, "external", GUIDE_EXTERNAL_BLOCK, (payload) =>
-    includeGuideAdoc(
-      externalPath(context.guidesDirectory, payload.target),
-      context,
-    ),
-  );
-  registerGuideContent(
-    registry,
-    "external-template",
-    GUIDE_EXTERNAL_TEMPLATE_BLOCK,
-    (payload) =>
-      includeGuideTemplate(
-        externalPath(context.guidesDirectory, payload.target),
-        payload.attributes,
-        context,
-      ),
-  );
-  registerGuideContent(registry, "rocker", GUIDE_ROCKER_BLOCK, (payload) =>
+  registerGuideContentMacro(registry, "rocker", (payload) =>
     includeGuideRocker(payload.target, context),
   );
-  registerGuideContent(registry, "diffLink", GUIDE_DIFF_LINK_BLOCK, (payload) =>
-    Promise.resolve([diffLink(payload.target, payload.attributes, context)]),
+  registerGuideContentMacro(registry, "diffLink", (payload) =>
+    Promise.resolve([diffLink(payload.attributes, context)]),
   );
-  registerGuideContentMacro(registry, "callout", (payload) =>
-    includeGuideCallout(payload.target, payload.attributes, context),
-  );
-}
-
-function registerGuideContent(
-  registry: Registry,
-  macroName: string,
-  blockName: string,
-  resolveLines: GuideContentResolver,
-): void {
-  registerGuideContentBlock(registry, blockName, resolveLines);
-  registerGuideContentMacro(registry, macroName, resolveLines);
 }
 
 function registerGuideContentMacro(
@@ -120,78 +65,16 @@ function registerGuideContentMacro(
   );
 }
 
-async function includeGuideAdoc(
-  file: string,
-  context: GuideRenderContext,
-  includeStack: Set<string> = new Set(),
-): Promise<string[]> {
-  const normalized = path.resolve(file);
-  if (includeStack.has(normalized)) {
-    return [];
-  }
-  try {
-    const source = await fs.readFile(normalized, "utf8");
-    includeStack.add(normalized);
-    try {
-      return prepareIncludedGuideSource(source, context).split(/\r?\n/);
-    } finally {
-      includeStack.delete(normalized);
-    }
-  } catch {
-    return [`NOTE: Missing include \`${path.basename(file)}\`.`];
-  }
-}
-
-async function includeGuideTemplate(
-  file: string,
-  attributes: Record<string, string>,
-  context: GuideRenderContext,
-  includeStack: Set<string> = new Set(),
-): Promise<string[]> {
-  const normalized = path.resolve(file);
-  if (includeStack.has(normalized)) {
-    return [];
-  }
-  try {
-    const source = await fs.readFile(normalized, "utf8");
-    includeStack.add(normalized);
-    try {
-      const replaced = source
-        .split(/\r?\n/)
-        .map((line) => replaceGuideTemplateArguments(line, attributes))
-        .join("\n");
-      return prepareIncludedGuideSource(replaced, context).split(/\r?\n/);
-    } finally {
-      includeStack.delete(normalized);
-    }
-  } catch {
-    return [`NOTE: Missing include \`${path.basename(file)}\`.`];
-  }
-}
-
-async function includeGuideCallout(
-  target: string,
-  attributes: Record<string, string>,
-  context: GuideRenderContext,
-): Promise<string[]> {
-  const lines = await includeGuideAdoc(
-    path.join(
-      context.guidesDirectory,
-      "src",
-      "docs",
-      "common",
-      "callouts",
-      `callout-${ensureSuffix(target.trim(), ".adoc")}`,
-    ),
-    context,
-  );
-  const explicitNumber = calloutNumber(attributes);
-  return lines.map((line) => {
-    const replaced = replaceGuideTemplateArguments(line, attributes);
-    return explicitNumber
-      ? replaced.replace(/^<\.>/, `<${explicitNumber}>`)
-      : replaced;
-  });
+// Lines that introduce a section must be parsed against the real parent so the
+// section lands in the document outline rather than inside a holder block.
+function guideContentParseTarget(
+  parent: unknown,
+  holder: Block,
+  lines: string[],
+): Block | Section {
+  return lines.some((line) => /^={1,6}\s+\S/.test(line))
+    ? (parent as Block | Section)
+    : holder;
 }
 
 async function includeGuideRocker(
@@ -218,69 +101,7 @@ async function includeGuideRocker(
   }
 }
 
-export function replaceGuideTemplateArguments(
-  line: string,
-  attributes: Record<string, string>,
-): string {
-  return line.replace(/\{(\d+)(?:_([UL]))?}/g, (match, index, transform) => {
-    const value = attributes[`arg${index}`];
-    if (value === undefined) {
-      return match;
-    }
-    if (transform === "U") {
-      return value.toUpperCase();
-    }
-    if (transform === "L") {
-      return value.toLowerCase();
-    }
-    return value;
-  });
-}
-
-function calloutNumber(attributes: Record<string, string>): string {
-  const number =
-    attributes.number ||
-    attributes.callout ||
-    attributes[2] ||
-    attributes[1] ||
-    "";
-  return /^\d+$/.test(number) ? number : "";
-}
-
-function prepareIncludedGuideSource(
-  source: string,
-  context: GuideRenderContext,
-): string {
-  return prepareGuideSourceForExtensions(source, context, {
-    appendLicense: false,
-  });
-}
-
-function commonSnippetPath(guidesDirectory: string, target: string): string {
-  return path.join(
-    guidesDirectory,
-    "src",
-    "docs",
-    "common",
-    "snippets",
-    `common-${ensureSuffix(target.trim(), ".adoc")}`,
-  );
-}
-
-function externalPath(guidesDirectory: string, target: string): string {
-  return path.join(
-    guidesDirectory,
-    "guides",
-    ensureSuffix(target.trim(), ".adoc"),
-  );
-}
-
-function ensureSuffix(value: string, suffix: string): string {
-  return value.endsWith(suffix) ? value : `${value}${suffix}`;
-}
-
 function diffLink(
-  _target: string,
   attributes: Record<string, string>,
   context: GuideRenderContext,
 ): string {

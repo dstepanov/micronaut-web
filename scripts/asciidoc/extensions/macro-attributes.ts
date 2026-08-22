@@ -59,24 +59,6 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// The target of a [snippet] or [dependency] block may arrive as a named
-// attribute, a numbered positional, or a positional list depending on how the
-// block was written.
-export function blockTarget(attrs: MacroAttributes): string {
-  const positional = Array.isArray(attrs._positional) ? attrs._positional : [];
-  const dollarPositional = Array.isArray(attrs.$positional)
-    ? attrs.$positional
-    : [];
-  return String(
-    attrs?.target ||
-      attrs?.name ||
-      attrs?.[2] ||
-      positional[0] ||
-      dollarPositional[0] ||
-      "",
-  );
-}
-
 export function record(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)

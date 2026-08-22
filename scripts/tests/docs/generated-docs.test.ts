@@ -14,10 +14,7 @@ import {
   extractGeneratedDocSearchItems,
 } from "../../docs/search-index.ts";
 import { isFatalDocsDiagnostic } from "../../docs/renderer.ts";
-import {
-  highlightListingBlocks,
-  shikiLanguage,
-} from "../../shared/highlight.ts";
+import { shikiLanguage } from "../../shared/highlight.ts";
 
 const execFile = promisify(execFileCallback);
 const projectDirectory = path.resolve(
@@ -722,11 +719,9 @@ test("docs renderer turns code, dependency, configuration, and properties snippe
   );
   const generatedText = textOnly(generatedHtml);
 
-  assert.doesNotMatch(generatedHtml, /\[(?:snippet|dependency),payload=/);
   assert.match(generatedHtml, /docs-code-snippet-template/);
   assert.match(generatedHtml, /docs-dependency-template/);
   assert.equal(countMatches(generatedHtml, /docs-properties-template/g), 1);
-  assert.doesNotMatch(generatedHtml, /docs-properties-count/);
   assert.match(
     generatedHtml,
     /<caption class="title">Table \d+\. Configuration Properties<\/caption>/,
@@ -2638,143 +2633,6 @@ test("docs commandline source blocks use shell highlighting", (): void => {
   assert.equal(shikiLanguage("commandline"), "shellscript");
   assert.equal(shikiLanguage("graphqls"), "graphql");
   assert.equal(shikiLanguage("mysql"), "sql");
-});
-
-test("properties listings format empty dotted assignments like indexed and placeholder assignments", async (): Promise<void> => {
-  const kubernetesDiscoveryProperty = "kubernetes.client.discovery.includes[0]";
-  const kubernetesDiscoveryValue = "my-service";
-  const micronautConfigImportProperty = "micronaut.config.import[0].provider";
-  const micronautConfigImportValue = "azure-key-vault";
-  const azureCredentialProperty =
-    "azure.credential.storage-shared-key.account-key";
-  const azureCredentialValue =
-    "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
-  const azureConnectionStringProperty =
-    "azure.credential.storage-shared-key.connection-string";
-  const azureConnectionStringValue =
-    "DefaultEndpointsProtocol=https;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=https://127.0.0.1:10000/devstoreaccount1;";
-  const html = await highlightListingBlocks(
-    [
-      '<div class="listingblock">',
-      '<div class="content">',
-      '<pre><code class="language-properties">foo.bar.property=',
-      "foo.bar[0]=",
-      "foo.bar&lt;prop&gt;=",
-      "kubernetes.client.config-maps.includes[0]=",
-      "kubernetes.client.config-maps.excludes&#91;0&#93;=",
-      `${kubernetesDiscoveryProperty}=${kubernetesDiscoveryValue}`,
-      `${micronautConfigImportProperty}=${micronautConfigImportValue}`,
-      `${azureCredentialProperty}=${azureCredentialValue}`,
-      `${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>`,
-      "</div>",
-      "</div>",
-    ].join("\n"),
-  );
-
-  const dottedLine = highlightedLineContaining(html, "foo.bar.property=");
-  const indexedLine = highlightedLineContaining(html, "foo.bar[0]=");
-  const placeholderLine = highlightedLineContaining(
-    html,
-    "foo.bar&lt;prop&gt;=",
-  );
-  const kubernetesIndexedLine = highlightedLineContaining(
-    html,
-    "kubernetes.client.config-maps.includes[0]=",
-  );
-  const encodedIndexedLine = highlightedLineContaining(
-    html,
-    "kubernetes.client.config-maps.excludes[0]=",
-  );
-  const azureCredentialLine = highlightedLineContaining(
-    html,
-    azureCredentialProperty,
-  );
-  const kubernetesDiscoveryLine = highlightedLineContaining(
-    html,
-    kubernetesDiscoveryProperty,
-  );
-  const micronautConfigImportLine = highlightedLineContaining(
-    html,
-    micronautConfigImportProperty,
-  );
-  const azureConnectionStringLine = highlightedLineContaining(
-    html,
-    azureConnectionStringProperty,
-  );
-  const dottedStyle = highlightedLineTextStyle(dottedLine);
-
-  assert.notEqual(dottedLine, "");
-  assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(encodedIndexedLine));
-  assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
-  assertOnlyPropertyKeyHighlighted(
-    kubernetesDiscoveryLine,
-    kubernetesDiscoveryProperty,
-    kubernetesDiscoveryValue,
-  );
-  assertOnlyPropertyKeyHighlighted(
-    micronautConfigImportLine,
-    micronautConfigImportProperty,
-    micronautConfigImportValue,
-  );
-  assertOnlyPropertyKeyHighlighted(
-    azureCredentialLine,
-    azureCredentialProperty,
-    azureCredentialValue,
-  );
-  assertOnlyPropertyKeyHighlighted(
-    azureConnectionStringLine,
-    azureConnectionStringProperty,
-    azureConnectionStringValue,
-  );
-});
-
-test("properties listings attach standalone callout markers to the next property line", async (): Promise<void> => {
-  const html = await highlightListingBlocks(
-    [
-      '<div class="listingblock">',
-      '<div class="content">',
-      '<pre><code class="language-properties">micronaut.mcp.server.info.name=Weather',
-      "&lt;1&gt;",
-      "micronaut.mcp.server.transport=HTTP</code></pre>",
-      "</div>",
-      "</div>",
-    ].join("\n"),
-  );
-
-  const transportLine =
-    /<span class="line">[^\n]*micronaut\.mcp\.server\.transport[^\n]*<\/span>/.exec(
-      html,
-    )?.[0] || "";
-  assert.match(transportLine, /<i class="conum" data-value="1"><\/i>/);
-  assert.doesNotMatch(
-    html,
-    /<span class="line"><span[^>]*><i class="conum" data-value="1"><\/i><\/span><\/span>\s*<span class="line">[^\n]*micronaut\.mcp\.server\.transport/,
-  );
-});
-
-test("properties listings attach comment-only callout markers to the next property line", async (): Promise<void> => {
-  const html = await highlightListingBlocks(
-    [
-      '<div class="listingblock">',
-      '<div class="content">',
-      '<pre><code class="language-properties">micronaut.mcp.server.info.name=Weather',
-      "micronaut.mcp.server.info.version=0.0.1",
-      "# &lt;1&gt;",
-      "micronaut.mcp.server.transport=HTTP</code></pre>",
-      "</div>",
-      "</div>",
-    ].join("\n"),
-  );
-
-  const transportLine =
-    /<span class="line">[^\n]*micronaut\.mcp\.server\.transport[^\n]*<\/span>/.exec(
-      html,
-    )?.[0] || "";
-  assert.match(transportLine, /HTTP <i class="conum" data-value="1"><\/i>/);
-  assert.doesNotMatch(html, />#[^<]*<i class="conum" data-value="1"><\/i>/);
 });
 
 test("docs routes render generated fragments and serve generated assets", async (): Promise<void> => {

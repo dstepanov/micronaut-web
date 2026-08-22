@@ -5,24 +5,17 @@ import path from "node:path";
 import type {
   Block,
   BlockMacroProcessor,
-  BlockProcessor,
-  BlockProcessorDslInterface,
   MacroProcessorDslInterface,
-  Reader,
   Registry,
   Section,
 } from "@asciidoctor/core";
 
 import {
   type MacroPayload,
-  decodeBlockPayload,
   macroPayload,
   missingNotePayload,
 } from "../../asciidoc/extensions/block-payload.ts";
-import {
-  renderSnippetBlock,
-  renderSnippetBlockWithCalloutReader,
-} from "../../asciidoc/extensions/snippet-block-renderer.ts";
+import { renderSnippetBlock } from "../../asciidoc/extensions/snippet-block-renderer.ts";
 import {
   extractTaggedSourceWithDiagnostics,
   normalizeSnippetIndent,
@@ -34,12 +27,6 @@ import {
   type GuideRenderContext,
 } from "../model.ts";
 
-const GUIDE_RAW_TEST_BLOCK = "guide-raw-test";
-const GUIDE_RESOURCE_BLOCK = "guide-resource";
-const GUIDE_SOURCE_BLOCK = "guide-source";
-const GUIDE_TEST_BLOCK = "guide-test";
-const GUIDE_TEST_RESOURCE_BLOCK = "guide-test-resource";
-const GUIDE_ZIP_INCLUDE_BLOCK = "guide-zip-include";
 const GRAALPY_MAVEN_PLUGIN_TAG = "graalpy-maven-plugin";
 const GRAALPY_PYTHON_PACKAGES_BY_FEATURE = new Map([
   ["graalpy-pygal", ["pygal==3.0.4"]],
@@ -65,61 +52,34 @@ export function registerGuideSnippetBlocks(
   registry: Registry,
   context: GuideRenderContext,
 ): void {
-  registerGuideSnippetBlock(registry, "source", GUIDE_SOURCE_BLOCK, (payload) =>
+  registerGuideSnippetBlock(registry, "source", (payload) =>
     sourceSnippetPayload(payload.target, payload.attributes, context, "main"),
   );
-  registerGuideSnippetBlock(registry, "test", GUIDE_TEST_BLOCK, (payload) =>
+  registerGuideSnippetBlock(registry, "test", (payload) =>
     sourceSnippetPayload(payload.target, payload.attributes, context, "test"),
   );
-  registerGuideSnippetBlock(
-    registry,
-    "rawTest",
-    GUIDE_RAW_TEST_BLOCK,
-    (payload) =>
-      sourceSnippetPayload(
-        payload.target,
-        payload.attributes,
-        context,
-        "raw-test",
-      ),
+  registerGuideSnippetBlock(registry, "rawTest", (payload) =>
+    sourceSnippetPayload(
+      payload.target,
+      payload.attributes,
+      context,
+      "raw-test",
+    ),
   );
-  registerGuideSnippetBlock(
-    registry,
-    "resource",
-    GUIDE_RESOURCE_BLOCK,
-    (payload) =>
-      resourceSnippetPayload(
-        payload.target,
-        payload.attributes,
-        context,
-        "main",
-      ),
+  registerGuideSnippetBlock(registry, "resource", (payload) =>
+    resourceSnippetPayload(payload.target, payload.attributes, context, "main"),
   );
-  registerGuideSnippetBlock(
-    registry,
-    "testResource",
-    GUIDE_TEST_RESOURCE_BLOCK,
-    (payload) =>
-      resourceSnippetPayload(
-        payload.target,
-        payload.attributes,
-        context,
-        "test",
-      ),
+  registerGuideSnippetBlock(registry, "testResource", (payload) =>
+    resourceSnippetPayload(payload.target, payload.attributes, context, "test"),
   );
-  registerGuideSnippetBlock(
-    registry,
-    "zipInclude",
-    GUIDE_ZIP_INCLUDE_BLOCK,
-    (payload) =>
-      zipIncludeSnippetPayload(payload.target, payload.attributes, context),
+  registerGuideSnippetBlock(registry, "zipInclude", (payload) =>
+    zipIncludeSnippetPayload(payload.target, payload.attributes, context),
   );
 }
 
 function registerGuideSnippetBlock(
   registry: Registry,
   macroName: string,
-  blockName: string,
   resolvePayload: GuideSnippetPayloadResolver,
 ): void {
   registry.blockMacro(
@@ -135,36 +95,11 @@ function registerGuideSnippetBlock(
           this,
           parent as Block | Section,
           await resolvePayload(macroPayload(String(target), attrs)),
-          undefined,
-          { collectManualCallouts: true },
+          { manualCallouts: "inline" },
         );
       });
     },
   );
-
-  registry.block(function registerGuideSnippetBlock(
-    this: BlockProcessorDslInterface,
-  ): void {
-    this.named(blockName);
-    this.onContext("open");
-    this.process(async function processGuideSnippetBlock(
-      this: BlockProcessor,
-      parent: unknown,
-      reader: unknown,
-      attrs: unknown,
-    ): Promise<Block> {
-      const attributes = attrs as Record<string, unknown>;
-      return renderSnippetBlockWithCalloutReader(
-        this,
-        parent as Block | Section,
-        await resolvePayload(
-          decodeBlockPayload<MacroPayload>(attributes.payload),
-        ),
-        reader as Reader,
-        { collectManualCallouts: true },
-      );
-    });
-  });
 }
 
 async function sourceSnippetPayload(

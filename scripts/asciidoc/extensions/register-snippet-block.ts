@@ -2,45 +2,27 @@
 import type {
   Block,
   BlockMacroProcessor,
-  BlockProcessor,
-  BlockProcessorDslInterface,
   MacroProcessorDslInterface,
   Registry,
   Section,
 } from "@asciidoctor/core";
 
-import { decodeBlockPayload } from "./block-payload.ts";
 import {
   type MacroAttributes,
-  blockTarget,
   macroAttribute,
   record,
 } from "./macro-attributes.ts";
 import {
-  type SnippetPayload,
+  type SnippetSample,
   renderSnippetBlock,
 } from "./snippet-block-renderer.ts";
 import { splitList } from "../../shared/cli.ts";
-
-const SNIPPET_BLOCK = "snippet";
-
-type SnippetSample = {
-  language: string;
-  source: string;
-  group?: string;
-};
 
 type SnippetSamplesResolver = (
   target: string,
   attrs: MacroAttributes,
   context: Record<string, unknown>,
 ) => SnippetSample[];
-
-type TargetSnippetPayload = {
-  title: string;
-  description: string;
-  samples: SnippetSample[];
-};
 
 export function registerSnippetBlock(
   registry: Registry,
@@ -56,75 +38,25 @@ export function registerSnippetBlock(
         target: unknown,
         attrs: unknown,
       ): Promise<Block | undefined> {
-        const payload = snippetPayloadForTarget(
+        const attributes = attrs as MacroAttributes;
+        const samples = snippetSamples(
           String(target),
-          attrs as MacroAttributes,
+          attributes,
           context,
           options.snippetSamples,
         );
-        return payload
-          ? renderSnippetBlock(this, parent as Block | Section, {
-              ...payload,
-              kind: "code",
-            })
-          : undefined;
+        if (!samples.length) {
+          return undefined;
+        }
+        return renderSnippetBlock(this, parent as Block | Section, {
+          kind: "code",
+          title: macroAttribute(attributes, "title") || "",
+          description: macroAttribute(attributes, "description") || "",
+          samples,
+        });
       });
     },
   );
-
-  registry.block(function registerSnippetBlock(
-    this: BlockProcessorDslInterface,
-  ): void {
-    this.named(SNIPPET_BLOCK);
-    this.onContext("open");
-    this.process(async function processSnippetBlock(
-      this: BlockProcessor,
-      parent: unknown,
-      _reader: unknown,
-      attrs: unknown,
-    ): Promise<Block | undefined> {
-      const attributes = attrs as MacroAttributes;
-      const blockParent = parent as Block | Section;
-      if (attributes?.payload) {
-        return renderSnippetBlock(
-          this,
-          blockParent,
-          decodeBlockPayload<SnippetPayload>(attributes.payload),
-        );
-      }
-      const target = blockTarget(attributes);
-      const payload = snippetPayloadForTarget(
-        target,
-        attributes,
-        context,
-        options.snippetSamples,
-      );
-      if (!payload) {
-        return undefined;
-      }
-      return renderSnippetBlock(this, blockParent, {
-        ...payload,
-        kind: "code",
-      });
-    });
-  });
-}
-
-function snippetPayloadForTarget(
-  target: string,
-  attrs: MacroAttributes,
-  context: Record<string, unknown>,
-  resolveSamples: unknown,
-): TargetSnippetPayload | undefined {
-  const deduped = snippetSamples(target, attrs, context, resolveSamples);
-  if (!deduped.length) {
-    return undefined;
-  }
-  return {
-    title: macroAttribute(attrs, "title") || "",
-    description: macroAttribute(attrs, "description") || "",
-    samples: deduped,
-  };
 }
 
 function snippetSamples(
@@ -163,7 +95,9 @@ function normalizeSamples(samples: unknown): SnippetSample[] {
   });
 }
 
-function dedupeSamples(samples: SnippetSample[]): SnippetSample[] {
+// A multi-target macro may resolve the same file twice (for example when two
+// targets share a base directory); only the first occurrence is rendered.
+export function dedupeSamples(samples: SnippetSample[]): SnippetSample[] {
   const seen = new Set<string>();
   return samples.filter((sample) => {
     const key = `${sample.group || ""}:${sample.language}:${sample.source}`;

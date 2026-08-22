@@ -64,7 +64,6 @@ const sharedClassConsumers = [
     requiredUses: [
       "renderToStaticMarkup",
       "DocsCodeSnippet",
-      "DocsPropertiesSnippetCard",
       "staticEnhancement",
       "showSingleVariantAsTabs",
     ],

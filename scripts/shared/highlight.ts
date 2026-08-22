@@ -1,95 +1,8 @@
-import { codeToHtml } from "shiki";
-
 import { normalizeEmptyPropertiesAssignmentHighlighting as normalizeEmptyPropertiesAssignmentHtml } from "../../src/lib/properties-highlight-normalization.ts";
-import { attribute, decodeHtml, escapeRegExp } from "./html.ts";
 
-const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
-const CALLOUT_MARKER_SUFFIX = "__";
-
-export async function highlightListingBlocks(input: string): Promise<string> {
-  let current = input;
-  for (let pass = 0; pass < 4; pass += 1) {
-    const next = await highlightListingBlocksOnce(current);
-    if (next === current) {
-      return current;
-    }
-    current = next;
-  }
-  return current;
-}
-
-async function highlightListingBlocksOnce(input: string): Promise<string> {
-  const pattern =
-    /<div class="listingblock([^"]*)"(?![^>]*\sdata-lang=)([^>]*)>\s*(<div class="title">(?:(?!<\/div>)[\s\S])*<\/div>\s*)?<div class="content">\s*<pre([^>]*)>(?:<code([^>]*)>([\s\S]*?)<\/code>|([\s\S]*?))<\/pre>\s*<\/div>\s*<\/div>/g;
-  const matches: RegExpMatchArray[] = Array.from(input.matchAll(pattern));
-  let result = "";
-  let position = 0;
-  for (const match of matches) {
-    const matchIndex = match.index ?? 0;
-    result += input.slice(position, matchIndex);
-    const classes = match[1].trim();
-    const divAttributes = removeHtmlAttribute(match[2] || "", "data-lang");
-    const title = match[3] || "";
-    const preAttributes = match[4] || "";
-    const codeAttributes = match[5] || "";
-    const sourceHtml = match[6] ?? match[7] ?? "";
-    if (/\bshiki\b/.test(preAttributes)) {
-      result += match[0];
-      position = matchIndex + match[0].length;
-      continue;
-    }
-    const language = codeLanguage(codeAttributes);
-    const decodedSource = decodeHtml(
-      sourceHtml
-        .replace(
-          /<i\b[^>]*class="conum"[^>]*data-value="(\d+)"[^>]*><\/i>\s*<b>\(\d+\)<\/b>/g,
-          "&lt;$1&gt;",
-        )
-        .replace(/<b class="conum"[^>]*>\((\d+)\)<\/b>/g, "&lt;$1&gt;")
-        .replace(/<[^>]+>/g, ""),
-    );
-    const source = encodeCalloutMarkers(
-      normalizeStandaloneCalloutLines(decodedSource, language),
-    );
-    let highlighted = await codeToHtml(source, {
-      lang: shikiLanguage(language),
-      themes: {
-        light: "github-light-default",
-        dark: "github-dark-default",
-      },
-    });
-    highlighted = highlighted
-      .replace(
-        "<code>",
-        `<code class="language-${attribute(language)} shiki-code" data-lang="${attribute(language)}">`,
-      )
-      .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>');
-    highlighted = normalizeEmptyPropertiesAssignmentHighlighting(
-      highlighted,
-      language,
-    );
-    highlighted = decodeCalloutMarkers(highlighted);
-    result += `<div class="listingblock${classes ? ` ${classes}` : ""}"${divAttributes} data-lang="${attribute(language)}">\n${title}<div class="content">\n${highlighted}\n</div>\n</div>`;
-    position = matchIndex + match[0].length;
-  }
-  result += input.slice(position);
-  return result;
-}
-
-function encodeCalloutMarkers(source: string): string {
-  return source.replace(
-    /<(\d+)>/g,
-    `${CALLOUT_MARKER_PREFIX}$1${CALLOUT_MARKER_SUFFIX}`,
-  );
-}
-
-function decodeCalloutMarkers(source: string): string {
-  return source.replace(
-    new RegExp(`${CALLOUT_MARKER_PREFIX}(\\d+)${CALLOUT_MARKER_SUFFIX}`, "g"),
-    '<i class="conum" data-value="$1"></i>',
-  );
-}
-
+// Properties-style sources may carry a callout marker on its own line (or in a
+// comment) above the line it describes; move it onto that line so it renders
+// as a callout number instead of a bare `<1>`.
 export function normalizeStandaloneCalloutLines(
   source: string,
   language: string,
@@ -146,21 +59,6 @@ function nextCalloutTargetLineIndex(
     return index;
   }
   return -1;
-}
-
-function removeHtmlAttribute(attributes: string, name: string): string {
-  return attributes.replace(
-    new RegExp(`\\s+${escapeRegExp(name)}="[^"]*"`, "gi"),
-    "",
-  );
-}
-
-function codeLanguage(codeAttributes: string): string {
-  return normalizeCodeLanguage(
-    /data-lang="([^"]+)"/.exec(codeAttributes)?.[1] ||
-      /class="[^"]*\blanguage-([A-Za-z0-9_+-]+)/.exec(codeAttributes)?.[1] ||
-      "text",
-  );
 }
 
 function normalizeCodeLanguage(language: unknown): string {

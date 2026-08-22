@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DocsCodeSnippet } from "./docs-code-snippet";
-import { DocsPropertiesSnippetCard } from "./docs-snippet-card";
 
 type GeneratedSnippetKind = "code" | "dependency";
 
@@ -24,15 +23,6 @@ type GeneratedSnippetInput = {
   optionsLabel: string;
   titleHtml?: string;
   variants: GeneratedSnippetVariant[];
-};
-
-type GeneratedPropertiesCardInput = {
-  anchorId: string;
-  countLabel: string;
-  eyebrow: string;
-  id: string;
-  tableHtml: string;
-  title: string;
 };
 
 export function renderGeneratedSnippet(input: GeneratedSnippetInput) {
@@ -73,23 +63,6 @@ export function renderGeneratedSnippet(input: GeneratedSnippetInput) {
       staticEnhancement
       title={htmlInline(titleHtml)}
     />,
-  )}\n`;
-}
-
-export function renderGeneratedPropertiesCard(
-  input: GeneratedPropertiesCardInput,
-) {
-  const { anchorId, countLabel, eyebrow, id, tableHtml, title } = input;
-  return `${renderToStaticMarkup(
-    <DocsPropertiesSnippetCard
-      id={id}
-      anchorId={anchorId}
-      title={title}
-      eyebrow={eyebrow}
-      countLabel={countLabel}
-    >
-      {htmlBlock(tableHtml)}
-    </DocsPropertiesSnippetCard>,
   )}\n`;
 }
 

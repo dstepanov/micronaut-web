@@ -127,7 +127,6 @@ test("guide renderer defaults to the small guide subset and expands guide macros
   assert.match(html, /Raw include callout/);
   assert.match(html, /Kubernetes include callout/);
   assert.match(html, /docs-dependency-template/);
-  assert.doesNotMatch(html, /docs-properties-count/);
   assert.match(html, /<table class="tableblock/);
   assert.match(html, /Configuration Properties/);
   assert.match(html, /micronaut\.server\.port/);
@@ -899,7 +898,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     (error: any): boolean => error?.code === "ENOENT",
   );
   assert.match(guidesExtensions, /registry\.block/);
-  assert.match(guidesExtensions, /renderSnippetBlockWithCalloutReader/);
+  assert.match(guidesExtensions, /renderSnippetBlock\(/);
   assert.doesNotMatch(guidesExtensions, /normalizeAsciiDocCallouts/);
   assert.doesNotMatch(guidesExtensions, /normalizeOrphanCalloutLists/);
   assert.doesNotMatch(guidesExtensions, /SNIPPET_CALLOUT_VALIDATION_CLASS/);
@@ -945,7 +944,7 @@ function assertMicronautHttpClientGuideHasProperSnippets(source: string) {
   }
   assert.doesNotMatch(
     source,
-    /\[(?:snippet|dependency),payload=|docs-snippet-callout-validation/,
+    /\[guide-dependencies,payload=/,
     "Micronaut HTTP Client guide snippet blocks must be fully consumed during static rendering",
   );
 }

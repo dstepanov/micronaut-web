@@ -26,7 +26,6 @@ const projectDirectory = path.resolve(
   "..",
   "..",
 );
-const SNIPPET_CALLOUT_VALIDATION_CLASS = "docs-snippet-callout-validation";
 const MANUAL_CALLOUTS_CLASS = "asciidoc-manual-callouts";
 const CALLOUT_MARKER_PREFIX = "__MICRONAUT_CALLOUT_";
 const CALLOUT_MARKER_SUFFIX = "__";
@@ -43,12 +42,14 @@ export type SnippetPayload = Record<string, unknown> & {
 
 type SnippetKind = "code" | "dependency";
 
-type NormalizedSnippetSample = {
+export type SnippetSample = {
   language: string;
   source: string;
   group?: string;
   highlighterLanguage?: string;
 };
+
+type NormalizedSnippetSample = SnippetSample;
 
 type SnippetVariant = {
   active: boolean;
@@ -64,13 +65,17 @@ type ComponentRenderer = {
   renderGeneratedSnippet(
     input: Record<string, unknown>,
   ): Promise<string> | string;
-  renderGeneratedPropertiesCard(
-    input: Record<string, unknown>,
-  ): Promise<string> | string;
 };
 
-type SnippetRenderOptions = {
-  collectManualCallouts?: boolean;
+export type SnippetRenderOptions = {
+  // Where callout lines that follow the block are read from. Defaults to the
+  // document reader, which is where a block macro's following lines live; a
+  // block processor whose body carries the callouts passes its own reader.
+  reader?: Reader | CalloutReader;
+  // Callout items that do not match a marker in the snippet source are either
+  // rendered inline after the card ("inline") or pushed back into the reader
+  // so the document parses them as an ordinary list ("reader").
+  manualCallouts?: "inline" | "reader";
 };
 
 type ComponentBlockProcessor = Pick<
@@ -108,36 +113,19 @@ export async function renderSnippetBlock(
   processor: ComponentBlockProcessor,
   parent: Block | Section,
   payload: SnippetPayload,
-  reader?: Reader,
   options: SnippetRenderOptions = {},
 ): Promise<Block> {
-  return renderSnippetBlockWithCalloutReader(
-    processor,
-    parent,
-    payload,
-    reader || (parent.document as { reader?: Reader }).reader,
-    options,
-  );
-}
-
-export async function renderSnippetBlockWithCalloutReader(
-  processor: ComponentBlockProcessor,
-  parent: Block | Section,
-  payload: SnippetPayload,
-  reader: Reader | CalloutReader | undefined,
-  options: SnippetRenderOptions = {},
-): Promise<Block> {
+  const reader =
+    options.reader || (parent.document as { reader?: Reader }).reader;
   const manualCalloutLines: string[] = [];
   const payloadWithCallouts = await absorbFollowingCalloutLines(
     reader,
     payload,
-    {
-      collectManualCallouts: options.collectManualCallouts
-        ? (lines: string[]): void => {
-            manualCalloutLines.push(...lines);
-          }
-        : undefined,
-    },
+    options.manualCallouts === "inline"
+      ? (lines: string[]): void => {
+          manualCalloutLines.push(...lines);
+        }
+      : undefined,
   );
   const rendered = await renderSnippetPayloadCards({
     footerHtml: await snippetFooterHtml(processor, parent, payloadWithCallouts),
@@ -160,11 +148,6 @@ export async function renderSnippetBlockWithCalloutReader(
   );
 }
 
-type RenderedSnippetCards = {
-  count: number;
-  html: string;
-};
-
 async function renderSnippetPayloadCards({
   footerHtml,
   idSeed,
@@ -173,7 +156,7 @@ async function renderSnippetPayloadCards({
   footerHtml: string;
   idSeed: string;
   payload: SnippetPayload;
-}): Promise<RenderedSnippetCards> {
+}): Promise<{ html: string }> {
   const kind = payload.kind === "dependency" ? "dependency" : "code";
   const sampleGroups = groupedSnippetSamples(payload.samples, kind);
   const snippets: string[] = [];
@@ -194,10 +177,7 @@ async function renderSnippetPayloadCards({
     );
   }
 
-  return {
-    count: sampleGroups.length,
-    html: snippets.join(""),
-  };
+  return { html: snippets.join("") };
 }
 
 export async function renderGeneratedSnippet(
@@ -205,13 +185,6 @@ export async function renderGeneratedSnippet(
 ): Promise<string> {
   const renderer = await loadComponentRenderer();
   return renderer.renderGeneratedSnippet(input);
-}
-
-export async function renderGeneratedPropertiesCard(
-  input: Record<string, unknown>,
-): Promise<string> {
-  const renderer = await loadComponentRenderer();
-  return renderer.renderGeneratedPropertiesCard(input);
 }
 
 export async function renderSnippetVariant({
@@ -554,17 +527,11 @@ function encodeCalloutMarkers(source: string): string {
 async function absorbFollowingCalloutLines(
   reader: CalloutReader | undefined,
   payload: SnippetPayload,
-  options: {
-    collectManualCallouts?: (lines: string[]) => void;
-    manualCalloutsClass?: string;
-  } = {},
+  collectManualCallouts: ((lines: string[]) => void) | undefined,
 ): Promise<SnippetPayload> {
   if (!reader) {
     return payload;
   }
-  const manualCalloutsClass =
-    options.manualCalloutsClass || MANUAL_CALLOUTS_CLASS;
-  await consumeSnippetCalloutValidationListing(reader);
   const leadingBlankLines = await readLeadingBlankLines(reader);
   const items = await readCalloutListItems(reader);
 
@@ -577,9 +544,9 @@ async function absorbFollowingCalloutLines(
   const snippetItems = items.filter((item) => sourceNumbers.has(item.number));
   const manualItems = items.filter((item) => !sourceNumbers.has(item.number));
   if (manualItems.length) {
-    const lines = manualCalloutBlockLines(manualItems, manualCalloutsClass);
-    if (options.collectManualCallouts) {
-      options.collectManualCallouts(lines);
+    const lines = manualCalloutBlockLines(manualItems);
+    if (collectManualCallouts) {
+      collectManualCallouts(lines);
     } else {
       reader.unshiftLines(lines);
     }
@@ -604,41 +571,8 @@ async function absorbFollowingCalloutLines(
   };
 }
 
-function isListingDelimiter(line: string): boolean {
-  return /^-{4,}$/.test(line.trim());
-}
-
 function isCalloutListItem(line: string): boolean {
   return /^<(\.|\d+)>/.test(line);
-}
-
-async function consumeSnippetCalloutValidationListing(
-  reader: CalloutReader,
-): Promise<void> {
-  const roleLine = await reader.peekLine();
-  if (roleLine?.trim() !== `[.${SNIPPET_CALLOUT_VALIDATION_CLASS}]`) {
-    return;
-  }
-
-  const consumed = [await reader.readLine()].filter(
-    (line): line is string => line !== undefined,
-  );
-  const delimiter = await reader.peekLine();
-  if (!delimiter || !isListingDelimiter(delimiter)) {
-    reader.unshiftLines(consumed);
-    return;
-  }
-  consumed.push((await reader.readLine()) || "");
-
-  for (;;) {
-    const line = await reader.readLine();
-    if (line === undefined) {
-      return;
-    }
-    if (line.trim() === delimiter.trim()) {
-      return;
-    }
-  }
 }
 
 async function readLeadingBlankLines(reader: CalloutReader): Promise<string[]> {
@@ -755,11 +689,8 @@ function replaceSourceCalloutNumbers(
   );
 }
 
-function manualCalloutBlockLines(
-  items: CalloutItem[],
-  manualCalloutsClass: string,
-): string[] {
-  const lines = [`[.${manualCalloutsClass}]`];
+function manualCalloutBlockLines(items: CalloutItem[]): string[] {
+  const lines = [`[.${MANUAL_CALLOUTS_CLASS}]`];
   for (const item of items) {
     const [firstLine = "", ...continuationLines] = item.text.split(/\r?\n/);
     lines.push(`. ${firstLine}`);

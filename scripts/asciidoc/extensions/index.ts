@@ -7,7 +7,6 @@ import { registerDependencyBlock } from "./register-dependency-block.ts";
 import { registerDocsSourcePreprocessor } from "./register-docs-source-preprocessor.ts";
 import { registerPackageMacro } from "./register-package-macro.ts";
 import { registerSnippetBlock } from "./register-snippet-block.ts";
-import { registerSnippetPayloadBlocks } from "./register-snippet-payload-blocks.ts";
 
 const componentRenderingRegistries = new WeakSet<Registry>();
 
@@ -31,17 +30,15 @@ export function micronautExtensionRegistry(
   return registry;
 }
 
+// The extensions every surface needs regardless of its own macros: the
+// `[configuration]` listing block and the callout-list footer attachment for
+// ordinary listings. Safe to call more than once for the same registry.
 export function registerComponentRenderingExtensions(
   asciidoctor: typeof import("@asciidoctor/core"),
   registry: Registry = asciidoctor.Extensions.create(),
-  options: { registerSnippetPayloadBlocks?: boolean } = {},
 ): Registry {
   if (componentRenderingRegistries.has(registry)) {
     return registry;
-  }
-
-  if (options.registerSnippetPayloadBlocks !== false) {
-    registerSnippetPayloadBlocks(registry);
   }
   registerConfigurationBlock(registry);
   registerComponentFooterProcessor(registry);
