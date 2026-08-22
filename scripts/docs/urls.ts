@@ -4,6 +4,52 @@ import { attribute } from "../shared/html.ts";
 import { rewriteMicronautSiteUrl } from "../shared/micronaut-links.ts";
 import type { DocsProject } from "./project-manifest.ts";
 
+// Matches real id attributes only, so data-*-id attributes are left alone.
+const ID_ATTRIBUTE_PATTERN = /(?<![-\w])id="([^"]+)"/g;
+
+// Every table-of-contents node is rendered separately and the fragments are
+// concatenated into one page, so two sections that use the same heading text
+// produce the same Asciidoctor slug. Later fragments yield: the first claim on
+// an id keeps it, and repeats are suffixed. Seed claimedIds with the section
+// ids the page navigation links to so content headings never take those.
+export function uniquifyIds(fragment: string, claimedIds: Set<string>): string {
+  const renames = new Map<string, string>();
+  let renamed = false;
+  const uniquified = fragment.replace(
+    ID_ATTRIBUTE_PATTERN,
+    (match: string, id: string): string => {
+      if (!claimedIds.has(id)) {
+        claimedIds.add(id);
+        return match;
+      }
+      let suffix = 2;
+      while (claimedIds.has(`${id}-${suffix}`)) {
+        suffix += 1;
+      }
+      const unique = `${id}-${suffix}`;
+      claimedIds.add(unique);
+      if (!renames.has(id)) {
+        renames.set(id, unique);
+      }
+      renamed = true;
+      return `id="${unique}"`;
+    },
+  );
+  if (!renamed) {
+    return fragment;
+  }
+  // Cross-references inside this fragment target its own headings, so they
+  // follow the rename. Links from other fragments still resolve to whichever
+  // fragment claimed the id first, exactly as before.
+  return uniquified.replace(
+    /href="#([^"]+)"/g,
+    (match: string, id: string): string => {
+      const unique = renames.get(id);
+      return unique ? `href="#${unique}"` : match;
+    },
+  );
+}
+
 export function prefixIds(input: string, slug: string): string {
   const prefix = `${slug}-`;
   return input

@@ -1914,6 +1914,133 @@ test("strict docs renderer allows known upstream source-shape warnings", async (
   assert.match(generatedHtml, /Out-of-sequence heading/);
 });
 
+async function writeMultiSectionGuide(
+  docsDirectory: any,
+  sections: Array<{ id: string; title: string; body: string }>,
+): Promise<any> {
+  const guideDirectory = path.join(
+    docsDirectory,
+    "repos",
+    "micronaut-fixture",
+    "src",
+    "main",
+    "docs",
+    "guide",
+  );
+  await fs.mkdir(guideDirectory, { recursive: true });
+  await fs.writeFile(
+    path.join(guideDirectory, "toc.yml"),
+    [
+      "title: Fixture Docs",
+      ...sections.map((section): string => `${section.id}: ${section.title}`),
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+  for (const section of sections) {
+    await fs.writeFile(
+      path.join(guideDirectory, `${section.id}.adoc`),
+      section.body,
+      "utf8",
+    );
+  }
+}
+
+async function renderMultiSectionFixture(
+  t: any,
+  sections: Array<{ id: string; title: string; body: string }>,
+): Promise<{ ids: string[]; html: string }> {
+  const temporaryDirectory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "micronaut-web-docs-duplicate-anchors-"),
+  );
+  t.after((): any =>
+    fs.rm(temporaryDirectory, { force: true, recursive: true }),
+  );
+  const docsDirectory = path.join(temporaryDirectory, "docs");
+  const outputDirectory = path.join(temporaryDirectory, "generated-docs");
+  await writeDocsProjectManifest(docsDirectory);
+  await writeMultiSectionGuide(docsDirectory, sections);
+  await execFile(
+    process.execPath,
+    [
+      "scripts/render-docs.ts",
+      "--docs-dir",
+      docsDirectory,
+      "--output",
+      outputDirectory,
+      "--slugs",
+      "fixture",
+    ],
+    { cwd: projectDirectory },
+  );
+  const generatedHtml = await fs.readFile(
+    path.join(outputDirectory, "fixture.html"),
+    "utf8",
+  );
+  return {
+    html: generatedHtml,
+    ids: [...generatedHtml.matchAll(/(?<![-\w])id="([^"]+)"/g)].map(
+      (match): string => match[1],
+    ),
+  };
+}
+
+test("headings repeated across docs sections get distinct anchors", async (t: any): Promise<any> => {
+  const { ids, html } = await renderMultiSectionFixture(t, [
+    {
+      id: "firstSection",
+      title: "First Section",
+      body: ["== Configuration", "", "First body.", ""].join("\n"),
+    },
+    {
+      id: "secondSection",
+      title: "Second Section",
+      body: [
+        "== Configuration",
+        "",
+        "Second body, see <<_configuration>>.",
+        "",
+      ].join("\n"),
+    },
+  ]);
+
+  assert.deepEqual(
+    ids.filter((id, index): boolean => ids.indexOf(id) !== index),
+    [],
+  );
+  assert.ok(ids.includes("fixture-_configuration"));
+  assert.ok(ids.includes("fixture-_configuration-2"));
+  // The cross-reference lives in the renamed fragment, so it must target that
+  // fragment's heading rather than the one the first section kept.
+  assert.match(html, /href="#fixture-_configuration-2"/);
+});
+
+test("section anchors outrank content headings that slug to the same id", async (t: any): Promise<any> => {
+  // The page navigation links to section ids, so a content heading appearing
+  // earlier in the page must not take the id the navigation depends on.
+  const { ids } = await renderMultiSectionFixture(t, [
+    {
+      id: "firstSection",
+      title: "First Section",
+      body: ["[[certificates]]", "== Certificates", "", "First body.", ""].join(
+        "\n",
+      ),
+    },
+    {
+      id: "certificates",
+      title: "Certificates",
+      body: ["Second body.", ""].join("\n"),
+    },
+  ]);
+
+  assert.deepEqual(
+    ids.filter((id, index): boolean => ids.indexOf(id) !== index),
+    [],
+  );
+  assert.ok(ids.includes("fixture-certificates"));
+  assert.ok(ids.includes("fixture-certificates-2"));
+});
+
 test("docs strict diagnostic filter only fails render-stopping diagnostics", (): void => {
   const allowedWarnings = [
     "asciidoctor: WARN: <stdin>:5: no callout found for <1>",
