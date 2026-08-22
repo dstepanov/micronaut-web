@@ -75,6 +75,15 @@ type ComponentRenderer = {
   ): Promise<string> | string;
 };
 
+// A card that explains why a snippet could not be rendered, in place of it.
+export function missingNotePayload(message: string): SnippetPayload {
+  return {
+    kind: "code",
+    samples: [{ language: "text", source: `NOTE: ${message}` }],
+    title: "",
+  };
+}
+
 export type SnippetRenderOptions = {
   // Where callout lines that follow the block are read from. Defaults to the
   // document reader, which is where a block macro's following lines live; a

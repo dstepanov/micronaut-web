@@ -86,6 +86,17 @@ describe("the guide macro gallery", () => {
   });
 });
 
+describe("content macro expansion", () => {
+  test("stops at an include cycle with a note instead of recursing", async () => {
+    const text = textOnly(await renderGuide("common::gallery-cycle.adoc[]\n"));
+
+    assert.equal(
+      text,
+      "Cycle start. Skipped recursive include common-gallery-cycle.adoc.",
+    );
+  });
+});
+
 describe("legacy exclude directives", () => {
   const source = [
     ":exclude-for-languages:groovy",

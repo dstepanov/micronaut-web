@@ -13,15 +13,19 @@ import type {
 import {
   type MacroPayload,
   macroPayload,
+} from "../../asciidoc/extensions/macro-attributes.ts";
+import {
   missingNotePayload,
-} from "../../asciidoc/extensions/block-payload.ts";
-import { renderSnippetBlock } from "../../asciidoc/extensions/snippet-block-renderer.ts";
+  renderSnippetBlock,
+} from "../../asciidoc/extensions/snippet-block-renderer.ts";
+import { splitList } from "../../shared/cli.ts";
 import {
   extractTaggedSourceWithDiagnostics,
   normalizeSnippetIndent,
-  type TaggedSourceDiagnostic,
+  taggedSourceDiagnosticMessage,
 } from "../../shared/tagged-source.ts";
 import {
+  guideSourceRoots,
   languageExtension,
   languageSourceDirectory,
   type GuideRenderContext,
@@ -175,10 +179,7 @@ function syntheticResourceSnippetPayload(
   ) {
     return undefined;
   }
-  const tags = tagSelection(attributes)
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const tags = splitList(tagSelection(attributes));
   if (tags.length && !tags.includes(GRAALPY_MAVEN_PLUGIN_TAG)) {
     return undefined;
   }
@@ -300,37 +301,6 @@ function snippetPayload(
   source: string,
 ): GuideSnippetPayload {
   return { kind: "code", title, samples: [{ language, source }] };
-}
-
-function taggedSourceDiagnosticMessage(
-  diagnostics: TaggedSourceDiagnostic[],
-  file: string,
-): string {
-  const missingTags = diagnostics
-    .filter((diagnostic) => diagnostic.reason === "missing-tag")
-    .map((diagnostic) => diagnostic.tag);
-  const emptyTags = diagnostics
-    .filter((diagnostic) => diagnostic.reason === "empty-tag")
-    .map((diagnostic) => diagnostic.tag);
-  return [
-    missingTags.length
-      ? `Missing ${tagNoun(missingTags)} ${formatTags(missingTags)}`
-      : "",
-    emptyTags.length
-      ? `Empty ${tagNoun(emptyTags)} ${formatTags(emptyTags)}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("; ")
-    .concat(` in \`${file}\`.`);
-}
-
-function tagNoun(tags: string[]): string {
-  return tags.length === 1 ? "tag" : "tags";
-}
-
-function formatTags(tags: string[]): string {
-  return tags.map((tag) => `\`${tag}\``).join(", ");
 }
 
 function relativeGuideFile(context: GuideRenderContext, file: string): string {
@@ -471,39 +441,50 @@ async function findExisting(
   return undefined;
 }
 
+// A guide directory is walked once per render process; every unresolved
+// snippet of every option of that guide then searches the cached listing.
+const directoryListings = new Map<string, Promise<string[]>>();
+
 async function findByName(
   root: string,
   name: string,
   requiredSegment = "",
 ): Promise<string | undefined> {
+  return (await listFiles(root)).find((file) => {
+    const normalized = file.replaceAll(path.sep, "/");
+    return (
+      path.basename(file) === name &&
+      (!requiredSegment || normalized.includes(requiredSegment))
+    );
+  });
+}
+
+function listFiles(root: string): Promise<string[]> {
+  let listing = directoryListings.get(root);
+  if (!listing) {
+    listing = walkFiles(root);
+    directoryListings.set(root, listing);
+  }
+  return listing;
+}
+
+async function walkFiles(root: string): Promise<string[]> {
   let entries;
   try {
     entries = await fs.readdir(root, { withFileTypes: true });
   } catch {
-    return undefined;
+    return [];
   }
+  const files: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(root, entry.name);
     if (entry.isDirectory()) {
-      const found = await findByName(fullPath, name, requiredSegment);
-      if (found) {
-        return found;
-      }
-    } else if (entry.isFile() && entry.name === name) {
-      const normalized = fullPath.replaceAll(path.sep, "/");
-      if (!requiredSegment || normalized.includes(requiredSegment)) {
-        return fullPath;
-      }
+      files.push(...(await walkFiles(fullPath)));
+    } else if (entry.isFile()) {
+      files.push(fullPath);
     }
   }
-  return undefined;
-}
-
-function guideSourceRoots(context: GuideRenderContext): string[] {
-  if (!context.guide.base) {
-    return [];
-  }
-  return [path.join(context.guidesDirectory, "guides", context.guide.base)];
+  return files;
 }
 
 export function normalizeSourceCalloutMarkers(source: unknown): string {

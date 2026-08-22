@@ -123,6 +123,29 @@ export function normalizeSnippetIndent(
     .join("\n");
 }
 
+// "Missing tag `a`; Empty tags `b`, `c` in `path`." for a snippet note.
+export function taggedSourceDiagnosticMessage(
+  diagnostics: TaggedSourceDiagnostic[],
+  file: string,
+): string {
+  const tags = (reason: TaggedSourceDiagnostic["reason"]): string[] =>
+    diagnostics
+      .filter((diagnostic) => diagnostic.reason === reason)
+      .map((diagnostic) => diagnostic.tag);
+  const describe = (label: string, names: string[]): string =>
+    names.length
+      ? `${label} ${names.length === 1 ? "tag" : "tags"} ${names
+          .map((tag) => `\`${tag}\``)
+          .join(", ")}`
+      : "";
+  return `${[
+    describe("Missing", tags("missing-tag")),
+    describe("Empty", tags("empty-tag")),
+  ]
+    .filter(Boolean)
+    .join("; ")} in \`${file}\`.`;
+}
+
 function trimBlankLines(lines: string[]): string[] {
   let start = 0;
   let end = lines.length;

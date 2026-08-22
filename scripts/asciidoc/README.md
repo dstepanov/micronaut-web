@@ -52,18 +52,25 @@ in register files under `scripts/asciidoc/extensions/`.
 
 ## Shared Extension Helpers
 
-Two modules under `scripts/asciidoc/extensions/` hold the helpers that every
-register file would otherwise copy. New processors should import from them
-rather than redefining the logic locally.
+The logic that several register files need lives in shared modules. New
+processors should import from them rather than redefining it locally.
 
-- `macro-attributes.ts` owns `macroAttribute(...)`, which reads a macro
-  attribute from Asciidoctor's parsed map or falls back to scanning the raw
-  attribute text, plus the `MacroAttributes` type and the
-  `record(...)` guard.
-- `block-payload.ts` owns the `[guide-dependencies,payload=...]` contract
-  between the guide preprocessor, which groups `:dependencies:` sections, and
-  the block processor that renders them. It also provides
-  `macroPayload(...)`, `stringAttributes(...)`, and `missingNotePayload(...)`.
+- `extensions/macro-attributes.ts` owns `macroAttribute(...)`, which reads a
+  macro attribute from Asciidoctor's parsed map or falls back to scanning the
+  raw attribute text, `macroText(...)` for inline link text,
+  `parseAttributeList(...)` for attribute text the preprocessor sees before
+  Asciidoctor does, and the `MacroPayload` shape the guide processors use.
+- `callouts.ts` owns the callout-list scanner that snippet processors use to
+  absorb the `<1>` lines that follow a block, with an array-backed reader for
+  tests.
+- `api-links.ts`, `configuration-formats.ts` and `docs-source-rewrites.ts`
+  hold the pure logic behind the API macros, the `[configuration]` block and
+  the docs preprocessor, so it can be unit tested without Asciidoctor.
+- `scripts/shared/dependency-coordinates.ts` owns the dependency model, the
+  Gradle and Maven scope tables and the rendered build-tool text for both the
+  docs and the guides dependency macros.
+- `scripts/shared/tagged-source.ts` owns tag selection, snippet de-indentation
+  and the diagnostic message for missing or empty tags.
 
 ## Guide Extensions
 
@@ -73,12 +80,16 @@ guide-specific Asciidoctor behavior.
 The guide registry registers:
 
 - `registerGuidePreprocessor(...)`, which replaces guide placeholders, appends
-  the license include, rewrites include targets, groups `:dependencies:`
-  sections, expands `common::`, `external::`, the `-template` variants and
-  `callout::` in place, and resolves legacy exclude directives such as
-  `:exclude-for-languages:groovy`. These expansions must happen before parsing
-  because the included source may itself contain `include::` directives and
-  callout lists that the snippet macros absorb from the document reader.
+  the license include, rewrites include targets, expands `common::`,
+  `external::`, the `-template` variants and `callout::` in place, rewrites
+  legacy exclude directives such as `:exclude-for-languages:groovy` into
+  `ifeval::[]`/`endif::[]` conditionals, and wraps `:dependencies:` groups in
+  a `[guide-dependencies]` open block whose body lists the `dependency::`
+  macros. The in-place expansions must happen before parsing because the
+  included source may itself contain `include::` directives and callout lists
+  that the snippet macros absorb from the document reader. There is no other
+  preprocessor contract: block processors read their input from the block
+  body and the document reader, never from an encoded attribute.
 - `registerGuideSnippetBlocks(...)`, which registers `source::`, `test::`,
   `rawTest::`, `resource::`, `testResource::`, and `zipInclude::` block macros
   and renders them as snippet cards.

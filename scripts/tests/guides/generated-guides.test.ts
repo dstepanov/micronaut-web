@@ -174,7 +174,7 @@ describe("render-guides", () => {
     }
     assert.doesNotMatch(
       html,
-      /source:{1,2}|common-template:{1,2}|callout:{1,2}|dependency:{1,2}|diffLink:{1,2}|exclude-for-languages:{1,2}|exclude-for-build:{1,2}|\[guide-dependencies/,
+      /source:{1,2}|common-template:{1,2}|callout:{1,2}|dependency:{1,2}|diffLink:{1,2}|exclude-for-languages:{1,2}|exclude-for-build:{1,2}|\[guide-dependencies|ifeval::|endif::/,
     );
 
     const mavenHtml = await fs.readFile(
