@@ -1,61 +1,81 @@
 // Typed registration helpers for Asciidoctor.js extensions. The Extension API
-// types model `process` callbacks loosely (`...args: any[]`) and do not allow
-// async processors, so every register file used to opt out of type checking
-// entirely. These helpers confine the casts to one place and give the
-// processors the signatures they actually receive.
+// types the `process` callbacks with a synchronous return type and bind `this`
+// to the DSL interface, while this pipeline's processors are async. These
+// helpers confine the resulting casts to one place and give the processors
+// the signatures they actually receive.
 import type {
   AbstractBlock,
   Block,
-  BlockMacroProcessor,
-  BlockProcessor,
+  BlockMacroProcessorDslInterface,
+  BlockProcessorDslInterface,
   Document,
   Inline,
-  InlineMacroProcessor,
+  InlineMacroProcessorDslInterface,
+  PreprocessorDslInterface,
   Reader,
   Registry,
   Section,
+  TreeProcessorDslInterface,
 } from "@asciidoctor/core";
 
-type ProcessorDsl = {
-  named(name: string): void;
-  onContext(...contexts: string[]): void;
-  process(callback: (...args: never[]) => unknown): void;
+// The part of a processor that the snippet renderer and the guide content
+// macros use to build blocks.
+export type BlockBuilder = {
+  createBlock(
+    parent: Block | Section,
+    context: string,
+    source: string | string[] | null,
+    attrs: object,
+  ): Block;
+  parseContent(parent: Block | Section, content: string[]): Promise<unknown>;
+};
+
+export type InlineBuilder = {
+  createInline(
+    parent: Block,
+    context: string,
+    text: string,
+    opts?: object,
+  ): Inline;
 };
 
 export type BlockMacroHandler = (
-  this: BlockMacroProcessor,
+  this: BlockBuilder,
   parent: Block | Section,
   target: string,
   attributes: Record<string, unknown>,
 ) => Promise<Block | undefined> | Block | undefined;
 
 export type BlockHandler = (
-  this: BlockProcessor,
+  this: BlockBuilder,
   parent: Block | Section,
   reader: Reader,
   attributes: Record<string, unknown>,
 ) => Promise<Block | undefined> | Block | undefined;
 
 export type InlineMacroHandler = (
-  this: InlineMacroProcessor,
+  this: InlineBuilder,
   parent: Block,
   target: string,
   attributes: Record<string, unknown>,
 ) => Inline;
+
+// Asciidoctor.js awaits the returned promise; the DSL type only models the
+// synchronous shape.
+function asSyncResult(result: unknown): AbstractBlock | undefined {
+  return result as AbstractBlock | undefined;
+}
 
 export function defineBlockMacro(
   registry: Registry,
   name: string,
   handler: BlockMacroHandler,
 ): void {
-  registry.blockMacro(name, function (this: ProcessorDsl): void {
-    this.process(function (
-      this: BlockMacroProcessor,
-      parent: AbstractBlock,
-      target: string,
-      attributes: Record<string, unknown>,
-    ): unknown {
-      return handler.call(this, parent as Block | Section, target, attributes);
+  registry.blockMacro(name, function (this: BlockMacroProcessorDslInterface) {
+    this.process(function (parent, target, attributes) {
+      return asSyncResult(
+        handler.call(this, parent as Block | Section, target, attributes),
+      );
     });
   });
 }
@@ -65,16 +85,13 @@ export function defineBlock(
   options: { name: string; context: string },
   handler: BlockHandler,
 ): void {
-  registry.block(function (this: ProcessorDsl): void {
+  registry.block(function (this: BlockProcessorDslInterface) {
     this.named(options.name);
     this.onContext(options.context);
-    this.process(function (
-      this: BlockProcessor,
-      parent: AbstractBlock,
-      reader: Reader,
-      attributes: Record<string, unknown>,
-    ): unknown {
-      return handler.call(this, parent as Block | Section, reader, attributes);
+    this.process(function (parent, reader, attributes) {
+      return asSyncResult(
+        handler.call(this, parent as Block | Section, reader, attributes),
+      );
     });
   });
 }
@@ -84,13 +101,8 @@ export function defineInlineMacro(
   name: string,
   handler: InlineMacroHandler,
 ): void {
-  registry.inlineMacro(name, function (this: ProcessorDsl): void {
-    this.process(function (
-      this: InlineMacroProcessor,
-      parent: AbstractBlock,
-      target: string,
-      attributes: Record<string, unknown>,
-    ): Inline {
+  registry.inlineMacro(name, function (this: InlineMacroProcessorDslInterface) {
+    this.process(function (parent, target, attributes) {
       return handler.call(this, parent as Block, target, attributes);
     });
   });
@@ -98,10 +110,12 @@ export function defineInlineMacro(
 
 export function definePreprocessor(
   registry: Registry,
-  handler: (document: Document, reader: Reader) => Reader | undefined,
+  handler: (document: Document, reader: Reader) => Reader,
 ): void {
-  registry.preprocessor(function (this: ProcessorDsl): void {
-    this.process(handler);
+  registry.preprocessor(function (this: PreprocessorDslInterface) {
+    this.process(function (document, reader) {
+      return handler(document, reader);
+    });
   });
 }
 
@@ -109,8 +123,10 @@ export function defineTreeProcessor(
   registry: Registry,
   handler: (document: Document) => void,
 ): void {
-  registry.treeProcessor(function (this: ProcessorDsl): void {
-    this.process(handler);
+  registry.treeProcessor(function (this: TreeProcessorDslInterface) {
+    this.process(function (document) {
+      handler(document);
+    });
   });
 }
 

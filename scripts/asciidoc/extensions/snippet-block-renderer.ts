@@ -5,10 +5,11 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { Block, BlockProcessor, Reader, Section } from "@asciidoctor/core";
+import type { Block, Reader, Section } from "@asciidoctor/core";
 import type { OnResolveArgs, PluginBuild } from "esbuild";
 import { build } from "esbuild";
 
+import type { BlockBuilder } from "./define.ts";
 import { docsSnippetLanguageLabel } from "../../../src/components/web/docs-snippet-icons.ts";
 import { highlightCodeSnippetHtml } from "../../../src/lib/docs-code-highlighting.ts";
 import { html } from "../../shared/html.ts";
@@ -89,10 +90,7 @@ export type SnippetRenderOptions = {
   manualCallouts?: "inline" | "reader";
 };
 
-type ComponentBlockProcessor = Pick<
-  BlockProcessor,
-  "createBlock" | "parseContent"
->;
+type ComponentBlockProcessor = BlockBuilder;
 
 type ComponentBlockNode = {
   blocks?: ComponentBlockNode[];
