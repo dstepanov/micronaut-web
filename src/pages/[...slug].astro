@@ -24,6 +24,7 @@ import {
   getMainSitePages,
   getSuccessStories,
   cleanExcerptText,
+  formatCategoryLabel,
   normalizeRouteSlug,
   renderFaqItems,
   renderMarkdownHtml,
@@ -152,6 +153,23 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   year: "numeric",
 });
+// Neighbors in the blog's date-descending order, for prev/next links on posts.
+const blogSeries = post
+  ? (await getBlogPosts()).filter(
+      (candidate) => candidate.entry.data.category !== "success-story",
+    )
+  : [];
+const blogSeriesIndex = post
+  ? blogSeries.findIndex((candidate) => candidate.slug === post.slug)
+  : -1;
+const newerPost =
+  blogSeriesIndex > 0 ? blogSeries[blogSeriesIndex - 1] : undefined;
+const olderPost =
+  blogSeriesIndex >= 0 ? blogSeries[blogSeriesIndex + 1] : undefined;
+const postCategory =
+  post?.entry.data.category && post.entry.data.category !== "uncategorized"
+    ? post.entry.data.category
+    : undefined;
 ---
 
 <WebLayout
@@ -258,17 +276,40 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
         >
           {(!usesPublicMarkdownLayout || isBlogArchiveRoute) && (
             <header class="border-b pb-8">
-              {pageData.eyebrow !== "Blog" && (
-                <Badge variant="secondary">{pageData.eyebrow}</Badge>
+              {post ? (
+                <a
+                  href={withBasePath("/blog/")}
+                  class="text-sm font-medium text-brand no-underline underline-offset-4 hover:underline"
+                >
+                  &larr; Blog
+                </a>
+              ) : (
+                pageData.eyebrow !== "Blog" && (
+                  <Badge variant="secondary">{pageData.eyebrow}</Badge>
+                )
               )}
               <h1
                 class:list={[
                   "text-3xl font-bold leading-tight text-foreground md:text-5xl",
-                  pageData.eyebrow !== "Blog" && "mt-5",
+                  (post || pageData.eyebrow !== "Blog") && "mt-5",
                 ]}
               >
                 {pageData.title}
               </h1>
+              {post && (
+                <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                  {post.entry.data.date && (
+                    <time datetime={post.entry.data.date.toISOString()}>
+                      {postDateFormatter.format(post.entry.data.date)}
+                    </time>
+                  )}
+                  {postCategory && (
+                    <Badge variant="outline">
+                      {formatCategoryLabel(postCategory)}
+                    </Badge>
+                  )}
+                </div>
+              )}
               {intro && (
                 <p class="mt-5 text-base leading-8 text-muted-foreground md:text-[1.05rem]">
                   {intro}
@@ -299,6 +340,42 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
               <MainSiteMarkdown html={pageHtml} />
               {pageHtml && <GeneratedDocsStaticEnhancer />}
             </>
+          )}
+
+          {post && (newerPost || olderPost) && (
+            <nav
+              class="mt-10 grid gap-4 border-t pt-8 sm:grid-cols-2"
+              aria-label="More from the blog"
+            >
+              {olderPost ? (
+                <a
+                  href={withBasePath(olderPost.href)}
+                  class="group grid gap-1 rounded-xl border p-4 no-underline transition hover:border-brand/50 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <span class="text-xs text-muted-foreground">
+                    &larr; Older
+                  </span>
+                  <span class="text-sm font-semibold leading-6 text-foreground group-hover:text-brand">
+                    {olderPost.entry.data.title}
+                  </span>
+                </a>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+              {newerPost && (
+                <a
+                  href={withBasePath(newerPost.href)}
+                  class="group grid gap-1 rounded-xl border p-4 text-right no-underline transition hover:border-brand/50 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <span class="text-xs text-muted-foreground">
+                    Newer &rarr;
+                  </span>
+                  <span class="text-sm font-semibold leading-6 text-foreground group-hover:text-brand">
+                    {newerPost.entry.data.title}
+                  </span>
+                </a>
+              )}
+            </nav>
           )}
 
           {archivePosts.length > 0 && (
@@ -342,7 +419,7 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
                           )}
                           {post.entry.data.category && (
                             <Badge variant="outline">
-                              {post.entry.data.category}
+                              {formatCategoryLabel(post.entry.data.category)}
                             </Badge>
                           )}
                         </div>
