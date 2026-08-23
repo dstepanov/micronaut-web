@@ -207,6 +207,18 @@ test("deployment routes publish standalone guides at the root", async () => {
 
   assert.equal(deployment.routeForCurrentDeployment("/"), "/");
   assert.equal(deployment.routeForCurrentDeployment("/guides/"), "/");
+  // Icons ship with the surface; everything else under /micronaut-assets/ is
+  // still resolved against the main site.
+  assert.equal(
+    deployment.routeForCurrentDeployment(
+      "/micronaut-assets/icons/projects/reactor.webp",
+    ),
+    "/micronaut-assets/icons/projects/reactor.webp",
+  );
+  assert.match(
+    deployment.routeForCurrentDeployment("/micronaut-assets/logos/logo.svg"),
+    /^https:\/\//,
+  );
   assert.equal(
     deployment.routeForCurrentDeployment("/guides/micronaut-http-client/"),
     "/micronaut-http-client/",
@@ -290,7 +302,17 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   );
   assert.equal(await exists(path.join(dist, "docs")), false);
   assert.equal(await exists(path.join(dist, "guides")), false);
-  assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
+  // Only the icon assets travel with a surface; the rest stays on the main site.
+  assert.equal(
+    await exists(
+      path.join(dist, "micronaut-assets", "icons", "projects", "reactor.webp"),
+    ),
+    true,
+  );
+  assert.equal(
+    await exists(path.join(dist, "micronaut-assets", "logo.svg")),
+    false,
+  );
   assert.equal(await exists(path.join(dist, "shell", "site-header.js")), false);
   assert.equal(
     await exists(path.join(dist, "shell", "site-header.css")),
@@ -371,7 +393,16 @@ test("guides pruning publishes root-level guides and legacy latest redirects", a
   assert.equal(await exists(path.join(dist, "latest", "assets")), false);
   assert.equal(await exists(path.join(dist, "docs")), false);
   assert.equal(await exists(path.join(dist, "guides")), false);
-  assert.equal(await exists(path.join(dist, "micronaut-assets")), false);
+  assert.equal(
+    await exists(
+      path.join(dist, "micronaut-assets", "icons", "projects", "reactor.webp"),
+    ),
+    true,
+  );
+  assert.equal(
+    await exists(path.join(dist, "micronaut-assets", "logo.svg")),
+    false,
+  );
   assert.equal(await exists(path.join(dist, "shell", "site-header.js")), false);
   assert.equal(
     await exists(path.join(dist, "shell", "site-header.css")),
@@ -1256,6 +1287,7 @@ async function fakeDist(t: TestContext) {
     "latest/micronaut-http-client/index.html",
     "latest/assets/micronaut-http-client/images/client.png",
     "micronaut-assets/logo.svg",
+    "micronaut-assets/icons/projects/reactor.webp",
     "shell/site-header.js",
     "shell/site-header.css",
     "micronaut-web/templates/docs/docs-page.html",

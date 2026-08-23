@@ -106,6 +106,7 @@ async function pruneDocs(
       path.join(temporaryDirectory, "versions.json"),
     );
     await copyCrawlerFiles(directory, temporaryDirectory);
+    await copySurfaceIconAssets(directory, temporaryDirectory);
     const sourceDocsDirectory = path.join(directory, "docs");
     await copyChildren(
       sourceDocsDirectory,
@@ -159,6 +160,7 @@ async function pruneGuides(
       path.join(temporaryDirectory, "_astro"),
     );
     await copyCrawlerFiles(directory, temporaryDirectory);
+    await copySurfaceIconAssets(directory, temporaryDirectory);
     await copyChildren(path.join(directory, "guides"), temporaryDirectory);
     await copyIfExists(
       path.join(directory, "latest"),
@@ -254,6 +256,21 @@ async function copyChildren(source: string, target: string): Promise<void> {
         recursive: true,
       }),
     ),
+  );
+}
+
+/**
+ * Icon assets are the one part of `/micronaut-assets/` a surface keeps its own
+ * copy of, so docs and guides pages do not fetch above-the-fold imagery from
+ * the main-site origin. `surface-path-rules.ts` keeps the matching paths local.
+ */
+async function copySurfaceIconAssets(
+  sourceDirectory: string,
+  targetDirectory: string,
+): Promise<void> {
+  await copyIfExists(
+    path.join(sourceDirectory, "micronaut-assets", "icons"),
+    path.join(targetDirectory, "micronaut-assets", "icons"),
   );
 }
 
