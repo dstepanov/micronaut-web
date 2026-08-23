@@ -44,7 +44,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
     "utf8",
   );
   const browserTestRunner = await fs.readFile(
-    path.join(projectDirectory, "scripts", "run-docs-browser-tests.ts"),
+    path.join(projectDirectory, "scripts", "run-browser-tests.ts"),
     "utf8",
   );
 
@@ -58,7 +58,7 @@ test("generated docs are prepared before Astro dev and build", async (): Promise
   );
   assert.equal(
     packageJson.scripts["test:docs"],
-    "node --test scripts/tests/docs/*.test.ts && node scripts/run-docs-browser-tests.ts",
+    "node --test scripts/tests/docs/*.test.ts && node scripts/run-browser-tests.ts docs",
   );
   assert.equal(
     packageJson.scripts["test:docs:browser"],
