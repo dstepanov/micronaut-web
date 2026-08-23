@@ -235,6 +235,8 @@ function buildGuidePageIndexSections(
             {props.guide.options.map((option) => (
               <a
                 href={withBasePath(guideOptionPath(option, guidesRoot))}
+                data-guide-variant-language={option.language}
+                data-guide-variant-build-tool={option.buildTool}
                 aria-label={option.label}
                 aria-current={
                   option.file === props.option.file ? "page" : undefined
@@ -300,6 +302,8 @@ function buildGuidePageIndexSections(
               {props.guide.options.map((option) => (
                 <a
                   href={withBasePath(guideOptionPath(option, guidesRoot))}
+                  data-guide-variant-language={option.language}
+                  data-guide-variant-build-tool={option.buildTool}
                   aria-label={option.label}
                   aria-current={
                     option.file === props.option.file ? "page" : undefined
@@ -420,6 +424,7 @@ function buildGuidePageIndexSections(
         )}
       </main>
       <script>import "@/scripts/generated-guides-page-index";</script>
+      <script>import "@/scripts/guide-variant-persistence";</script>
     </WebLayout>
   )
 }

@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import LatestGuideCard from "@/components/web/latest-guide-card.astro";
+import { GuideVariantPreferencePicker } from "@/components/web/guide-variant-preference";
 import {
   guideTagPath,
   latestGuides,
@@ -194,6 +195,9 @@ function tagHref(tag: string) {
         />
         <Button type="submit">Search</Button>
       </form>
+      <div class="mt-5">
+        <GuideVariantPreferencePicker client:idle />
+      </div>
     </div>
   </header>
 
