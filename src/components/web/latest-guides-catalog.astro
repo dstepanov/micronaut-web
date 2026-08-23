@@ -1,6 +1,6 @@
 ---
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -278,9 +278,12 @@ function tagHref(tag: string) {
         >
       </CardHeader>
       <CardContent>
-        <Button asChild>
-          <a href={withBasePath(`${root}/`)}>Open all guides</a>
-        </Button>
+        <a
+          href={withBasePath(`${root}/`)}
+          class:list={[buttonVariants(), "no-underline"]}
+        >
+          Open all guides
+        </a>
       </CardContent>
     </Card>
   </div>
