@@ -355,7 +355,7 @@ test("docs pruning publishes docs at the repository root", async (t) => {
   assert.match(docsGuideRedirectHtml, /\/micronaut-docs\/latest\/core\//);
   assert.match(
     await fs.readFile(path.join(dist, "latest.html"), "utf8"),
-    /window\.location\.replace/,
+    /location\.replace/,
   );
 });
 
@@ -1165,7 +1165,7 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   );
   assert.match(
     await fs.readFile(path.join(published, "4.10.14.html"), "utf8"),
-    /window\.location\.replace/,
+    /location\.replace/,
   );
   const versionsJson = JSON.parse(
     await fs.readFile(path.join(published, "versions.json"), "utf8"),

@@ -14,6 +14,7 @@ import {
   resolveDeploymentSettings,
   type DeploymentSettings,
 } from "../src/lib/deployment-defaults.ts";
+import { clientRedirectDocument } from "../src/lib/route-compatibility.ts";
 
 type SurfaceUrls = Pick<
   DeploymentSettings,
@@ -365,30 +366,13 @@ async function exists(file: string) {
   }
 }
 
-async function writeRedirect(file: string, destination: string, title: string) {
+async function writeRedirect(
+  file: string,
+  destination: string,
+  title: string,
+): Promise<void> {
   await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(
-    file,
-    [
-      "<!doctype html>",
-      '<html lang="en">',
-      "<head>",
-      '  <meta charset="UTF-8" />',
-      '  <meta name="robots" content="noindex" />',
-      `  <meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
-      `  <title>Redirecting to ${htmlText(title)}</title>`,
-      "  <script>",
-      `    window.location.replace(${JSON.stringify(destination)} + window.location.search + window.location.hash);`,
-      "  </script>",
-      "</head>",
-      "<body>",
-      `  <a href="${htmlAttribute(destination)}">Continue to ${htmlText(title)}</a>`,
-      "</body>",
-      "</html>",
-      "",
-    ].join("\n"),
-    "utf8",
-  );
+  await fs.writeFile(file, clientRedirectDocument(destination, title), "utf8");
 }
 
 async function writeNoJekyll(directory: string) {
@@ -408,18 +392,6 @@ function sanitizeVersion(version: string | undefined) {
     );
   }
   return version;
-}
-
-function htmlAttribute(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function htmlText(value: string) {
-  return htmlAttribute(value);
 }
 
 function isMainModule() {

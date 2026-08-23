@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs, stringArg } from "./shared/cli.ts";
 import { copyCrawlerFiles } from "./shared/crawler-files.ts";
 import { hoistVersionedSurfaceAssets } from "./shared/surface-assets.ts";
+import { clientRedirectDocument } from "../src/lib/route-compatibility.ts";
 
 export type Surface = "main" | "docs" | "guides";
 
@@ -334,28 +335,7 @@ async function writeRedirect(
   title: string,
 ): Promise<void> {
   await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(
-    file,
-    [
-      "<!doctype html>",
-      '<html lang="en">',
-      "<head>",
-      '  <meta charset="UTF-8" />',
-      '  <meta name="robots" content="noindex" />',
-      `  <meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
-      `  <title>Redirecting to ${htmlText(title)}</title>`,
-      "  <script>",
-      `    window.location.replace(${JSON.stringify(destination)} + window.location.search + window.location.hash);`,
-      "  </script>",
-      "</head>",
-      "<body>",
-      `  <a href="${htmlAttribute(destination)}">Continue to ${htmlText(title)}</a>`,
-      "</body>",
-      "</html>",
-      "",
-    ].join("\n"),
-    "utf8",
-  );
+  await fs.writeFile(file, clientRedirectDocument(destination, title), "utf8");
 }
 
 async function writeCustomDomain(
@@ -531,18 +511,6 @@ function numberOption(value: string | undefined, fallback: number) {
   }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function htmlAttribute(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function htmlText(value: string) {
-  return htmlAttribute(value);
 }
 
 function isMainModule() {
