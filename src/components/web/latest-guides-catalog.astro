@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LatestGuideCard } from "@/components/web/latest-guide-card";
+import LatestGuideCard from "@/components/web/latest-guide-card.astro";
 import {
   guideTagPath,
   latestGuides,
@@ -205,7 +205,7 @@ function tagHref(tag: string) {
         </div>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {recentGuides.map((guide) => (
-            <LatestGuideCard client:visible guide={guide} root={root} />
+            <LatestGuideCard guide={guide} root={root} />
           ))}
         </div>
       </section>
@@ -260,7 +260,7 @@ function tagHref(tag: string) {
                 data-date={guide.publicationDate}
                 data-minutes={guide.estimatedMinutes}
               >
-                <LatestGuideCard client:visible guide={guide} root={root} />
+                <LatestGuideCard guide={guide} root={root} />
               </div>
             ))}
           </div>

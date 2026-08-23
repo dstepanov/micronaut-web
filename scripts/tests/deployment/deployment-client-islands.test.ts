@@ -54,9 +54,9 @@ test("hydrated Astro islands do not import server-only Node modules", async (): 
     hydratedIslands.some(
       (island) =>
         relativePath(island.componentFile) ===
-        path.join("src", "components", "web", "latest-guide-card.tsx"),
+        path.join("src", "components", "web", "guide-variant-menu.tsx"),
     ),
-    "expected the latest guide card island to be covered",
+    "expected the guide variant menu island to be covered",
   );
 
   const failures: string[] = [];
