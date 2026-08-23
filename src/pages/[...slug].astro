@@ -14,6 +14,7 @@ import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-
 import MainSiteMarkdown from "@/components/web/main-site-markdown.astro";
 import CommercialSupport from "@/components/web/commercial-support.astro";
 import SiteFooter from "@/components/web/site-footer.astro";
+import StoryLogo from "@/components/web/story-logo.astro";
 import { withBasePath } from "@/lib/base-path";
 import {
   getBlogArchiveRoutes,
@@ -134,33 +135,14 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
               <a href={withBasePath(story.href)} class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
               <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
                 <CardHeader>
-                  {story.logo ? (
-                    <div class="flex h-12 min-w-0 items-center">
-                      <span class:list={["inline-flex h-12 max-w-[10rem] items-center px-3 py-2", story.logoInvertOnDark && !story.logoDark && "dark:!bg-white"]}>
-                        <img
-                          src={story.logo}
-                          alt={`${story.organization} logo`}
-                          class:list={[
-                            "max-h-full max-w-full object-contain object-left",
-                            story.logoClass,
-                            story.logoDark && "dark:hidden"
-                          ]}
-                          loading="lazy"
-                        />
-                        {story.logoDark ? (
-                          <img
-                            src={story.logoDark}
-                            alt={`${story.organization} logo`}
-                            class:list={[
-                              "hidden max-h-full max-w-full object-contain object-left dark:block",
-                              story.logoClass
-                            ]}
-                            loading="lazy"
-                          />
-                        ) : null}
-                      </span>
-                    </div>
-                  ) : null}
+                  <StoryLogo
+                    organization={story.organization}
+                    logo={story.logo}
+                    logoDark={story.logoDark}
+                    logoClass={story.logoClass}
+                    invertOnDark={story.logoInvertOnDark}
+                    size="sm"
+                  />
                   <Badge variant="outline" className="absolute right-6 top-6">{story.tag}</Badge>
                   <CardTitle className="col-span-full text-xl leading-7">{story.scenario}</CardTitle>
                   <CardDescription className="col-span-full text-[0.95rem]">{story.summary}</CardDescription>

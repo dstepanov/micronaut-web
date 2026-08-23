@@ -14,10 +14,12 @@ import { ActionLink } from "@/components/web/action-link";
 import { IconGlyph } from "@/components/web/icon-glyph";
 import { MainCodeShowcase } from "@/components/web/main-code-showcase";
 import SiteFooter from "@/components/web/site-footer.astro";
+import StoryLogo from "@/components/web/story-logo.astro";
 import { withBasePath } from "@/lib/base-path";
 import { highlightCodeSnippetExamples } from "@/lib/docs-code-highlighting";
 import { getMainCodeShowcaseExamples } from "@/lib/main-code-showcase-content";
 import { getSuccessStories } from "@/lib/main-site-content";
+import { logoSource } from "@/lib/story-logo-assets";
 
 const features = [
   {
@@ -83,29 +85,7 @@ const cloudLogos = [
   { label: "MongoDB", icon: "brand:mongodb" }
 ];
 
-const assetDimensions: Record<string, { width: number; height: number }> = {
-  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Agorapulse-logo-blue.svg": { width: 1204, height: 251 },
-  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Agorapulse-logo-dark.svg": { width: 1204, height: 251 },
-  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Kestra.full_.logo_.dark_.svg": { width: 889, height: 203 },
-  "/micronaut-assets/main-site/wp-content/uploads/2025/01/Kestra.full_.logo_.light-text.svg": { width: 889, height: 203 },
-  "/micronaut-assets/main-site/wp-content/uploads/2025/02/Sonar_Logo_Dark-Backgrounds.svg": { width: 225, height: 87 },
-  "/micronaut-assets/main-site/wp-content/uploads/2025/02/Sonar_Logo_Light-Backgrounds.svg": { width: 225, height: 87 },
-  "/micronaut-assets/home/minecraft.png": { width: 429, height: 185 },
-  "/micronaut-assets/home/mojang.png": { width: 387, height: 185 },
-  "/micronaut-assets/home/samsung-smart-things.png": { width: 429, height: 185 },
-  "/micronaut-assets/home/sonar-black-and-grey.svg": { width: 224, height: 86 },
-  "/micronaut-assets/home/target.png": { width: 142, height: 185 }
-};
-
-const dimensionsForAsset = (assetPath?: string) => assetPath ? assetDimensions[assetPath] : undefined;
-
-const stories = (await getSuccessStories()).map((story) => ({
-  ...story,
-  logo: story.logo ? withBasePath(story.logo) : undefined,
-  logoDark: story.logoDark ? withBasePath(story.logoDark) : undefined,
-  logoDimensions: dimensionsForAsset(story.logo),
-  logoDarkDimensions: dimensionsForAsset(story.logoDark)
-}));
+const stories = await getSuccessStories();
 const featuredStories = stories.slice(0, 3);
 const secondaryStories = stories.slice(3);
 
@@ -114,49 +94,19 @@ const storyLogoItems = stories
   .map((story) => ({
     name: story.organization,
     href: withBasePath(story.href),
-    image: story.logo ?? "",
-    darkImage: story.logoDark,
     className: story.logoClass,
-    width: story.logoDimensions?.width,
-    height: story.logoDimensions?.height,
-    darkWidth: story.logoDarkDimensions?.width,
-    darkHeight: story.logoDarkDimensions?.height,
+    source: logoSource(story.logo)!,
+    darkSource: logoSource(story.logoDark),
     logoUseLightSurfaceOnDark: story.logoInvertOnDark && !story.logoDark
   }));
 
 const previousCustomerLogos = [
-  { name: "Minecraft", href: "https://www.minecraft.net/", image: withBasePath("/micronaut-assets/home/minecraft.png"), darkImage: undefined, className: "h-12", width: 429, height: 185, darkWidth: undefined, darkHeight: undefined, logoUseLightSurfaceOnDark: true },
-  { name: "Mojang", href: "https://en.wikipedia.org/wiki/Mojang_Studios", image: withBasePath("/micronaut-assets/home/mojang.png"), darkImage: undefined, className: "h-12", width: 387, height: 185, darkWidth: undefined, darkHeight: undefined, logoUseLightSurfaceOnDark: true },
-  { name: "Target", href: "https://www.target.com", image: withBasePath("/micronaut-assets/home/target.png"), darkImage: undefined, className: "h-16", width: 142, height: 185, darkWidth: undefined, darkHeight: undefined, logoUseLightSurfaceOnDark: true }
+  { name: "Minecraft", href: "https://www.minecraft.net/", className: "h-12", source: logoSource("/micronaut-assets/home/minecraft.png"), darkSource: undefined, logoUseLightSurfaceOnDark: true },
+  { name: "Mojang", href: "https://en.wikipedia.org/wiki/Mojang_Studios", className: "h-12", source: logoSource("/micronaut-assets/home/mojang.png"), darkSource: undefined, logoUseLightSurfaceOnDark: true },
+  { name: "Target", href: "https://www.target.com", className: "h-16", source: logoSource("/micronaut-assets/home/target.png"), darkSource: undefined, logoUseLightSurfaceOnDark: true }
 ];
-const responsiveLogoSources: Record<string, { src: string; srcset: string; sizes: string; width: number; height: number }> = {
-  [withBasePath("/micronaut-assets/home/samsung-smart-things.png")]: {
-    src: withBasePath("/micronaut-assets/home/samsung-smart-things-222w.webp"),
-    srcset: `${withBasePath("/micronaut-assets/home/samsung-smart-things-111w.webp")} 111w, ${withBasePath("/micronaut-assets/home/samsung-smart-things-222w.webp")} 222w`,
-    sizes: "111px",
-    width: 111,
-    height: 48
-  },
-  [withBasePath("/micronaut-assets/home/mojang.png")]: {
-    src: withBasePath("/micronaut-assets/home/mojang-200w.webp"),
-    srcset: `${withBasePath("/micronaut-assets/home/mojang-100w.webp")} 100w, ${withBasePath("/micronaut-assets/home/mojang-200w.webp")} 200w`,
-    sizes: "100px",
-    width: 100,
-    height: 48
-  },
-  [withBasePath("/micronaut-assets/home/minecraft.png")]: {
-    src: withBasePath("/micronaut-assets/home/minecraft-222w.webp"),
-    srcset: `${withBasePath("/micronaut-assets/home/minecraft-111w.webp")} 111w, ${withBasePath("/micronaut-assets/home/minecraft-222w.webp")} 222w`,
-    sizes: "111px",
-    width: 111,
-    height: 48
-  }
-};
 const whoUsesLogoItems = [...storyLogoItems, ...previousCustomerLogos];
-const rotatingLogoItems = [...whoUsesLogoItems, ...whoUsesLogoItems].map((customer) => ({
-  ...customer,
-  responsiveSource: responsiveLogoSources[customer.image]
-}));
+const rotatingLogoItems = [...whoUsesLogoItems, ...whoUsesLogoItems];
 
 const graalBullets = ["Ahead-of-time friendly", "Reduced reflection reliance", "Native-image deployment path"];
 const dataBullets = ["Repository APIs", "Compile-time query model", "Reduced runtime overhead"];
@@ -314,16 +264,14 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
           <a href={withBasePath(story.href)} class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
           <Card className="h-full min-h-[260px] transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
             <CardHeader>
-              {story.logo ? (
-                <div class="flex h-16 min-w-0 items-center">
-                  <span class:list={["inline-flex h-14 max-w-[12rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card", story.logoInvertOnDark && !story.logoDark && "dark:!bg-white"]}>
-                    <img src={responsiveLogoSources[story.logo]?.src ?? story.logo} srcset={responsiveLogoSources[story.logo]?.srcset} sizes={responsiveLogoSources[story.logo]?.sizes} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={responsiveLogoSources[story.logo]?.width ?? story.logoDimensions?.width} height={responsiveLogoSources[story.logo]?.height ?? story.logoDimensions?.height} />
-                    {story.logoDark ? (
-                      <img src={story.logoDark} alt={`${story.organization} logo`} class:list={["hidden max-h-full max-w-full object-contain object-left dark:block", story.logoClass]} loading="lazy" width={story.logoDarkDimensions?.width} height={story.logoDarkDimensions?.height} />
-                    ) : null}
-                  </span>
-                </div>
-              ) : null}
+              <StoryLogo
+                organization={story.organization}
+                logo={story.logo}
+                logoDark={story.logoDark}
+                logoClass={story.logoClass}
+                invertOnDark={story.logoInvertOnDark}
+                size="lg"
+              />
               <CardAction className="row-span-1">
                 <Badge variant="secondary">{story.tag}</Badge>
               </CardAction>
@@ -346,14 +294,14 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
           <a href={withBasePath(story.href)} class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
             <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
               <CardHeader className="gap-3 px-5">
-                {story.logo ? (
-                  <span class:list={["inline-flex h-11 max-w-[10rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card", story.logoInvertOnDark && !story.logoDark && "dark:!bg-white"]}>
-                    <img src={responsiveLogoSources[story.logo]?.src ?? story.logo} srcset={responsiveLogoSources[story.logo]?.srcset} sizes={responsiveLogoSources[story.logo]?.sizes} alt={`${story.organization} logo`} class:list={["max-h-full max-w-full object-contain object-left", story.logoClass, story.logoDark && "dark:hidden"]} loading="lazy" width={responsiveLogoSources[story.logo]?.width ?? story.logoDimensions?.width} height={responsiveLogoSources[story.logo]?.height ?? story.logoDimensions?.height} />
-                    {story.logoDark ? (
-                      <img src={story.logoDark} alt={`${story.organization} logo`} class:list={["hidden max-h-full max-w-full object-contain object-left dark:block", story.logoClass]} loading="lazy" width={story.logoDarkDimensions?.width} height={story.logoDarkDimensions?.height} />
-                    ) : null}
-                  </span>
-                ) : null}
+                <StoryLogo
+                  organization={story.organization}
+                  logo={story.logo}
+                  logoDark={story.logoDark}
+                  logoClass={story.logoClass}
+                  invertOnDark={story.logoInvertOnDark}
+                  size="md"
+                />
                 <CardAction className="row-span-1">
                   <Badge variant="outline">{story.tag}</Badge>
                 </CardAction>
@@ -380,30 +328,32 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(await
               tabindex={index >= whoUsesLogoItems.length ? "-1" : undefined}
             >
               <img
-                src={customer.responsiveSource?.src ?? customer.image}
-                srcset={customer.responsiveSource?.srcset}
-                sizes={customer.responsiveSource?.sizes}
+                src={customer.source.src}
+                srcset={customer.source.srcset}
+                sizes={customer.source.sizes}
                 alt={`${customer.name} logo`}
                 class:list={[
                   "max-h-full max-w-full object-contain transition group-hover:opacity-100",
                   customer.className,
-                  customer.darkImage && "dark:hidden"
+                  customer.darkSource && "dark:hidden"
                 ]}
                 loading="lazy"
-                width={customer.responsiveSource?.width ?? customer.width}
-                height={customer.responsiveSource?.height ?? customer.height}
+                width={customer.source.width}
+                height={customer.source.height}
               />
-              {customer.darkImage ? (
+              {customer.darkSource ? (
                 <img
-                  src={customer.darkImage}
+                  src={customer.darkSource.src}
+                  srcset={customer.darkSource.srcset}
+                  sizes={customer.darkSource.sizes}
                   alt={`${customer.name} logo`}
                   class:list={[
                     "hidden max-h-full max-w-full object-contain transition group-hover:opacity-100 dark:block",
                     customer.className
                   ]}
                   loading="lazy"
-                  width={customer.darkWidth}
-                  height={customer.darkHeight}
+                  width={customer.darkSource.width}
+                  height={customer.darkSource.height}
                 />
               ) : null}
             </a>
