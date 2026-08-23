@@ -1051,6 +1051,8 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     "sitemap-0.xml",
     "4.10.14/index.html",
     "4.10.14/core/index.html",
+    "micronaut-assets/icons/brands/apachekafka.svg",
+    "micronaut-assets/icons/projects/reactor.webp",
   ]);
   await writeFiles(published, [
     "assets/aaaaaaaaaaaaaaaa/unused.png",
@@ -1085,6 +1087,32 @@ test("docs publish merge preserves shared assets and updates version roots", asy
 
   assert.equal(await exists(path.join(published, "robots.txt")), true);
   assert.equal(await exists(path.join(published, "sitemap-index.xml")), true);
+  // Published pages reference icons from the surface root, so the merge has to
+  // carry them like `_astro`; leaving them out 404s every project icon.
+  assert.equal(
+    await exists(
+      path.join(
+        published,
+        "micronaut-assets",
+        "icons",
+        "brands",
+        "apachekafka.svg",
+      ),
+    ),
+    true,
+  );
+  assert.equal(
+    await exists(
+      path.join(
+        published,
+        "micronaut-assets",
+        "icons",
+        "projects",
+        "reactor.webp",
+      ),
+    ),
+    true,
+  );
   assert.equal(await exists(path.join(published, "sitemap-0.xml")), true);
   assert.equal(
     await exists(path.join(published, "assets", "stylesheets", "site.css")),
