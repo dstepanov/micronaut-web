@@ -343,7 +343,7 @@ Guide ZIP downloads stay as redirects to the production guide ZIP URLs instead o
 There are three asset groups:
 
 - `_astro`: Astro-generated JavaScript and CSS. Surface pruning preserves reachable files in this folder, removes unreferenced chunks, and writes `.nojekyll` so GitHub Pages serves underscore-prefixed paths.
-- `public/micronaut-assets`: source-controlled brand, icon, and main-site assets used mainly by the main surface.
+- `public/micronaut-assets`: source-controlled brand, icon, and main-site assets. The main surface serves all of them; `micronaut-assets/icons/` is also copied into the docs and guides artifacts by `prune-surface.ts`, because the docs index renders one icon per project and should not fetch above-the-fold imagery from the main-site origin. `surface-path-rules.ts` keeps those paths surface-local; everything else under `micronaut-assets/` resolves to the main site.
 - Generated docs/guides content assets: images and copied resources produced under generated `assets` folders before pruning.
 
 Docs and guides surface pruning hoists generated docs/guides content assets out of version folders into content-addressed `/assets/<hash>/...` folders, then rewrites generated HTML to reference those shared files. The hash is based on file content, so identical assets across versions share one folder instead of being duplicated under every version. Docs publication preserves referenced shared hash folders and removes unreferenced generated hash folders so old assets do not accumulate unnecessarily.

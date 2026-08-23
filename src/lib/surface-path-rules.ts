@@ -90,6 +90,17 @@ export function externalRouteForSurface(surface: SurfaceTarget, path: string) {
  * belong to another surface are left for the caller to turn into an absolute
  * URL through `externalUrl`.
  */
+/**
+ * Icons are the one shared asset that appears above the fold across a whole
+ * page: the docs index renders one per project. Every surface ships its own
+ * copy of `/micronaut-assets/icons/` (see `prune-surface.ts`) so a docs page
+ * does not open 37 cross-origin requests to the main site before it can paint.
+ * The rest of `/micronaut-assets/` stays centralized there.
+ */
+function isSurfaceLocalAssetPath(path: string) {
+  return path.startsWith("/micronaut-assets/icons/");
+}
+
 export function routeForCurrentDeployment(
   path: string,
   deploySurface: DeploySurface,
@@ -103,6 +114,9 @@ export function routeForCurrentDeployment(
     !path.startsWith("/")
   ) {
     return path;
+  }
+  if (isSurfaceLocalAssetPath(path)) {
+    return normalizeAbsolutePath(path);
   }
   if (deploySurface === "docs") {
     if (path === "/") {

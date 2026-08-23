@@ -142,8 +142,8 @@ const brandIconColors: Record<string, string> = {
 };
 
 const preservedImageIcons = new Set([
-  "image:projects/eclipsestore.png",
-  "image:projects/reactor.png",
+  "image:projects/eclipsestore.webp",
+  "image:projects/reactor.webp",
 ]);
 
 function normalizeLucideName(name: string) {

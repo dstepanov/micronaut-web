@@ -448,7 +448,7 @@
       "submodulePath": "repos/micronaut-grpc",
       "platformVersionKey": "managed-micronaut-grpc",
       "version": "5.0.0",
-      "icon": "image:projects/grpc.png",
+      "icon": "image:projects/grpc.webp",
       "primaryCategory": "api",
       "categorySlugs": [
         "api"
@@ -1127,7 +1127,7 @@
       "submodulePath": "repos/micronaut-reactor",
       "platformVersionKey": "managed-micronaut-reactor",
       "version": "4.0.0",
-      "icon": "image:projects/reactor.png",
+      "icon": "image:projects/reactor.webp",
       "primaryCategory": "reactive",
       "categorySlugs": [
         "reactive"
@@ -1713,7 +1713,7 @@
       "submodulePath": "repos/micronaut-eclipsestore",
       "platformVersionKey": "managed-micronaut-eclipsestore",
       "version": "2.0.0",
-      "icon": "image:projects/eclipsestore.png",
+      "icon": "image:projects/eclipsestore.webp",
       "primaryCategory": "data-access",
       "categorySlugs": [
         "data-access"
