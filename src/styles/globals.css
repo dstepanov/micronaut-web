@@ -52,6 +52,7 @@
   --color-code: var(--code);
   --color-code-foreground: var(--code-foreground);
   --color-code-muted: var(--code-muted);
+  --color-code-inline: var(--code-inline);
   --color-code-border: var(--code-border);
   --color-code-tab: var(--code-tab);
   --color-hero: var(--hero);
@@ -144,7 +145,8 @@
 
   --code: #ffffff;
   --code-foreground: #1f1f1f;
-  --code-muted: #6b6b65;
+  --code-muted: #5a5a55;
+  --code-inline: #e9e9e2;
   --code-border: #e1e1dc;
   --code-tab: #f1f1ef;
   --code-token-base: var(--code-foreground);
@@ -177,7 +179,8 @@
   --secondary-foreground: #111111;
 
   --muted: #f1f1ef;
-  --muted-foreground: #6b6b65;
+  /* >= 4.5:1 on both --background and --card; #6b6b65 failed WCAG AA at 3.9:1. */
+  --muted-foreground: #5a5a55;
 
   --accent: #eeeeeb;
   --accent-foreground: #111111;
@@ -238,6 +241,7 @@
   --code: #0d1117;
   --code-foreground: #e6edf3;
   --code-muted: #8b949e;
+  --code-inline: #26262c;
   --code-border: #30363d;
   --code-tab: #161b22;
   --code-token-base: var(--code-foreground);

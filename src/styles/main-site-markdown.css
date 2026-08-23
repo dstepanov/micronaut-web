@@ -83,7 +83,7 @@
   }
 
   & :not(pre) > code {
-    @apply rounded-[0.35rem] border border-border bg-muted px-[0.32rem] py-[0.1rem] text-[0.9em] leading-[1.4] text-foreground;
+    @apply rounded-[0.35rem] border border-border bg-code-inline px-[0.32rem] py-[0.1rem] text-[0.9em] leading-[1.4] text-foreground;
   }
 
   & pre {
