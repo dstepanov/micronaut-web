@@ -357,6 +357,20 @@ test("docs page renders related latest guides from the guides manifest", async (
   await expect(
     relatedGuides.getByRole("heading", { name: "Latest guides" }),
   ).toBeVisible();
+
+  // The block is collapsed, so the first line of documentation stays within a
+  // screen of the page title instead of a screen and a half of guide cards.
+  const collapsedBox = await relatedGuides.boundingBox();
+  assertBox(collapsedBox, "collapsed related guides");
+  expect(collapsedBox.height).toBeLessThan(120);
+  const introductionBox = await page
+    .locator("[data-generated-docs]")
+    .getByRole("heading", { name: "1 Introduction" })
+    .boundingBox();
+  assertBox(introductionBox, "first docs section heading");
+  expect(introductionBox.y).toBeLessThan(page.viewportSize()!.height);
+
+  await openRelatedGuides(relatedGuides);
   await expect(
     relatedGuides.getByRole("link", { name: "Show more" }),
   ).toHaveAttribute(
@@ -441,12 +455,14 @@ test("docs related guides show more link follows shorter result counts", async (
   const coreRelatedGuides = page.locator("[data-docs-related-guides]");
   await expect(coreRelatedGuides).toBeVisible();
   await expect(coreRelatedGuides.locator('[data-slot="card"]')).toHaveCount(2);
+  await openRelatedGuides(coreRelatedGuides);
   await expectShowMoreBelowCard(coreRelatedGuides, 1);
 
   await page.goto(appPath("/docs/serde/"));
   const serdeRelatedGuides = page.locator("[data-docs-related-guides]");
   await expect(serdeRelatedGuides).toBeVisible();
   await expect(serdeRelatedGuides.locator('[data-slot="card"]')).toHaveCount(1);
+  await openRelatedGuides(serdeRelatedGuides);
   await expectShowMoreBelowCard(serdeRelatedGuides, 0);
 
   expect(failures).toEqual([]);
@@ -807,6 +823,16 @@ async function expectDocsLinkActive(
   }
   await expect(link).not.toHaveClass(/(^|\s)active(\s|$)/);
   await expect(link).not.toHaveAttribute("aria-current", "location");
+}
+
+async function openRelatedGuides(section: Locator): Promise<void> {
+  const disclosure = section.locator(".docs-related-guides-disclosure");
+  await expect(disclosure).toBeVisible();
+  if (await disclosure.evaluate((element) => element.hasAttribute("open"))) {
+    return;
+  }
+  await section.locator(".docs-related-guides-summary").click();
+  await expect(disclosure).toHaveAttribute("open", "");
 }
 
 async function expectShowMoreBelowCard(

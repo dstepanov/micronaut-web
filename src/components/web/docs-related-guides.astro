@@ -1,5 +1,5 @@
 ---
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, ChevronRightIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -36,34 +36,35 @@ const showMoreHref = withSurfacePath(
   data-topic-aliases={JSON.stringify(topicAliases)}
   aria-busy="true"
 >
-  <div class="docs-related-guides-header">
-    <div class="docs-related-guides-heading-wrap">
+  <details class="docs-related-guides-disclosure">
+    <summary class="docs-related-guides-summary">
+      <ChevronRightIcon className="docs-related-guides-marker" aria-hidden="true" />
       <h2 class="docs-related-guides-heading">Latest guides</h2>
+    </summary>
+    <div class="docs-related-guides-grid" data-docs-related-guides-grid>
+      {[0, 1, 2].map(() => (
+        <Card className="docs-related-guide-card" aria-hidden="true">
+          <CardHeader>
+            <div class="docs-related-guide-skeleton-badges">
+              <Skeleton className="docs-related-guide-skeleton-badge-primary" />
+              <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
+            </div>
+            <Skeleton className="docs-related-guide-skeleton-title" />
+            <div class="docs-related-guide-skeleton-description">
+              <Skeleton className="docs-related-guide-skeleton-line-full" />
+              <Skeleton className="docs-related-guide-skeleton-line-short" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="docs-related-guide-skeleton-meta" />
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="docs-related-guide-skeleton-button" />
+          </CardFooter>
+        </Card>
+      ))}
     </div>
-  </div>
-  <div class="docs-related-guides-grid" data-docs-related-guides-grid>
-    {[0, 1, 2].map(() => (
-      <Card className="docs-related-guide-card" aria-hidden="true">
-        <CardHeader>
-          <div class="docs-related-guide-skeleton-badges">
-            <Skeleton className="docs-related-guide-skeleton-badge-primary" />
-            <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
-          </div>
-          <Skeleton className="docs-related-guide-skeleton-title" />
-          <div class="docs-related-guide-skeleton-description">
-            <Skeleton className="docs-related-guide-skeleton-line-full" />
-            <Skeleton className="docs-related-guide-skeleton-line-short" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="docs-related-guide-skeleton-meta" />
-        </CardContent>
-        <CardFooter>
-          <Skeleton className="docs-related-guide-skeleton-button" />
-        </CardFooter>
-      </Card>
-    ))}
-  </div>
+  </details>
 
   <template data-docs-related-guide-template>
     <div class="docs-related-guide-item">

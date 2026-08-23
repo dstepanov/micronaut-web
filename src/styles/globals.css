@@ -639,23 +639,31 @@
   }
 
   .docs-related-guides {
-    @apply my-8 grid gap-4;
+    @apply my-8;
   }
 
-  .docs-related-guides-header {
-    @apply flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between;
+  .docs-related-guides-disclosure {
+    @apply rounded-lg border bg-card/40;
   }
 
-  .docs-related-guides-heading-wrap {
-    @apply min-w-0;
+  .docs-related-guides-summary {
+    @apply flex cursor-pointer list-none items-center gap-2 rounded-lg px-4 py-3 outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden;
+  }
+
+  .docs-related-guides-marker {
+    @apply size-4 shrink-0 text-muted-foreground transition-transform;
+  }
+
+  .docs-related-guides-disclosure[open] .docs-related-guides-marker {
+    @apply rotate-90;
   }
 
   .docs-related-guides-heading {
-    @apply text-2xl font-semibold tracking-normal;
+    @apply text-lg font-semibold tracking-normal;
   }
 
   .docs-related-guides-grid {
-    @apply grid gap-4 lg:grid-cols-3;
+    @apply grid gap-4 px-4 pb-4 lg:grid-cols-3;
   }
 
   .docs-related-guide-item {
