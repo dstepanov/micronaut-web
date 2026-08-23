@@ -1,7 +1,7 @@
 ---
 order: 8
 title: Micronaut Blog
-eyebrow: Resources
+eyebrow: Blog
 description: Follow the Micronaut framework's evolution and keep up with the team's activities and accomplishments.
 sourceUrl: https://micronaut.io/blog/
 intro: Read Micronaut project news, technical articles, release posts, community updates, and ecosystem announcements.
