@@ -124,6 +124,12 @@
     }
   }
 
+  /* Running text tops out near 80ch; code, tables, and admonitions keep the
+     full column. */
+  & .paragraph:not(:where(table *, .admonitionblock *)) {
+    max-width: 46rem;
+  }
+
   & :not(pre) > code {
     @apply rounded border border-border bg-code-inline px-1 py-[0.05rem] text-[0.9em] text-foreground;
   }
