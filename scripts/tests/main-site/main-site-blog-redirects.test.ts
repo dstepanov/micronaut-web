@@ -4,8 +4,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { transform } from "esbuild";
-
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -299,46 +297,19 @@ test("both legacy blog route modules use shared base-path redirects", async (): 
 });
 
 async function importBlogRedirects(): Promise<any> {
-  return importTypeScriptModule(
-    path.join(projectDirectory, "src", "lib", "blog-redirects.ts"),
-    "blog-redirects.mjs",
-  );
+  return importLibraryModule("blog-redirects.ts");
 }
 
 async function importBasePath(): Promise<any> {
-  return importTypeScriptModule(
-    path.join(projectDirectory, "src", "lib", "base-path.ts"),
-    "base-path.mjs",
-  );
+  return importLibraryModule("base-path.ts");
 }
 
 async function importFaqParser(): Promise<any> {
-  return importTypeScriptModule(
-    path.join(projectDirectory, "src", "lib", "main-site-faq.ts"),
-    "main-site-faq.mjs",
-  );
+  return importLibraryModule("main-site-faq.ts");
 }
 
-async function importTypeScriptModule(
-  sourceFile: any,
-  moduleName: any,
-): Promise<any> {
-  const source = await fs.readFile(sourceFile, "utf8");
-  const result = await transform(source, {
-    format: "esm",
-    loader: "ts",
-    sourcefile: sourceFile,
-    target: "es2022",
-  });
-
-  const temporaryDirectory = await fs.mkdtemp(
-    path.join(projectDirectory, ".tmp-tests-"),
+async function importLibraryModule(moduleName: string): Promise<any> {
+  return import(
+    pathToFileURL(path.join(projectDirectory, "src", "lib", moduleName)).href
   );
-  const moduleFile = path.join(temporaryDirectory, moduleName);
-  await fs.writeFile(moduleFile, result.code, "utf8");
-  try {
-    return await import(pathToFileURL(moduleFile).href);
-  } finally {
-    await fs.rm(temporaryDirectory, { force: true, recursive: true });
-  }
 }
