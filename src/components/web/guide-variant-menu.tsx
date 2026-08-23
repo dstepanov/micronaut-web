@@ -36,6 +36,7 @@ export function GuideVariantMenu({
         <Button
           size="icon-sm"
           variant="outline"
+          className="rounded-l-none border-l-0"
           aria-label={`Choose variant for ${title}`}
         >
           <ChevronDownIcon className="size-4" />
