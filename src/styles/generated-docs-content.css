@@ -125,7 +125,7 @@
   }
 
   & :not(pre) > code {
-    @apply rounded bg-muted px-1 py-[0.05rem] text-[0.9em] text-foreground;
+    @apply rounded border border-border bg-code-inline px-1 py-[0.05rem] text-[0.9em] text-foreground;
   }
 
   &
@@ -147,13 +147,15 @@
 
   & .admonitionblock {
     @apply overflow-hidden rounded-[0.5rem] border border-border bg-muted;
+    border-left: 3px solid var(--admonition-accent, var(--border));
 
     & table {
       @apply w-full border-collapse;
     }
 
     & td.icon {
-      @apply w-[4.25rem] px-3 py-4 text-center align-top text-[0.72rem] font-bold text-muted-foreground uppercase;
+      @apply w-[4.25rem] px-3 py-4 text-center align-top text-[0.72rem] font-bold uppercase;
+      color: var(--admonition-accent, var(--muted-foreground));
     }
 
     & td.content {
@@ -164,6 +166,25 @@
         @apply mb-0;
       }
     }
+  }
+
+  /* AA-checked label/border accents per admonition type; NOTE, TIP, WARNING,
+     and IMPORTANT previously rendered identically. */
+  & .admonitionblock.note {
+    --admonition-accent: #2b6399;
+  }
+
+  & .admonitionblock.tip {
+    --admonition-accent: #187733;
+  }
+
+  & .admonitionblock.warning {
+    --admonition-accent: #8a5c00;
+  }
+
+  & .admonitionblock.important,
+  & .admonitionblock.caution {
+    --admonition-accent: var(--destructive);
   }
 
   & table.tableblock {
@@ -193,6 +214,18 @@
 
 .dark .generated-docs-content,
 .dark .generated-guides-content {
+  & .admonitionblock.note {
+    --admonition-accent: #78b4ee;
+  }
+
+  & .admonitionblock.tip {
+    --admonition-accent: #7ee787;
+  }
+
+  & .admonitionblock.warning {
+    --admonition-accent: #d29922;
+  }
+
   & .shiki {
     background-color: var(--shiki-dark-bg);
     color: var(--shiki-dark);
