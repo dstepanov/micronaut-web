@@ -271,7 +271,7 @@ const postCategory =
             "mx-auto px-5 py-12 sm:px-6 lg:py-16",
             usesPublicMarkdownLayout || isBlogArchiveRoute
               ? "max-w-[var(--page-max)]"
-              : "max-w-[900px]",
+              : "max-w-[780px]",
           ]}
         >
           {(!usesPublicMarkdownLayout || isBlogArchiveRoute) && (
@@ -290,7 +290,7 @@ const postCategory =
               )}
               <h1
                 class:list={[
-                  "text-3xl font-bold leading-tight text-foreground md:text-5xl",
+                  "text-3xl font-bold leading-tight text-balance text-foreground md:text-5xl",
                   (post || pageData.eyebrow !== "Blog") && "mt-5",
                 ]}
               >
@@ -387,10 +387,6 @@ const postCategory =
                       ? "Latest articles"
                       : "Available articles"}
                   </h2>
-                  <p class="mt-2 text-sm leading-6 text-muted-foreground">
-                    {archivePosts.length}{" "}
-                    {archivePosts.length === 1 ? "entry" : "entries"} shown
-                  </p>
                 </div>
                 {routeSlug === "blog" &&
                   blogArchiveTotalPages &&
@@ -399,7 +395,7 @@ const postCategory =
                       href={withBasePath("/blog/page/2/")}
                       class="text-sm font-medium text-brand underline-offset-4 hover:underline"
                     >
-                      Browse older articles -&gt;
+                      Browse older articles &rarr;
                     </a>
                   )}
               </div>
@@ -448,14 +444,14 @@ const postCategory =
                         )}
                         class="font-medium text-brand underline-offset-4 hover:underline"
                       >
-                        &lt;- Previous
+                        &larr; Previous
                       </a>
                     ) : blogArchivePage > 1 ? (
                       <a
                         href={withBasePath("/blog/")}
                         class="font-medium text-brand underline-offset-4 hover:underline"
                       >
-                        &lt;- Previous
+                        &larr; Previous
                       </a>
                     ) : (
                       <span />
@@ -470,7 +466,7 @@ const postCategory =
                         )}
                         class="font-medium text-brand underline-offset-4 hover:underline"
                       >
-                        Next -&gt;
+                        Next &rarr;
                       </a>
                     )}
                   </nav>
