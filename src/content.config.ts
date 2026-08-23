@@ -5,7 +5,7 @@ import { z } from "astro/zod";
 const mainSitePages = defineCollection({
   loader: glob({
     base: "./src/content/main-site/pages",
-    pattern: ["**/*.md", "!code-examples/*.md"]
+    pattern: ["**/*.md", "!code-examples/*.md"],
   }),
   schema: z.object({
     order: z.number(),
@@ -33,28 +33,28 @@ const mainSitePages = defineCollection({
     logo: z.string().optional(),
     logoDark: z.string().optional(),
     logoClass: z.string().optional(),
-    logoInvertOnDark: z.boolean().default(false)
-  })
+    logoInvertOnDark: z.boolean().default(false),
+  }),
 });
 
 const codeExamples = defineCollection({
   loader: glob({
     base: "./src/content/main-site/pages/code-examples",
-    pattern: "*.md"
+    pattern: "*.md",
   }),
   schema: z.object({
     id: z.string(),
     order: z.number(),
     label: z.string(),
     title: z.string(),
-    description: z.string()
-  })
+    description: z.string(),
+  }),
 });
 
 const blogPosts = defineCollection({
   loader: glob({
     base: "./src/content/main-site/blog",
-    pattern: "**/*.md"
+    pattern: "**/*.md",
   }),
   schema: z.object({
     order: z.number().optional(),
@@ -83,12 +83,12 @@ const blogPosts = defineCollection({
     logo: z.string().optional(),
     logoDark: z.string().optional(),
     logoClass: z.string().optional(),
-    logoInvertOnDark: z.boolean().default(false)
-  })
+    logoInvertOnDark: z.boolean().default(false),
+  }),
 });
 
 export const collections = {
   codeExamples,
   mainSitePages,
-  blogPosts
+  blogPosts,
 };

@@ -24,7 +24,8 @@ const alignGeneratedDocsHash = () => {
     Number.parseFloat(
       window.getComputedStyle(document.documentElement).scrollPaddingTop,
     ) || 80;
-  const top = target.getBoundingClientRect().top + window.scrollY - scrollPaddingTop;
+  const top =
+    target.getBoundingClientRect().top + window.scrollY - scrollPaddingTop;
   window.scrollTo({ top: Math.max(0, top) });
 };
 

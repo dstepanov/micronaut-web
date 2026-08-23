@@ -17,7 +17,7 @@ type HighlightableExample = {
 
 const shikiThemes = {
   light: "github-light-default",
-  dark: "github-dark-default"
+  dark: "github-dark-default",
 } as const;
 const calloutMarkerPrefix = "__MICRONAUT_CALLOUT_";
 const calloutMarkerSuffix = "__";
@@ -50,7 +50,7 @@ const shikiLanguageAliases: Record<string, string> = {
   txt: "text",
   yaml: "yaml",
   yml: "yaml",
-  zsh: "shellscript"
+  zsh: "shellscript",
 };
 
 export async function highlightCodeSnippetHtml(code: string, language: string) {
@@ -59,44 +59,53 @@ export async function highlightCodeSnippetHtml(code: string, language: string) {
   try {
     highlighted = await codeToHtml(markedCode, {
       lang: shikiLanguage(language),
-      themes: shikiThemes
+      themes: shikiThemes,
     });
   } catch {
     highlighted = await codeToHtml(markedCode, {
       lang: "text",
-      themes: shikiThemes
+      themes: shikiThemes,
     });
   }
 
   const codeHtml = extractCodeHtml(highlighted);
   return normalizePropertiesHighlighting(codeHtml, language)
     .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
-    .replace(new RegExp(`${calloutMarkerPrefix}(\\d+)${calloutMarkerSuffix}`, "g"), '<i class="conum" data-value="$1"></i>');
+    .replace(
+      new RegExp(`${calloutMarkerPrefix}(\\d+)${calloutMarkerSuffix}`, "g"),
+      '<i class="conum" data-value="$1"></i>',
+    );
 }
 
-export async function highlightCodeSnippetVariants<T extends HighlightableVariant>(variants: T[]) {
+export async function highlightCodeSnippetVariants<
+  T extends HighlightableVariant,
+>(variants: T[]) {
   return Promise.all(
     variants.map(async (variant) => ({
       ...variant,
       highlightedHtml: await highlightCodeSnippetHtml(
         variant.code,
-        variant.highlighterLanguage || variant.language
-      )
-    }))
+        variant.highlighterLanguage || variant.language,
+      ),
+    })),
   );
 }
 
-export async function highlightCodeSnippetExamples<T extends HighlightableExample>(examples: T[]) {
+export async function highlightCodeSnippetExamples<
+  T extends HighlightableExample,
+>(examples: T[]) {
   return Promise.all(
     examples.map(async (example) => ({
       ...example,
-      variants: await highlightCodeSnippetVariants(example.variants)
-    }))
+      variants: await highlightCodeSnippetVariants(example.variants),
+    })),
   );
 }
 
 export function shikiLanguage(language: string) {
-  const normalized = String(language || "text").trim().toLowerCase();
+  const normalized = String(language || "text")
+    .trim()
+    .toLowerCase();
   return shikiLanguageAliases[normalized] || normalized || "text";
 }
 
@@ -112,8 +121,10 @@ function normalizePropertiesHighlighting(
 
 function extractCodeHtml(source: string) {
   const fragment = parse5.parseFragment(source);
-  const code = firstDescendant(fragment, (node): node is DefaultTreeAdapterMap["element"] =>
-    "tagName" in node && node.tagName === "code"
+  const code = firstDescendant(
+    fragment,
+    (node): node is DefaultTreeAdapterMap["element"] =>
+      "tagName" in node && node.tagName === "code",
   );
   if (!code) {
     return "";
@@ -128,13 +139,13 @@ function encodeCalloutMarkers(source: string) {
   return source.replace(
     /<!--(\d+)-->|<(\d+)>/g,
     (_match, commentNumber: string, angleNumber: string) =>
-      `${calloutMarkerPrefix}${commentNumber || angleNumber}${calloutMarkerSuffix}`
+      `${calloutMarkerPrefix}${commentNumber || angleNumber}${calloutMarkerSuffix}`,
   );
 }
 
 function firstDescendant<T extends DefaultTreeAdapterMap["node"]>(
   node: DefaultTreeAdapterMap["node"],
-  predicate: (node: DefaultTreeAdapterMap["node"]) => node is T
+  predicate: (node: DefaultTreeAdapterMap["node"]) => node is T,
 ): T | undefined {
   if (predicate(node)) {
     return node;
@@ -154,6 +165,6 @@ function firstDescendant<T extends DefaultTreeAdapterMap["node"]>(
 function serializeNode(node: DefaultTreeAdapterMap["childNode"]) {
   return parse5.serialize({
     childNodes: [node],
-    nodeName: "#document-fragment"
+    nodeName: "#document-fragment",
   });
 }

@@ -2,7 +2,8 @@ import "@/styles/globals.css";
 
 const headerSelector = "[data-micronaut-site-header]";
 const styleSelector = "link[data-micronaut-site-header-style]";
-let headerClient: Promise<typeof import("./site-header-shell-client")> | undefined;
+let headerClient:
+  Promise<typeof import("./site-header-shell-client")> | undefined;
 
 ensureShellStyles();
 mountAll();
@@ -14,10 +15,15 @@ window.MicronautSiteHeader = {
 };
 
 function mountAll(): void {
-  for (const element of document.querySelectorAll<HTMLElement>(headerSelector)) {
+  for (const element of document.querySelectorAll<HTMLElement>(
+    headerSelector,
+  )) {
     element.addEventListener("pointerenter", loadHeader, { once: true });
     element.addEventListener("focusin", loadHeader, { once: true });
-    element.addEventListener("touchstart", loadHeader, { once: true, passive: true });
+    element.addEventListener("touchstart", loadHeader, {
+      once: true,
+      passive: true,
+    });
   }
 
   document.addEventListener("click", (event) => {
@@ -31,7 +37,9 @@ function mountAll(): void {
       mountHeaderClient();
       requestAnimationFrame(() => {
         document
-          .querySelector<HTMLElement>(trigger.dataset.micronautHeaderInteraction || "")
+          .querySelector<HTMLElement>(
+            trigger.dataset.micronautHeaderInteraction || "",
+          )
           ?.click();
       });
     });
@@ -40,7 +48,9 @@ function mountAll(): void {
 
 function loadHeader(): void {
   headerClient ||= import("./site-header-shell-client");
-  void headerClient.then(({ mountAll: mountHeaderClient }) => mountHeaderClient());
+  void headerClient.then(({ mountAll: mountHeaderClient }) =>
+    mountHeaderClient(),
+  );
 }
 
 function scheduleHeaderLoad(): void {

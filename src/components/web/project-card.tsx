@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import { IconBadge } from "@/components/web/icon-badge";
 import { withBasePath } from "@/lib/base-path";
@@ -19,7 +19,10 @@ export function ProjectCard({ project }: { project: DocsProject }) {
         <IconBadge name={project.icon} size="sm" themeTreatment="monochrome" />
         <div className="min-w-0">
           <CardTitle className="text-[0.96rem] leading-snug">
-            <a href={withBasePath(project.href)} className="text-foreground no-underline hover:underline">
+            <a
+              href={withBasePath(project.href)}
+              className="text-foreground no-underline hover:underline"
+            >
               {project.shortName}
             </a>
           </CardTitle>
@@ -29,7 +32,9 @@ export function ProjectCard({ project }: { project: DocsProject }) {
         </div>
       </CardHeader>
       <CardContent className="min-h-20 px-4">
-        <p className="line-clamp-5 text-[0.86rem] leading-6 text-muted-foreground">{project.longDescription}</p>
+        <p className="line-clamp-5 text-[0.86rem] leading-6 text-muted-foreground">
+          {project.longDescription}
+        </p>
       </CardContent>
       <CardFooter className="mt-auto justify-between gap-3 px-4 pt-0 text-xs text-muted-foreground">
         <span className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -51,7 +56,11 @@ export function ProjectCard({ project }: { project: DocsProject }) {
             </a>
           ) : null}
         </span>
-        {project.version ? <span className="shrink-0 text-[0.72rem] leading-5">{project.version}</span> : null}
+        {project.version ? (
+          <span className="shrink-0 text-[0.72rem] leading-5">
+            {project.version}
+          </span>
+        ) : null}
       </CardFooter>
     </Card>
   );

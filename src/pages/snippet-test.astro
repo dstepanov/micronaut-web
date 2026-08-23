@@ -40,10 +40,14 @@ const snippetTestHighlightedHtmlByKey = Object.fromEntries(
   noindex
 >
   <main class="border-b bg-background">
-    <div class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-10 sm:px-6 xl:px-0">
+    <div
+      class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-10 sm:px-6 xl:px-0"
+    >
       <header class="max-w-3xl">
         <Badge variant="secondary" className="mb-4">Internal visual test</Badge>
-        <h1 class="text-3xl font-bold tracking-tight md:text-4xl">Snippet Rendering Test</h1>
+        <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
+          Snippet Rendering Test
+        </h1>
         <p class="mt-3 text-base leading-7 text-muted-foreground">
           This page renders the shared React snippet components.
         </p>
@@ -53,10 +57,14 @@ const snippetTestHighlightedHtmlByKey = Object.fromEntries(
         <div>
           <h2 class="text-2xl font-semibold tracking-tight">Component path</h2>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            These snippets are rendered directly through the reusable React components.
+            These snippets are rendered directly through the reusable React
+            components.
           </p>
         </div>
-        <SnippetTestGallery highlightedHtmlByKey={snippetTestHighlightedHtmlByKey} client:visible />
+        <SnippetTestGallery
+          highlightedHtmlByKey={snippetTestHighlightedHtmlByKey}
+          client:visible
+        />
       </section>
     </div>
   </main>

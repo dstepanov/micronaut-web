@@ -5,6 +5,7 @@
 .vscode/
 .playwright/
 .playwright-mcp/
+.worktrees/
 .docs/
 external/
 

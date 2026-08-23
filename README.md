@@ -23,7 +23,7 @@ npm run build:guides
 
 ## Script Development
 
-All repository scripts under `scripts/` must be TypeScript files. Add new scripts as `.ts`, import other local script modules with `.ts` extensions, invoke them from `package.json` with `node scripts/...ts` or `node --test scripts/tests/...test.ts`, and keep the full `npm run typecheck:scripts` TypeScript check passing. The script check uses strict TypeScript settings and non-pretty compiler output for CI logs. TypeScript script style is checked separately with `npm run style:scripts`, which is scoped to `scripts/**/*.ts` only. Node 24 or newer is assumed for direct TypeScript script execution, matching CI.
+All repository scripts under `scripts/` must be TypeScript files. Add new scripts as `.ts`, import other local script modules with `.ts` extensions, invoke them from `package.json` with `node scripts/...ts` or `node --test scripts/tests/...test.ts`, and keep the full `npm run typecheck:scripts` TypeScript check passing. The script check uses strict TypeScript settings and non-pretty compiler output for CI logs. Formatting is checked with `npm run style`, which covers `scripts/`, `src/` and `tests/` (`.ts`, `.tsx`, `.astro`) plus `astro.config.mjs`; `npm run style:fix` rewrites them. Node 24 or newer is assumed for direct TypeScript script execution, matching CI.
 
 ### Package Scripts
 
@@ -46,7 +46,8 @@ All repository scripts under `scripts/` must be TypeScript files. Add new script
 | `npm run test:deployment`           | Runs deployment, pruning, publishing, and surface-routing script tests.                                                 |
 | `npm run typecheck`                 | Runs the main TypeScript project check.                                                                                 |
 | `npm run typecheck:scripts`         | Runs the strict TypeScript check for files under `scripts/`.                                                            |
-| `npm run style:scripts`             | Checks TypeScript script formatting with Prettier.                                                                      |
+| `npm run style`                     | Checks `scripts/`, `src/` and `tests/` formatting with Prettier.                                                         |
+| `npm run style:fix`                 | Rewrites those files with Prettier.                                                                                     |
 | `npm run dev`                       | Runs the full check, prepares generated content, and starts Astro dev on `127.0.0.1`.                                   |
 | `npm run build:site`                | Runs checks, prepares generated content, builds Astro, builds the shared header shell, and prepares template artifacts. |
 | `npm run build`                     | Same as `build:site`; kept as the default full-site build command.                                                      |
@@ -309,7 +310,7 @@ The docs workflow does not check out or render Micronaut Guides.
 The published docs branch layout is:
 
 - `/index.html`: docs selector/index.
-- `/versions.json`: compact selector data for published versions.
+- `/versions.json`: compact selector data for published versions. `scripts/update-docs-version-manifest.ts` regenerates `src/data/docs-versions.json` from the published docs branch during a docs deploy; the tracked copy is only the static fallback the selector renders before that fetch resolves, so it deliberately carries no patch version and must not be updated per release.
 - `/latest/`: latest docs tree when `publish_latest=true`.
 - `/latest.html`: redirect to `/latest/`.
 - `/latest/guide/index.html`: compatibility redirect to `/latest/core/`.

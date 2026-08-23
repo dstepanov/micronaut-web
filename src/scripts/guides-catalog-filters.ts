@@ -8,7 +8,8 @@ if (catalog) {
   const tag = normalizeTopic(activeTag || params.get("tag") || "");
   const sort = params.get("sort") || "latest";
   const hasFilters = Boolean(query || category || tag || sort !== "latest");
-  const searchInput = catalog.querySelector<HTMLInputElement>('input[name="q"]');
+  const searchInput =
+    catalog.querySelector<HTMLInputElement>('input[name="q"]');
 
   if (searchInput) {
     searchInput.value = query;
@@ -56,7 +57,9 @@ if (catalog) {
       latestSection.hidden = true;
     }
 
-    const emptyState = catalog.querySelector<HTMLElement>("[data-guides-empty]");
+    const emptyState = catalog.querySelector<HTMLElement>(
+      "[data-guides-empty]",
+    );
     if (emptyState) {
       emptyState.hidden = visibleCards.size > 0;
     }

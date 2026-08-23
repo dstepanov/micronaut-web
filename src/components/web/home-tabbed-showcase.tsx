@@ -25,17 +25,23 @@ export function HomeTabbedShowcase() {
       </div>
       <TabsContent value="projects">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {projects.map((project) => <ProjectCard key={project.slug} project={project} />)}
+          {projects.map((project) => (
+            <ProjectCard key={project.slug} project={project} />
+          ))}
         </div>
       </TabsContent>
       <TabsContent value="guides">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {guides.slice(0, 8).map((guide) => <GuideCard key={guide.slug} guide={guide} />)}
+          {guides.slice(0, 8).map((guide) => (
+            <GuideCard key={guide.slug} guide={guide} />
+          ))}
         </div>
       </TabsContent>
       <TabsContent value="latest">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {latest.map((guide) => <GuideCard key={guide.slug} guide={guide} />)}
+          {latest.map((guide) => (
+            <GuideCard key={guide.slug} guide={guide} />
+          ))}
         </div>
       </TabsContent>
     </Tabs>

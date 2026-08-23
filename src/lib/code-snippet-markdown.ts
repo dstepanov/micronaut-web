@@ -1,14 +1,15 @@
 import type {
   CodeSnippetLanguage,
-  CodeSnippetVariant
+  CodeSnippetVariant,
 } from "@/components/web/docs-code-snippet";
 import {
   codeLanguageFromFenceInfo,
   formatCodeLanguage,
-  highlighterLanguageFor
+  highlighterLanguageFor,
 } from "@/lib/code-snippet-languages";
 
-const codeFencePattern = /^( {0,3})(`{3,}|~{3,})([^\r\n]*)\r?\n([\s\S]*?)^\1\2[ \t]*$/gm;
+const codeFencePattern =
+  /^( {0,3})(`{3,}|~{3,})([^\r\n]*)\r?\n([\s\S]*?)^\1\2[ \t]*$/gm;
 const supportedCodeSnippetLanguages = new Set<CodeSnippetLanguage>([
   "bash",
   "gradle",
@@ -17,21 +18,26 @@ const supportedCodeSnippetLanguages = new Set<CodeSnippetLanguage>([
   "kotlin",
   "maven",
   "python",
-  "text"
+  "text",
 ]);
 const codeSnippetLanguageAliases: Record<string, CodeSnippetLanguage> = {
   bash: "bash",
-  xml: "maven"
+  xml: "maven",
 };
 
-export function parseMarkdownCodeSnippetVariants(markdown: string, context = "Markdown code example"): CodeSnippetVariant[] {
+export function parseMarkdownCodeSnippetVariants(
+  markdown: string,
+  context = "Markdown code example",
+): CodeSnippetVariant[] {
   const variants = Array.from(markdown.matchAll(codeFencePattern), (match) => {
     const info = match[3]?.trim() ?? "";
     const code = trimTrailingNewline(match[4] ?? "");
     const detectedLanguage = codeLanguageFromFenceInfo(info, code, context);
-    const language = supportedCodeSnippetLanguages.has(detectedLanguage as CodeSnippetLanguage)
-      ? detectedLanguage as CodeSnippetLanguage
-      : codeSnippetLanguageAliases[detectedLanguage] ?? "text";
+    const language = supportedCodeSnippetLanguages.has(
+      detectedLanguage as CodeSnippetLanguage,
+    )
+      ? (detectedLanguage as CodeSnippetLanguage)
+      : (codeSnippetLanguageAliases[detectedLanguage] ?? "text");
     const label = formatCodeLanguage(language);
     const highlighterLanguage = highlighterLanguageFor(detectedLanguage);
 
@@ -40,7 +46,7 @@ export function parseMarkdownCodeSnippetVariants(markdown: string, context = "Ma
       fileName: label,
       ...(highlighterLanguage !== language ? { highlighterLanguage } : {}),
       label,
-      language
+      language,
     };
   });
 
@@ -51,7 +57,9 @@ export function parseMarkdownCodeSnippetVariants(markdown: string, context = "Ma
   const languages = new Set<string>();
   for (const variant of variants) {
     if (languages.has(variant.language)) {
-      throw new Error(`${context} defines duplicate "${variant.language}" code variants.`);
+      throw new Error(
+        `${context} defines duplicate "${variant.language}" code variants.`,
+      );
     }
     languages.add(variant.language);
   }

@@ -10,7 +10,9 @@ import {
 
 export function GuidesFilterPanel() {
   const topTags = Array.from(
-    new Set(staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags)),
+    new Set(
+      staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags),
+    ),
   )
     .sort()
     .slice(0, 36);
@@ -21,7 +23,9 @@ export function GuidesFilterPanel() {
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="grid gap-5 p-2">
           <section className="grid gap-2">
-            <h2 className="px-2 text-[0.72rem] font-normal text-muted-foreground">Topics</h2>
+            <h2 className="px-2 text-[0.72rem] font-normal text-muted-foreground">
+              Topics
+            </h2>
             {categories.slice(0, 18).map((category) => (
               <a
                 key={category.slug}
@@ -35,10 +39,14 @@ export function GuidesFilterPanel() {
           </section>
           <Separator className="bg-sidebar-border/60" />
           <section className="grid gap-2">
-            <h2 className="px-2 text-[0.72rem] font-normal text-muted-foreground">Tags</h2>
+            <h2 className="px-2 text-[0.72rem] font-normal text-muted-foreground">
+              Tags
+            </h2>
             <div className="flex flex-wrap gap-1.5 px-2">
               {topTags.map((tag) => (
-                <Badge key={tag} variant="outline">{tag}</Badge>
+                <Badge key={tag} variant="outline">
+                  {tag}
+                </Badge>
               ))}
             </div>
           </section>

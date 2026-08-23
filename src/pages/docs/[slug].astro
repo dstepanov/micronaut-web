@@ -10,7 +10,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import DocsRelatedGuides from "@/components/web/docs-related-guides.astro";
@@ -18,7 +18,11 @@ import DocsShell from "@/components/web/docs-shell.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
-import { canonicalSurfaceUrl, withBasePath, withSurfacePath } from "@/lib/base-path";
+import {
+  canonicalSurfaceUrl,
+  withBasePath,
+  withSurfacePath,
+} from "@/lib/base-path";
 import {
   docsCatalogProject,
   loadDocsProjectCatalog,
@@ -36,7 +40,7 @@ export async function getStaticPaths() {
   }
   const docsProjectCatalog = await loadDocsProjectCatalog();
   return docsProjectCatalog.projects.map((project) => ({
-    params: { slug: project.slug }
+    params: { slug: project.slug },
   }));
 }
 
@@ -48,34 +52,61 @@ if (!project) {
 
 let generatedDocHtml: string | undefined;
 try {
-  generatedDocHtml = await readFile(join(process.cwd(), "src", "content", "generated-docs", `${project.slug}.html`), "utf8");
+  generatedDocHtml = await readFile(
+    join(
+      process.cwd(),
+      "src",
+      "content",
+      "generated-docs",
+      `${project.slug}.html`,
+    ),
+    "utf8",
+  );
   generatedDocHtml = enhanceGeneratedContentHtml(generatedDocHtml);
 } catch {
   generatedDocHtml = undefined;
 }
 
 const canonicalUrl = canonicalSurfaceUrl("docs", `/docs/${project.slug}/`);
-const generatedDocSections = generatedDocHtml ? extractGeneratedDocSections(generatedDocHtml) : [];
-const contentSections = generatedDocSections.length ? generatedDocSections : project.sections.map((section) => ({
-  id: section.id,
-  label: `${section.number}. ${section.title}`,
-  depth: 1,
-  parentId: undefined
-}));
-const activeProjectSections = contentSections.filter((section) => section.depth === 1);
-const currentSectionLinks = contentSections.filter((section) => section.depth > 1 && section.parentId);
-const initialRootId = activeProjectSections[0]?.id || currentSectionLinks[0]?.parentId;
+const generatedDocSections = generatedDocHtml
+  ? extractGeneratedDocSections(generatedDocHtml)
+  : [];
+const contentSections = generatedDocSections.length
+  ? generatedDocSections
+  : project.sections.map((section) => ({
+      id: section.id,
+      label: `${section.number}. ${section.title}`,
+      depth: 1,
+      parentId: undefined,
+    }));
+const activeProjectSections = contentSections.filter(
+  (section) => section.depth === 1,
+);
+const currentSectionLinks = contentSections.filter(
+  (section) => section.depth > 1 && section.parentId,
+);
+const initialRootId =
+  activeProjectSections[0]?.id || currentSectionLinks[0]?.parentId;
 const initialCurrentSectionIndexHidden =
   !initialRootId ||
   currentSectionLinks.every((section) => section.parentId !== initialRootId);
 const relatedGuideTopicAliases = project.guideTopicAliases || [];
 const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
 const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
-const generatedDocHtmlParts = generatedDocHtml && shouldRenderRelatedGuides ? splitGeneratedDocHtmlAfterProjectTitle(generatedDocHtml) : undefined;
+const generatedDocHtmlParts =
+  generatedDocHtml && shouldRenderRelatedGuides
+    ? splitGeneratedDocHtmlAfterProjectTitle(generatedDocHtml)
+    : undefined;
 
 function extractGeneratedDocSections(html: string) {
-  const sections: Array<{ id: string; label: string; depth: number; parentId?: string }> = [];
-  const headingPattern = /<h([1-6])\b([^>]*)\bid="([^"]+)"([^>]*)>([\s\S]*?)<\/h\1>/g;
+  const sections: Array<{
+    id: string;
+    label: string;
+    depth: number;
+    parentId?: string;
+  }> = [];
+  const headingPattern =
+    /<h([1-6])\b([^>]*)\bid="([^"]+)"([^>]*)>([\s\S]*?)<\/h\1>/g;
   let activeTopLevelId: string | undefined;
   for (const match of html.matchAll(headingPattern)) {
     const depth = Number(match[1]);
@@ -88,7 +119,7 @@ function extractGeneratedDocSections(html: string) {
         id: match[3],
         label,
         depth,
-        parentId: depth === 1 ? undefined : activeTopLevelId
+        parentId: depth === 1 ? undefined : activeTopLevelId,
       });
     }
     if (sections.length >= 600) {
@@ -110,7 +141,7 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
   const splitIndex = projectEnd + "</div>".length;
   return {
     titleHtml: html.slice(0, splitIndex),
-    bodyHtml: html.slice(splitIndex)
+    bodyHtml: html.slice(splitIndex),
   };
 }
 ---
@@ -126,114 +157,153 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
     activeSlug={project.slug}
     activeSections={activeProjectSections}
   >
-    <article class:list={[
-      "grid w-full grid-cols-1 py-6",
-      generatedDocHtml ? "px-4 md:px-12 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-8" : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0"
-    ]}>
+    <article
+      class:list={[
+        "grid w-full grid-cols-1 py-6",
+        generatedDocHtml
+          ? "px-4 md:px-12 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-8"
+          : "px-4 md:px-5 xl:grid-cols-[minmax(0,1fr)_240px] xl:px-0",
+      ]}
+    >
       <div class:list={["min-w-0", !generatedDocHtml && "xl:px-14"]}>
-        {!generatedDocHtml && (
-          <header id={`${project.slug}-docs`} class="mb-7 scroll-mt-24">
-            <div class="mb-4 flex items-center gap-3">
-              <IconBadge name={project.icon} size="lg" />
-              <Badge variant="secondary">{project.primaryCategory}</Badge>
-            </div>
-            <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{project.shortName}</h1>
-            <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">{project.longDescription}</p>
-            <ProjectReferenceLinks references={project.references} />
-          </header>
-        )}
-        {generatedDocHtml ? (
-          <>
-            {shouldRenderRelatedGuides ? (
-              <div data-generated-docs>
-                {generatedDocHtmlParts?.titleHtml && (
-                  <div class="generated-docs-content" set:html={generatedDocHtmlParts.titleHtml} />
-                )}
+        {
+          !generatedDocHtml && (
+            <header id={`${project.slug}-docs`} class="mb-7 scroll-mt-24">
+              <div class="mb-4 flex items-center gap-3">
+                <IconBadge name={project.icon} size="lg" />
+                <Badge variant="secondary">{project.primaryCategory}</Badge>
+              </div>
+              <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
+                {project.shortName}
+              </h1>
+              <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+                {project.longDescription}
+              </p>
+              <ProjectReferenceLinks references={project.references} />
+            </header>
+          )
+        }
+        {
+          generatedDocHtml ? (
+            <>
+              {shouldRenderRelatedGuides ? (
+                <div data-generated-docs>
+                  {generatedDocHtmlParts?.titleHtml && (
+                    <div
+                      class="generated-docs-content"
+                      set:html={generatedDocHtmlParts.titleHtml}
+                    />
+                  )}
+                  <DocsRelatedGuides
+                    manifestUrl={guidesManifestUrl}
+                    topicAliases={relatedGuideTopicAliases}
+                  />
+                  {generatedDocHtmlParts?.bodyHtml && (
+                    <div
+                      class="generated-docs-content"
+                      set:html={generatedDocHtmlParts.bodyHtml}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div
+                  class="generated-docs-content"
+                  data-generated-docs
+                  set:html={generatedDocHtml}
+                />
+              )}
+              <GeneratedDocsStaticEnhancer />
+            </>
+          ) : (
+            <>
+              {shouldRenderRelatedGuides && (
                 <DocsRelatedGuides
                   manifestUrl={guidesManifestUrl}
                   topicAliases={relatedGuideTopicAliases}
                 />
-                {generatedDocHtmlParts?.bodyHtml && (
-                  <div class="generated-docs-content" set:html={generatedDocHtmlParts.bodyHtml} />
-                )}
-              </div>
-            ) : (
-              <div class="generated-docs-content" data-generated-docs set:html={generatedDocHtml} />
-            )}
-            <GeneratedDocsStaticEnhancer />
-          </>
-        ) : (
-          <>
-            {shouldRenderRelatedGuides && (
-              <DocsRelatedGuides
-                manifestUrl={guidesManifestUrl}
-                topicAliases={relatedGuideTopicAliases}
-              />
-            )}
-            <div class="grid gap-8 text-base leading-7">
-              {project.sections.map((section) => (
-                <section id={section.id} class="scroll-mt-24">
-                  <h2 class="text-2xl font-semibold tracking-tight">{section.number}. {section.title}</h2>
-                  <p class="mt-3 max-w-3xl text-muted-foreground">{section.summary}</p>
-                  <Card className="mt-4">
-                    <CardHeader>
-                      <CardTitle className="text-base">{section.title}</CardTitle>
-                      <CardDescription>{project.displayName} reference entry.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p>
-                        This lightweight docs page is ready for generated module documentation, API references,
-                        configuration pages, and search entries while preserving the shared Micronaut web styling.
-                      </p>
-                      <div class="mt-4 overflow-hidden rounded-lg border bg-muted/50">
-                        <pre class="overflow-x-auto p-4 text-sm leading-7"><code>{`micronaut.project=${project.slug}
+              )}
+              <div class="grid gap-8 text-base leading-7">
+                {project.sections.map((section) => (
+                  <section id={section.id} class="scroll-mt-24">
+                    <h2 class="text-2xl font-semibold tracking-tight">
+                      {section.number}. {section.title}
+                    </h2>
+                    <p class="mt-3 max-w-3xl text-muted-foreground">
+                      {section.summary}
+                    </p>
+                    <Card className="mt-4">
+                      <CardHeader>
+                        <CardTitle className="text-base">
+                          {section.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {project.displayName} reference entry.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>
+                          This lightweight docs page is ready for generated
+                          module documentation, API references, configuration
+                          pages, and search entries while preserving the shared
+                          Micronaut web styling.
+                        </p>
+                        <div class="mt-4 overflow-hidden rounded-lg border bg-muted/50">
+                          <pre class="overflow-x-auto p-4 text-sm leading-7">
+                            <code>{`micronaut.project=${project.slug}
 micronaut.module=${project.module}
-micronaut.category=${project.primaryCategory}`}</code></pre>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </section>
+micronaut.category=${project.primaryCategory}`}</code>
+                          </pre>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </section>
+                ))}
+              </div>
+            </>
+          )
+        }
+      </div>
+      {
+        currentSectionLinks.length > 0 && (
+          <aside
+            class="hidden xl:block"
+            aria-label="In this section"
+            data-docs-current-section-index
+            hidden={initialCurrentSectionIndexHidden}
+          >
+            <div
+              class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]"
+              data-docs-scroll-container
+            >
+              <h2 class="font-medium">In this section</h2>
+              <Separator className="opacity-70" />
+              {currentSectionLinks.map((section) => (
+                <a
+                  href={`#${section.id}`}
+                  data-docs-current-section-link
+                  data-docs-scroll-link
+                  data-docs-section-root-id={section.parentId}
+                  hidden={section.parentId !== initialRootId}
+                  class:list={[
+                    "relative rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground",
+                    section.depth === 2 && "pl-2 text-[0.8rem]",
+                    section.depth === 3 && "pl-4 text-[0.78rem]",
+                    section.depth >= 4 && "pl-6 text-[0.76rem]",
+                  ]}
+                >
+                  {section.label}
+                </a>
               ))}
             </div>
-          </>
-        )}
-      </div>
-      {currentSectionLinks.length > 0 && (
-        <aside
-          class="hidden xl:block"
-          aria-label="In this section"
-          data-docs-current-section-index
-          hidden={initialCurrentSectionIndexHidden}
-        >
-          <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]" data-docs-scroll-container>
-            <h2 class="font-medium">In this section</h2>
-            <Separator className="opacity-70" />
-            {currentSectionLinks.map((section) => (
-              <a
-                href={`#${section.id}`}
-                data-docs-current-section-link
-                data-docs-scroll-link
-                data-docs-section-root-id={section.parentId}
-                hidden={section.parentId !== initialRootId}
-                class:list={[
-                    "relative rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground",
-                  section.depth === 2 && "pl-2 text-[0.8rem]",
-                  section.depth === 3 && "pl-4 text-[0.78rem]",
-                  section.depth >= 4 && "pl-6 text-[0.76rem]"
-                ]}
-              >
-                {section.label}
-              </a>
-            ))}
-          </div>
-        </aside>
-      )}
+          </aside>
+        )
+      }
     </article>
   </DocsShell>
 </WebLayout>
 
-{generatedDocHtml && (
-  <script>
-    import "@/scripts/generated-docs-hash-aligner";
-  </script>
-)}
+{
+  generatedDocHtml && (
+    <script>import "@/scripts/generated-docs-hash-aligner";</script>
+  )
+}

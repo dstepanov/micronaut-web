@@ -10,127 +10,167 @@ const footerPaths = [
     label: "Docs",
     description: "Explore framework documentation.",
     href: "/docs/",
-    icon: "book-open"
+    icon: "book-open",
   },
   {
     label: "Guides",
     description: "Follow runnable Micronaut tutorials.",
     href: "/guides/",
-    icon: "graduation-cap"
+    icon: "graduation-cap",
   },
   {
     label: "Launch",
     description: "Generate a Micronaut project.",
     href: "https://launch.micronaut.io",
-    icon: "rocket"
-  }
+    icon: "rocket",
+  },
 ];
 const socialLinks = [
   {
     label: "Email",
     href: "mailto:info@micronaut.io",
-    iconPath: "M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"
+    iconPath:
+      "M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z",
   },
   {
     label: "GitHub",
     href: "https://github.com/micronaut-projects",
-    iconPath: "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+    iconPath:
+      "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12",
   },
   {
     label: "OpenCollective",
     href: "https://opencollective.com/micronaut",
-    iconPath: "M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12c2.54 0 4.894-.79 6.834-2.135l-3.107-3.109a7.715 7.715 0 1 1 0-13.512l3.107-3.109A11.943 11.943 0 0 0 12 0zm9.865 5.166l-3.109 3.107A7.67 7.67 0 0 1 19.715 12a7.682 7.682 0 0 1-.959 3.727l3.109 3.107A11.943 11.943 0 0 0 24 12c0-2.54-.79-4.894-2.135-6.834z"
+    iconPath:
+      "M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12c2.54 0 4.894-.79 6.834-2.135l-3.107-3.109a7.715 7.715 0 1 1 0-13.512l3.107-3.109A11.943 11.943 0 0 0 12 0zm9.865 5.166l-3.109 3.107A7.67 7.67 0 0 1 19.715 12a7.682 7.682 0 0 1-.959 3.727l3.109 3.107A11.943 11.943 0 0 0 24 12c0-2.54-.79-4.894-2.135-6.834z",
   },
   {
     label: "LinkedIn",
     href: "https://www.linkedin.com/showcase/28176137",
-    iconPath: "M20.451 20.451h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.941v5.665H9.355V8.999h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.451H3.555V8.999h3.564v11.452Z"
+    iconPath:
+      "M20.451 20.451h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.941v5.665H9.355V8.999h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.451H3.555V8.999h3.564v11.452Z",
   },
   {
     label: "Discord",
     href: "https://discord.com/invite/9xRFsHv98T",
-    iconPath: "M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"
+    iconPath:
+      "M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z",
   },
   {
     label: "X",
     href: "https://x.com/micronautfw",
-    iconPath: "M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"
+    iconPath:
+      "M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z",
   },
   {
     label: "BlueSky",
     href: "https://bsky.app/profile/micronautfw.bsky.social",
-    iconPath: "M12 10.8c-1.207-2.342-4.497-6.701-7.555-8.86C1.512.001.39 1.553.084 4.046c-.008.067-.015.135-.02.203-.331 4.576 1.81 9.45 6.386 13.023-1.822-.672-3.456-.935-4.726-.79-1.34.153-2.56 1.043-1.462 2.126 1.05 1.036 4.536 1.969 7.192 1.66.338-.04.682-.094 1.026-.161-.344.067-.688.121-1.026.161-2.656.309-6.142-.624-7.192-1.66-1.098-1.083.122-1.973 1.462-2.126 1.27-.145 2.904.118 4.726.79C8.303 18.838 10.102 19.896 12 21.902c1.898-2.006 3.697-3.064 5.55-4.633 1.822-.672 3.456-.935 4.726-.79 1.34.153 2.56 1.043 1.462 2.126-1.05 1.036-4.536 1.969-7.192 1.66a8.47 8.47 0 0 1-1.026-.161c.344.067.688.121 1.026.161 2.656.309 6.142-.624 7.192-1.66 1.098-1.083-.122-1.973-1.462-2.126-1.27-.145-2.904.118-4.726.79 4.576-3.573 6.717-8.447 6.386-13.023a9.02 9.02 0 0 0-.02-.203C23.61 1.553 22.488.001 19.555 1.94 16.497 4.099 13.207 8.458 12 10.8Z"
+    iconPath:
+      "M12 10.8c-1.207-2.342-4.497-6.701-7.555-8.86C1.512.001.39 1.553.084 4.046c-.008.067-.015.135-.02.203-.331 4.576 1.81 9.45 6.386 13.023-1.822-.672-3.456-.935-4.726-.79-1.34.153-2.56 1.043-1.462 2.126 1.05 1.036 4.536 1.969 7.192 1.66.338-.04.682-.094 1.026-.161-.344.067-.688.121-1.026.161-2.656.309-6.142-.624-7.192-1.66-1.098-1.083.122-1.973 1.462-2.126 1.27-.145 2.904.118 4.726.79C8.303 18.838 10.102 19.896 12 21.902c1.898-2.006 3.697-3.064 5.55-4.633 1.822-.672 3.456-.935 4.726-.79 1.34.153 2.56 1.043 1.462 2.126-1.05 1.036-4.536 1.969-7.192 1.66a8.47 8.47 0 0 1-1.026-.161c.344.067.688.121 1.026.161 2.656.309 6.142-.624 7.192-1.66 1.098-1.083-.122-1.973-1.462-2.126-1.27-.145-2.904.118-4.726.79 4.576-3.573 6.717-8.447 6.386-13.023a9.02 9.02 0 0 0-.02-.203C23.61 1.553 22.488.001 19.555 1.94 16.497 4.099 13.207 8.458 12 10.8Z",
   },
   {
     label: "YouTube",
     href: "https://www.youtube.com/@MicronautFramework",
-    iconPath: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-  }
+    iconPath:
+      "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+  },
 ];
 ---
 
 <footer class="border-t bg-muted/35">
-  <div class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_2.2fr] lg:py-14 xl:px-0">
-    <div class="grid gap-3 rounded-xl border bg-card p-4 shadow-sm shadow-black/[0.02] sm:grid-cols-3 lg:col-span-2">
-      {footerPaths.map((path) => (
-        <a
-          href={withBasePath(path.href)}
-          class="group grid grid-cols-[36px_minmax(0,1fr)] gap-3 rounded-lg p-2 no-underline outline-none transition hover:bg-accent/60 focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          <span class="grid size-9 place-items-center rounded-md bg-brand-soft text-brand transition group-hover:bg-brand group-hover:text-brand-foreground">
-            <IconGlyph name={path.icon} className="size-4" />
-          </span>
-          <span class="min-w-0">
-            <span class="block text-sm font-semibold leading-5 text-foreground">{path.label}</span>
-            <span class="mt-0.5 block text-xs leading-5 text-muted-foreground">{path.description}</span>
-          </span>
-        </a>
-      ))}
+  <div
+    class="mx-auto grid max-w-[var(--page-max)] gap-10 px-5 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_2.2fr] lg:py-14 xl:px-0"
+  >
+    <div
+      class="grid gap-3 rounded-xl border bg-card p-4 shadow-sm shadow-black/[0.02] sm:grid-cols-3 lg:col-span-2"
+    >
+      {
+        footerPaths.map((path) => (
+          <a
+            href={withBasePath(path.href)}
+            class="group grid grid-cols-[36px_minmax(0,1fr)] gap-3 rounded-lg p-2 no-underline outline-none transition hover:bg-accent/60 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <span class="grid size-9 place-items-center rounded-md bg-brand-soft text-brand transition group-hover:bg-brand group-hover:text-brand-foreground">
+              <IconGlyph name={path.icon} className="size-4" />
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold leading-5 text-foreground">
+                {path.label}
+              </span>
+              <span class="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                {path.description}
+              </span>
+            </span>
+          </a>
+        ))
+      }
     </div>
     <div>
-      <a href={withBasePath("/")} class="inline-flex items-center" aria-label="Micronaut home">
+      <a
+        href={withBasePath("/")}
+        class="inline-flex items-center"
+        aria-label="Micronaut home"
+      >
         <MicronautLogo className="h-12 w-[210px]" />
       </a>
       <p class="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
-        Micronaut is a modern JVM framework for building modular, testable cloud applications.
+        Micronaut is a modern JVM framework for building modular, testable cloud
+        applications.
       </p>
       <div class="mt-4 flex items-center gap-4 text-sm">
-        <nav class="flex items-center gap-3" aria-label="Micronaut social links">
-          {socialLinks.map((link) => (
-            <a
-              class="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-              href={link.href}
-              aria-label={link.label}
-            >
-              <svg class="size-4" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-                <path d={link.iconPath} />
-              </svg>
-            </a>
-          ))}
+        <nav
+          class="flex items-center gap-3"
+          aria-label="Micronaut social links"
+        >
+          {
+            socialLinks.map((link) => (
+              <a
+                class="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                href={link.href}
+                aria-label={link.label}
+              >
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  fill="currentColor"
+                >
+                  <path d={link.iconPath} />
+                </svg>
+              </a>
+            ))
+          }
         </nav>
       </div>
     </div>
-    <nav class="grid gap-8 sm:grid-cols-2 lg:grid-cols-5" aria-label="Main site footer">
-      {mainSiteFooterGroups.map((group) => (
-        <div>
-          <h2 class="text-sm font-semibold text-foreground">{group.title}</h2>
-          <ul class="mt-4 grid gap-2.5 leading-7">
-            {group.links.map((link) => (
-              <li>
-                <a
-                  class="text-[0.86rem] text-muted-foreground transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  href={withBasePath(link.href)}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <nav
+      class="grid gap-8 sm:grid-cols-2 lg:grid-cols-5"
+      aria-label="Main site footer"
+    >
+      {
+        mainSiteFooterGroups.map((group) => (
+          <div>
+            <h2 class="text-sm font-semibold text-foreground">{group.title}</h2>
+            <ul class="mt-4 grid gap-2.5 leading-7">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    class="text-[0.86rem] text-muted-foreground transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    href={withBasePath(link.href)}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </nav>
     <Separator className="lg:col-span-2" />
-    <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs leading-6 text-muted-foreground lg:col-span-2">
+    <div
+      class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs leading-6 text-muted-foreground lg:col-span-2"
+    >
       <p>Micronaut® is a project of the Commonhaus Foundation.</p>
       <a
         href="https://www.commonhaus.org/"
@@ -138,14 +178,18 @@ const socialLinks = [
         class="inline-flex rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <img
-          src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal.svg")}
+          src={withBasePath(
+            "/micronaut-assets/logos/commonhaus-foundation-horizontal.svg",
+          )}
           alt="Commonhaus Foundation"
           width="1350"
           height="286"
           class="h-8 w-auto dark:hidden"
         />
         <img
-          src={withBasePath("/micronaut-assets/logos/commonhaus-foundation-horizontal-light.svg")}
+          src={withBasePath(
+            "/micronaut-assets/logos/commonhaus-foundation-horizontal-light.svg",
+          )}
           alt=""
           aria-hidden="true"
           width="800"

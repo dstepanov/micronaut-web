@@ -2,7 +2,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LatestGuideCard } from "@/components/web/latest-guide-card";
 import {
   guideTagPath,
@@ -25,23 +31,32 @@ const query = (searchParams.get("q") || "").trim();
 const selectedCategory = (searchParams.get("category") || "").trim();
 const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
-const sortMode: SortMode = sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
+const sortMode: SortMode =
+  sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
 const rootPath = `${root.replace(/\/+$/, "")}/`;
-const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort((left, right) => left.localeCompare(right));
+const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort(
+  (left, right) => left.localeCompare(right),
+);
 const visibleGuides = sortGuides(
-  guides.filter((guide) =>
-    matchesQuery(guide, query) &&
-    matchesCategory(guide, selectedCategory) &&
-    matchesTag(guide, selectedTag)
+  guides.filter(
+    (guide) =>
+      matchesQuery(guide, query) &&
+      matchesCategory(guide, selectedCategory) &&
+      matchesTag(guide, selectedTag),
   ),
-  sortMode
+  sortMode,
 );
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
   const category = guide.categories[0] || "Guides";
-  categoryGroups.set(category, [...(categoryGroups.get(category) || []), guide]);
+  categoryGroups.set(category, [
+    ...(categoryGroups.get(category) || []),
+    guide,
+  ]);
 }
-const hasFilters = Boolean(query || selectedCategory || selectedTag || sortMode !== "latest");
+const hasFilters = Boolean(
+  query || selectedCategory || selectedTag || sortMode !== "latest",
+);
 const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
 function categorySlug(category: string) {
   return category
@@ -55,7 +70,10 @@ function matchesCategory(guide: GeneratedGuide, category: string) {
   if (!category) {
     return true;
   }
-  return guide.categories.some((guideCategory) => guideCategory === category || categorySlug(guideCategory) === category);
+  return guide.categories.some(
+    (guideCategory) =>
+      guideCategory === category || categorySlug(guideCategory) === category,
+  );
 }
 
 function matchesTag(guide: GeneratedGuide, tag: string) {
@@ -77,12 +95,14 @@ function matchesQuery(guide: GeneratedGuide, value: string) {
     guide.intro,
     guide.authors.join(" "),
     guide.categories.join(" "),
-    guide.tags.join(" ")
-  ].join(" ").toLowerCase();
+    guide.tags.join(" "),
+  ]
+    .join(" ")
+    .toLowerCase();
   const searchableSlugs = [
     guide.slug,
     ...guide.categories.map(categorySlug),
-    ...guide.tags.map(categorySlug)
+    ...guide.tags.map(categorySlug),
   ].join(" ");
   return (
     searchableText.includes(normalized) ||
@@ -96,13 +116,21 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
       return left.title.localeCompare(right.title);
     }
     if (mode === "duration") {
-      return left.estimatedMinutes - right.estimatedMinutes || left.title.localeCompare(right.title);
+      return (
+        left.estimatedMinutes - right.estimatedMinutes ||
+        left.title.localeCompare(right.title)
+      );
     }
-    return right.publicationDate.localeCompare(left.publicationDate) || left.title.localeCompare(right.title);
+    return (
+      right.publicationDate.localeCompare(left.publicationDate) ||
+      left.title.localeCompare(right.title)
+    );
   });
 }
 
-function filterHref(next: Partial<{ q: string; category: string; tag: string; sort: SortMode }>) {
+function filterHref(
+  next: Partial<{ q: string; category: string; tag: string; sort: SortMode }>,
+) {
   const params = new URLSearchParams();
   const nextQuery = next.q ?? query;
   const nextCategory = next.category ?? selectedCategory;
@@ -129,19 +157,32 @@ function tagHref(tag: string) {
 }
 ---
 
-<main class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10" data-guides-catalog data-active-tag={activeTag || ""}>
+<main
+  class="mx-auto grid w-full max-w-[1320px] gap-8 px-4 py-8 md:px-6 lg:py-10"
+  data-guides-catalog
+  data-active-tag={activeTag || ""}
+>
   <header class="max-w-3xl">
     <div class="max-w-3xl">
       <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
         {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
       </h1>
       <p class="mt-4 text-lg leading-8 text-muted-foreground">
-        Learn how to build Micronaut applications with focused tutorials, runnable examples, and language/build variants.
+        Learn how to build Micronaut applications with focused tutorials,
+        runnable examples, and language/build variants.
       </p>
       <form method="get" class="mt-5 flex max-w-xl gap-2" role="search">
-        {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
+        {
+          selectedCategory && (
+            <input type="hidden" name="category" value={selectedCategory} />
+          )
+        }
         {selectedTag && <input type="hidden" name="tag" value={selectedTag} />}
-        {sortMode !== "latest" && <input type="hidden" name="sort" value={sortMode} />}
+        {
+          sortMode !== "latest" && (
+            <input type="hidden" name="sort" value={sortMode} />
+          )
+        }
         <label class="sr-only" for="guides-search">Search guides</label>
         <Input
           id="guides-search"
@@ -156,64 +197,85 @@ function tagHref(tag: string) {
     </div>
   </header>
 
-  {!activeTag && recentGuides.length > 0 && (
-    <section class="grid gap-4" data-guides-latest-section>
-      <div class="flex items-center justify-between gap-4">
-        <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {recentGuides.map((guide) => <LatestGuideCard client:visible guide={guide} root={root} />)}
-      </div>
-    </section>
-  )}
-
-  {tags.length > 0 && (
-    <section class="flex flex-wrap gap-2">
-      {tags.slice(0, 80).map((tag) => (
-        <a href={tagHref(tag)} class="no-underline" aria-label={`Filter guides tagged ${tag}`}>
-          <Badge variant={tag === selectedTag ? "default" : "outline"}>{tag}</Badge>
-        </a>
-      ))}
-    </section>
-  )}
-
-  <section id="guides-list" class="grid gap-7">
-    {Array.from(categoryGroups.entries()).map(([category, categoryGuides]) => (
-      <div class="grid gap-4" data-guide-category-group>
-        <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-guide-card-grid>
-          {categoryGuides.map((guide) => (
-            <div
-              data-guide-card
-              data-title={guide.title}
-              data-search={[
-                guide.slug,
-                guide.title,
-                guide.intro,
-                guide.authors.join(" "),
-                guide.categories.join(" "),
-                guide.tags.join(" "),
-                guide.categories.map(categorySlug).join(" "),
-                guide.tags.map(categorySlug).join(" ")
-              ].join(" ").toLowerCase()}
-              data-categories={guide.categories.map(categorySlug).join("|")}
-              data-tags={guide.tags.map(categorySlug).join("|")}
-              data-date={guide.publicationDate}
-              data-minutes={guide.estimatedMinutes}
-            >
-              <LatestGuideCard client:visible guide={guide} root={root} />
-            </div>
+  {
+    !activeTag && recentGuides.length > 0 && (
+      <section class="grid gap-4" data-guides-latest-section>
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {recentGuides.map((guide) => (
+            <LatestGuideCard client:visible guide={guide} root={root} />
           ))}
         </div>
-      </div>
-    ))}
+      </section>
+    )
+  }
+
+  {
+    tags.length > 0 && (
+      <section class="flex flex-wrap gap-2">
+        {tags.slice(0, 80).map((tag) => (
+          <a
+            href={tagHref(tag)}
+            class="no-underline"
+            aria-label={`Filter guides tagged ${tag}`}
+          >
+            <Badge variant={tag === selectedTag ? "default" : "outline"}>
+              {tag}
+            </Badge>
+          </a>
+        ))}
+      </section>
+    )
+  }
+
+  <section id="guides-list" class="grid gap-7">
+    {
+      Array.from(categoryGroups.entries()).map(([category, categoryGuides]) => (
+        <div class="grid gap-4" data-guide-category-group>
+          <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
+          <div
+            class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+            data-guide-card-grid
+          >
+            {categoryGuides.map((guide) => (
+              <div
+                data-guide-card
+                data-title={guide.title}
+                data-search={[
+                  guide.slug,
+                  guide.title,
+                  guide.intro,
+                  guide.authors.join(" "),
+                  guide.categories.join(" "),
+                  guide.tags.join(" "),
+                  guide.categories.map(categorySlug).join(" "),
+                  guide.tags.map(categorySlug).join(" "),
+                ]
+                  .join(" ")
+                  .toLowerCase()}
+                data-categories={guide.categories.map(categorySlug).join("|")}
+                data-tags={guide.tags.map(categorySlug).join("|")}
+                data-date={guide.publicationDate}
+                data-minutes={guide.estimatedMinutes}
+              >
+                <LatestGuideCard client:visible guide={guide} root={root} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))
+    }
   </section>
 
   <div data-guides-empty hidden={visibleGuides.length > 0}>
     <Card>
       <CardHeader>
         <CardTitle>No guides found</CardTitle>
-        <CardDescription>The generated guide catalog does not contain entries for this filter.</CardDescription>
+        <CardDescription
+          >The generated guide catalog does not contain entries for this filter.</CardDescription
+        >
       </CardHeader>
       <CardContent>
         <Button asChild>

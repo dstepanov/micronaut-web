@@ -12,7 +12,7 @@ const languageAliases: Record<string, string> = {
   shellscript: "bash",
   txt: "text",
   yml: "yaml",
-  zsh: "bash"
+  zsh: "bash",
 };
 
 const highlighterLanguageAliases: Record<string, string> = {
@@ -22,7 +22,7 @@ const highlighterLanguageAliases: Record<string, string> = {
   hocon: "properties",
   maven: "xml",
   properties: "properties",
-  xml: "xml"
+  xml: "xml",
 };
 
 const languageLabels: Record<string, string> = {
@@ -38,22 +38,30 @@ const languageLabels: Record<string, string> = {
   text: "Text",
   toml: "TOML",
   xml: "XML",
-  yaml: "YAML"
+  yaml: "YAML",
 };
 
-export function codeLanguageFromFenceInfo(info: string, source: string, context = "Markdown code block") {
+export function codeLanguageFromFenceInfo(
+  info: string,
+  source: string,
+  context = "Markdown code block",
+) {
   const value = info.trim();
   if (!value) {
     return inferCodeLanguage(source);
   }
   if (/\s/.test(value)) {
-    throw new Error(`${context} uses nonstandard fence metadata "${value}". Use only the language name.`);
+    throw new Error(
+      `${context} uses nonstandard fence metadata "${value}". Use only the language name.`,
+    );
   }
   return normalizeCodeLanguage(value);
 }
 
 export function normalizeCodeLanguage(language: string) {
-  const normalized = String(language || "text").trim().toLowerCase();
+  const normalized = String(language || "text")
+    .trim()
+    .toLowerCase();
   return languageAliases[normalized] || normalized || "text";
 }
 
@@ -64,7 +72,10 @@ export function highlighterLanguageFor(language: string) {
 
 export function formatCodeLanguage(language: string) {
   const normalized = normalizeCodeLanguage(language);
-  return languageLabels[normalized] || normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return (
+    languageLabels[normalized] ||
+    normalized.charAt(0).toUpperCase() + normalized.slice(1)
+  );
 }
 
 export function inferCodeLanguage(source: string) {
@@ -72,22 +83,46 @@ export function inferCodeLanguage(source: string) {
   if (!value) {
     return "text";
   }
-  if (/^<\?xml\b|^<\/?[A-Za-z][\s\S]*>$|<(?:dependency|parent|properties|path|plugin|groupId)\b/.test(value)) {
+  if (
+    /^<\?xml\b|^<\/?[A-Za-z][\s\S]*>$|<(?:dependency|parent|properties|path|plugin|groupId)\b/.test(
+      value,
+    )
+  ) {
     return "xml";
   }
-  if (/^(?:plugins|dependencies|micronaut|java)\s*\{|(?:implementation|runtimeOnly|annotationProcessor|compileOnly|testImplementation)\s*\(|\bid\(["'][^"']+["']\)\s+version\b/.test(value)) {
+  if (
+    /^(?:plugins|dependencies|micronaut|java)\s*\{|(?:implementation|runtimeOnly|annotationProcessor|compileOnly|testImplementation)\s*\(|\bid\(["'][^"']+["']\)\s+version\b/.test(
+      value,
+    )
+  ) {
     return "gradle";
   }
-  if (/\bfun\s+\w+\s*\(|\blateinit\s+var\b|\bdata\s+class\s+\w+|\bclass\s+\w+\s*\(|\bval\s+\w+\s*=/.test(value)) {
+  if (
+    /\bfun\s+\w+\s*\(|\blateinit\s+var\b|\bdata\s+class\s+\w+|\bclass\s+\w+\s*\(|\bval\s+\w+\s*=/.test(
+      value,
+    )
+  ) {
     return "kotlin";
   }
-  if (/\bdef\s+\w+\s*=|class\s+\w+\s+extends\s+Specification\b|void\s+['"][^'"]+['"]\s*\(|\[[A-Za-z_][\w-]*\s*:/.test(value)) {
+  if (
+    /\bdef\s+\w+\s*=|class\s+\w+\s+extends\s+Specification\b|void\s+['"][^'"]+['"]\s*\(|\[[A-Za-z_][\w-]*\s*:/.test(
+      value,
+    )
+  ) {
     return "groovy";
   }
-  if (/^(?:package|import)\s+(?:jakarta|javax|io|java|org)\.|public\s+(?:class|record|interface|enum)\b|@\w+(?:\(|\s|$)/m.test(value)) {
+  if (
+    /^(?:package|import)\s+(?:jakarta|javax|io|java|org)\.|public\s+(?:class|record|interface|enum)\b|@\w+(?:\(|\s|$)/m.test(
+      value,
+    )
+  ) {
     return "java";
   }
-  if (/^(?:curl|source|sdk|mn|mvn|gradle|\.\/gradlew|docker|git)\b|^\$ /m.test(value)) {
+  if (
+    /^(?:curl|source|sdk|mn|mvn|gradle|\.\/gradlew|docker|git)\b|^\$ /m.test(
+      value,
+    )
+  ) {
     return "bash";
   }
   if (/^[A-Za-z0-9_.-]+\s*=\s*.+$/m.test(value)) {

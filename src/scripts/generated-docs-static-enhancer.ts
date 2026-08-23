@@ -125,11 +125,11 @@
   };
 
   const enhanceTemplateSnippetControls = (root: Element) => {
-    root.querySelectorAll<HTMLElement>(".docs-snippet-template").forEach(
-      (template) => {
+    root
+      .querySelectorAll<HTMLElement>(".docs-snippet-template")
+      .forEach((template) => {
         bindStaticSnippetTemplate(template);
-      },
-    );
+      });
   };
 
   const stabilizeGeneratedImages = (root: Element) => {
@@ -151,16 +151,16 @@
   };
 
   const init = () => {
-    document.querySelectorAll<HTMLElement>("[data-generated-docs]").forEach(
-      (root) => {
+    document
+      .querySelectorAll<HTMLElement>("[data-generated-docs]")
+      .forEach((root) => {
         if (root.dataset.generatedDocsEnhanced === "true") {
           return;
         }
         root.dataset.generatedDocsEnhanced = "true";
         stabilizeGeneratedImages(root);
         enhanceTemplateSnippetControls(root);
-      },
-    );
+      });
   };
 
   if (document.readyState === "loading") {

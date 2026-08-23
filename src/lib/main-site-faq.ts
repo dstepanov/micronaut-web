@@ -55,7 +55,10 @@ function idFromQuestion(question: string, index: number) {
   return slug || `faq-${index + 1}`;
 }
 
-function itemFromListItem(node: HtmlElement, index: number): MainSiteFaqItem | undefined {
+function itemFromListItem(
+  node: HtmlElement,
+  index: number,
+): MainSiteFaqItem | undefined {
   const children = node.childNodes;
   const heading = children.find(isQuestionHeading);
   if (!heading) {
@@ -68,9 +71,10 @@ function itemFromListItem(node: HtmlElement, index: number): MainSiteFaqItem | u
   }
 
   const headingLink = heading.childNodes.find((child) => isElement(child, "a"));
-  const anchorId = attr(headingLink ?? heading, "href")?.replace(/^#/, "")
-    || attr(heading, "id")
-    || idFromQuestion(question, index);
+  const anchorId =
+    attr(headingLink ?? heading, "href")?.replace(/^#/, "") ||
+    attr(heading, "id") ||
+    idFromQuestion(question, index);
   const answerHtml = children
     .filter((child) => child !== heading)
     .map(serializeOuterHtml)
@@ -80,7 +84,7 @@ function itemFromListItem(node: HtmlElement, index: number): MainSiteFaqItem | u
   return {
     id: anchorId,
     question,
-    answerHtml
+    answerHtml,
   };
 }
 

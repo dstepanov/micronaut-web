@@ -195,11 +195,11 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(guidesRoute, /buildGuidePageIndexSections/);
   assert.match(
     guidesRoute,
-    /guideSectionLinks = pageIndexSections\.filter\(\(section\) => section\.level === 0\)\.slice\(0, 30\)/,
+    /guideSectionLinks = pageIndexSections\s*\.filter\(\(section\) => section\.level === 0\)\s*\.slice\(0, 30\)/,
   );
   assert.match(
     guidesRoute,
-    /currentGuideSectionLinks = pageIndexSections\.filter\(\(section\) => section\.level > 0\)/,
+    /currentGuideSectionLinks = pageIndexSections\.filter\(\s*\(section\) => section\.level > 0,?\s*\)/,
   );
   assert.match(
     guidesRoute,
