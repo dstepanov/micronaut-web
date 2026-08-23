@@ -50,6 +50,20 @@ if (!project) {
   return Astro.redirect(withBasePath("/docs/"));
 }
 
+/**
+ * Built here, not in the template: `<pre>` preserves whitespace, so any
+ * reflow of the markup would render the indentation as part of the snippet.
+ */
+const projectCoordinatesHtml = `<code>${[
+  `micronaut.project=${project.slug}`,
+  `micronaut.module=${project.module}`,
+  `micronaut.category=${project.primaryCategory}`,
+]
+  .join("\n")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")}</code>`;
+
 let generatedDocHtml: string | undefined;
 try {
   generatedDocHtml = await readFile(
@@ -248,11 +262,10 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
                           Micronaut web styling.
                         </p>
                         <div class="mt-4 overflow-hidden rounded-lg border bg-muted/50">
-                          <pre class="overflow-x-auto p-4 text-sm leading-7">
-                            <code>{`micronaut.project=${project.slug}
-micronaut.module=${project.module}
-micronaut.category=${project.primaryCategory}`}</code>
-                          </pre>
+                          <pre
+                            class="overflow-x-auto p-4 text-sm leading-7"
+                            set:html={projectCoordinatesHtml}
+                          />
                         </div>
                       </CardContent>
                     </Card>
