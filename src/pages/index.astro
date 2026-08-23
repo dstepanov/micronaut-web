@@ -196,7 +196,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
               href="https://launch.micronaut.io"
               label="Launch a project"
               size="lg"
-              className="bg-brand text-brand-foreground hover:bg-brand-hover"
+              variant="outline"
             />
             <ActionLink
               href="/guides/"
@@ -234,10 +234,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
                   >Compile-time framework work keeps runtime behavior lean.</CardDescription
                 >
               </div>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <Badge variant="secondary">Compile-time DI</Badge>
-              <Badge variant="secondary">No runtime reflection</Badge>
             </div>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -320,7 +316,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
                 aria-label={`${feature.title}: ${feature.copy}`}
               >
                 <Card
-                  className={`h-full min-h-[174px] bg-card transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-accent/30 group-hover:shadow-md ${feature.priority ? "border-brand-border" : ""}`}
+                  className={`h-full min-h-[174px] bg-card transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-accent/30 group-hover:shadow-md`}
                 >
                   <CardHeader>
                     <div class="mb-2 grid size-12 place-items-center">
@@ -451,14 +447,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
               >
                 <Card className="h-full gap-4 py-5 transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:shadow-md">
                   <CardHeader className="gap-3 px-5">
-                    <StoryLogo
-                      organization={story.organization}
-                      logo={story.logo}
-                      logoDark={story.logoDark}
-                      logoClass={story.logoClass}
-                      invertOnDark={story.logoInvertOnDark}
-                      size="md"
-                    />
                     <CardAction className="row-span-1">
                       <Badge variant="outline">{story.tag}</Badge>
                     </CardAction>
@@ -594,7 +582,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
               href="/docs/"
               label="Explore cloud support"
               variant="ghost"
-              className="-ml-3"
+              arrow
+              className="-ml-3 text-brand hover:bg-brand-soft hover:text-brand"
             />
           </CardFooter>
         </Card>
@@ -616,35 +605,35 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
           <CardContent className="grid gap-4">
             <div class="min-w-0 grid gap-3 rounded-lg bg-muted p-4 text-sm">
               <div
-                class="grid min-w-0 grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
+                class="grid min-w-0 grid-cols-1 items-stretch gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]"
                 data-graalvm-startup-diagram
               >
                 <div
-                  class="min-w-0 rounded-md bg-card p-3 text-center font-medium"
+                  class="flex min-w-0 items-center justify-center rounded-md bg-card p-3 text-center font-medium leading-5"
                   data-graalvm-startup-step="compile"
                 >
                   Compile
                 </div>
-                <div class="flex justify-center text-brand">
+                <div class="flex items-center justify-center text-brand">
                   <IconGlyph
                     name="arrow-right"
                     className="size-5 rotate-90 sm:rotate-0"
                   />
                 </div>
                 <div
-                  class="min-w-0 rounded-md bg-card p-3 text-center font-medium"
+                  class="flex min-w-0 items-center justify-center rounded-md bg-card p-3 text-center font-medium leading-5"
                   data-graalvm-startup-step="optimize"
                 >
                   Optimize
                 </div>
-                <div class="flex justify-center text-brand">
+                <div class="flex items-center justify-center text-brand">
                   <IconGlyph
                     name="arrow-right"
                     className="size-5 rotate-90 sm:rotate-0"
                   />
                 </div>
                 <div
-                  class="min-w-0 rounded-md bg-brand p-3 text-center font-medium text-brand-foreground"
+                  class="flex min-w-0 items-center justify-center rounded-md bg-brand p-3 text-center font-medium text-brand-foreground leading-5"
                   data-graalvm-startup-step="native-image"
                 >
                   Native image
@@ -670,7 +659,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
               href="/guides/micronaut-creating-first-graal-app/"
               label="Learn about GraalVM"
               variant="ghost"
-              className="-ml-3"
+              arrow
+              className="-ml-3 text-brand hover:bg-brand-soft hover:text-brand"
             />
           </CardFooter>
         </Card>
@@ -725,7 +715,8 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
               href="/docs/data/"
               label="View Micronaut Data docs"
               variant="ghost"
-              className="-ml-3"
+              arrow
+              className="-ml-3 text-brand hover:bg-brand-soft hover:text-brand"
             />
           </CardFooter>
         </Card>
