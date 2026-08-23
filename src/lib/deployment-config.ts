@@ -2,9 +2,18 @@ import {
   resolveDeploymentSettings,
   type DeploySurface,
 } from "./deployment-defaults.ts";
+import {
+  externalRouteForSurface,
+  normalizedRoot,
+  routeForCurrentDeployment as routeForDeployment,
+  routeForSurface as routeForSurfaceWithRoots,
+  surfaceSiteUrl,
+  type SurfaceRoots,
+  type SurfaceTarget,
+} from "./surface-path-rules.ts";
 
 export type { DeploySurface } from "./deployment-defaults.ts";
-export type SurfaceTarget = "main" | "docs" | "guides";
+export type { SurfaceTarget } from "./surface-path-rules.ts";
 type DeploymentImportMeta = ImportMeta & {
   readonly env?: {
     readonly DEFAULT_GITHUB_PAGES_ORIGIN?: string;
@@ -51,253 +60,52 @@ export const guidesLatestRoot = normalizedRoot(
 );
 export const githubPagesOrigin = deploymentSettings.githubPagesOrigin;
 
-export const externalSurfaceUrls: Record<"main" | "docs" | "guides", string> = {
+export const externalSurfaceUrls: Record<SurfaceTarget, string> = {
   main: deploymentSettings.mainSiteUrl,
   docs: deploymentSettings.docsSiteUrl,
   guides: deploymentSettings.guidesSiteUrl,
 };
 
+const surfaceRoots: SurfaceRoots = {
+  docsRoot,
+  docsLatestRoot,
+  guidesRoot,
+  guidesLatestRoot,
+};
+
 export function routeForSurface(surface: SurfaceTarget, path = "/") {
-  if (surface === "docs") {
-    return docsRoute(path);
-  }
-  if (surface === "guides") {
-    return guidesRoute(path);
-  }
-  return normalizeAbsolutePath(path);
+  return routeForSurfaceWithRoots(surface, path, surfaceRoots);
 }
 
 export function routeForCurrentDeployment(path: string) {
-  if (
-    !path ||
-    path.startsWith("#") ||
-    hasSchemeOrProtocolRelativeUrl(path) ||
-    !path.startsWith("/")
-  ) {
-    return path;
-  }
-  if (deploySurface === "docs") {
-    if (path === "/" || path === "") {
-      return "/";
-    }
-    if (isDocsPath(path)) {
-      return docsRoute(path);
-    }
-    if (isGuidesPath(path)) {
-      return externalSurfacePath("guides", path);
-    }
-    if (isMainSurfacePath(path)) {
-      return externalSurfacePath("main", path);
-    }
-    return normalizeAbsolutePath(path);
-  }
-  if (deploySurface === "guides") {
-    if (path === "/" || path === "") {
-      return directoryRoot(guidesLatestRoot);
-    }
-    if (isGuidesPath(path)) {
-      return guidesRoute(path);
-    }
-    if (isDocsPath(path)) {
-      return externalSurfacePath("docs", path);
-    }
-    if (isMainSurfacePath(path)) {
-      return externalSurfacePath("main", path);
-    }
-    return normalizeAbsolutePath(path);
-  }
-  if (deploySurface === "main") {
-    if (isDocsPath(path)) {
-      return externalSurfacePath("docs", path);
-    }
-    if (isGuidesPath(path)) {
-      return externalSurfacePath("guides", path);
-    }
-  }
-  return normalizeAbsolutePath(path);
+  return routeForDeployment(
+    path,
+    deploySurface,
+    surfaceRoots,
+    externalSurfacePath,
+  );
 }
 
-export function externalSurfacePath(
-  surface: "main" | "docs" | "guides",
-  path = "/",
-) {
-  return new URL(
-    externalRouteForSurface(surface, path).replace(/^\/+/, ""),
+export function externalSurfacePath(surface: SurfaceTarget, path = "/") {
+  return surfaceSiteUrl(
     externalSurfaceUrls[surface],
-  ).toString();
+    externalRouteForSurface(surface, path),
+  );
 }
 
-export function canonicalSurfaceUrl(
-  surface: "main" | "docs" | "guides",
-  path = "/",
-) {
-  return new URL(
-    routeForSurface(surface, path).replace(/^\/+/, ""),
+export function canonicalSurfaceUrl(surface: SurfaceTarget, path = "/") {
+  return surfaceSiteUrl(
     externalSurfaceUrls[surface],
-  ).toString();
+    routeForSurface(surface, path),
+  );
 }
 
 export function currentDocsRootPath(path = "/") {
-  return docsRoute(path);
+  return routeForSurface("docs", path);
 }
 
 export function currentGuidesRootPath(path = "/") {
-  return guidesRoute(path);
-}
-
-function docsRoute(path: string) {
-  const normalized = normalizeAbsolutePath(path);
-  if (normalized === "/docs" || normalized === "/docs/") {
-    return directoryRoot(docsRoot);
-  }
-  if (normalized.startsWith("/docs/")) {
-    return joinRoot(docsRoot, normalized.slice("/docs".length));
-  }
-  if (normalized === "/latest" || normalized === "/latest/") {
-    return directoryRoot(docsLatestRoot);
-  }
-  if (normalized.startsWith("/latest/")) {
-    return joinRoot(docsLatestRoot, normalized.slice("/latest".length));
-  }
-  return normalized;
-}
-
-function guidesRoute(path: string) {
-  const normalized = normalizeAbsolutePath(path);
-  if (normalized === "/guides" || normalized === "/guides/") {
-    return directoryRoot(guidesRoot);
-  }
-  if (normalized.startsWith("/guides/")) {
-    return joinRoot(guidesRoot, normalized.slice("/guides".length));
-  }
-  if (normalized === "/latest" || normalized === "/latest/") {
-    return directoryRoot(guidesLatestRoot);
-  }
-  if (normalized.startsWith("/latest/")) {
-    return joinRoot(guidesLatestRoot, normalized.slice("/latest".length));
-  }
-  return normalized;
-}
-
-function externalRouteForSurface(
-  surface: "main" | "docs" | "guides",
-  path: string,
-) {
-  if (surface === "docs") {
-    return docsRouteWithRoot(path, "/latest", "/latest");
-  }
-  if (surface === "guides") {
-    return guidesRouteWithRoot(path, "/", "/");
-  }
-  return normalizeAbsolutePath(path);
-}
-
-function docsRouteWithRoot(path: string, root: string, latestRoot: string) {
-  const normalized = normalizeAbsolutePath(path);
-  if (normalized === "/docs" || normalized === "/docs/") {
-    return directoryRoot(root);
-  }
-  if (normalized.startsWith("/docs/")) {
-    return joinRoot(root, normalized.slice("/docs".length));
-  }
-  if (normalized === "/latest" || normalized === "/latest/") {
-    return directoryRoot(latestRoot);
-  }
-  if (normalized.startsWith("/latest/")) {
-    return joinRoot(latestRoot, normalized.slice("/latest".length));
-  }
-  return normalized;
-}
-
-function guidesRouteWithRoot(path: string, root: string, latestRoot: string) {
-  const normalized = normalizeAbsolutePath(path);
-  if (normalized === "/guides" || normalized === "/guides/") {
-    return directoryRoot(root);
-  }
-  if (normalized.startsWith("/guides/")) {
-    return joinRoot(root, normalized.slice("/guides".length));
-  }
-  if (normalized === "/latest" || normalized === "/latest/") {
-    return directoryRoot(latestRoot);
-  }
-  if (normalized.startsWith("/latest/")) {
-    return joinRoot(latestRoot, normalized.slice("/latest".length));
-  }
-  return normalized;
-}
-
-function isDocsPath(path: string) {
-  return (
-    path === "/docs" ||
-    path.startsWith("/docs/") ||
-    path === "/latest/guide" ||
-    path.startsWith("/latest/guide/")
-  );
-}
-
-function isGuidesPath(path: string) {
-  return (
-    path === "/guides" ||
-    path.startsWith("/guides/") ||
-    path === "/latest" ||
-    path.startsWith("/latest/")
-  );
-}
-
-function isMainSurfacePath(path: string) {
-  return path === "/" || (!isDocsPath(path) && !isGuidesPath(path));
-}
-
-function joinRoot(root: string, suffix: string) {
-  const normalizedSuffix = normalizeAbsolutePath(suffix);
-  if (root === "/") {
-    return normalizedSuffix;
-  }
-  return `${root.replace(/\/+$/, "")}${normalizedSuffix}`;
-}
-
-function directoryRoot(root: string) {
-  return root === "/" ? "/" : `${root.replace(/\/+$/, "")}/`;
-}
-
-function normalizeAbsolutePath(path: string) {
-  if (!path) {
-    return "/";
-  }
-  if (hasSchemeOrProtocolRelativeUrl(path) || path.startsWith("#")) {
-    return path;
-  }
-  const [pathname, suffix = ""] = splitPathSuffix(
-    path.startsWith("/") ? path : `/${path}`,
-  );
-  const normalizedPathname = pathname.replace(/\/{2,}/g, "/");
-  return `${normalizedPathname || "/"}${suffix}`;
-}
-
-function normalizedRoot(root: string) {
-  const normalized = normalizeAbsolutePath(root || "/");
-  if (normalized === "/") {
-    return "/";
-  }
-  return normalized.endsWith("/") ? normalized.slice(0, -1) : normalized;
-}
-
-function splitPathSuffix(path: string) {
-  const queryIndex = path.indexOf("?");
-  const hashIndex = path.indexOf("#");
-  let suffixIndex = -1;
-  if (queryIndex >= 0 && hashIndex >= 0) {
-    suffixIndex = Math.min(queryIndex, hashIndex);
-  } else {
-    suffixIndex = Math.max(queryIndex, hashIndex);
-  }
-  return suffixIndex >= 0
-    ? [path.slice(0, suffixIndex), path.slice(suffixIndex)]
-    : [path, ""];
-}
-
-function hasSchemeOrProtocolRelativeUrl(path: string) {
-  return /^[a-z][a-z\d+\-.]*:\/\//i.test(path) || path.startsWith("//");
+  return routeForSurface("guides", path);
 }
 
 function definedValues(values: Record<string, string | undefined>) {
