@@ -1,13 +1,8 @@
 import { promises as fs, type Dirent } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 
 import { parseArgs, stringArg } from "./shared/cli.ts";
-
-const projectDirectory = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
 
 if (isMainModule()) {
   const options = parseArgs(process.argv.slice(2));

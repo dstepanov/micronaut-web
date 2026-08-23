@@ -71,38 +71,46 @@ function scopeForItem(item: SearchItem): Exclude<DocsScope, "All"> {
   return "Docs";
 }
 
-function matchesSearchItem(item: SearchItem, query: string) {
+/**
+ * Scores every item once, then sorts. Lowercasing inside the comparator would
+ * repeat the same work O(n log n) times per keystroke over the whole index.
+ */
+function matchingDocsSearchItems(items: SearchItem[], query: string) {
   const normalized = query.trim().toLowerCase();
-  if (!normalized) {
-    return true;
+  const scored: Array<{ item: SearchItem; score: number }> = [];
+  for (const item of items) {
+    if (!normalized) {
+      scored.push({ item, score: 0 });
+      continue;
+    }
+    const title = item.title.toLowerCase();
+    const description = item.description.toLowerCase();
+    const terms = item.terms.toLowerCase();
+    if (
+      !`${item.kind.toLowerCase()} ${title} ${description} ${terms}`.includes(
+        normalized,
+      )
+    ) {
+      continue;
+    }
+    scored.push({
+      item,
+      score: title.startsWith(normalized)
+        ? 3
+        : title.includes(normalized)
+          ? 2
+          : description.includes(normalized) || terms.includes(normalized)
+            ? 1
+            : 0,
+    });
   }
-  return [item.kind, item.title, item.description, item.terms]
-    .join(" ")
-    .toLowerCase()
-    .includes(normalized);
-}
-
-function searchScore(item: SearchItem, query: string) {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) {
-    return 0;
-  }
-  const title = item.title.toLowerCase();
-  const description = item.description.toLowerCase();
-  const terms = item.terms.toLowerCase();
-  if (title.startsWith(normalized)) return 3;
-  if (title.includes(normalized)) return 2;
-  if (description.includes(normalized)) return 1;
-  return terms.includes(normalized) ? 1 : 0;
-}
-
-function sortDocsSearchItems(items: SearchItem[], query: string) {
-  return [...items].sort(
+  scored.sort(
     (left, right) =>
-      searchScore(right, query) - searchScore(left, query) ||
-      (right.weight || 0) - (left.weight || 0) ||
-      left.title.localeCompare(right.title),
+      right.score - left.score ||
+      (right.item.weight || 0) - (left.item.weight || 0) ||
+      left.item.title.localeCompare(right.item.title),
   );
+  return scored.map((entry) => entry.item);
 }
 
 export function SearchDialog({
@@ -145,10 +153,10 @@ export function SearchDialog({
     const source = generatedDocsItems.length
       ? generatedDocsItems
       : fallbackDocsItems;
-    return sortDocsSearchItems(
-      source
-        .filter((item) => docsScope === "All" || scopeForItem(item) === docsScope)
-        .filter((item) => matchesSearchItem(item, searchQuery)),
+    return matchingDocsSearchItems(
+      source.filter(
+        (item) => docsScope === "All" || scopeForItem(item) === docsScope,
+      ),
       searchQuery,
     ).slice(0, 240);
   }, [docsScope, fallbackDocsItems, generatedDocsItems, searchQuery]);

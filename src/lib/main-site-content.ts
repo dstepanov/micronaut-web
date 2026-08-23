@@ -111,7 +111,7 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
   return rightDate - leftDate || byOrderThenTitle(left, right);
 }
 
-const footerPageGroups: Array<MainSiteFooterGroup | { title: string; slugs: string[] }> = [
+export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
   {
     title: "Start",
     links: [
@@ -181,38 +181,24 @@ export async function getMainSitePageSummaries(): Promise<MainSitePageSummary[]>
   }))];
 }
 
-export async function getMainSiteFooterGroups(): Promise<MainSiteFooterGroup[]> {
-  const pagesBySlug = new Map((await getMainSitePageSummaries()).map((page) => [page.slug, page.title]));
-  return footerPageGroups.map((group) => {
-    if ("links" in group) {
-      return group;
-    }
-    return {
-      title: group.title,
-      links: group.slugs.map((slug) => {
-      const label = pagesBySlug.get(slug);
-      if (!label) {
-        throw new Error(`Footer page slug "${slug}" does not exist in main-site pages.`);
-      }
-      return {
-        label,
-        href: `/${slug}/`
-      };
-      })
-    };
-  });
-}
+let blogPostsPromise: Promise<BlogPostModel[]> | undefined;
 
-export async function getBlogPosts(): Promise<BlogPostModel[]> {
-  const entries = await getCollection("blogPosts");
-  return entries
-    .map((entry: BlogPostEntry) => ({
-      slug: entry.data.slug,
-      href: entry.data.href ?? `/${entry.data.slug}/`,
-      routeSlugs: routeSlugsForPost(entry.data.slug),
-      entry
-    }))
-    .sort(byPostDateThenOrder);
+/**
+ * Memoized: every static page in `[...slug].astro` calls this, archive or not,
+ * and the collection is immutable for the lifetime of a build.
+ */
+export function getBlogPosts(): Promise<BlogPostModel[]> {
+  return (blogPostsPromise ??= getCollection("blogPosts").then(
+    (entries: BlogPostEntry[]) =>
+      entries
+        .map((entry: BlogPostEntry) => ({
+          slug: entry.data.slug,
+          href: entry.data.href ?? `/${entry.data.slug}/`,
+          routeSlugs: routeSlugsForPost(entry.data.slug),
+          entry
+        }))
+        .sort(byPostDateThenOrder)
+  ));
 }
 
 export async function getBlogPostByRouteSlug(slug: string): Promise<BlogPostModel | undefined> {
