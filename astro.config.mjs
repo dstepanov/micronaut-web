@@ -4,7 +4,10 @@ import sitemap from "@astrojs/sitemap";
 import { closeSync, openSync, readSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveDeploymentSettings } from "./src/lib/deployment-defaults.ts";
+import {
+  deploymentDefines,
+  resolveDeploymentSettings,
+} from "./src/lib/deployment-defaults.ts";
 import { routeForSurface } from "./src/lib/deployment-config.ts";
 
 const base = process.env.ASTRO_BASE || "/";
@@ -111,40 +114,7 @@ export default defineConfig({
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/client"],
     },
-    define: {
-      __MICRONAUT_DEPLOYMENT__: JSON.stringify(deploymentConfig),
-      "import.meta.env.MICRONAUT_DEPLOY_SURFACE": JSON.stringify(
-        deploymentConfig.deploySurface,
-      ),
-      "import.meta.env.MICRONAUT_DOCS_ROOT": JSON.stringify(
-        deploymentConfig.docsRoot,
-      ),
-      "import.meta.env.MICRONAUT_DOCS_LATEST_ROOT": JSON.stringify(
-        deploymentConfig.docsLatestRoot,
-      ),
-      "import.meta.env.MICRONAUT_GUIDES_ROOT": JSON.stringify(
-        deploymentConfig.guidesRoot,
-      ),
-      "import.meta.env.MICRONAUT_GUIDES_LATEST_ROOT": JSON.stringify(
-        deploymentConfig.guidesLatestRoot,
-      ),
-      "import.meta.env.DEFAULT_GITHUB_PAGES_ORIGIN": JSON.stringify(
-        process.env.DEFAULT_GITHUB_PAGES_ORIGIN ||
-          deploymentConfig.githubPagesOrigin,
-      ),
-      "import.meta.env.MICRONAUT_GITHUB_PAGES_ORIGIN": JSON.stringify(
-        deploymentConfig.githubPagesOrigin,
-      ),
-      "import.meta.env.MICRONAUT_MAIN_SITE_URL": JSON.stringify(
-        deploymentConfig.mainSiteUrl,
-      ),
-      "import.meta.env.MICRONAUT_DOCS_SITE_URL": JSON.stringify(
-        deploymentConfig.docsSiteUrl,
-      ),
-      "import.meta.env.MICRONAUT_GUIDES_SITE_URL": JSON.stringify(
-        deploymentConfig.guidesSiteUrl,
-      ),
-    },
+    define: deploymentDefines(deploymentConfig, process.env),
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

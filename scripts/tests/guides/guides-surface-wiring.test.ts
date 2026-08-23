@@ -119,7 +119,7 @@ test("latest guide replacement routes and parallel generated-content preparation
     "utf8",
   );
   const browserTestRunner = await fs.readFile(
-    path.join(projectDirectory, "scripts", "run-guides-browser-tests.ts"),
+    path.join(projectDirectory, "scripts", "run-browser-tests.ts"),
     "utf8",
   );
 
@@ -129,7 +129,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.equal(
     packageJson.scripts["test:guides"],
-    "node --test scripts/tests/guides/*.test.ts && node scripts/run-guides-browser-tests.ts",
+    "node --test scripts/tests/guides/*.test.ts && node scripts/run-browser-tests.ts guides",
   );
   assert.equal(
     packageJson.scripts["test:guides:browser"],

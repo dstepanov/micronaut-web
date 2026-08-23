@@ -138,13 +138,13 @@ test("main-site browser tests are wired through a surface-aware runner", async (
     await fs.readFile(path.join(projectDirectory, "package.json"), "utf8"),
   );
   const runner = await fs.readFile(
-    path.join(projectDirectory, "scripts", "run-main-site-browser-tests.ts"),
+    path.join(projectDirectory, "scripts", "run-browser-tests.ts"),
     "utf8",
   );
 
   assert.equal(
     packageJson.scripts["test:main-site"],
-    "node --test scripts/tests/main-site/*.test.ts && node scripts/run-main-site-browser-tests.ts",
+    "node --test scripts/tests/main-site/*.test.ts && node scripts/run-browser-tests.ts main",
   );
   assert.equal(
     packageJson.scripts["test:main-site:browser"],
@@ -155,7 +155,10 @@ test("main-site browser tests are wired through a surface-aware runner", async (
   assert.match(runner, /MICRONAUT_DOCS_SITE_URL/);
   assert.match(runner, /MICRONAUT_GUIDES_SITE_URL/);
   assert.match(runner, /http:\/\/127\.0\.0\.1/);
-  assert.match(runner, /surface !== "all" && surface !== "main"/);
+  assert.match(
+    runner,
+    /deploySurface !== "all" &&\s*deploySurface !== requested/,
+  );
   assert.match(runner, /npm_execpath/);
 });
 

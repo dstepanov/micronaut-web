@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BookOpen,
   FileCode2,
@@ -50,6 +50,63 @@ function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
   if (kind === "Repo") return <FolderGit2 />;
   if (kind === "Project") return <Package />;
   return <FileText />;
+}
+
+/**
+ * Every result row in both modes renders the same icon / title / description /
+ * badge layout; only the badge and the source of the row differ.
+ */
+function ResultItem({
+  badge,
+  description,
+  icon,
+  onSelect,
+  title,
+  value,
+}: {
+  badge: string;
+  description: string;
+  icon: ReactNode;
+  onSelect: () => void;
+  title: string;
+  value: string;
+}) {
+  return (
+    <CommandItem value={value} onSelect={onSelect}>
+      {icon}
+      <span className="grid min-w-0 gap-0.5">
+        <span className="truncate font-medium">{title}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          {description}
+        </span>
+      </span>
+      <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
+        {badge}
+      </span>
+    </CommandItem>
+  );
+}
+
+function SearchItemResults({
+  badge,
+  items,
+  onSelect,
+}: {
+  badge: string;
+  items: SearchItem[];
+  onSelect: (href: string) => void;
+}) {
+  return items.map((item) => (
+    <ResultItem
+      key={`${item.scope ?? ""}-${item.kind}-${item.href}-${item.title}`}
+      badge={badge}
+      description={item.description}
+      icon={<ResultIcon kind={item.kind} />}
+      onSelect={() => onSelect(item.href)}
+      title={item.title}
+      value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
+    />
+  ));
 }
 
 const docsScopes = [
@@ -276,26 +333,11 @@ export function SearchDialog({
                   if (!scopedItems.length) return null;
                   return (
                     <CommandGroup key={scope} heading={scope}>
-                      {scopedItems.map((item) => (
-                        <CommandItem
-                          key={`${item.scope}-${item.kind}-${item.href}-${item.title}`}
-                          value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
-                          onSelect={() => navigateTo(item.href)}
-                        >
-                          <ResultIcon kind={item.kind} />
-                          <span className="grid min-w-0 gap-0.5">
-                            <span className="truncate font-medium">
-                              {item.title}
-                            </span>
-                            <span className="truncate text-xs text-muted-foreground">
-                              {item.description}
-                            </span>
-                          </span>
-                          <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                            {scope}
-                          </span>
-                        </CommandItem>
-                      ))}
+                      <SearchItemResults
+                        badge={scope}
+                        items={scopedItems}
+                        onSelect={navigateTo}
+                      />
                     </CommandGroup>
                   );
                 })}
@@ -321,86 +363,40 @@ export function SearchDialog({
               <CommandSeparator />
               <CommandGroup heading="Main site">
                 {pages.map((page) => (
-                  <CommandItem
+                  <ResultItem
                     key={page.slug}
-                    value={`Page ${page.title} ${page.eyebrow} ${page.description}`}
+                    badge="Page"
+                    description={page.description}
+                    icon={<FileText />}
                     onSelect={() => navigateTo(`/${page.slug}/`)}
-                  >
-                    <FileText />
-                    <span className="grid min-w-0 gap-0.5">
-                      <span className="truncate font-medium">{page.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {page.description}
-                      </span>
-                    </span>
-                    <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                      Page
-                    </span>
-                  </CommandItem>
+                    title={page.title}
+                    value={`Page ${page.title} ${page.eyebrow} ${page.description}`}
+                  />
                 ))}
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Docs and APIs">
-                {docs.map((item) => (
-                  <CommandItem
-                    key={`${item.kind}-${item.href}-${item.title}`}
-                    value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
-                    onSelect={() => navigateTo(item.href)}
-                  >
-                    <ResultIcon kind={item.kind} />
-                    <span className="grid min-w-0 gap-0.5">
-                      <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {item.description}
-                      </span>
-                    </span>
-                    <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                      Docs
-                    </span>
-                  </CommandItem>
-                ))}
+                <SearchItemResults
+                  badge="Docs"
+                  items={docs}
+                  onSelect={navigateTo}
+                />
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Guides">
-                {guides.map((item) => (
-                  <CommandItem
-                    key={`${item.kind}-${item.href}-${item.title}`}
-                    value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
-                    onSelect={() => navigateTo(item.href)}
-                  >
-                    <ResultIcon kind={item.kind} />
-                    <span className="grid min-w-0 gap-0.5">
-                      <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {item.description}
-                      </span>
-                    </span>
-                    <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                      Guide
-                    </span>
-                  </CommandItem>
-                ))}
+                <SearchItemResults
+                  badge="Guide"
+                  items={guides}
+                  onSelect={navigateTo}
+                />
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Tags">
-                {tags.map((item) => (
-                  <CommandItem
-                    key={`${item.kind}-${item.href}-${item.title}`}
-                    value={`${item.kind} ${item.title} ${item.description} ${item.terms}`}
-                    onSelect={() => navigateTo(item.href)}
-                  >
-                    <ResultIcon kind={item.kind} />
-                    <span className="grid min-w-0 gap-0.5">
-                      <span className="truncate font-medium">{item.title}</span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {item.description}
-                      </span>
-                    </span>
-                    <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[0.68rem] text-muted-foreground">
-                      Tag
-                    </span>
-                  </CommandItem>
-                ))}
+                <SearchItemResults
+                  badge="Tag"
+                  items={tags}
+                  onSelect={navigateTo}
+                />
               </CommandGroup>
             </>
           )}
