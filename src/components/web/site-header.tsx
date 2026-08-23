@@ -152,6 +152,7 @@ function isActivePrimaryLink(
 
 export function SiteHeader({
   docsSearchIndexUrl,
+  siteSearchIndexUrl,
   surface = "main",
   isBlogRoute = false,
   hideBrand = false,
@@ -159,6 +160,7 @@ export function SiteHeader({
   navigationUrls,
 }: {
   docsSearchIndexUrl?: string;
+  siteSearchIndexUrl?: string;
   surface?: SurfaceId;
   isBlogRoute?: boolean;
   hideBrand?: boolean;
@@ -245,6 +247,7 @@ export function SiteHeader({
             mode={surface === "docs" ? "docs" : "site"}
             navigationUrls={navigationUrls}
             docsSearchIndexUrl={docsSearchIndexUrl}
+            siteSearchIndexUrl={siteSearchIndexUrl}
           />
           <Button
             variant="outline"

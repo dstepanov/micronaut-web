@@ -7,7 +7,7 @@ import {
   THEME_MODE_STORAGE_KEY,
 } from "@/lib/experience-theme";
 import { getMainSitePageSummaries } from "@/lib/main-site-content";
-import { withBasePath } from "@/lib/base-path";
+import { withBasePath, withSurfacePath } from "@/lib/base-path";
 import {
   canonicalSurfaceUrl,
   deploySurface,
@@ -66,6 +66,9 @@ const docsSearchIndexUrl = externalSurfacePath(
   "docs",
   "/docs/search-index.json",
 );
+// The route only survives pruning on the main artifact, so the guides surface
+// reads it cross-origin the way docs search already reads its own index.
+const siteSearchIndexUrl = withSurfacePath("main", "/search-index.json");
 const siteHeaderFrameClass = "sticky top-0 z-40";
 // Share assets live on the main site so every surface points at one copy.
 const shareImageUrl = externalSurfacePath(
@@ -207,10 +210,12 @@ const structuredData = {
               data-docs-url={externalSurfaceUrls.docs}
               data-guides-url={externalSurfaceUrls.guides}
               data-docs-search-index-url={docsSearchIndexUrl}
+              data-site-search-index-url={siteSearchIndexUrl}
               class={siteHeaderFrameClass}
             >
               <SiteHeader
                 docsSearchIndexUrl={docsSearchIndexUrl}
+                siteSearchIndexUrl={siteSearchIndexUrl}
                 navigationUrls={externalSurfaceUrls}
                 surface={surface}
               />
@@ -224,6 +229,7 @@ const structuredData = {
           <div class={siteHeaderFrameClass}>
             <SiteHeader
               surface={surface}
+              siteSearchIndexUrl={siteSearchIndexUrl}
               isBlogRoute={
                 routePath === "/blog" || routePath.startsWith("/blog/")
               }

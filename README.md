@@ -200,15 +200,16 @@ Search is static and catalog-backed. There is no external search service; the UI
 
 The header search is `SearchDialog`, rendered by `SiteHeader` in the top-menu island and hydrated on load. It opens from the search button or the `Meta/Ctrl+K` keyboard shortcut, then navigates by assigning `window.location.href` through the base-path helpers so the same result paths work in the all-in-one preview, standalone docs, standalone guides, remote-header shells, and GitHub Pages base paths.
 
-The main-site search mode is used on the main and guides surfaces. Its result sets are built synchronously from:
+The main-site search mode is used on the main and guides surfaces. Its result sets come from:
 
-- `getMainSitePageSummaries()`, passed into `SiteHeader`, for main-site pages.
-- `searchItems()` in `src/lib/content-catalog.ts`, backed by `src/data/docs-projects.fixture.json` for docs projects and synthetic docs sections.
-- `src/data/generated-guides.fixture.json` for guides and guide tags.
+- `getMainSitePageSummaries()`, passed into `SiteHeader`, for main-site pages. These are available synchronously.
+- `/search-index.json`, fetched when the dialog first opens. `src/pages/search-index.json.ts` prerenders it from `searchItems()` in `src/lib/content-catalog.ts`, which is backed by `src/data/docs-projects.fixture.json` for docs projects and synthetic docs sections and by `src/data/generated-guides.fixture.json` for guides and guide tags.
+
+Neither catalog is imported into the dialog. `SiteHeader` is hydrated on every page, so a static import would ship both fixtures (roughly 92 KB) to every visitor whether or not search is ever opened.
 
 Main-site search groups results into actions, main-site pages, docs and APIs, guides, and tags. Each command item exposes a searchable value made from its kind, title, description, and terms; the `cmdk` command component handles the visible filtering. The source groups are capped before rendering to keep the dialog small: up to 80 main-site pages, 80 docs entries, 80 guide entries, and 40 tags. This mode does not read generated docs HTML, so deep generated headings, configuration properties, and API classes are available only in docs search mode.
 
-Docs search mode is used when `SiteHeader` is rendered with `surface="docs"`. The dialog starts with the synchronous fallback from `docsSearchItems()` and, when opened, fetches the configured docs search index URL or `withBasePath("/docs/search-index.json")`. In standalone docs deployments that path is routed to `/latest/search-index.json`; in the all-in-one preview it stays under `/docs/search-index.json`. If the fetch fails, the fallback project/section/repository index remains usable.
+Docs search mode is used when `SiteHeader` is rendered with `surface="docs"`. On open it fetches the configured docs search index URL or `withBasePath("/docs/search-index.json")`. In standalone docs deployments that path is routed to `/latest/search-index.json`; in the all-in-one preview it stays under `/docs/search-index.json`. `WebLayout` passes both index URLs (`docsSearchIndexUrl`, `siteSearchIndexUrl`) as absolute surface URLs, and the remote header shell reads them from `data-docs-search-index-url` and `data-site-search-index-url`. If a fetch fails the dialog shows no catalog results; main-site pages stay searchable.
 
 The docs search index route is `src/pages/docs/[searchIndex].json.ts`. It is prerendered only when docs routes are enabled and returns JSON as `{ "items": [...] }`; because it is prerendered, only the body is emitted and response headers come from the host serving the artifact. It loads the docs project catalog from `src/content/generated-docs/project-catalog.json` when present, otherwise from `src/data/docs-projects.fixture.json`, then reads generated HTML from `src/content/generated-docs/*.html` and calls `buildDocsSearchIndex(...)` in `scripts/docs/search-index.ts`.
 
