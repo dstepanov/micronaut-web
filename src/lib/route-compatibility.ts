@@ -172,36 +172,52 @@ export function productionUrl(surface: ProductionSurface, path = "/") {
  * document for the redirect stubs it generates at publish time; keep the two in
  * step.
  */
+/**
+ * The single redirect document shape. Themed via `color-scheme` plus system
+ * colors (and the stored site theme) so the stub does not flash a white page
+ * for dark-mode readers.
+ */
+export function clientRedirectDocument(
+  destination: string,
+  title = "the current page",
+): string {
+  const serializedDestination = JSON.stringify(destination);
+  return [
+    "<!doctype html>",
+    '<html lang="en">',
+    "<head>",
+    '<meta charset="utf-8" />',
+    '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+    '<meta name="robots" content="noindex" />',
+    '<meta name="color-scheme" content="light dark" />',
+    "<style>",
+    "body{margin:0;display:grid;min-height:100vh;place-items:center;font:15px/1.5 system-ui,sans-serif;background:Canvas;color:CanvasText}",
+    "a{color:inherit}",
+    "</style>",
+    `<meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
+    `<title>Redirecting to ${htmlText(title)}</title>`,
+    "<script>",
+    'try{const storedThemeMode=localStorage.getItem("micronaut-web-theme-mode");if(storedThemeMode==="light"||storedThemeMode==="dark"){document.documentElement.style.colorScheme=storedThemeMode;}}catch{}',
+    `location.replace(${serializedDestination} + location.search + location.hash);`,
+    "</script>",
+    "</head>",
+    "<body>",
+    `<a href="${htmlAttribute(destination)}">Continue to ${htmlText(title)}</a>`,
+    "</body>",
+    "</html>",
+    "",
+  ].join("\n");
+}
+
 export function preservingClientRedirect(
   destination: string,
   title = "the current page",
 ): Response {
-  const serializedDestination = JSON.stringify(destination);
-  return new Response(
-    [
-      "<!doctype html>",
-      '<html lang="en">',
-      "<head>",
-      '<meta charset="utf-8" />',
-      '<meta name="robots" content="noindex" />',
-      `<meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
-      `<title>Redirecting to ${htmlText(title)}</title>`,
-      "<script>",
-      `location.replace(${serializedDestination} + location.search + location.hash);`,
-      "</script>",
-      "</head>",
-      "<body>",
-      `<a href="${htmlAttribute(destination)}">Continue to ${htmlText(title)}</a>`,
-      "</body>",
-      "</html>",
-      "",
-    ].join("\n"),
-    {
-      headers: {
-        "content-type": "text/html; charset=utf-8",
-      },
+  return new Response(clientRedirectDocument(destination, title), {
+    headers: {
+      "content-type": "text/html; charset=utf-8",
     },
-  );
+  });
 }
 
 function htmlAttribute(value: string) {

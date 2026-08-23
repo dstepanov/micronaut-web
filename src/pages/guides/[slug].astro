@@ -22,6 +22,7 @@ import {
   type GeneratedGuideOption,
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
+import { clientRedirectDocument } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 import "@/styles/generated-docs-content.css";
 
@@ -87,17 +88,20 @@ export async function getStaticPaths() {
 }
 
 const props = Astro.props as TagProps | OverviewProps | VariantProps;
-if (props.kind === "overview") {
-  const overviewOption = preferredGuideOption(props.guide);
-  return Astro.redirect(
-    withBasePath(
-      overviewOption
-        ? guideOptionPath(overviewOption, guidesRoot)
-        : `${guidesRoot}/`,
-    ),
-    302,
-  );
-}
+// Overview slugs render a themed client redirect to the preferred variant;
+// `Astro.redirect` would emit Astro's unstyled stub, which flashes a white
+// page for dark-mode readers.
+const overviewDestination =
+  props.kind === "overview"
+    ? withBasePath(
+        (() => {
+          const overviewOption = preferredGuideOption(props.guide);
+          return overviewOption
+            ? guideOptionPath(overviewOption, guidesRoot)
+            : `${guidesRoot}/`;
+        })(),
+      )
+    : undefined;
 
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
@@ -181,6 +185,14 @@ function buildGuidePageIndexSections(
   });
 }
 ---
+
+{
+  props.kind === "overview" && overviewDestination && (
+    <Fragment
+      set:html={clientRedirectDocument(overviewDestination, props.guide.title)}
+    />
+  )
+}
 
 {
   props.kind === "tag" && (
