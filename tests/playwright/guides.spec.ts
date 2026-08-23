@@ -145,7 +145,7 @@ test("guides manifest endpoint exposes generated guide metadata", async ({
   );
 });
 
-test("guide catalog hydrates guide card islands and variant menus", async ({
+test("guide catalog renders static cards and hydrates only the variant menu", async ({
   page,
 }) => {
   const failures = collectBrowserFailures(page);
@@ -162,7 +162,10 @@ test("guide catalog hydrates guide card islands and variant menus", async ({
   await expect(card).toBeVisible();
   await card.scrollIntoViewIfNeeded();
 
-  const island = card.locator("astro-island").first();
+  // The card itself is static markup; the only island inside it is the
+  // variant menu.
+  const island = card.locator("astro-island");
+  await expect(island).toHaveCount(1);
   await expect(island).toBeVisible();
   await expect
     .poll(async () =>

@@ -1,0 +1,110 @@
+---
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { GuideVariantMenu } from "@/components/web/guide-variant-menu";
+import {
+  guideOptionPath,
+  guideOverviewPath,
+  guideTagPath,
+  preferredGuideOption,
+  type GeneratedGuide,
+} from "@/lib/generated-guide-routing";
+import { withBasePath } from "@/lib/base-path";
+
+interface Props {
+  guide: GeneratedGuide;
+  root?: string;
+}
+
+const { guide, root = "/guides" } = Astro.props;
+const option = preferredGuideOption(guide);
+const href = withBasePath(
+  option ? guideOptionPath(option, root) : guideOverviewPath(guide, root),
+);
+// Only the variant menu needs a browser: it is hydrated on its own, and only
+// for the guides that actually offer more than one option.
+const variants =
+  guide.options.length > 1
+    ? guide.options.map((variant) => ({
+        id: variant.id,
+        languageLabel: variant.languageLabel,
+        buildToolLabel: variant.buildToolLabel,
+        href: withBasePath(guideOptionPath(variant, root)),
+        active: variant.file === option?.file,
+      }))
+    : [];
+const categories = (
+  guide.categories.length ? guide.categories : ["Guide"]
+).slice(0, 2);
+---
+
+<Card className="h-full">
+  <CardHeader>
+    <div class="flex flex-wrap gap-2">
+      {
+        categories.map((category) => (
+          <Badge variant="secondary">{category}</Badge>
+        ))
+      }
+    </div>
+    <CardTitle className="text-xl leading-tight">
+      <a href={href} class="text-inherit no-underline hover:text-brand">
+        {guide.title}
+      </a>
+    </CardTitle>
+    <CardDescription>{guide.intro}</CardDescription>
+  </CardHeader>
+  <CardContent className="grid gap-4">
+    <div class="flex flex-wrap gap-1.5">
+      {
+        guide.tags.slice(0, 5).map((tag) => (
+          <a
+            href={withBasePath(guideTagPath(tag, root))}
+            class="no-underline"
+            aria-label={`Open guides tagged ${tag}`}
+          >
+            <Badge variant="outline">{tag}</Badge>
+          </a>
+        ))
+      }
+    </div>
+    <div
+      class="flex items-center justify-between gap-3 text-sm text-muted-foreground"
+    >
+      <span>{guide.estimatedMinutes} min</span>
+      {
+        variants.length > 0 ? (
+          <ButtonGroup
+            aria-label={`Read ${guide.title} variants`}
+            className="shrink-0"
+          >
+            <Button asChild size="sm" variant="outline">
+              <a href={href} aria-label={`Read ${guide.title}`}>
+                Read
+              </a>
+            </Button>
+            <GuideVariantMenu
+              client:visible
+              title={guide.title}
+              variants={variants}
+            />
+          </ButtonGroup>
+        ) : (
+          <Button asChild size="sm" variant="outline">
+            <a href={href} aria-label={`Read ${guide.title}`}>
+              Read
+            </a>
+          </Button>
+        )
+      }
+    </div>
+  </CardContent>
+</Card>
