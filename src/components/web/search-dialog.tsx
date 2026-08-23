@@ -29,11 +29,7 @@ import {
   withBasePath,
   type SiteSurfaceUrls,
 } from "@/lib/base-path";
-import {
-  docsSearchItems,
-  searchItems,
-  type SearchItem,
-} from "@/lib/content-catalog";
+import type { SearchItem } from "@/lib/content-catalog";
 
 type MainSiteSearchPage = {
   slug: string;
@@ -173,6 +169,7 @@ function matchingDocsSearchItems(items: SearchItem[], query: string) {
 export function SearchDialog({
   className,
   docsSearchIndexUrl,
+  siteSearchIndexUrl,
   mainSitePages = [],
   mode = "site",
   navigationUrls,
@@ -180,6 +177,7 @@ export function SearchDialog({
 }: {
   className?: string;
   docsSearchIndexUrl?: string;
+  siteSearchIndexUrl?: string;
   mainSitePages?: MainSiteSearchPage[];
   mode?: "site" | "docs";
   navigationUrls?: SiteSurfaceUrls;
@@ -188,11 +186,10 @@ export function SearchDialog({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [docsScope, setDocsScope] = useState<DocsScope>("All");
-  const [generatedDocsItems, setGeneratedDocsItems] = useState<SearchItem[]>(
-    [],
-  );
-  const items = useMemo(() => searchItems(), []);
-  const fallbackDocsItems = useMemo(() => docsSearchItems(), []);
+  // Both modes load their catalog from a static JSON route when the dialog is
+  // first opened. Importing it instead put the docs and guides fixtures in the
+  // header bundle, which every page hydrates.
+  const [items, setItems] = useState<SearchItem[]>([]);
   const docs = useMemo(
     () => items.filter((item) => item.href.startsWith("/docs/")).slice(0, 80),
     [items],
@@ -206,17 +203,16 @@ export function SearchDialog({
     [items],
   );
   const pages = useMemo(() => mainSitePages.slice(0, 80), [mainSitePages]);
-  const docsModeItems = useMemo(() => {
-    const source = generatedDocsItems.length
-      ? generatedDocsItems
-      : fallbackDocsItems;
-    return matchingDocsSearchItems(
-      source.filter(
-        (item) => docsScope === "All" || scopeForItem(item) === docsScope,
-      ),
-      searchQuery,
-    ).slice(0, 240);
-  }, [docsScope, fallbackDocsItems, generatedDocsItems, searchQuery]);
+  const docsModeItems = useMemo(
+    () =>
+      matchingDocsSearchItems(
+        items.filter(
+          (item) => docsScope === "All" || scopeForItem(item) === docsScope,
+        ),
+        searchQuery,
+      ).slice(0, 240),
+    [docsScope, items, searchQuery],
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -233,24 +229,28 @@ export function SearchDialog({
   }, []);
 
   useEffect(() => {
-    if (!open || mode !== "docs" || generatedDocsItems.length) {
+    if (!open || items.length) {
       return;
     }
+    const indexUrl =
+      mode === "docs"
+        ? docsSearchIndexUrl || withBasePath("/docs/search-index.json")
+        : siteSearchIndexUrl || withBasePath("/search-index.json");
     let cancelled = false;
-    fetch(docsSearchIndexUrl || withBasePath("/docs/search-index.json"))
+    fetch(indexUrl)
       .then((response) => (response.ok ? response.json() : undefined))
       .then((payload) => {
         if (!cancelled && Array.isArray(payload?.items)) {
-          setGeneratedDocsItems(payload.items);
+          setItems(payload.items);
         }
       })
       .catch(() => {
-        // The fallback project index is already available synchronously.
+        // Leaves the dialog on its "No results found." state.
       });
     return () => {
       cancelled = true;
     };
-  }, [docsSearchIndexUrl, generatedDocsItems.length, mode, open]);
+  }, [docsSearchIndexUrl, items.length, mode, open, siteSearchIndexUrl]);
 
   const navigateTo = (href: string) => {
     window.location.href = withConfiguredBasePath(href, navigationUrls);
