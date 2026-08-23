@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { parseArgs, stringArg } from "./shared/cli.ts";
+import { copyCrawlerFiles } from "./shared/crawler-files.ts";
 import { hoistVersionedSurfaceAssets } from "./shared/surface-assets.ts";
 
 export type Surface = "main" | "docs" | "guides";
@@ -104,6 +105,7 @@ async function pruneDocs(
       path.join(directory, "versions.json"),
       path.join(temporaryDirectory, "versions.json"),
     );
+    await copyCrawlerFiles(directory, temporaryDirectory);
     const sourceDocsDirectory = path.join(directory, "docs");
     await copyChildren(
       sourceDocsDirectory,
@@ -156,6 +158,7 @@ async function pruneGuides(
       path.join(directory, "_astro"),
       path.join(temporaryDirectory, "_astro"),
     );
+    await copyCrawlerFiles(directory, temporaryDirectory);
     await copyChildren(path.join(directory, "guides"), temporaryDirectory);
     await copyIfExists(
       path.join(directory, "latest"),

@@ -142,7 +142,13 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
 )}
 
 {props.kind === "variant" && (
-  <WebLayout title={`${props.guide.title} | ${props.option.label}`} surface="guides">
+  <WebLayout
+    title={`${props.guide.title} | ${props.option.label}`}
+    description={props.guide.intro}
+    surface="guides"
+    pageType="article"
+    publishedTime={props.guide.publicationDate}
+  >
     <main class:list={[
       "mx-auto grid max-w-[1480px] gap-8 px-4 py-8 md:px-6",
       currentGuideSectionLinks.length > 0 ? "lg:grid-cols-[220px_minmax(0,1fr)_250px]" : "lg:grid-cols-[220px_minmax(0,1fr)]"

@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { parseArgs, stringArg } from "./shared/cli.ts";
+import { copyCrawlerFiles } from "./shared/crawler-files.ts";
 import { pruneUnreferencedAstroAssets } from "./prune-surface.ts";
 import {
   mergeSharedSurfaceAssets,
@@ -110,6 +111,7 @@ export async function publishDocsSurface({
     path.join(distDirectory, "CNAME"),
     path.join(publishedDirectory, "CNAME"),
   );
+  await copyCrawlerFiles(distDirectory, publishedDirectory);
   await writeNoJekyll(publishedDirectory);
 
   const versionSource = await docsRootSource(distDirectory, publishVersion);
