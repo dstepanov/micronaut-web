@@ -374,7 +374,7 @@ test("footer labels links without the Micronaut prefix", async ({ page }) => {
     ["Success Stories", /\/micronaut-success-stories\/$/],
     ["Blog", /\/blog\/$/],
     ["Release Announcements", /\/category\/release-announcements\/$/],
-    ["ROADMAP", /\/micronaut-roadmap\/$/],
+    ["Roadmap", /\/micronaut-roadmap\/$/],
     ["Security Announcements", /\/category\/security-announcements\/$/],
     ["Logos", /\/brand-guidelines\/micronaut-logos\/$/],
     ["Trademark Policy", /\/brand-guidelines\/micronaut-trademark-policy\/$/],

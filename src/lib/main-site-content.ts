@@ -123,28 +123,23 @@ function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
 
 export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
   {
-    title: "Start",
-    links: [
-      { label: "Download", href: "/download/" },
-      { label: "Success Stories", href: "/micronaut-success-stories/" },
-    ],
-  },
-  {
     title: "Resources",
     links: [
+      { label: "Download", href: "/download/" },
       { label: "Blog", href: "/blog/" },
       {
         label: "Release Announcements",
         href: "/category/release-announcements/",
       },
-      { label: "ROADMAP", href: "/micronaut-roadmap/" },
+      { label: "Roadmap", href: "/micronaut-roadmap/" },
       {
         label: "Security Announcements",
         href: "/category/security-announcements/",
       },
+      { label: "Success Stories", href: "/micronaut-success-stories/" },
       { label: "Commercial Support", href: "/support/" },
       { label: "Community Support", href: "/resources/community-support/" },
-      { label: "Frequently Asked Questions", href: "/faq/" },
+      { label: "FAQ", href: "/faq/" },
     ],
   },
   {
@@ -159,6 +154,8 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
     ],
   },
   {
+    // Curated shortlist: every policy lives in the micronaut-policies repo, and
+    // listing all fifteen made the footer roughly a fifth of the page height.
     title: "Policies",
     links: [
       {
@@ -170,56 +167,20 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/MAINTAINERS.md",
       },
       {
-        label: "Points of Contact",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/POINTS_OF_CONTACT.md",
-      },
-      {
         label: "Contributing",
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTING.md",
-      },
-      {
-        label: "Planning",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/PLANNING.md",
-      },
-      {
-        label: "Software Versioning",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/VERSIONS_POLICY.md",
-      },
-      {
-        label: "Release Management",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_MANAGEMENT.md",
-      },
-      {
-        label: "Release Cadence",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_CADENCE.md",
-      },
-      {
-        label: "Conflict Resolution",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONFLICT.md",
-      },
-      {
-        label: "Security Advisory Disclosure",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md",
       },
       {
         label: "Code of Conduct",
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md",
       },
       {
-        label: "Intellectual Property",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/INTELLECTUAL_PROPERTY.md",
+        label: "Security Advisory Disclosure",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md",
       },
       {
-        label: "Contributor License Agreement",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md",
-      },
-      {
-        label: "Assets",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/ASSETS.md",
-      },
-      {
-        label: "Succession Planning",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SUCCESSION.md",
+        label: "All Policies",
+        href: "https://github.com/micronaut-projects/micronaut-policies#readme",
       },
     ],
   },
@@ -407,6 +368,12 @@ export async function renderFaqItems(
   entry: MainSitePageEntry | BlogPostEntry,
 ): Promise<MainSiteFaqItem[]> {
   return extractFaqItemsFromHtml(await renderMarkdownHtml(entry));
+}
+
+/** Blog categories are stored as slugs, e.g. "release-announcements". */
+export function formatCategoryLabel(category: string) {
+  const label = category.replace(/-+/g, " ").trim();
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 export function cleanExcerptText(value: string) {

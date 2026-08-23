@@ -49,9 +49,7 @@ const alt = `${organization} logo`;
 {
   lightSource && (
     <div class={box}>
-      <span
-        class:list={[frame, invertOnDark && !darkSource && "dark:!bg-white"]}
-      >
+      <span class={frame}>
         <img
           src={lightSource.src}
           srcset={lightSource.srcset}
@@ -61,6 +59,7 @@ const alt = `${organization} logo`;
             "max-h-full max-w-full object-contain object-left",
             logoClass,
             darkSource && "dark:hidden",
+            invertOnDark && !darkSource && "dark:invert",
           ]}
           loading="lazy"
           width={lightSource.width}

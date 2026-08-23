@@ -97,7 +97,8 @@ const storyLogoItems = stories
     className: story.logoClass,
     source: logoSource(story.logo)!,
     darkSource: logoSource(story.logoDark),
-    logoUseLightSurfaceOnDark: story.logoInvertOnDark && !story.logoDark,
+    // Monochrome dark-on-transparent marks invert to white on the dark tile.
+    invertOnDark: story.logoInvertOnDark && !story.logoDark,
   }));
 
 const previousCustomerLogos = [
@@ -107,7 +108,7 @@ const previousCustomerLogos = [
     className: "h-12",
     source: logoSource("/micronaut-assets/home/minecraft.png"),
     darkSource: undefined,
-    logoUseLightSurfaceOnDark: true,
+    invertOnDark: true,
   },
   {
     name: "Mojang",
@@ -115,7 +116,7 @@ const previousCustomerLogos = [
     className: "h-12",
     source: logoSource("/micronaut-assets/home/mojang.png"),
     darkSource: undefined,
-    logoUseLightSurfaceOnDark: true,
+    invertOnDark: true,
   },
   {
     name: "Target",
@@ -123,7 +124,7 @@ const previousCustomerLogos = [
     className: "h-16",
     source: logoSource("/micronaut-assets/home/target.png"),
     darkSource: undefined,
-    logoUseLightSurfaceOnDark: true,
+    invertOnDark: true,
   },
 ];
 const whoUsesLogoItems = [...storyLogoItems, ...previousCustomerLogos];
@@ -493,7 +494,6 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
                   href={customer.href}
                   class:list={[
                     "group flex h-20 w-[12.5rem] shrink-0 items-center justify-center rounded-md border border-border/70 bg-card px-5 shadow-sm transition hover:border-brand/50 hover:shadow-md dark:border-white/10 dark:bg-background",
-                    customer.logoUseLightSurfaceOnDark && "dark:!bg-white",
                   ]}
                   aria-label={`${customer.name}${index >= whoUsesLogoItems.length ? " duplicate" : ""}`}
                   aria-hidden={
@@ -510,6 +510,7 @@ const highlightedCodeShowcaseExamples = await highlightCodeSnippetExamples(
                       "max-h-full max-w-full object-contain transition group-hover:opacity-100",
                       customer.className,
                       customer.darkSource && "dark:hidden",
+                      customer.invertOnDark && "dark:invert",
                     ]}
                     loading="lazy"
                     width={customer.source.width}
