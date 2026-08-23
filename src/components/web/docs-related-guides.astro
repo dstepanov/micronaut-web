@@ -23,9 +23,7 @@ const { manifestUrl, topicAliases } = Astro.props;
 const primaryTopic = topicAliases.find((alias) => alias.trim());
 const showMoreHref = withSurfacePath(
   "guides",
-  primaryTopic
-    ? `/guides/?q=${encodeURIComponent(primaryTopic)}`
-    : "/guides/",
+  primaryTopic ? `/guides/?q=${encodeURIComponent(primaryTopic)}` : "/guides/",
 );
 ---
 
@@ -38,31 +36,36 @@ const showMoreHref = withSurfacePath(
 >
   <details class="docs-related-guides-disclosure">
     <summary class="docs-related-guides-summary">
-      <ChevronRightIcon className="docs-related-guides-marker" aria-hidden="true" />
+      <ChevronRightIcon
+        className="docs-related-guides-marker"
+        aria-hidden="true"
+      />
       <h2 class="docs-related-guides-heading">Latest guides</h2>
     </summary>
     <div class="docs-related-guides-grid" data-docs-related-guides-grid>
-      {[0, 1, 2].map(() => (
-        <Card className="docs-related-guide-card" aria-hidden="true">
-          <CardHeader>
-            <div class="docs-related-guide-skeleton-badges">
-              <Skeleton className="docs-related-guide-skeleton-badge-primary" />
-              <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
-            </div>
-            <Skeleton className="docs-related-guide-skeleton-title" />
-            <div class="docs-related-guide-skeleton-description">
-              <Skeleton className="docs-related-guide-skeleton-line-full" />
-              <Skeleton className="docs-related-guide-skeleton-line-short" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="docs-related-guide-skeleton-meta" />
-          </CardContent>
-          <CardFooter>
-            <Skeleton className="docs-related-guide-skeleton-button" />
-          </CardFooter>
-        </Card>
-      ))}
+      {
+        [0, 1, 2].map(() => (
+          <Card className="docs-related-guide-card" aria-hidden="true">
+            <CardHeader>
+              <div class="docs-related-guide-skeleton-badges">
+                <Skeleton className="docs-related-guide-skeleton-badge-primary" />
+                <Skeleton className="docs-related-guide-skeleton-badge-secondary" />
+              </div>
+              <Skeleton className="docs-related-guide-skeleton-title" />
+              <div class="docs-related-guide-skeleton-description">
+                <Skeleton className="docs-related-guide-skeleton-line-full" />
+                <Skeleton className="docs-related-guide-skeleton-line-short" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="docs-related-guide-skeleton-meta" />
+            </CardContent>
+            <CardFooter>
+              <Skeleton className="docs-related-guide-skeleton-button" />
+            </CardFooter>
+          </Card>
+        ))
+      }
     </div>
   </details>
 
@@ -71,12 +74,16 @@ const showMoreHref = withSurfacePath(
       <Card className="docs-related-guide-card">
         <CardHeader>
           <div class="docs-related-guide-badges" data-related-guide-badges>
-            <Badge variant="outline" data-related-guide-badge></Badge>
+            <Badge variant="outline" data-related-guide-badge />
           </div>
           <CardTitle className="docs-related-guide-title">
-            <a class="docs-related-guide-title-link" data-related-guide-title></a>
+            <a class="docs-related-guide-title-link" data-related-guide-title
+            ></a>
           </CardTitle>
-          <CardDescription className="docs-related-guide-description" data-related-guide-description></CardDescription>
+          <CardDescription
+            className="docs-related-guide-description"
+            data-related-guide-description
+          />
         </CardHeader>
         <CardContent className="docs-related-guide-meta-content">
           <div class="docs-related-guide-meta">

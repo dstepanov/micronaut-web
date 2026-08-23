@@ -15,7 +15,7 @@ class HelloController {
     String index() {
         return "Hello World"; // <3>
     }
-}`
+}`,
   },
   {
     language: "kotlin",
@@ -31,7 +31,7 @@ class HelloController {
     fun index(): String {
         return "Hello World"
     }
-}`
+}`,
   },
   {
     language: "groovy",
@@ -47,8 +47,8 @@ class HelloController {
     String index() {
         'Hello World'
     }
-}`
-  }
+}`,
+  },
 ] satisfies CodeSnippetVariant[];
 
 export const componentTerminalVariants = [
@@ -59,8 +59,8 @@ export const componentTerminalVariants = [
     code: `mn create-app example.micronaut.hello-world \\
   --features=http-client,graalvm \\
   --build=gradle \\
-  --lang=java`
-  }
+  --lang=java`,
+  },
 ] satisfies CodeSnippetVariant[];
 
 export const dependencyVariants = [
@@ -68,7 +68,7 @@ export const dependencyVariants = [
     language: "gradle",
     label: "Gradle",
     fileName: "build.gradle",
-    code: `implementation("io.micronaut:micronaut-http-client")`
+    code: `implementation("io.micronaut:micronaut-http-client")`,
   },
   {
     language: "maven",
@@ -77,6 +77,6 @@ export const dependencyVariants = [
     code: `<dependency>
     <groupId>io.micronaut</groupId>
     <artifactId>micronaut-http-client</artifactId>
-</dependency>`
-  }
+</dependency>`,
+  },
 ] satisfies CodeSnippetVariant[];

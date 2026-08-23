@@ -1,5 +1,7 @@
 export function enhanceGeneratedContentHtml(html: string) {
-  return labelGeneratedHeadingAnchors(html.replaceAll("visually-hidden", "sr-only"));
+  return labelGeneratedHeadingAnchors(
+    html.replaceAll("visually-hidden", "sr-only"),
+  );
 }
 
 export function generatedHtmlLabel(html: string) {
@@ -12,7 +14,16 @@ export function generatedHtmlLabel(html: string) {
 function labelGeneratedHeadingAnchors(html: string) {
   return html.replace(
     /<h([1-6])([^>]*) id="([^"]+)"([^>]*)><a class="anchor" href="#([^"]+)"([^>]*)><\/a>([\s\S]*?)<\/h\1>/g,
-    (match, level, beforeId, id, afterId, href, anchorAttributes, labelHtml) => {
+    (
+      match,
+      level,
+      beforeId,
+      id,
+      afterId,
+      href,
+      anchorAttributes,
+      labelHtml,
+    ) => {
       if (/\saria-label=/.test(anchorAttributes)) {
         return match;
       }
@@ -27,7 +38,7 @@ function decodeHtmlEntities(value: string) {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
 }
 

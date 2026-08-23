@@ -14,17 +14,10 @@ interface Props {
   activeSections?: ActiveSection[];
 }
 
-const {
-  projectCatalog,
-  activeSlug,
-  activeSections = [],
-} = Astro.props;
+const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
 ---
 
-<div
-  data-docs-shell
-  class="min-h-[calc(100svh-3.5rem)]"
->
+<div data-docs-shell class="min-h-[calc(100svh-3.5rem)]">
   <div class="flex min-h-0 flex-1">
     <aside
       data-docs-sidebar
@@ -68,8 +61,13 @@ const {
         </div>
       </div>
     </aside>
-    <main data-slot="sidebar-inset" class="relative flex w-full min-w-0 flex-1 flex-col bg-background">
-      <div class="sticky top-14 z-30 flex h-11 items-center border-b bg-background/95 px-4 backdrop-blur md:hidden">
+    <main
+      data-slot="sidebar-inset"
+      class="relative flex w-full min-w-0 flex-1 flex-col bg-background"
+    >
+      <div
+        class="sticky top-14 z-30 flex h-11 items-center border-b bg-background/95 px-4 backdrop-blur md:hidden"
+      >
         <button
           type="button"
           class="inline-flex size-8 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -86,7 +84,11 @@ const {
         >
           <div class="flex items-center justify-between border-b px-4 py-3">
             <span class="font-semibold">Docs navigation</span>
-            <button type="button" data-docs-mobile-nav-close aria-label="Close docs navigation">×</button>
+            <button
+              type="button"
+              data-docs-mobile-nav-close
+              aria-label="Close docs navigation">×</button
+            >
           </div>
           <div class="docs-sidebar-mobile-sheet-body">
             <DocsSidebarContent

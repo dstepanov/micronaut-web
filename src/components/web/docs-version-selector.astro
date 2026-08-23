@@ -29,61 +29,58 @@ function routedDocsHref(href: string) {
 }
 ---
 
-{current && options.length >= 2 && (
-  <div
-    class:list={[className]}
-    data-docs-version-selector
-    data-version-manifest-href={versionManifestHref}
-    data-label={label}
-  >
-    <label
-      class="flex h-12 w-full items-center gap-2 rounded-md px-2 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
+{
+  current && options.length >= 2 && (
+    <div
+      class:list={[className]}
+      data-docs-version-selector
+      data-version-manifest-href={versionManifestHref}
+      data-label={label}
     >
-      <span class="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-        <GalleryVerticalEnd className="size-4" aria-hidden="true" />
-      </span>
-      <span class="grid min-w-0 flex-1 gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-        <span class="truncate font-medium">{label}</span>
-        <select
-          class="h-5 min-w-0 border-0 bg-transparent p-0 text-xs text-sidebar-foreground/70 outline-none transition focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-          aria-label={label}
-          data-docs-version-select
-        >
+      <label class="flex h-12 w-full items-center gap-2 rounded-md px-2 text-left text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!">
+        <span class="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <GalleryVerticalEnd className="size-4" aria-hidden="true" />
+        </span>
+        <span class="grid min-w-0 flex-1 gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
+          <span class="truncate font-medium">{label}</span>
+          <select
+            class="h-5 min-w-0 border-0 bg-transparent p-0 text-xs text-sidebar-foreground/70 outline-none transition focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            aria-label={label}
+            data-docs-version-select
+          >
+            {options.map((option) => (
+              <option
+                value={option.href}
+                data-route-href={routedDocsHref(option.href)}
+                selected={option.href === current.href}
+              >
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </span>
+      </label>
+      <noscript>
+        <ul class="mt-2 grid gap-1 text-xs group-data-[collapsible=icon]:hidden">
           {options.map((option) => (
-            <option
-              value={option.href}
-              data-route-href={routedDocsHref(option.href)}
-              selected={option.href === current.href}
-            >
-              {option.label}
-            </option>
+            <li>
+              <a
+                href={routedDocsHref(option.href)}
+                class="block rounded-md px-2 py-1 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                aria-current={option.href === current.href ? "page" : undefined}
+              >
+                {option.label}
+              </a>
+            </li>
           ))}
-        </select>
-      </span>
-    </label>
-    <noscript>
-      <ul class="mt-2 grid gap-1 text-xs group-data-[collapsible=icon]:hidden">
-        {options.map((option) => (
-          <li>
-            <a
-              href={routedDocsHref(option.href)}
-              class="block rounded-md px-2 py-1 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              aria-current={option.href === current.href ? "page" : undefined}
-            >
-              {option.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </noscript>
-  </div>
-)}
+        </ul>
+      </noscript>
+    </div>
+  )
+}
 
 <script>
-  import {
-    withBasePathForBase,
-    withSurfacePath,
-  } from "@/lib/base-path";
+  import { withBasePathForBase, withSurfacePath } from "@/lib/base-path";
 
   type DocsVersionOption = {
     label: string;
@@ -154,9 +151,7 @@ function routedDocsHref(href: string) {
   };
 
   const isVersionRoot = (href: string) =>
-    /^\/(?:latest|\d+\.\d+(?:\.\d+)?(?:[-.][A-Za-z0-9]+)?)\/$/.test(
-      href,
-    );
+    /^\/(?:latest|\d+\.\d+(?:\.\d+)?(?:[-.][A-Za-z0-9]+)?)\/$/.test(href);
 
   const versionDestination = (
     selected: DocsVersionOption,

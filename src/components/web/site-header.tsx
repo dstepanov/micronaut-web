@@ -308,8 +308,11 @@ export function SiteHeader({
                                 isBrowseGroup
                                   ? "flex min-h-14 items-center border bg-card px-3 py-3"
                                   : "px-3 py-2",
-                                isActivePrimaryLink(link, surface, isBlogRoute) &&
-                                  "bg-accent",
+                                isActivePrimaryLink(
+                                  link,
+                                  surface,
+                                  isBlogRoute,
+                                ) && "bg-accent",
                               )}
                             >
                               {link.label}

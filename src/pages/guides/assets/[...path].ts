@@ -4,7 +4,13 @@ import path from "node:path";
 
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 
-const generatedAssetsDirectory = path.join(process.cwd(), "src", "content", "generated-guides", "assets");
+const generatedAssetsDirectory = path.join(
+  process.cwd(),
+  "src",
+  "content",
+  "generated-guides",
+  "assets",
+);
 
 export const getStaticPaths = (async () => {
   if (!shouldBuildGuidesRoutes()) {
@@ -12,7 +18,7 @@ export const getStaticPaths = (async () => {
   }
   const assets = await listAssets(generatedAssetsDirectory);
   return assets.map((assetPath) => ({
-    params: { path: assetPath }
+    params: { path: assetPath },
   }));
 }) satisfies GetStaticPaths;
 
@@ -23,11 +29,13 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   try {
-    const file = await fs.readFile(path.join(generatedAssetsDirectory, ...assetPath.split("/")));
+    const file = await fs.readFile(
+      path.join(generatedAssetsDirectory, ...assetPath.split("/")),
+    );
     return new Response(new Uint8Array(file), {
       headers: {
-        "Content-Type": contentTypeFor(assetPath)
-      }
+        "Content-Type": contentTypeFor(assetPath),
+      },
     });
   } catch {
     return new Response("Not found", { status: 404 });
@@ -45,17 +53,19 @@ async function listAssets(directory: string, prefix = ""): Promise<string[]> {
     throw error;
   }
 
-  const assets = await Promise.all(entries.map(async (entry) => {
-    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
-    const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      return listAssets(fullPath, relativePath);
-    }
-    if (entry.isFile()) {
-      return [relativePath];
-    }
-    return [];
-  }));
+  const assets = await Promise.all(
+    entries.map(async (entry) => {
+      const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return listAssets(fullPath, relativePath);
+      }
+      if (entry.isFile()) {
+        return [relativePath];
+      }
+      return [];
+    }),
+  );
 
   return assets.flat();
 }

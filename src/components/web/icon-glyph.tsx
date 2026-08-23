@@ -59,14 +59,15 @@ import {
   Waves,
   Waypoints,
   Workflow,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
 
-export type IconThemeTreatment = "auto" | "inverted" | "monochrome" | "preserve";
+export type IconThemeTreatment =
+  "auto" | "inverted" | "monochrome" | "preserve";
 
 const icons: Record<string, LucideIcon> = {
   activity: Activity,
@@ -128,7 +129,7 @@ const icons: Record<string, LucideIcon> = {
   video: Video,
   waves: Waves,
   waypoints: Waypoints,
-  workflow: Workflow
+  workflow: Workflow,
 };
 
 const brandIconColors: Record<string, string> = {
@@ -137,12 +138,12 @@ const brandIconColors: Record<string, string> = {
   neo4j: "#4581C3",
   opensearch: "#005EB8",
   redis: "#FF4438",
-  spring: "#6DB33F"
+  spring: "#6DB33F",
 };
 
 const preservedImageIcons = new Set([
   "image:projects/eclipsestore.png",
-  "image:projects/reactor.png"
+  "image:projects/reactor.png",
 ]);
 
 function normalizeLucideName(name: string) {
@@ -179,7 +180,7 @@ function DecorativeBrandGlyph({
   src,
   brand,
   themeTreatment,
-  className
+  className,
 }: {
   src: string;
   brand: string;
@@ -195,7 +196,7 @@ function DecorativeBrandGlyph({
     WebkitMaskImage: `url(${src})`,
     WebkitMaskPosition: "center",
     WebkitMaskRepeat: "no-repeat",
-    WebkitMaskSize: "contain"
+    WebkitMaskSize: "contain",
   };
 
   return (
@@ -211,7 +212,7 @@ function DecorativeAssetGlyph({
   src,
   name,
   className,
-  themeTreatment
+  themeTreatment,
 }: {
   src: string;
   name: string;
@@ -228,7 +229,7 @@ function DecorativeAssetGlyph({
       WebkitMaskImage: `url(${src})`,
       WebkitMaskPosition: "center",
       WebkitMaskRepeat: "no-repeat",
-      WebkitMaskSize: "contain"
+      WebkitMaskSize: "contain",
     };
 
     return (
@@ -245,7 +246,7 @@ function DecorativeAssetGlyph({
       className={cn(
         "inline-block bg-contain bg-center bg-no-repeat",
         assetThemeClass(name, themeTreatment),
-        className
+        className,
       )}
       style={{ backgroundImage: `url(${src})` }}
       aria-hidden="true"
@@ -256,7 +257,7 @@ function DecorativeAssetGlyph({
 export function IconGlyph({
   name,
   className,
-  themeTreatment = "auto"
+  themeTreatment = "auto",
 }: {
   name: string;
   className?: string;
@@ -276,7 +277,9 @@ export function IconGlyph({
   if (name.startsWith("feature:")) {
     return (
       <DecorativeAssetGlyph
-        src={withBasePath(`/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`)}
+        src={withBasePath(
+          `/micronaut-assets/icons/features/${name.slice("feature:".length)}.svg`,
+        )}
         name={name}
         className={className}
         themeTreatment={themeTreatment}
@@ -286,7 +289,9 @@ export function IconGlyph({
   if (name.startsWith("image:")) {
     return (
       <DecorativeAssetGlyph
-        src={withBasePath(`/micronaut-assets/icons/${name.slice("image:".length)}`)}
+        src={withBasePath(
+          `/micronaut-assets/icons/${name.slice("image:".length)}`,
+        )}
         name={name}
         className={className}
         themeTreatment={themeTreatment}

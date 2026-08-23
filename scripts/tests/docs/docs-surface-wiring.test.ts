@@ -448,7 +448,7 @@ test("docs routes render generated fragments and serve generated assets", async 
 
   assert.match(
     docsPageSource,
-    /readFile\(join\(process\.cwd\(\),[\s\S]*"generated-docs"[\s\S]*`\$\{project\.slug\}\.html`/,
+    /readFile\(\s*join\(\s*process\.cwd\(\),[\s\S]*"generated-docs",[\s\S]*`\$\{project\.slug\}\.html`/,
   );
   assert.match(docsPageSource, /data-generated-docs/);
   assert.match(docsPageSource, /splitGeneratedDocHtmlAfterProjectTitle/);
@@ -489,11 +489,11 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(
     assetsRouteSource,
-    /"src", "content", "generated-docs", "assets"/,
+    /"src",\s*"content",\s*"generated-docs",\s*"assets",?/,
   );
   assert.match(
     assetsRouteSource,
-    /fs\.readFile\(path\.join\(generatedAssetsDirectory/,
+    /fs\.readFile\(\s*path\.join\(generatedAssetsDirectory/,
   );
   assert.match(searchIndexRouteSource, /buildDocsSearchIndex/);
   assert.match(searchIndexRouteSource, /"generated-docs"/);
@@ -527,7 +527,7 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(
     docsSidebarContentSource,
-    /aria-controls=\{hasActiveSections \? projectSectionsId : undefined\}/,
+    /aria-controls=\{\s*hasActiveSections \? projectSectionsId : undefined\s*\}/,
   );
   assert.doesNotMatch(
     docsSidebarContentSource,
@@ -536,7 +536,7 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsPageSource, /id=\{`\$\{project\.slug\}-docs`\}/);
   assert.match(docsPageSource, /data-docs-scroll-container/);
   assert.doesNotMatch(docsPageSource, /data-\[active=true\]:before:bg-brand/);
-  assert.match(docsPageSource, /\{currentSectionLinks\.length > 0 && \(/);
+  assert.match(docsPageSource, /\{\s*currentSectionLinks\.length > 0 && \(/);
   assert.match(docsPageSource, /\{currentSectionLinks\.map\(\(section\) => \(/);
   assert.match(docsPageSource, /data-docs-current-section-index/);
   assert.match(docsPageSource, /data-docs-current-section-link/);
@@ -546,7 +546,7 @@ test("docs routes render generated fragments and serve generated assets", async 
   );
   assert.match(
     docsPageSource,
-    /currentSectionLinks = contentSections\.filter\(\(section\) => section\.depth > 1 && section\.parentId\)/,
+    /currentSectionLinks = contentSections\.filter\(\s*\(section\) => section\.depth > 1 && section\.parentId,?\s*\)/,
   );
   assert.match(docsSidebarContentSource, /data-docs-project-section-link/);
   assert.doesNotMatch(

@@ -10,7 +10,14 @@ interface Props {
   size: "lg" | "md" | "sm";
 }
 
-const { organization, logo, logoDark, logoClass, invertOnDark = false, size } = Astro.props;
+const {
+  organization,
+  logo,
+  logoDark,
+  logoClass,
+  invertOnDark = false,
+  size,
+} = Astro.props;
 
 /**
  * `box` fixes the row height so cards in a grid line up. `sm` is the
@@ -19,16 +26,18 @@ const { organization, logo, logoDark, logoClass, invertOnDark = false, size } = 
 const sizes = {
   lg: {
     box: "flex h-16 min-w-0 items-center",
-    frame: "inline-flex h-14 max-w-[12rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card"
+    frame:
+      "inline-flex h-14 max-w-[12rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card",
   },
   md: {
     box: "grid min-w-0",
-    frame: "inline-flex h-11 max-w-[10rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card"
+    frame:
+      "inline-flex h-11 max-w-[10rem] items-center rounded-md border border-border/70 bg-background px-3 py-2 shadow-sm dark:border-white/10 dark:bg-card",
   },
   sm: {
     box: "flex h-12 min-w-0 items-center",
-    frame: "inline-flex h-12 max-w-[10rem] items-center px-3 py-2"
-  }
+    frame: "inline-flex h-12 max-w-[10rem] items-center px-3 py-2",
+  },
 } as const;
 
 const { box, frame } = sizes[size];
@@ -37,31 +46,42 @@ const darkSource = logoSource(logoDark);
 const alt = `${organization} logo`;
 ---
 
-{lightSource && (
-  <div class={box}>
-    <span class:list={[frame, invertOnDark && !darkSource && "dark:!bg-white"]}>
-      <img
-        src={lightSource.src}
-        srcset={lightSource.srcset}
-        sizes={lightSource.sizes}
-        alt={alt}
-        class:list={["max-h-full max-w-full object-contain object-left", logoClass, darkSource && "dark:hidden"]}
-        loading="lazy"
-        width={lightSource.width}
-        height={lightSource.height}
-      />
-      {darkSource && (
+{
+  lightSource && (
+    <div class={box}>
+      <span
+        class:list={[frame, invertOnDark && !darkSource && "dark:!bg-white"]}
+      >
         <img
-          src={darkSource.src}
-          srcset={darkSource.srcset}
-          sizes={darkSource.sizes}
+          src={lightSource.src}
+          srcset={lightSource.srcset}
+          sizes={lightSource.sizes}
           alt={alt}
-          class:list={["hidden max-h-full max-w-full object-contain object-left dark:block", logoClass]}
+          class:list={[
+            "max-h-full max-w-full object-contain object-left",
+            logoClass,
+            darkSource && "dark:hidden",
+          ]}
           loading="lazy"
-          width={darkSource.width}
-          height={darkSource.height}
+          width={lightSource.width}
+          height={lightSource.height}
         />
-      )}
-    </span>
-  </div>
-)}
+        {darkSource && (
+          <img
+            src={darkSource.src}
+            srcset={darkSource.srcset}
+            sizes={darkSource.sizes}
+            alt={alt}
+            class:list={[
+              "hidden max-h-full max-w-full object-contain object-left dark:block",
+              logoClass,
+            ]}
+            loading="lazy"
+            width={darkSource.width}
+            height={darkSource.height}
+          />
+        )}
+      </span>
+    </div>
+  )
+}

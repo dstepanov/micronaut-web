@@ -4,6 +4,8 @@ export function shouldBuildDocsRoutes(surface: DeploySurface = deploySurface) {
   return surface === "all" || surface === "docs";
 }
 
-export function shouldBuildGuidesRoutes(surface: DeploySurface = deploySurface) {
+export function shouldBuildGuidesRoutes(
+  surface: DeploySurface = deploySurface,
+) {
   return surface === "all" || surface === "guides";
 }

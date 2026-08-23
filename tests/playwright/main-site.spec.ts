@@ -114,7 +114,9 @@ test("desktop navigation links directly to the blog", async ({ page }) => {
   ).toHaveAttribute("href", /\/blog\/$/);
 });
 
-test("theme query parameter presets the selected color mode", async ({ page }) => {
+test("theme query parameter presets the selected color mode", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     if (new URLSearchParams(window.location.search).get("theme") === "dark") {
       localStorage.setItem("micronaut-web-theme-mode", "light");
@@ -130,10 +132,15 @@ test("theme query parameter presets the selected color mode", async ({ page }) =
 
   await page.goto(`${appPath("/")}?theme=light`);
   await expect(page.locator("html")).not.toHaveClass(/dark/);
-  await expect(page.locator("html")).toHaveAttribute("data-theme-mode", "light");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-theme-mode",
+    "light",
+  );
 });
 
-test("desktop navigation highlights Blog only on blog routes", async ({ page }) => {
+test("desktop navigation highlights Blog only on blog routes", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1280, height: 900 });
 
   await page.goto(appPath("/"));
@@ -198,13 +205,11 @@ test("desktop navigation presents blog directly and download under resources", a
 test("homepage code examples include a Python variant", async ({ page }) => {
   await page.goto(appPath("/"));
 
-  const pythonTab = page
-    .locator('[role="tab"][data-lang="python"]')
-    .first();
+  const pythonTab = page.locator('[role="tab"][data-lang="python"]').first();
   await expect(pythonTab).toHaveText("Python");
   await pythonTab.click();
   await expect(page.locator('code[data-lang="python"]')).toContainText(
-    'from micronaut.http.annotation import Get',
+    "from micronaut.http.annotation import Get",
   );
 });
 
@@ -274,32 +279,32 @@ test("homepage addresses PageSpeed image and accessibility findings", async ({
   expect(svgPathErrors).toEqual([]);
 });
 
-test("download page updates the release links from GitHub's latest release", async ({ page }) => {
-  await page.route("https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        tag_name: "v5.2.0",
-        html_url: "https://github.com/micronaut-projects/micronaut-starter/releases/tag/v5.2.0",
-        assets: [{
-          name: "micronaut-cli-5.2.0.zip",
-          browser_download_url: "https://github.com/micronaut-projects/micronaut-starter/releases/download/v5.2.0/micronaut-cli-5.2.0.zip"
-        }]
-      })
-    });
+test("download page resolves its release links without calling GitHub from the browser", async ({
+  page,
+}) => {
+  const githubApiRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith("https://api.github.com/")) {
+      githubApiRequests.push(request.url());
+    }
   });
 
   await page.goto(appPath("/download/"));
 
-  await expect(page.locator("[data-micronaut-download-version]")).toHaveText("v5.2.0");
+  await expect(
+    page.locator("[data-micronaut-download-version]"),
+  ).not.toBeEmpty();
   await expect(page.locator("[data-micronaut-release-notes]")).toHaveAttribute(
     "href",
-    "https://github.com/micronaut-projects/micronaut-starter/releases/tag/v5.2.0"
+    /^https:\/\/github\.com\/micronaut-projects\/micronaut-starter\/releases\//,
   );
-  await expect(page.locator("[data-micronaut-download-binary]")).toHaveAttribute(
+  await expect(
+    page.locator("[data-micronaut-download-binary]"),
+  ).toHaveAttribute(
     "href",
-    "https://github.com/micronaut-projects/micronaut-starter/releases/download/v5.2.0/micronaut-cli-5.2.0.zip"
+    /^https:\/\/github\.com\/micronaut-projects\/micronaut-starter\/releases\//,
   );
+  expect(githubApiRequests).toEqual([]);
 });
 
 test("GraalVM startup diagram stacks complete steps on narrow viewports", async ({
@@ -334,10 +339,9 @@ test("footer exposes social and contact links as labelled icons", async ({
   const socialLinks = page.getByRole("navigation", {
     name: "Micronaut social links",
   });
-  await expect(socialLinks.getByRole("link", { name: "Email" })).toHaveAttribute(
-    "href",
-    "mailto:info@micronaut.io",
-  );
+  await expect(
+    socialLinks.getByRole("link", { name: "Email" }),
+  ).toHaveAttribute("href", "mailto:info@micronaut.io");
   await expect(
     socialLinks.getByRole("link", { name: "GitHub" }),
   ).toHaveAttribute("href", "https://github.com/micronaut-projects");
@@ -362,9 +366,7 @@ test("footer exposes social and contact links as labelled icons", async ({
   ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
 });
 
-test("footer labels links without the Micronaut prefix", async ({
-  page,
-}) => {
+test("footer labels links without the Micronaut prefix", async ({ page }) => {
   await page.goto(appPath("/"));
 
   const footer = page.getByRole("navigation", { name: "Main site footer" });
@@ -379,10 +381,9 @@ test("footer labels links without the Micronaut prefix", async ({
   ] as const;
 
   for (const [label, href] of expectedLinks) {
-    await expect(footer.getByRole("link", { name: label, exact: true })).toHaveAttribute(
-      "href",
-      href,
-    );
+    await expect(
+      footer.getByRole("link", { name: label, exact: true }),
+    ).toHaveAttribute("href", href);
   }
 
   await expect(footer.getByRole("link", { name: /^Micronaut/ })).toHaveCount(0);
@@ -449,9 +450,7 @@ async function expectPrimaryMobileLinks(page: Page): Promise<void> {
     browseLinks.getByRole("link", { name: "Guides" }),
   ).toHaveAttribute(
     "href",
-    deploySurface === "main"
-      ? /\/micronaut-guides-v2\/$/
-      : /\/guides\/$/,
+    deploySurface === "main" ? /\/micronaut-guides-v2\/$/ : /\/guides\/$/,
   );
   await expect(browseLinks.getByRole("link", { name: "Blog" })).toHaveAttribute(
     "href",

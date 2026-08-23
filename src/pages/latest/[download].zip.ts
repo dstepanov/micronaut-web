@@ -12,8 +12,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
   return manifest.guides.flatMap((guide) =>
     guide.options.map((option) => ({
       params: { download: option.zipUrl.replace(/\.zip$/, "") },
-      props: { zipUrl: productionUrl("guides", option.zipUrl) }
-    }))
+      props: { zipUrl: productionUrl("guides", option.zipUrl) },
+    })),
   );
 };
 

@@ -1,7 +1,12 @@
 ---
 import WebLayout from "@/layouts/WebLayout.astro";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import LatestGuidesCatalog from "@/components/web/latest-guides-catalog.astro";
@@ -14,7 +19,7 @@ import {
   readGeneratedGuidesManifest,
   tagSlug,
   type GeneratedGuide,
-  type GeneratedGuideOption
+  type GeneratedGuideOption,
 } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
@@ -44,9 +49,15 @@ export async function getStaticPaths() {
     return [];
   }
   const manifest = await readGeneratedGuidesManifest();
-  const paths: Array<{ params: { slug: string }; props: TagProps | OverviewProps | VariantProps }> = [];
+  const paths: Array<{
+    params: { slug: string };
+    props: TagProps | OverviewProps | VariantProps;
+  }> = [];
   const pages = new Set<string>();
-  const addPath = (slug: string, props: TagProps | OverviewProps | VariantProps) => {
+  const addPath = (
+    slug: string,
+    props: TagProps | OverviewProps | VariantProps,
+  ) => {
     if (pages.has(slug)) {
       return;
     }
@@ -55,12 +66,20 @@ export async function getStaticPaths() {
   };
 
   for (const tag of allGeneratedGuideTags(manifest.guides)) {
-    addPath(`tag-${tagSlug(tag)}`, { kind: "tag", tag, guides: manifest.guides });
+    addPath(`tag-${tagSlug(tag)}`, {
+      kind: "tag",
+      tag,
+      guides: manifest.guides,
+    });
   }
   for (const guide of manifest.guides) {
     addPath(guide.slug, { kind: "overview", guide });
     for (const option of guide.options) {
-      addPath(option.file.replace(/\.html$/, ""), { kind: "variant", guide, option });
+      addPath(option.file.replace(/\.html$/, ""), {
+        kind: "variant",
+        guide,
+        option,
+      });
     }
   }
 
@@ -72,7 +91,9 @@ if (props.kind === "overview") {
   const overviewOption = preferredGuideOption(props.guide);
   return Astro.redirect(
     withBasePath(
-      overviewOption ? guideOptionPath(overviewOption, guidesRoot) : `${guidesRoot}/`,
+      overviewOption
+        ? guideOptionPath(overviewOption, guidesRoot)
+        : `${guidesRoot}/`,
     ),
     302,
   );
@@ -80,21 +101,46 @@ if (props.kind === "overview") {
 
 let fragmentHtml: string | undefined;
 let sections: Array<{ id: string; label: string; depth: number }> = [];
-let pageIndexSections: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
-let guideSectionLinks: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
-let currentGuideSectionLinks: Array<{ id: string; label: string; depth: number; rootId: string; level: number }> = [];
+let pageIndexSections: Array<{
+  id: string;
+  label: string;
+  depth: number;
+  rootId: string;
+  level: number;
+}> = [];
+let guideSectionLinks: Array<{
+  id: string;
+  label: string;
+  depth: number;
+  rootId: string;
+  level: number;
+}> = [];
+let currentGuideSectionLinks: Array<{
+  id: string;
+  label: string;
+  depth: number;
+  rootId: string;
+  level: number;
+}> = [];
 if (props.kind === "variant") {
   fragmentHtml = await readGeneratedGuideFragment(props.option);
   sections = fragmentHtml ? extractSections(fragmentHtml) : [];
   pageIndexSections = buildGuidePageIndexSections(sections);
-  guideSectionLinks = pageIndexSections.filter((section) => section.level === 0).slice(0, 30);
-  currentGuideSectionLinks = pageIndexSections.filter((section) => section.level > 0);
+  guideSectionLinks = pageIndexSections
+    .filter((section) => section.level === 0)
+    .slice(0, 30);
+  currentGuideSectionLinks = pageIndexSections.filter(
+    (section) => section.level > 0,
+  );
 }
 
-const initialGuideRootId = guideSectionLinks[0]?.id || currentGuideSectionLinks[0]?.rootId;
+const initialGuideRootId =
+  guideSectionLinks[0]?.id || currentGuideSectionLinks[0]?.rootId;
 const initialGuideSectionIndexHidden =
   !initialGuideRootId ||
-  currentGuideSectionLinks.every((section) => section.rootId !== initialGuideRootId);
+  currentGuideSectionLinks.every(
+    (section) => section.rootId !== initialGuideRootId,
+  );
 
 function extractSections(html: string) {
   const found: Array<{ id: string; label: string; depth: number }> = [];
@@ -105,7 +151,7 @@ function extractSections(html: string) {
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, "\"")
+      .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
       .replace(/\s+/g, " ")
       .trim();
@@ -119,7 +165,9 @@ function extractSections(html: string) {
   return found;
 }
 
-function buildGuidePageIndexSections(sections: Array<{ id: string; label: string; depth: number }>) {
+function buildGuidePageIndexSections(
+  sections: Array<{ id: string; label: string; depth: number }>,
+) {
   let currentRoot: { id: string; label: string; depth: number } | undefined;
   return sections.map((section) => {
     if (!currentRoot || section.depth <= 2) {
@@ -128,78 +176,45 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
     return {
       ...section,
       rootId: currentRoot.id,
-      level: Math.min(3, Math.max(0, section.depth - currentRoot.depth))
+      level: Math.min(3, Math.max(0, section.depth - currentRoot.depth)),
     };
   });
 }
-
 ---
 
-{props.kind === "tag" && (
-  <WebLayout title={`Micronaut Guides: ${props.tag}`} surface="guides">
-    <LatestGuidesCatalog guides={props.guides} activeTag={props.tag} root={guidesRoot} />
-  </WebLayout>
-)}
+{
+  props.kind === "tag" && (
+    <WebLayout title={`Micronaut Guides: ${props.tag}`} surface="guides">
+      <LatestGuidesCatalog
+        guides={props.guides}
+        activeTag={props.tag}
+        root={guidesRoot}
+      />
+    </WebLayout>
+  )
+}
 
-{props.kind === "variant" && (
-  <WebLayout
-    title={`${props.guide.title} | ${props.option.label}`}
-    description={props.guide.intro}
-    surface="guides"
-    pageType="article"
-    publishedTime={props.guide.publicationDate}
-  >
-    <main class:list={[
-      "mx-auto grid max-w-[1480px] gap-8 px-4 py-8 md:px-6",
-      currentGuideSectionLinks.length > 0 ? "lg:grid-cols-[220px_minmax(0,1fr)_250px]" : "lg:grid-cols-[220px_minmax(0,1fr)]"
-    ]}>
-      <aside class="hidden min-w-0 lg:block" aria-label="On this guide">
-        <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pr-2 text-[0.82rem] [scrollbar-width:thin]">
-          <h2 class="m-0 font-medium">On this guide</h2>
-          <Separator className="opacity-70" />
-          {guideSectionLinks.map((section) => (
-            <a
-              href={`#${section.id}`}
-              aria-label={section.label}
-              class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground"
-              data-guide-section-link
-              data-section-id={section.id}
-            >
-              {section.label}
-            </a>
-          ))}
-          {guideSectionLinks.length > 0 && <Separator className="opacity-70" />}
-          <h3 class="m-0 font-medium" aria-label="Different variants">Different variants</h3>
-          {props.guide.options.map((option) => (
-            <a
-              href={withBasePath(guideOptionPath(option, guidesRoot))}
-              aria-label={option.label}
-              aria-current={option.file === props.option.file ? "page" : undefined}
-              class:list={[
-                "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
-                option.file === props.option.file && "bg-accent font-medium text-foreground"
-              ]}
-            >
-              {option.label}
-            </a>
-          ))}
-        </div>
-      </aside>
-      <article class="min-w-0">
-        <header class="mb-8">
-          <Badge variant="secondary">{props.option.label}</Badge>
-          <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">{props.guide.title}</h1>
-          <p class="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">{props.guide.intro}</p>
-          <div class="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
-            <span>{props.guide.authors.join(", ")}</span>
-            <span aria-hidden="true">/</span>
-            <span>{props.guide.estimatedMinutes} min</span>
-          </div>
-        </header>
-
-        <details class="mb-6 rounded-lg border bg-card p-3 lg:hidden" data-guide-mobile-guide-index>
-          <summary class="cursor-pointer text-sm font-medium">On this guide</summary>
-          <nav class="mt-3 grid gap-1 text-[0.86rem]" aria-label="On this guide">
+{
+  props.kind === "variant" && (
+    <WebLayout
+      title={`${props.guide.title} | ${props.option.label}`}
+      description={props.guide.intro}
+      surface="guides"
+      pageType="article"
+      publishedTime={props.guide.publicationDate}
+    >
+      <main
+        class:list={[
+          "mx-auto grid max-w-[1480px] gap-8 px-4 py-8 md:px-6",
+          currentGuideSectionLinks.length > 0
+            ? "lg:grid-cols-[220px_minmax(0,1fr)_250px]"
+            : "lg:grid-cols-[220px_minmax(0,1fr)]",
+        ]}
+      >
+        <aside class="hidden min-w-0 lg:block" aria-label="On this guide">
+          <div class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pr-2 text-[0.82rem] [scrollbar-width:thin]">
+            <h2 class="m-0 font-medium">On this guide</h2>
+            <Separator className="opacity-70" />
             {guideSectionLinks.map((section) => (
               <a
                 href={`#${section.id}`}
@@ -211,110 +226,200 @@ function buildGuidePageIndexSections(sections: Array<{ id: string; label: string
                 {section.label}
               </a>
             ))}
-            {guideSectionLinks.length > 0 && <Separator className="my-1 opacity-70" />}
-            <h3 class="m-0 text-sm font-medium" aria-label="Different variants">Different variants</h3>
+            {guideSectionLinks.length > 0 && (
+              <Separator className="opacity-70" />
+            )}
+            <h3 class="m-0 font-medium" aria-label="Different variants">
+              Different variants
+            </h3>
             {props.guide.options.map((option) => (
               <a
                 href={withBasePath(guideOptionPath(option, guidesRoot))}
                 aria-label={option.label}
-                aria-current={option.file === props.option.file ? "page" : undefined}
+                aria-current={
+                  option.file === props.option.file ? "page" : undefined
+                }
                 class:list={[
                   "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
-                  option.file === props.option.file && "bg-accent font-medium text-foreground"
+                  option.file === props.option.file &&
+                    "bg-accent font-medium text-foreground",
                 ]}
               >
                 {option.label}
               </a>
             ))}
-          </nav>
-        </details>
+          </div>
+        </aside>
+        <article class="min-w-0">
+          <header class="mb-8">
+            <Badge variant="secondary">{props.option.label}</Badge>
+            <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
+              {props.guide.title}
+            </h1>
+            <p class="mt-4 max-w-3xl text-lg leading-8 text-muted-foreground">
+              {props.guide.intro}
+            </p>
+            <div class="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
+              <span>{props.guide.authors.join(", ")}</span>
+              <span aria-hidden="true">/</span>
+              <span>{props.guide.estimatedMinutes} min</span>
+            </div>
+          </header>
 
-        {pageIndexSections.length > 0 && (
-          <details class="mb-6 rounded-lg border bg-card p-3 lg:hidden" data-guide-mobile-index>
-            <summary class="cursor-pointer text-sm font-medium">In this section</summary>
-            <nav class="mt-3 grid gap-px border-l border-border pl-2.5" aria-label="Current guide sections">
-              {pageIndexSections.map((section) => (
+          <details
+            class="mb-6 rounded-lg border bg-card p-3 lg:hidden"
+            data-guide-mobile-guide-index
+          >
+            <summary class="cursor-pointer text-sm font-medium">
+              On this guide
+            </summary>
+            <nav
+              class="mt-3 grid gap-1 text-[0.86rem]"
+              aria-label="On this guide"
+            >
+              {guideSectionLinks.map((section) => (
                 <a
                   href={`#${section.id}`}
                   aria-label={section.label}
-                  class:list={[
-                    "relative block min-w-0 rounded-md py-1 pr-2 text-[0.82rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground",
-                    section.level === 0 && "pl-2",
-                    section.level === 1 && "pl-3.5",
-                    section.level === 2 && "pl-5",
-                    section.level >= 3 && "pl-[1.625rem]"
-                  ]}
+                  class="rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground"
+                  data-guide-section-link
+                  data-section-id={section.id}
                 >
                   {section.label}
+                </a>
+              ))}
+              {guideSectionLinks.length > 0 && (
+                <Separator className="my-1 opacity-70" />
+              )}
+              <h3
+                class="m-0 text-sm font-medium"
+                aria-label="Different variants"
+              >
+                Different variants
+              </h3>
+              {props.guide.options.map((option) => (
+                <a
+                  href={withBasePath(guideOptionPath(option, guidesRoot))}
+                  aria-label={option.label}
+                  aria-current={
+                    option.file === props.option.file ? "page" : undefined
+                  }
+                  class:list={[
+                    "rounded-md px-2 py-1.5 leading-5 text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground",
+                    option.file === props.option.file &&
+                      "bg-accent font-medium text-foreground",
+                  ]}
+                >
+                  {option.label}
                 </a>
               ))}
             </nav>
           </details>
-        )}
 
-        {fragmentHtml ? (
-          <>
-            <div class="generated-docs-content generated-guides-content" data-generated-docs set:html={fragmentHtml} />
-            <GeneratedDocsStaticEnhancer />
-          </>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Guide content unavailable</CardTitle>
-              <CardDescription>This variant was listed but no generated fragment exists for the current build.</CardDescription>
-            </CardHeader>
-          </Card>
-        )}
-      </article>
-      {currentGuideSectionLinks.length > 0 && (
-        <aside
-          class="hidden min-w-0 lg:block"
-          aria-label="In this section"
-          data-guide-page-index
-          hidden={initialGuideSectionIndexHidden}
-        >
-          <div
-            class="sticky top-[calc(var(--topbar-height)+24px)] max-h-[calc(100vh-var(--topbar-height)-48px)] overflow-y-auto pb-7 pr-6 font-[var(--shell-font)] [scrollbar-width:thin]"
-            data-guide-page-index-inner
-          >
-            <div class="mb-2 flex items-center justify-between gap-2 text-[0.83rem] font-semibold leading-[1.4] text-foreground">
-              <span>In this section</span>
-              <a
-                class="inline-grid size-6 flex-none place-items-center rounded-md text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
-                href={`#${pageIndexSections[0].rootId}`}
-                title="Back to top"
-                aria-label="Back to top"
-                data-guide-page-index-top
+          {pageIndexSections.length > 0 && (
+            <details
+              class="mb-6 rounded-lg border bg-card p-3 lg:hidden"
+              data-guide-mobile-index
+            >
+              <summary class="cursor-pointer text-sm font-medium">
+                In this section
+              </summary>
+              <nav
+                class="mt-3 grid gap-px border-l border-border pl-2.5"
+                aria-label="Current guide sections"
               >
-                <ArrowUp className="size-3.5" aria-hidden="true" />
-              </a>
-            </div>
-            <nav class="grid gap-px border-l border-border pl-2.5" aria-label="Current guide sections" data-guide-page-index-nav>
-              {currentGuideSectionLinks.map((section) => (
+                {pageIndexSections.map((section) => (
+                  <a
+                    href={`#${section.id}`}
+                    aria-label={section.label}
+                    class:list={[
+                      "relative block min-w-0 rounded-md py-1 pr-2 text-[0.82rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground",
+                      section.level === 0 && "pl-2",
+                      section.level === 1 && "pl-3.5",
+                      section.level === 2 && "pl-5",
+                      section.level >= 3 && "pl-[1.625rem]",
+                    ]}
+                  >
+                    {section.label}
+                  </a>
+                ))}
+              </nav>
+            </details>
+          )}
+
+          {fragmentHtml ? (
+            <>
+              <div
+                class="generated-docs-content generated-guides-content"
+                data-generated-docs
+                set:html={fragmentHtml}
+              />
+              <GeneratedDocsStaticEnhancer />
+            </>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Guide content unavailable</CardTitle>
+                <CardDescription>
+                  This variant was listed but no generated fragment exists for
+                  the current build.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </article>
+        {currentGuideSectionLinks.length > 0 && (
+          <aside
+            class="hidden min-w-0 lg:block"
+            aria-label="In this section"
+            data-guide-page-index
+            hidden={initialGuideSectionIndexHidden}
+          >
+            <div
+              class="sticky top-[calc(var(--topbar-height)+24px)] max-h-[calc(100vh-var(--topbar-height)-48px)] overflow-y-auto pb-7 pr-6 font-[var(--shell-font)] [scrollbar-width:thin]"
+              data-guide-page-index-inner
+            >
+              <div class="mb-2 flex items-center justify-between gap-2 text-[0.83rem] font-semibold leading-[1.4] text-foreground">
+                <span>In this section</span>
                 <a
-                  href={`#${section.id}`}
-                  aria-label={section.label}
-                  class:list={[
-                    "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
-                    section.level === 1 && "pl-2",
-                    section.level === 2 && "pl-3.5",
-                    section.level >= 3 && "pl-5"
-                  ]}
-                  data-guide-page-index-link
-                  data-root-id={section.rootId}
-                  data-section-id={section.id}
-                  hidden={section.rootId !== initialGuideRootId}
+                  class="inline-grid size-6 flex-none place-items-center rounded-md text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground"
+                  href={`#${pageIndexSections[0].rootId}`}
+                  title="Back to top"
+                  aria-label="Back to top"
+                  data-guide-page-index-top
                 >
-                  {section.label}
+                  <ArrowUp className="size-3.5" aria-hidden="true" />
                 </a>
-              ))}
-            </nav>
-          </div>
-        </aside>
-      )}
-    </main>
-    <script>
-      import "@/scripts/generated-guides-page-index";
-    </script>
-  </WebLayout>
-)}
+              </div>
+              <nav
+                class="grid gap-px border-l border-border pl-2.5"
+                aria-label="Current guide sections"
+                data-guide-page-index-nav
+              >
+                {currentGuideSectionLinks.map((section) => (
+                  <a
+                    href={`#${section.id}`}
+                    aria-label={section.label}
+                    class:list={[
+                      "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
+                      section.level === 1 && "pl-2",
+                      section.level === 2 && "pl-3.5",
+                      section.level >= 3 && "pl-5",
+                    ]}
+                    data-guide-page-index-link
+                    data-root-id={section.rootId}
+                    data-section-id={section.id}
+                    hidden={section.rootId !== initialGuideRootId}
+                  >
+                    {section.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </aside>
+        )}
+      </main>
+      <script>import "@/scripts/generated-guides-page-index";</script>
+    </WebLayout>
+  )
+}

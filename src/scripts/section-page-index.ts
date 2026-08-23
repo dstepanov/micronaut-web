@@ -57,10 +57,8 @@ const decodedHrefTarget = (link: HTMLElement) => {
   }
 };
 
-const targetIdForLink = (
-  link: HTMLElement,
-  options: SectionPageIndexOptions,
-) => dataValue(link, options.targetIdAttribute) || decodedHrefTarget(link);
+const targetIdForLink = (link: HTMLElement, options: SectionPageIndexOptions) =>
+  dataValue(link, options.targetIdAttribute) || decodedHrefTarget(link);
 
 const rootIdForLink = (link: HTMLElement, options: SectionPageIndexOptions) =>
   dataValue(link, options.rootIdAttribute) || targetIdForLink(link, options);
@@ -69,7 +67,8 @@ const scrollOffset = () => {
   const scrollPaddingTop = Number.parseFloat(
     window.getComputedStyle(document.documentElement).scrollPaddingTop,
   );
-  const fixedOffset = (Number.isFinite(scrollPaddingTop) ? scrollPaddingTop : 80) + 16;
+  const fixedOffset =
+    (Number.isFinite(scrollPaddingTop) ? scrollPaddingTop : 80) + 16;
   return Math.max(fixedOffset, window.innerHeight * 0.25);
 };
 
@@ -109,7 +108,9 @@ const currentSectionLinks = (options: SectionPageIndexOptions) =>
 
 const rootSectionLinks = (options: SectionPageIndexOptions) =>
   options.rootLinkSelector
-    ? Array.from(document.querySelectorAll<HTMLElement>(options.rootLinkSelector))
+    ? Array.from(
+        document.querySelectorAll<HTMLElement>(options.rootLinkSelector),
+      )
     : [];
 
 const sectionTargets = (
@@ -117,15 +118,16 @@ const sectionTargets = (
   options: SectionPageIndexOptions,
 ) => {
   const ids = new Set(
-    links.map((link) => targetIdForLink(link, options)).filter(Boolean) as string[],
+    links
+      .map((link) => targetIdForLink(link, options))
+      .filter(Boolean) as string[],
   );
   return Array.from(ids)
     .map((id) => document.getElementById(id))
     .filter((target): target is HTMLElement => Boolean(target))
     .sort(
       (left, right) =>
-        left.getBoundingClientRect().top -
-        right.getBoundingClientRect().top,
+        left.getBoundingClientRect().top - right.getBoundingClientRect().top,
     );
 };
 
@@ -173,7 +175,10 @@ const syncCurrentSectionLinks = (
   }
 };
 
-const syncTopLink = (activeRootId: string, options: SectionPageIndexOptions) => {
+const syncTopLink = (
+  activeRootId: string,
+  options: SectionPageIndexOptions,
+) => {
   if (!options.topLinkSelector) {
     return;
   }
@@ -206,8 +211,7 @@ const setActiveId = (activeId: string, options: SectionPageIndexOptions) => {
   for (const link of links) {
     const targetId = targetIdForLink(link, options);
     const active =
-      targetId === activeId ||
-      (roots.has(link) && targetId === activeRootId);
+      targetId === activeId || (roots.has(link) && targetId === activeRootId);
     setLinkActive(link, active, options);
     if (active) {
       activeLinks.push(link);
@@ -238,10 +242,7 @@ const setActiveIdFromHash = (options: SectionPageIndexOptions) => {
   return true;
 };
 
-const nodeContainsPageIndexMarkup = (
-  node: Node,
-  selector: string,
-) =>
+const nodeContainsPageIndexMarkup = (node: Node, selector: string) =>
   node instanceof Element &&
   (node.matches(selector) || Boolean(node.querySelector(selector)));
 

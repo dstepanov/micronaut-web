@@ -2,13 +2,13 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger
-} from "@/components/ui/accordion"
-import type { MainSiteFaqItem } from "@/lib/main-site-faq"
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import type { MainSiteFaqItem } from "@/lib/main-site-faq";
 
 type FaqAccordionProps = {
   items: MainSiteFaqItem[];
-}
+};
 
 export function FaqAccordion({ items }: FaqAccordionProps) {
   return (
@@ -32,5 +32,5 @@ export function FaqAccordion({ items }: FaqAccordionProps) {
         </AccordionItem>
       ))}
     </Accordion>
-  )
+  );
 }

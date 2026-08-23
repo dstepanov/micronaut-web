@@ -2,7 +2,10 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 
 import { withBasePath } from "@/lib/base-path";
 import { routeSlugsForPost } from "@/lib/blog-redirects";
-import { extractFaqItemsFromHtml, type MainSiteFaqItem } from "@/lib/main-site-faq";
+import {
+  extractFaqItemsFromHtml,
+  type MainSiteFaqItem,
+} from "@/lib/main-site-faq";
 import { renderMainSiteCodeSnippets } from "@/lib/main-site-code-snippets";
 import { rewriteRootRelativeHtml } from "@/lib/main-site-link-rewrite";
 
@@ -76,9 +79,11 @@ export const generatedMainSitePages: GeneratedMainSitePage[] = [
     slug: "micronaut-success-stories",
     title: "Micronaut Success Stories",
     eyebrow: "Resources",
-    description: "Real teams use Micronaut for serverless APIs, Grails migrations, workflow orchestration, IoT microservices, event platforms, legacy tool upgrades, and SaaS backends.",
-    intro: "The success stories index is generated from the metadata on each success-story page."
-  }
+    description:
+      "Real teams use Micronaut for serverless APIs, Grails migrations, workflow orchestration, IoT microservices, event platforms, legacy tool upgrades, and SaaS backends.",
+    intro:
+      "The success stories index is generated from the metadata on each success-story page.",
+  },
 ];
 
 function slugFromEntry(entry: { id: string }) {
@@ -100,9 +105,14 @@ function rewriteMicronautPath(pathname: string) {
   return pathname;
 }
 
-function byOrderThenTitle<T extends { entry: { data: { order?: number; title: string } } }>(left: T, right: T) {
-  return (left.entry.data.order ?? Number.MAX_SAFE_INTEGER) - (right.entry.data.order ?? Number.MAX_SAFE_INTEGER)
-    || left.entry.data.title.localeCompare(right.entry.data.title);
+function byOrderThenTitle<
+  T extends { entry: { data: { order?: number; title: string } } },
+>(left: T, right: T) {
+  return (
+    (left.entry.data.order ?? Number.MAX_SAFE_INTEGER) -
+      (right.entry.data.order ?? Number.MAX_SAFE_INTEGER) ||
+    left.entry.data.title.localeCompare(right.entry.data.title)
+  );
 }
 
 function byPostDateThenOrder(left: BlogPostModel, right: BlogPostModel) {
@@ -116,49 +126,103 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
     title: "Start",
     links: [
       { label: "Download", href: "/download/" },
-      { label: "Success Stories", href: "/micronaut-success-stories/" }
-    ]
+      { label: "Success Stories", href: "/micronaut-success-stories/" },
+    ],
   },
   {
     title: "Resources",
     links: [
       { label: "Blog", href: "/blog/" },
-      { label: "Release Announcements", href: "/category/release-announcements/" },
+      {
+        label: "Release Announcements",
+        href: "/category/release-announcements/",
+      },
       { label: "ROADMAP", href: "/micronaut-roadmap/" },
-      { label: "Security Announcements", href: "/category/security-announcements/" },
+      {
+        label: "Security Announcements",
+        href: "/category/security-announcements/",
+      },
       { label: "Commercial Support", href: "/support/" },
       { label: "Community Support", href: "/resources/community-support/" },
-      { label: "Frequently Asked Questions", href: "/faq/" }
-    ]
+      { label: "Frequently Asked Questions", href: "/faq/" },
+    ],
   },
   {
     title: "Legal",
     links: [
       { label: "Brand Guidelines", href: "/brand-guidelines/" },
       { label: "Logos", href: "/brand-guidelines/micronaut-logos/" },
-      { label: "Trademark Policy", href: "/brand-guidelines/micronaut-trademark-policy/" }
-    ]
+      {
+        label: "Trademark Policy",
+        href: "/brand-guidelines/micronaut-trademark-policy/",
+      },
+    ],
   },
   {
     title: "Policies",
     links: [
-      { label: "Governance", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/GOVERNANCE.md" },
-      { label: "Maintainers", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/MAINTAINERS.md" },
-      { label: "Points of Contact", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/POINTS_OF_CONTACT.md" },
-      { label: "Contributing", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTING.md" },
-      { label: "Planning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/PLANNING.md" },
-      { label: "Software Versioning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/VERSIONS_POLICY.md" },
-      { label: "Release Management", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_MANAGEMENT.md" },
-      { label: "Release Cadence", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_CADENCE.md" },
-      { label: "Conflict Resolution", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONFLICT.md" },
-      { label: "Security Advisory Disclosure", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md" },
-      { label: "Code of Conduct", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md" },
-      { label: "Intellectual Property", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/INTELLECTUAL_PROPERTY.md" },
-      { label: "Contributor License Agreement", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md" },
-      { label: "Assets", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/ASSETS.md" },
-      { label: "Succession Planning", href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SUCCESSION.md" }
-    ]
-  }
+      {
+        label: "Governance",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/GOVERNANCE.md",
+      },
+      {
+        label: "Maintainers",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/MAINTAINERS.md",
+      },
+      {
+        label: "Points of Contact",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/POINTS_OF_CONTACT.md",
+      },
+      {
+        label: "Contributing",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTING.md",
+      },
+      {
+        label: "Planning",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/PLANNING.md",
+      },
+      {
+        label: "Software Versioning",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/VERSIONS_POLICY.md",
+      },
+      {
+        label: "Release Management",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_MANAGEMENT.md",
+      },
+      {
+        label: "Release Cadence",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_CADENCE.md",
+      },
+      {
+        label: "Conflict Resolution",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONFLICT.md",
+      },
+      {
+        label: "Security Advisory Disclosure",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md",
+      },
+      {
+        label: "Code of Conduct",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md",
+      },
+      {
+        label: "Intellectual Property",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/INTELLECTUAL_PROPERTY.md",
+      },
+      {
+        label: "Contributor License Agreement",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md",
+      },
+      {
+        label: "Assets",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/ASSETS.md",
+      },
+      {
+        label: "Succession Planning",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SUCCESSION.md",
+      },
+    ],
+  },
 ];
 
 export async function getMainSitePages(): Promise<MainSitePageModel[]> {
@@ -166,19 +230,24 @@ export async function getMainSitePages(): Promise<MainSitePageModel[]> {
   return entries
     .map((entry: MainSitePageEntry) => ({
       slug: slugFromEntry(entry),
-      entry
+      entry,
     }))
     .sort(byOrderThenTitle);
 }
 
-export async function getMainSitePageSummaries(): Promise<MainSitePageSummary[]> {
+export async function getMainSitePageSummaries(): Promise<
+  MainSitePageSummary[]
+> {
   const pages = await getMainSitePages();
-  return [...generatedMainSitePages, ...pages.map(({ slug, entry }) => ({
-    slug,
-    title: entry.data.title,
-    eyebrow: entry.data.eyebrow,
-    description: cleanExcerptText(entry.data.description)
-  }))];
+  return [
+    ...generatedMainSitePages,
+    ...pages.map(({ slug, entry }) => ({
+      slug,
+      title: entry.data.title,
+      eyebrow: entry.data.eyebrow,
+      description: cleanExcerptText(entry.data.description),
+    })),
+  ];
 }
 
 let blogPostsPromise: Promise<BlogPostModel[]> | undefined;
@@ -195,23 +264,29 @@ export function getBlogPosts(): Promise<BlogPostModel[]> {
           slug: entry.data.slug,
           href: entry.data.href ?? `/${entry.data.slug}/`,
           routeSlugs: routeSlugsForPost(entry.data.slug),
-          entry
+          entry,
         }))
-        .sort(byPostDateThenOrder)
+        .sort(byPostDateThenOrder),
   ));
 }
 
-export async function getBlogPostByRouteSlug(slug: string): Promise<BlogPostModel | undefined> {
+export async function getBlogPostByRouteSlug(
+  slug: string,
+): Promise<BlogPostModel | undefined> {
   const routeSlug = normalizeRouteSlug(slug);
   const posts = await getBlogPosts();
   return posts.find((post) => post.routeSlugs.includes(routeSlug));
 }
 
-export async function getBlogPostsForArchive(slug: string): Promise<BlogPostModel[]> {
+export async function getBlogPostsForArchive(
+  slug: string,
+): Promise<BlogPostModel[]> {
   const posts = await getBlogPosts();
   const pageSize = 24;
   if (slug === "blog") {
-    return posts.filter((post) => post.entry.data.category !== "success-story").slice(0, pageSize);
+    return posts
+      .filter((post) => post.entry.data.category !== "success-story")
+      .slice(0, pageSize);
   }
   const blogPageMatch = slug.match(/^blog\/page\/(\d+)$/);
   if (blogPageMatch) {
@@ -219,7 +294,9 @@ export async function getBlogPostsForArchive(slug: string): Promise<BlogPostMode
     if (!Number.isInteger(page) || page < 1) {
       return [];
     }
-    const blogPosts = posts.filter((post) => post.entry.data.category !== "success-story");
+    const blogPosts = posts.filter(
+      (post) => post.entry.data.category !== "success-story",
+    );
     return blogPosts.slice((page - 1) * pageSize, page * pageSize);
   }
   if (slug.startsWith("tag/")) {
@@ -230,31 +307,45 @@ export async function getBlogPostsForArchive(slug: string): Promise<BlogPostMode
     return [];
   }
   const categorySlug = slug.slice("category/".length);
-  return posts.filter((post) => post.entry.data.category === categorySlug || post.entry.data.categories.includes(categorySlug));
+  return posts.filter(
+    (post) =>
+      post.entry.data.category === categorySlug ||
+      post.entry.data.categories.includes(categorySlug),
+  );
 }
 
 export async function getBlogArchiveRoutes(): Promise<BlogArchiveModel[]> {
   const posts = await getBlogPosts();
-  const blogPosts = posts.filter((post) => post.entry.data.category !== "success-story");
+  const blogPosts = posts.filter(
+    (post) => post.entry.data.category !== "success-story",
+  );
   const pageSize = 24;
   const totalPages = Math.ceil(blogPosts.length / pageSize);
-  const blogPageRoutes = Array.from({ length: Math.max(0, totalPages - 1) }, (_item, index) => {
-    const page = index + 2;
-    return {
-      slug: `blog/page/${page}`,
-      title: `Micronaut Blog - Page ${page}`,
-      eyebrow: "Blog",
-      description: "Browse Micronaut project news, technical articles, release posts, and ecosystem updates.",
-      page,
-      totalPages
-    };
-  });
-  const tags = Array.from(new Set(posts.flatMap((post) => post.entry.data.tags))).filter(Boolean).sort();
+  const blogPageRoutes = Array.from(
+    { length: Math.max(0, totalPages - 1) },
+    (_item, index) => {
+      const page = index + 2;
+      return {
+        slug: `blog/page/${page}`,
+        title: `Micronaut Blog - Page ${page}`,
+        eyebrow: "Blog",
+        description:
+          "Browse Micronaut project news, technical articles, release posts, and ecosystem updates.",
+        page,
+        totalPages,
+      };
+    },
+  );
+  const tags = Array.from(
+    new Set(posts.flatMap((post) => post.entry.data.tags)),
+  )
+    .filter(Boolean)
+    .sort();
   const tagRoutes = tags.map((tag) => ({
     slug: `tag/${tag}`,
     title: `Micronaut posts tagged ${tag}`,
     eyebrow: "Tag",
-    description: `Browse Micronaut blog posts tagged ${tag}.`
+    description: `Browse Micronaut blog posts tagged ${tag}.`,
   }));
   return [...blogPageRoutes, ...tagRoutes];
 }
@@ -264,9 +355,18 @@ export async function getSuccessStories(): Promise<SuccessStory[]> {
   return pages
     .filter((page) => page.slug.startsWith("micronaut-success-stories/"))
     .sort((left, right) => {
-      const leftOrder = left.entry.data.storyOrder ?? left.entry.data.order ?? Number.MAX_SAFE_INTEGER;
-      const rightOrder = right.entry.data.storyOrder ?? right.entry.data.order ?? Number.MAX_SAFE_INTEGER;
-      return leftOrder - rightOrder || left.entry.data.title.localeCompare(right.entry.data.title);
+      const leftOrder =
+        left.entry.data.storyOrder ??
+        left.entry.data.order ??
+        Number.MAX_SAFE_INTEGER;
+      const rightOrder =
+        right.entry.data.storyOrder ??
+        right.entry.data.order ??
+        Number.MAX_SAFE_INTEGER;
+      return (
+        leftOrder - rightOrder ||
+        left.entry.data.title.localeCompare(right.entry.data.title)
+      );
     })
     .map(({ slug, entry }) => ({
       title: entry.data.title,
@@ -285,11 +385,13 @@ export async function getSuccessStories(): Promise<SuccessStory[]> {
       logo: entry.data.logo,
       logoDark: entry.data.logoDark,
       logoClass: entry.data.logoClass,
-      logoInvertOnDark: entry.data.logoInvertOnDark
+      logoInvertOnDark: entry.data.logoInvertOnDark,
     }));
 }
 
-export async function renderMarkdownHtml(entry: MainSitePageEntry | BlogPostEntry) {
+export async function renderMarkdownHtml(
+  entry: MainSitePageEntry | BlogPostEntry,
+) {
   await render(entry);
   const html = stripGeneratedPermalinkParagraphs(
     rewriteRootRelativeHtml(
@@ -301,7 +403,9 @@ export async function renderMarkdownHtml(entry: MainSitePageEntry | BlogPostEntr
   return renderMainSiteCodeSnippets(html);
 }
 
-export async function renderFaqItems(entry: MainSitePageEntry | BlogPostEntry): Promise<MainSiteFaqItem[]> {
+export async function renderFaqItems(
+  entry: MainSitePageEntry | BlogPostEntry,
+): Promise<MainSiteFaqItem[]> {
   return extractFaqItemsFromHtml(await renderMarkdownHtml(entry));
 }
 
@@ -314,20 +418,27 @@ export function cleanExcerptText(value: string) {
 }
 
 function stripGeneratedPermalinkParagraphs(html: string) {
-  return html.replace(/<p>\s*<a\s+([^>]*\bhref="([^"]+)"[^>]*)>([\s\S]*?)<\/a>\s*<\/p>/gi, (match, _attributes: string, href: string, labelHtml: string) => {
-    const label = decodeHtml(stripHtml(labelHtml)).trim();
-    const decodedHref = decodeHtml(href).trim();
-    if (label === decodedHref && isGeneratedPermalink(decodedHref)) {
-      return "";
-    }
-    return match;
-  });
+  return html.replace(
+    /<p>\s*<a\s+([^>]*\bhref="([^"]+)"[^>]*)>([\s\S]*?)<\/a>\s*<\/p>/gi,
+    (match, _attributes: string, href: string, labelHtml: string) => {
+      const label = decodeHtml(stripHtml(labelHtml)).trim();
+      const decodedHref = decodeHtml(href).trim();
+      if (label === decodedHref && isGeneratedPermalink(decodedHref)) {
+        return "";
+      }
+      return match;
+    },
+  );
 }
 
 function isGeneratedPermalink(href: string) {
   try {
     const url = new URL(href);
-    return Boolean(url.hash) && url.hostname === "github.com" && url.pathname.includes("/wiki/");
+    return (
+      Boolean(url.hash) &&
+      url.hostname === "github.com" &&
+      url.pathname.includes("/wiki/")
+    );
   } catch {
     return false;
   }
@@ -339,12 +450,16 @@ function stripHtml(value: string) {
 
 function decodeHtml(value: string) {
   return value
-    .replace(/&#x([0-9a-f]+);/gi, (_match, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
-    .replace(/&#(\d+);/g, (_match, code: string) => String.fromCodePoint(Number.parseInt(code, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code: string) =>
+      String.fromCodePoint(Number.parseInt(code, 16)),
+    )
+    .replace(/&#(\d+);/g, (_match, code: string) =>
+      String.fromCodePoint(Number.parseInt(code, 10)),
+    )
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#039;|&apos;/g, "'");
 }

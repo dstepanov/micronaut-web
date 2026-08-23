@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 import { withBasePath } from "@/lib/base-path";
 import type { CatalogLink } from "@/lib/content-catalog";
 
-export function ProjectReferenceLinks({ references }: { references: CatalogLink[] }) {
+export function ProjectReferenceLinks({
+  references,
+}: {
+  references: CatalogLink[];
+}) {
   return (
     <div className="mt-5 flex flex-wrap gap-2">
       {references.map((reference) => (
-        <Button key={`${reference.label}-${reference.href}`} asChild variant="outline" size="sm">
+        <Button
+          key={`${reference.label}-${reference.href}`}
+          asChild
+          variant="outline"
+          size="sm"
+        >
           <a
             href={withBasePath(reference.href)}
             target={reference.href.startsWith("http") ? "_blank" : undefined}

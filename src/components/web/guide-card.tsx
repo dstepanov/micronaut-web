@@ -8,13 +8,10 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import { withBasePath } from "@/lib/base-path";
-import {
-  guideOverviewPath,
-  type GeneratedGuide,
-} from "@/lib/content-catalog";
+import { guideOverviewPath, type GeneratedGuide } from "@/lib/content-catalog";
 
 export function GuideCard({ guide }: { guide: GeneratedGuide }) {
   const primaryCategory = guide.categories[0] || "Guide";
@@ -23,23 +20,34 @@ export function GuideCard({ guide }: { guide: GeneratedGuide }) {
   return (
     <Card className="group h-full transition hover:border-brand/40 hover:shadow-md">
       <CardHeader>
-        <Badge variant="secondary" className="w-fit">{primaryCategory}</Badge>
+        <Badge variant="secondary" className="w-fit">
+          {primaryCategory}
+        </Badge>
         <CardAction>
           <Badge variant="outline">{guide.estimatedMinutes} min</Badge>
         </CardAction>
         <CardTitle className="text-lg leading-tight">
-          <a href={withBasePath(guideOverviewPath(guide, "/guides"))} className="after:absolute after:inset-0">
+          <a
+            href={withBasePath(guideOverviewPath(guide, "/guides"))}
+            className="after:absolute after:inset-0"
+          >
             {guide.title}
           </a>
         </CardTitle>
-        <CardDescription className="line-clamp-3">{guide.intro}</CardDescription>
+        <CardDescription className="line-clamp-3">
+          {guide.intro}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-1.5">
           {tags.map((tag) => (
-            <Badge key={tag} variant="outline">{tag}</Badge>
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
           ))}
-          {guide.tags.length > tags.length ? <Badge variant="outline">+{guide.tags.length - tags.length}</Badge> : null}
+          {guide.tags.length > tags.length ? (
+            <Badge variant="outline">+{guide.tags.length - tags.length}</Badge>
+          ) : null}
         </div>
       </CardContent>
       <CardFooter className="mt-auto justify-between gap-3 border-t bg-muted/30 pt-4 text-xs text-muted-foreground">

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "npm run typecheck && npm run typecheck:scripts && npm run style:scripts && npm run test:asciidoc && npm run test:docs && npm run test:guides && npm run test:main-site && npm run test:deployment && node scripts/validate-docs-snippet-style-sharing.ts",
+    "check": "npm run typecheck && npm run typecheck:scripts && npm run style && npm run test:asciidoc && npm run test:docs && npm run test:guides && npm run test:main-site && npm run test:deployment && node scripts/validate-docs-snippet-style-sharing.ts",
     "snippet-styles": "node scripts/validate-docs-snippet-style-sharing.ts",
     "sync:docs-projects": "node scripts/sync-docs-fixture.ts",
     "render:docs": "node scripts/render-docs.ts",
@@ -21,7 +21,8 @@
     "test:deployment": "node --test scripts/tests/deployment/*.test.ts",
     "typecheck": "tsc --noEmit --pretty false",
     "typecheck:scripts": "tsc --project tsconfig.scripts.json --noEmit --pretty false",
-    "style:scripts": "prettier --check \"scripts/**/*.ts\"",
+    "style": "prettier --check \"{scripts,src,tests}/**/*.{ts,tsx,astro}\" astro.config.mjs",
+    "style:fix": "prettier --write \"{scripts,src,tests}/**/*.{ts,tsx,astro}\" astro.config.mjs",
     "dev": "npm run check && npm run prepare:generated-content && astro dev --host 127.0.0.1",
     "build:artifact": "npm run prepare:generated-content && astro build && node scripts/build-site-header-shell.ts && node scripts/assert-browser-runtime-assets.ts && node scripts/prepare-template-artifacts.ts",
     "build:site": "npm run check && npm run build:artifact",
@@ -64,10 +65,10 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
     "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "7.0.2"
   },
   "overrides": {

@@ -26,12 +26,16 @@ export function GuidesCatalogTabs() {
       </TabsList>
       <TabsContent value="featured">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {featured.map((guide) => <GuideCard key={guide.slug} guide={guide} />)}
+          {featured.map((guide) => (
+            <GuideCard key={guide.slug} guide={guide} />
+          ))}
         </div>
       </TabsContent>
       <TabsContent value="latest">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {latest.map((guide) => <GuideCard key={guide.slug} guide={guide} />)}
+          {latest.map((guide) => (
+            <GuideCard key={guide.slug} guide={guide} />
+          ))}
         </div>
       </TabsContent>
       <TabsContent value="all">
@@ -40,8 +44,12 @@ export function GuidesCatalogTabs() {
             <thead className="bg-muted text-xs text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Guide</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">Topic</th>
-                <th className="hidden px-4 py-3 font-medium lg:table-cell">Tags</th>
+                <th className="hidden px-4 py-3 font-medium md:table-cell">
+                  Topic
+                </th>
+                <th className="hidden px-4 py-3 font-medium lg:table-cell">
+                  Tags
+                </th>
                 <th className="px-4 py-3 font-medium">Open</th>
               </tr>
             </thead>
@@ -50,17 +58,29 @@ export function GuidesCatalogTabs() {
                 <tr key={guide.slug} className="border-t">
                   <td className="px-4 py-3">
                     <div className="font-medium">{guide.title}</div>
-                    <div className="line-clamp-1 text-xs text-muted-foreground">{guide.intro}</div>
+                    <div className="line-clamp-1 text-xs text-muted-foreground">
+                      {guide.intro}
+                    </div>
                   </td>
-                  <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">{guide.categories[0] || "Guide"}</td>
+                  <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
+                    {guide.categories[0] || "Guide"}
+                  </td>
                   <td className="hidden px-4 py-3 lg:table-cell">
                     <div className="flex flex-wrap gap-1">
-                      {guide.tags.slice(0, 3).map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
+                      {guide.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <Button asChild variant="ghost" size="sm">
-                      <a href={withBasePath(guideOverviewPath(guide, "/guides"))}>Open</a>
+                      <a
+                        href={withBasePath(guideOverviewPath(guide, "/guides"))}
+                      >
+                        Open
+                      </a>
                     </Button>
                   </td>
                 </tr>
