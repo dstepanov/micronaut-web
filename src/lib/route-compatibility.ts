@@ -21,13 +21,6 @@ export const productionHosts: Record<ProductionSurface, string> = {
   assets: "https://micronaut.io",
 };
 
-const productionPathPrefixes: Record<ProductionSurface, string> = {
-  main: "/",
-  docs: "/",
-  guides: "/",
-  assets: "/",
-};
-
 export const coreDocsPreviewPath = "/docs/core/";
 
 /**
@@ -162,13 +155,9 @@ export function routeCompatibilityEntry(id: string) {
 }
 
 export function productionUrl(surface: ProductionSurface, path = "/") {
-  const prefix = productionPathPrefixes[surface];
-  const base = productionHosts[surface];
-  const normalizedPrefix = prefix.endsWith("/") ? prefix : `${prefix}/`;
-  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
   return new URL(
-    `${normalizedPrefix}${normalizedPath}`.replace(/\/{2,}/g, "/"),
-    base,
+    `/${path.replace(/^\/+/, "")}`.replace(/\/{2,}/g, "/"),
+    productionHosts[surface],
   ).toString();
 }
 

@@ -171,10 +171,6 @@ export function SiteHeader({
     link.surface
       ? withConfiguredSurfacePath(link.surface, link.href, navigationUrls)
       : withConfiguredBasePath(link.href, navigationUrls);
-  const desktopPrimaryLinks = primaryLinks;
-  const desktopMenuGroups = menuGroups.filter(
-    (group) => group.label !== "Foundation",
-  );
 
   return (
     <header className="border-b bg-card/95 backdrop-blur-xl">
@@ -193,7 +189,7 @@ export function SiteHeader({
         ) : null}
         <NavigationMenu viewport={false} className="hidden lg:flex">
           <NavigationMenuList>
-            {desktopPrimaryLinks.map((link) => (
+            {primaryLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
                 <NavigationMenuLink
                   href={
@@ -212,7 +208,7 @@ export function SiteHeader({
                 </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
-            {desktopMenuGroups.map((group) => (
+            {menuGroups.map((group) => (
               <NavigationMenuItem key={group.label}>
                 <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.88rem]">
                   {group.label}
