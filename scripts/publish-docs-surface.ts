@@ -99,6 +99,14 @@ export async function publishDocsSurface({
     sourceDirectory: distDirectory,
     targetDirectory: publishedDirectory,
   });
+  // Every published version references these from the surface root, so they
+  // have to be merged like `_astro` rather than left inside a version folder.
+  // `prune-surface.ts` puts them in the artifact; without this step they never
+  // reach the published tree and every docs page 404s its project icons.
+  await copyIfExists(
+    path.join(distDirectory, "micronaut-assets", "icons"),
+    path.join(publishedDirectory, "micronaut-assets", "icons"),
+  );
   await copyIfExists(
     path.join(distDirectory, "index.html"),
     path.join(publishedDirectory, "index.html"),
