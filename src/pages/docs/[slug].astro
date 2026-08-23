@@ -115,7 +115,12 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
 }
 ---
 
-<WebLayout title={`${project.shortName} Docs`} surface="docs" canonicalUrl={canonicalUrl}>
+<WebLayout
+  title={`${project.shortName} Docs`}
+  description={project.longDescription}
+  surface="docs"
+  canonicalUrl={canonicalUrl}
+>
   <DocsShell
     projectCatalog={docsProjectCatalog}
     activeSlug={project.slug}

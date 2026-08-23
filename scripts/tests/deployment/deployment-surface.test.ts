@@ -281,6 +281,9 @@ test("docs pruning publishes docs at the repository root", async (t) => {
     true,
   );
   assert.equal(await exists(path.join(dist, "latest.html")), true);
+  assert.equal(await exists(path.join(dist, "robots.txt")), true);
+  assert.equal(await exists(path.join(dist, "sitemap-index.xml")), true);
+  assert.equal(await exists(path.join(dist, "sitemap-0.xml")), true);
   assert.equal(
     await exists(path.join(dist, "latest", "guide", "index.html")),
     true,
@@ -351,6 +354,9 @@ test("guides pruning publishes root-level guides and legacy latest redirects", a
     await fs.readFile(path.join(dist, "CNAME"), "utf8"),
     "guides.micronaut.io\n",
   );
+  assert.equal(await exists(path.join(dist, "robots.txt")), true);
+  assert.equal(await exists(path.join(dist, "sitemap-index.xml")), true);
+  assert.equal(await exists(path.join(dist, "sitemap-0.xml")), true);
   assert.equal(
     await exists(path.join(dist, "micronaut-http-client", "index.html")),
     true,
@@ -432,6 +438,8 @@ test("main pruning drops docs, guides, latest, and template artifacts", async (t
   assert.equal(await exists(path.join(dist, "latest")), false);
   assert.equal(await exists(path.join(dist, "micronaut-web")), false);
   assert.equal(await exists(path.join(dist, "versions.json")), false);
+  assert.equal(await exists(path.join(dist, "robots.txt")), true);
+  assert.equal(await exists(path.join(dist, "sitemap-index.xml")), true);
 });
 
 test("docs and guides production layouts load the shared header shell from the main site", async () => {
@@ -487,6 +495,38 @@ test("docs and guides production layouts load the shared header shell from the m
     shellBuild,
     /"process\.env\.NODE_ENV":\s*JSON\.stringify\("production"\)/,
   );
+});
+
+test("every surface publishes crawler metadata for its own canonical pages", async () => {
+  const astroConfig = await fs.readFile(
+    path.join(projectDirectory, "astro.config.mjs"),
+    "utf8",
+  );
+  const layout = await fs.readFile(
+    path.join(projectDirectory, "src", "layouts", "WebLayout.astro"),
+    "utf8",
+  );
+  const robots = await fs.readFile(
+    path.join(projectDirectory, "src", "pages", "robots.txt.ts"),
+    "utf8",
+  );
+
+  // Without both hooks the sitemap lists the other surfaces' pages, the
+  // pre-prune paths, and every Astro.redirect stub.
+  assert.match(astroConfig, /sitemap\(\{/);
+  assert.match(astroConfig, /filter: \(page\) =>/);
+  assert.match(astroConfig, /isIndexablePage\(routePath\)/);
+  assert.match(astroConfig, /serialize: \(item\) =>/);
+  assert.match(
+    astroConfig,
+    /routeForSurface\(surface, sitemapPath\(pageUrl\)\)/,
+  );
+  assert.match(layout, /name="robots" content="noindex"/);
+  assert.match(layout, /property="og:image"/);
+  assert.match(layout, /name="twitter:card" content="summary_large_image"/);
+  assert.match(layout, /application\/ld\+json/);
+  assert.match(robots, /sitemap-index\.xml/);
+  assert.match(robots, /import\.meta\.env\.BASE_URL/);
 });
 
 test("web workflow deploys the main surface through GitHub Pages Actions", async () => {
@@ -975,6 +1015,9 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     "_astro/app.js",
     "assets/core/diagram.1111111111111111.svg",
     "index.html",
+    "robots.txt",
+    "sitemap-index.xml",
+    "sitemap-0.xml",
     "4.10.14/index.html",
     "4.10.14/core/index.html",
   ]);
@@ -1009,6 +1052,9 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     base: "/micronaut-docs/",
   });
 
+  assert.equal(await exists(path.join(published, "robots.txt")), true);
+  assert.equal(await exists(path.join(published, "sitemap-index.xml")), true);
+  assert.equal(await exists(path.join(published, "sitemap-0.xml")), true);
   assert.equal(
     await exists(path.join(published, "assets", "stylesheets", "site.css")),
     true,
@@ -1213,6 +1259,9 @@ async function fakeDist(t: TestContext) {
     "shell/site-header.js",
     "shell/site-header.css",
     "micronaut-web/templates/docs/docs-page.html",
+    "robots.txt",
+    "sitemap-index.xml",
+    "sitemap-0.xml",
   ];
   await writeFiles(dist, files);
   await writeTextFile(

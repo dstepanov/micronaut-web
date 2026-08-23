@@ -245,6 +245,8 @@ Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `s
 - `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
 - `npm run build:guides` renders the generated guides once under `/guides`, moves that tree to `/latest` for the standalone guides artifact, and keeps the root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
+Every surface publishes its own `robots.txt` and sitemap. `src/pages/robots.txt.ts` resolves the `Sitemap:` line from that build's site and base, and `@astrojs/sitemap` is filtered to the pages that survive pruning and serialized to the paths they are served from, so the docs sitemap lists `/latest/<project>/` and the guides sitemap lists root-level guides. Pages that ask to stay out of search results are dropped as well: the filter reads the built HTML back and skips anything carrying a `robots` `noindex` meta, which covers both the refresh stubs Astro emits for `Astro.redirect()` and pages passing `noindex` to `WebLayout`. Both files are written to the build root, so `scripts/prune-surface.ts` and `scripts/publish-docs-surface.ts` carry them across through `scripts/shared/crawler-files.ts`.
+
 Standalone docs and guides builds do not publish their own header shell. In production they render a small static fallback header, load the header stylesheet and React shell from the configured main-site URL, then mount the current `SiteHeader` implementation from `micronaut-web`. This keeps the top navigation owned by the web repository even when docs and guides content are generated from separate repositories. The fallback links use `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, and `MICRONAUT_GUIDES_SITE_URL`, so split-repo Pages deployments can point at the correct published artifacts without hard-coded repository names.
 
 ### GitHub Actions
@@ -425,6 +427,7 @@ When a legacy route is added, update the manifest and add or update one route mo
 - Docs version publishing updates the selector from the Pages branch and preserves shared root assets so older versions do not duplicate the same asset trees.
 - Legacy URLs should prefer permanent redirects unless the destination points to another production host for generated artifacts, where temporary redirects are safer.
 - Main-host `/core/` compatibility is intentionally deferred for now; add it through `src/lib/route-compatibility.ts` when route work resumes.
+- `src/layouts/WebLayout.astro` is the single place social and structured-data tags are emitted. Open Graph, Twitter card, and JSON-LD values come from the `title` and `description` props, so a page that wants a useful share card passes a real description; blog posts and guides also pass `pageType="article"` and `publishedTime`. The share image is served from the main site for every surface.
 
 #### Accessibility And Performance Acceptance Criteria
 

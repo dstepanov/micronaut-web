@@ -6,6 +6,10 @@ import { readGeneratedGuidesManifest } from "@/lib/generated-guides";
 const manifest = await readGeneratedGuidesManifest();
 ---
 
-<WebLayout title="Micronaut Guides" surface="guides">
+<WebLayout
+  title="Micronaut Guides"
+  description="Step-by-step Micronaut guides for Java, Kotlin, and Groovy, with Gradle and Maven builds."
+  surface="guides"
+>
   <LatestGuidesCatalog guides={manifest.guides} root="/guides" />
 </WebLayout>

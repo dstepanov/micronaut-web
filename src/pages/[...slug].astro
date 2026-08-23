@@ -112,7 +112,13 @@ const postDateFormatter = new Intl.DateTimeFormat("en", {
 });
 ---
 
-<WebLayout title={`${pageData.title} | Micronaut`} description={pageDescription} surface="main">
+<WebLayout
+  title={`${pageData.title} | Micronaut`}
+  description={pageDescription}
+  surface="main"
+  pageType={relatedPost ? "article" : "website"}
+  publishedTime={relatedPost?.entry.data.date?.toISOString()}
+>
   {isSuccessStoriesIndex ? (
     <main class="bg-background">
       <section class="border-b bg-card">

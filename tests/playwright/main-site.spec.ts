@@ -388,6 +388,52 @@ test("footer labels links without the Micronaut prefix", async ({
   await expect(footer.getByRole("link", { name: /^Micronaut/ })).toHaveCount(0);
 });
 
+test("pages carry share card metadata and structured data", async ({
+  page,
+}) => {
+  await page.goto(appPath("/"));
+
+  const content = (property: string, attribute = "property") =>
+    page
+      .locator(`meta[${attribute}="${property}"]`)
+      .first()
+      .getAttribute("content");
+
+  expect(await content("og:type")).toBe("website");
+  expect(await content("og:site_name")).toBe("Micronaut Framework");
+  expect(await content("og:title")).toBe("Micronaut Framework");
+  expect(await content("og:description")).toContain("JVM-based");
+  expect(await content("og:url")).toMatch(/\/$/);
+  expect(await content("og:image")).toMatch(
+    /\/micronaut-assets\/social\/micronaut-share-card\.png$/,
+  );
+  expect(await content("twitter:card", "name")).toBe("summary_large_image");
+  expect(await content("twitter:image", "name")).toBe(
+    await content("og:image"),
+  );
+
+  const homeStructuredData = JSON.parse(
+    (await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .textContent()) || "{}",
+  );
+  expect(homeStructuredData["@type"]).toBe("WebPage");
+  expect(homeStructuredData.url).toBe(await content("og:url"));
+
+  await page.goto(appPath("/2018/10/23/micronaut-1-0-ga-released/"));
+  expect(await content("og:type")).toBe("article");
+  expect(await content("article:published_time")).toMatch(/^2018-10-23T/);
+  const postStructuredData = JSON.parse(
+    (await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .textContent()) || "{}",
+  );
+  expect(postStructuredData["@type"]).toBe("BlogPosting");
+  expect(postStructuredData.headline).toContain("Micronaut 1.0 GA Released");
+});
+
 async function expectPrimaryMobileLinks(page: Page): Promise<void> {
   await expectSiteHeaderHydrated(page);
   await page.getByRole("button", { name: "Open navigation" }).click();
