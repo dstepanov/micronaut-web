@@ -523,6 +523,7 @@ function languageForFile(file: string, fallback = "text"): string {
       kt: "kotlin",
       groovy: "groovy",
       properties: "properties",
+      py: "python",
       toml: "toml",
       vm: "html",
       xml: "xml",
