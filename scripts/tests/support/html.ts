@@ -91,6 +91,19 @@ export function manualCallouts(html: string): string[] {
     );
 }
 
+/** The text of each admonition block, in document order. */
+export function admonitions(html: string): string[] {
+  const fragment = parse5.parseFragment(html);
+  return elements(fragment)
+    .filter((element) => hasClass(element, "admonitionblock"))
+    .map((element) =>
+      elements(element)
+        .filter((child) => hasClass(child, "content"))
+        .map((content) => text(content).replace(/\s+/g, " ").trim())
+        .join(" "),
+    );
+}
+
 export function textOnly(value: string): string {
   return text(parse5.parseFragment(value)).replace(/\s+/g, " ").trim();
 }

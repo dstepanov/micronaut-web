@@ -70,13 +70,21 @@ type ComponentRenderer = {
   ): Promise<string> | string;
 };
 
-// A card that explains why a snippet could not be rendered, in place of it.
+const MISSING_SNIPPET_MESSAGE = "micronautMissingSnippetMessage";
+
+/**
+ * Stands in for a snippet the guide sources do not contain. It renders as a
+ * NOTE admonition: as a code card the placeholder was published as though the
+ * unresolved text were the sample the guide meant to show, down to a copy
+ * button and a "Text" language tab.
+ */
 export function missingNotePayload(message: string): SnippetPayload {
-  return {
-    kind: "code",
-    samples: [{ language: "text", source: `NOTE: ${message}` }],
-    title: "",
-  };
+  return { [MISSING_SNIPPET_MESSAGE]: message };
+}
+
+function missingSnippetMessage(payload: SnippetPayload): string | undefined {
+  const message = payload[MISSING_SNIPPET_MESSAGE];
+  return typeof message === "string" ? message : undefined;
 }
 
 export type SnippetRenderOptions = {
@@ -124,25 +132,47 @@ export async function renderSnippetBlock(
         }
       : undefined,
   );
-  const rendered = await renderSnippetPayloadCards({
-    footerHtml: await snippetFooterHtml(processor, parent, payloadWithCallouts),
-    idSeed: snippetIdSeed(parent, reader, payloadWithCallouts),
-    payload: payloadWithCallouts,
-  });
+  const missingMessage = missingSnippetMessage(payloadWithCallouts);
+  const bodyHtml = missingMessage
+    ? await missingSnippetNoteHtml(processor, parent, missingMessage)
+    : (
+        await renderSnippetPayloadCards({
+          footerHtml: await snippetFooterHtml(
+            processor,
+            parent,
+            payloadWithCallouts,
+          ),
+          idSeed: snippetIdSeed(parent, reader, payloadWithCallouts),
+          payload: payloadWithCallouts,
+        })
+      ).html;
   const manualCalloutHtml = await manualCalloutsHtml(
     processor,
     parent,
     manualCalloutLines,
   );
-  return processor.createBlock(
-    parent,
-    "pass",
-    rendered.html + manualCalloutHtml,
-    {
-      role: "docs-snippet",
-      subs: null,
-    },
-  );
+  return processor.createBlock(parent, "pass", bodyHtml + manualCalloutHtml, {
+    role: "docs-snippet",
+    subs: null,
+  });
+}
+
+async function missingSnippetNoteHtml(
+  processor: ComponentBlockProcessor,
+  parent: Block | Section,
+  message: string,
+): Promise<string> {
+  const holder = processor.createBlock(parent, "open", "", {});
+  await processor.parseContent(holder, ["[NOTE]", "====", message, "===="]);
+  await precomputeGeneratedInlineText(holder);
+  return (
+    await Promise.all(
+      (holder.blocks || []).map(
+        async (block: ComponentBlockNode): Promise<string> =>
+          block.convert ? String(await block.convert()) : "",
+      ),
+    )
+  ).join("\n");
 }
 
 async function renderSnippetPayloadCards({
