@@ -71,6 +71,11 @@ export function guideTagPath(tag: string, root = "/latest") {
   return `${normalizedRoot(root)}/tag-${tagSlug(tag)}/`;
 }
 
+/** Category filter on the guides index; applied client-side on the static page. */
+export function guideCategoryPath(category: string, root = "/latest") {
+  return `${normalizedRoot(root)}/?category=${tagSlug(category)}`;
+}
+
 export function latestGuides(guides: GeneratedGuide[], limit = 8) {
   return [...guides]
     .sort(

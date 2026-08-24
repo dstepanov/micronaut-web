@@ -13,7 +13,9 @@ import LatestGuidesCatalog from "@/components/web/latest-guides-catalog.astro";
 import { ArrowUp } from "lucide-react";
 import {
   allGeneratedGuideTags,
+  guideCategoryPath,
   guideOptionPath,
+  latestGuides,
   preferredGuideOption,
   readGeneratedGuideFragment,
   readGeneratedGuidesManifest,
@@ -43,6 +45,7 @@ type VariantProps = {
   kind: "variant";
   guide: GeneratedGuide;
   option: GeneratedGuideOption;
+  related: Array<{ title: string; path: string }>;
 };
 
 export async function getStaticPaths() {
@@ -75,11 +78,27 @@ export async function getStaticPaths() {
   }
   for (const guide of manifest.guides) {
     addPath(guide.slug, { kind: "overview", guide });
+    // Newest guides sharing the primary category, for the reader's
+    // "More in <category>" footer.
+    const related = latestGuides(
+      manifest.guides.filter(
+        (other) =>
+          other.slug !== guide.slug &&
+          (other.categories[0] || "") === (guide.categories[0] || ""),
+      ),
+      4,
+    ).flatMap((other) => {
+      const preferred = preferredGuideOption(other);
+      return preferred
+        ? [{ title: other.title, path: guideOptionPath(preferred, guidesRoot) }]
+        : [];
+    });
     for (const option of guide.options) {
       addPath(option.file.replace(/\.html$/, ""), {
         kind: "variant",
         guide,
         option,
+        related,
       });
     }
   }
@@ -266,6 +285,30 @@ function buildGuidePageIndexSections(
         </aside>
         <article class="min-w-0">
           <header class="mb-8">
+            <nav
+              aria-label="Breadcrumb"
+              class="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground"
+            >
+              <a
+                href={withBasePath(`${guidesRoot}/`)}
+                class="no-underline transition-colors hover:text-foreground"
+              >
+                Guides
+              </a>
+              {props.guide.categories[0] && (
+                <>
+                  <span aria-hidden="true">›</span>
+                  <a
+                    href={withBasePath(
+                      guideCategoryPath(props.guide.categories[0], guidesRoot),
+                    )}
+                    class="no-underline transition-colors hover:text-foreground"
+                  >
+                    {props.guide.categories[0]}
+                  </a>
+                </>
+              )}
+            </nav>
             <Badge variant="secondary">{props.option.label}</Badge>
             <h1 class="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
               {props.guide.title}
@@ -382,6 +425,33 @@ function buildGuidePageIndexSections(
                 </CardDescription>
               </CardHeader>
             </Card>
+          )}
+          {props.guide.categories[0] && props.related.length > 0 && (
+            <footer class="mt-12 border-t pt-8">
+              <h2 class="text-xl font-semibold tracking-tight">
+                More in {props.guide.categories[0]}
+              </h2>
+              <ul class="mt-4 grid list-none gap-2 p-0">
+                {props.related.map((relatedGuide) => (
+                  <li>
+                    <a
+                      href={withBasePath(relatedGuide.path)}
+                      class="text-[0.95rem] no-underline hover:text-brand hover:underline"
+                    >
+                      {relatedGuide.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={withBasePath(
+                  guideCategoryPath(props.guide.categories[0], guidesRoot),
+                )}
+                class="mt-4 inline-block text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
+              >
+                All {props.guide.categories[0]} guides →
+              </a>
+            </footer>
           )}
         </article>
         {currentGuideSectionLinks.length > 0 && (

@@ -1,4 +1,5 @@
 ---
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { GuideVariantMenu } from "@/components/web/guide-variant-menu";
@@ -55,6 +56,17 @@ const variants =
     </p>
   </div>
   <div class="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
+    {
+      /* Hidden while rows sit in their category section (it would restate the
+         heading); the flat search-result list reveals it for orientation. */
+    }
+    <Badge
+      variant="secondary"
+      className="hidden max-w-40 truncate"
+      data-guide-row-category
+    >
+      {guide.categories[0] || "Guide"}
+    </Badge>
     <span class="text-sm text-muted-foreground tabular-nums">
       {guide.estimatedMinutes} min
     </span>

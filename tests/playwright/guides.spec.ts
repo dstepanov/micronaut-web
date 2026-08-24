@@ -157,10 +157,8 @@ test("guide catalog renders static cards and hydrates only the variant menu", as
   ).toBeVisible();
 
   await expect(
-    page
-      .getByRole("link", { name: "Open guides tagged micronaut-data" })
-      .first(),
-  ).toHaveAttribute("href", tagHrefPattern("micronaut-data"));
+    page.getByRole("link", { name: "Open guides tagged flowable" }).first(),
+  ).toHaveAttribute("href", tagHrefPattern("flowable"));
 
   // The default view is the category directory; guide rows appear after
   // picking a category.
@@ -248,7 +246,7 @@ test("guide catalog displays the query from a direct search URL", async ({
   await page.goto(appPath("/guides/?q=spring-jpa"));
 
   await expect(
-    page.getByRole("searchbox", { name: "Search guides" }),
+    page.getByRole("searchbox", { name: "Filter guides" }),
   ).toHaveValue("spring-jpa");
 });
 
@@ -257,16 +255,16 @@ test("guide catalog provides a search form", async ({ page }) => {
 
   const search = page.getByRole("search");
   await expect(
-    search.getByRole("searchbox", { name: "Search guides" }),
+    search.getByRole("searchbox", { name: "Filter guides" }),
   ).toBeVisible();
   await search
-    .getByRole("searchbox", { name: "Search guides" })
+    .getByRole("searchbox", { name: "Filter guides" })
     .fill("getting-started");
-  await search.getByRole("button", { name: "Search" }).click();
+  await search.getByRole("button", { name: "Filter" }).click();
 
   expect(new URL(page.url()).search).toBe("?q=getting-started");
   await expect(
-    search.getByRole("searchbox", { name: "Search guides" }),
+    search.getByRole("searchbox", { name: "Filter guides" }),
   ).toHaveValue("getting-started");
   await expect(
     page.locator("[data-guide-card]", {
