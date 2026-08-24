@@ -47,8 +47,22 @@ export async function renderGuideOption(
   });
 
   html = rewriteGuideUrls(html, guide.slug);
+  html = normalizeAdmonitionLabels(html);
   html = optimizeGeneratedGuideHtml(html);
   return html.trim();
+}
+
+/**
+ * Under `icons=font` (which guide callout numbers rely on), Asciidoctor
+ * renders admonition labels as Font Awesome `<i>` icons. The site never loads
+ * Font Awesome, so NOTE/TIP labels vanished. Normalize to the text label the
+ * docs surface renders; the shared admonition styles color it per type.
+ */
+function normalizeAdmonitionLabels(input: string): string {
+  return input.replace(
+    /<i class="fa icon-[a-z]+" title="([^"]+)"><\/i>/g,
+    '<div class="title">$1</div>',
+  );
 }
 
 export function isFatalGuideDiagnostic(diagnostic: string): boolean {
