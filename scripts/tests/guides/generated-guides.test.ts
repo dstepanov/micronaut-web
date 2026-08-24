@@ -18,6 +18,7 @@ import {
   writeGuideMetadata,
   writeTextFile,
 } from "../support/temp-project.ts";
+import { guideOptions, readGuides } from "../../guides/model.ts";
 
 // End-to-end runs of scripts/render-guides.ts. Macro behaviour is covered in
 // guide-macros.test.ts in-process; these tests cover what only the CLI does:
@@ -357,4 +358,26 @@ describe("render-guides", () => {
       },
     );
   });
+});
+
+test("a guide offers no Maven and Kotlin variant, which the guides build refuses to generate", async (t) => {
+  const root = await temporaryDirectory(t, "micronaut-web-guides-");
+  const guidesDirectory = path.join(root, "micronaut-guides");
+  await writeGuideMetadata(guidesDirectory, "polyglot-guide", {
+    title: "Polyglot",
+    languages: ["java", "kotlin", "groovy"],
+    buildTools: ["gradle", "maven"],
+  });
+
+  const [guide] = await readGuides(guidesDirectory);
+  assert.deepEqual(
+    guideOptions(guide).map((option) => option.id),
+    [
+      "polyglot-guide-gradle-java",
+      "polyglot-guide-gradle-kotlin",
+      "polyglot-guide-gradle-groovy",
+      "polyglot-guide-maven-java",
+      "polyglot-guide-maven-groovy",
+    ],
+  );
 });

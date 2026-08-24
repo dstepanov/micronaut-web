@@ -115,6 +115,12 @@ export function guideOptions(guide: Guide): GuideOption[] {
       if (!guide.languages.includes(language)) {
         continue;
       }
+      // The guides build refuses to generate a Maven/Kotlin project
+      // (`GuideUtils.isSupported`), so this combination has neither a sample
+      // project to render snippets from nor a zip to download.
+      if (buildTool === "maven" && language === "kotlin") {
+        continue;
+      }
       options.push({
         id: `${guide.slug}-${buildTool}-${language}`,
         label: `${languageLabel(language)} / ${buildToolLabel(buildTool)}`,
@@ -338,11 +344,34 @@ function optionalStringOrNumber(value: unknown): string | number | undefined {
     : undefined;
 }
 
-// A guide may build on another guide's sources (`base` in metadata.json);
-// snippet and include lookups fall back to that guide's directory.
+/**
+ * Where snippet and include lookups search beyond the guide's own directory.
+ *
+ * `./gradlew generateCodeZip` in the guides repository writes one Micronaut
+ * Starter project per option under `build/code`, which is the `sourcedir` the
+ * upstream Asciidoctor build resolves every include against. A guide's own
+ * files are copied into that project verbatim, so the generated project is a
+ * superset: it also holds the Starter files (`Application`, generated
+ * `application.properties`, build scripts) that live in no guide directory.
+ * Without a generated project the guide directory alone still resolves every
+ * file a guide checks in.
+ *
+ * A guide may also build on another guide's sources (`base` in metadata.json).
+ */
 export function guideSourceRoots(context: GuideRenderContext): string[] {
-  if (!context.guide.base) {
-    return [];
+  const roots = [
+    path.join(
+      context.guidesDirectory,
+      "build",
+      "code",
+      context.guide.slug,
+      context.option.sourceDir,
+    ),
+  ];
+  if (context.guide.base) {
+    roots.push(
+      path.join(context.guidesDirectory, "guides", context.guide.base),
+    );
   }
-  return [path.join(context.guidesDirectory, "guides", context.guide.base)];
+  return roots;
 }

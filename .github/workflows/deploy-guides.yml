@@ -74,6 +74,59 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: gradle-guides-${{ hashFiles('external/micronaut-guides/**/*.gradle') }}
+          restore-keys: gradle-guides-
+
+      # Micronaut Starter generates one sample project per guide option under
+      # `build/code`, which is both the `sourcedir` every guide include
+      # resolves against and the input to the downloadable archives in
+      # `build/dist`.
+      #
+      # `--no-build-cache` because the generation tasks do not declare the
+      # Java version as an input, so an entry cached under one version is a
+      # valid cache hit under another. Gradle writes the archives
+      # reproducibly, so a guide that did not change re-zips to the same bytes
+      # and adds nothing to the published branch.
+      - name: Generate guide sample projects and archives
+        working-directory: external/micronaut-guides
+        env:
+          BUILD_JDK: "25"
+        run: |
+          set -euo pipefail
+          ./gradlew --no-build-cache generateCodeZip
+
+          # `JDK_VERSION` picks both the Java version stamped into the
+          # generated build files and the threshold that skips a guide whose
+          # metadata caps the JDK below it, so a capped guide produces neither
+          # sources nor an archive in the pass above. Rebuild each one at its
+          # own maximum; the generation task has to be forced because the
+          # Java version is not one of its inputs.
+          for metadata in guides/*/metadata.json; do
+            maximum="$(jq -r '.maximumJavaVersion // empty' "$metadata")"
+            if [ -z "$maximum" ] || [ "$maximum" -ge "$BUILD_JDK" ]; then
+              continue
+            fi
+            if [ "$(jq -r '.publish' "$metadata")" = "false" ]; then
+              continue
+            fi
+            slug="$(basename "$(dirname "$metadata")")"
+            task="$(echo "$slug" | awk -F- '{ name = $1; for (i = 2; i <= NF; i++) name = name toupper(substr($i, 1, 1)) substr($i, 2); print name }')"
+            echo "Rebuilding $slug at Java $maximum."
+            JDK_VERSION="$maximum" ./gradlew --no-build-cache "${task}GenerateProjects" --rerun
+            JDK_VERSION="$maximum" ./gradlew --no-build-cache "${task}GenerateZips"
+          done
 
       - name: Configure guides deployment
         env:
@@ -95,6 +148,23 @@ jobs:
           GUIDES_RENDER_ALL: "true"
           GUIDES_RENDER_STRICT: "true"
         run: npm run build:guides
+
+      # Every option page links its own archive, and the build writes a
+      # redirect stub in its place; a stub that survives this copy is a
+      # download that breaks the moment this site owns guides.micronaut.io,
+      # where those stubs point.
+      - name: Attach guide sample project archives
+        run: |
+          set -euo pipefail
+          cp external/micronaut-guides/build/dist/*.zip dist/
+          unreplaced=""
+          for archive in dist/*.zip; do
+            [ "$(head -c 2 "$archive")" = "PK" ] || unreplaced="$unreplaced $archive"
+          done
+          if [ -n "$unreplaced" ]; then
+            echo "::error::The guides build generated no archive for:$unreplaced"
+            exit 1
+          fi
 
       - name: Replace guides Pages artifact
         env:
