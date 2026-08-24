@@ -3,6 +3,7 @@ import path from "node:path";
 import { attribute } from "../shared/html.ts";
 import { rewriteMicronautSiteUrl } from "../shared/micronaut-links.ts";
 import type { DocsProject } from "./project-manifest.ts";
+import { projectApiBaseUri } from "../asciidoc/api-links.ts";
 
 // Matches real id attributes only, so data-*-id attributes are left alone.
 const ID_ATTRIBUTE_PATTERN = /(?<![-\w])id="([^"]+)"/g;
@@ -128,6 +129,10 @@ export function rewriteUrls(input: string, project: DocsProject): string {
       ) {
         return match;
       }
+      const javadocUrl = canonicalJavadocUrl(value, project);
+      if (javadocUrl) {
+        return `${attributeName}="${attribute(javadocUrl)}"`;
+      }
       if (value.startsWith("assets/")) {
         return `${attributeName}="${attribute(pageRelativeAssetUrl(value))}"`;
       }
@@ -147,6 +152,22 @@ export function rewriteUrls(input: string, project: DocsProject): string {
       return `${attributeName}="${attribute(pageRelativeAssetUrl(rewritten))}"`;
     },
   );
+}
+
+/**
+ * Upstream AsciiDoc sometimes hand-writes `assets/{slug}/docs/api/...` javadoc
+ * paths instead of using the `api:`/`pkg:` macros. Nothing publishes that tree,
+ * so those links 404; send them to the same canonical javadoc the macros use.
+ */
+function canonicalJavadocUrl(
+  value: string,
+  project: DocsProject,
+): string | undefined {
+  const match = /^(?:\.\.\/)*assets\/[^/]+\/docs\/api\/(.+)$/.exec(value);
+  if (!match) {
+    return undefined;
+  }
+  return `${projectApiBaseUri({ project })}/${match[1]}`;
 }
 
 function pageRelativeAssetUrl(value: string): string {

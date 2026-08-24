@@ -1,4 +1,6 @@
 ---
+import { ChevronRightIcon } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +72,11 @@ const categoryRank = new Map(
   CATEGORY_ORDER.map((category, index) => [category, index]),
 );
 const COLLAPSED_CARD_COUNT = 6;
+// Only the first few journey sections stay open. 52 sections rendered in full
+// made the index ~32,000px tall even with per-section card collapsing, because
+// most categories hold only one or two cards; the height came from the sheer
+// number of sections.
+const OPEN_SECTION_COUNT = 4;
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
   const category = guide.categories[0] || "Guides";
@@ -324,13 +331,25 @@ function tagHref(tag: string) {
       </details>
       <section id="guides-list" class="grid gap-7">
         {
-          orderedCategoryGroups.map(([category, categoryGuides]) => (
-            <div
-              class="grid gap-4"
+          orderedCategoryGroups.map(([category, categoryGuides], index) => (
+            <details
+              class="group/category grid gap-4"
               id={`category-${categorySlug(category)}`}
               data-guide-category-group
+              open={hasFilters || index < OPEN_SECTION_COUNT}
             >
-              <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
+              <summary class="flex cursor-pointer list-none items-center gap-2 rounded-md">
+                <ChevronRightIcon
+                  className="size-5 shrink-0 text-muted-foreground transition-transform group-open/category:rotate-90"
+                  aria-hidden="true"
+                />
+                <h2 class="text-2xl font-semibold tracking-tight">
+                  {category}
+                </h2>
+                <span class="text-sm text-muted-foreground tabular-nums">
+                  {categoryGuides.length}
+                </span>
+              </summary>
               <div
                 class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 [&[data-collapsed]>*:nth-child(n+7)]:hidden"
                 data-guide-card-grid
@@ -379,7 +398,7 @@ function tagHref(tag: string) {
                   Show all {categoryGuides.length} guides
                 </button>
               )}
-            </div>
+            </details>
           ))
         }
       </section>

@@ -94,11 +94,24 @@ describe("rewriteUrls", () => {
     }
     assert.equal(
       rewriteUrls(
-        '<a href="assets/fixture/docs/api/index.html">x</a>',
+        '<a href="assets/fixture/docs/img/diagram.png">x</a>',
         project,
       ),
-      '<a href="../assets/fixture/docs/api/index.html">x</a>',
+      '<a href="../assets/fixture/docs/img/diagram.png">x</a>',
     );
+  });
+
+  test("sends hand-written javadoc paths to the published javadoc host", () => {
+    // Nothing publishes assets/{slug}/docs/api, so these used to 404.
+    for (const href of [
+      "assets/fixture/docs/api/index.html",
+      "../assets/fixture/docs/api/io/micronaut/fixture/Client.html#run--",
+    ]) {
+      assert.match(
+        rewriteUrls(`<a href="${href}">x</a>`, project),
+        /^<a href="https:\/\/micronaut-projects\.github\.io\/micronaut-fixture\/latest\/api\//,
+      );
+    }
   });
 
   test("canonicalizes links to the published Micronaut sites", () => {
