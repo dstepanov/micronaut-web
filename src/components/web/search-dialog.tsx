@@ -171,6 +171,14 @@ export function SearchDialog({
       ).slice(0, 40),
     [items, searchQuery],
   );
+  const posts = useMemo(
+    () =>
+      rankSearchItems(
+        items.filter((item) => item.kind === "Post"),
+        searchQuery,
+      ).slice(0, 40),
+    [items, searchQuery],
+  );
   const tags = useMemo(
     () =>
       rankSearchItems(
@@ -281,6 +289,7 @@ export function SearchDialog({
         items: docs,
       },
       { key: "Guides", badge: "Guide", kind: "item" as const, items: guides },
+      { key: "Blog", badge: "Post", kind: "item" as const, items: posts },
       { key: "Tags", badge: "Tag", kind: "item" as const, items: tags },
     ].filter((group) => group.items.length > 0);
     if (!searchQuery.trim()) {
@@ -290,7 +299,7 @@ export function SearchDialog({
       .map((group) => ({ group, score: bestScore(group.items, searchQuery) }))
       .sort((left, right) => right.score - left.score)
       .map((entry) => entry.group);
-  }, [docs, guides, pages, searchQuery, tags]);
+  }, [docs, guides, pages, posts, searchQuery, tags]);
 
   const navigateTo = (href: string) => {
     window.location.href = withConfiguredBasePath(href, navigationUrls);
