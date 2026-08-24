@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -82,17 +83,21 @@ const categories = (
         ))
       }
     </div>
-    <div
-      class="flex items-center justify-between gap-3 text-sm text-muted-foreground"
-    >
-      <span>{guide.estimatedMinutes} min</span>
-      {
-        variants.length > 0 ? (
-          <ButtonGroup
-            aria-label={`Read ${guide.title} variants`}
-            className="shrink-0"
-          >
-            {/*
+  </CardContent>
+  {
+    /* mt-auto pins the footer, so short cards don't leave the Read control floating mid-card. */
+  }
+  <CardFooter
+    className="mt-auto justify-between gap-3 text-sm text-muted-foreground"
+  >
+    <span>{guide.estimatedMinutes} min</span>
+    {
+      variants.length > 0 ? (
+        <ButtonGroup
+          aria-label={`Read ${guide.title} variants`}
+          className="shrink-0"
+        >
+          {/*
               `Button asChild` cannot be used from Astro: Radix `Slot` merges
               props onto a React child, and an Astro child arrives as a slot,
               so the button classes are dropped entirely. Apply the variants
@@ -102,38 +107,37 @@ const categories = (
               `> [data-slot=...]` rules cannot do it: the menu trigger renders
               inside an `<astro-island>`, so it is not a direct child here.
             */}
-            <a
-              href={href}
-              data-guide-link
-              aria-label={`Read ${guide.title}`}
-              data-slot="button"
-              class:list={[
-                buttonVariants({ size: "sm", variant: "outline" }),
-                "rounded-r-none",
-              ]}
-            >
-              Read
-            </a>
-            <GuideVariantMenu
-              client:visible
-              title={guide.title}
-              variants={variants}
-            />
-          </ButtonGroup>
-        ) : (
           <a
             href={href}
+            data-guide-link
             aria-label={`Read ${guide.title}`}
             data-slot="button"
             class:list={[
               buttonVariants({ size: "sm", variant: "outline" }),
-              "shrink-0",
+              "rounded-r-none",
             ]}
           >
             Read
           </a>
-        )
-      }
-    </div>
-  </CardContent>
+          <GuideVariantMenu
+            client:visible
+            title={guide.title}
+            variants={variants}
+          />
+        </ButtonGroup>
+      ) : (
+        <a
+          href={href}
+          aria-label={`Read ${guide.title}`}
+          data-slot="button"
+          class:list={[
+            buttonVariants({ size: "sm", variant: "outline" }),
+            "shrink-0",
+          ]}
+        >
+          Read
+        </a>
+      )
+    }
+  </CardFooter>
 </Card>
