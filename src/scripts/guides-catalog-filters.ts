@@ -63,6 +63,46 @@ if (catalog) {
     if (emptyState) {
       emptyState.hidden = visibleCards.size > 0;
     }
+
+    // Filter results must not hide matches behind collapsed sections.
+    expandAllCategoryGroups(catalog);
+  }
+
+  for (const button of Array.from(
+    catalog.querySelectorAll<HTMLButtonElement>("[data-guide-show-all]"),
+  )) {
+    button.addEventListener("click", () => {
+      button
+        .closest("[data-guide-category-group]")
+        ?.querySelector("[data-guide-card-grid]")
+        ?.removeAttribute("data-collapsed");
+      button.hidden = true;
+    });
+  }
+
+  const categoryJump = catalog.querySelector<HTMLDetailsElement>(
+    "[data-guide-category-jump]",
+  );
+  categoryJump?.addEventListener("click", (event) => {
+    if (
+      event.target instanceof Element &&
+      event.target.closest("[data-guide-category-jump-link]")
+    ) {
+      categoryJump.open = false;
+    }
+  });
+}
+
+function expandAllCategoryGroups(catalog: HTMLElement) {
+  for (const grid of Array.from(
+    catalog.querySelectorAll<HTMLElement>("[data-guide-card-grid]"),
+  )) {
+    grid.removeAttribute("data-collapsed");
+  }
+  for (const button of Array.from(
+    catalog.querySelectorAll<HTMLElement>("[data-guide-show-all]"),
+  )) {
+    button.hidden = true;
   }
 }
 
