@@ -47,6 +47,29 @@ const variants =
 const categories = (
   guide.categories.length ? guide.categories : ["Guide"]
 ).slice(0, 2);
+// Tags that restate the category badge ("Data JDBC" next to micronaut-data,
+// jdbc, database) add nothing; keep at most three of the rest.
+const categoryTokens = guide.categories.flatMap((category) =>
+  category
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean),
+);
+const distinctTags = guide.tags
+  .filter((tag) => {
+    const tagTokens = tag
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean);
+    return !tagTokens.some((tagToken) =>
+      categoryTokens.some(
+        (categoryToken) =>
+          tagToken.startsWith(categoryToken) ||
+          categoryToken.startsWith(tagToken),
+      ),
+    );
+  })
+  .slice(0, 3);
 ---
 
 <Card className="h-full" data-guide-link-scope>
@@ -72,7 +95,7 @@ const categories = (
   <CardContent className="grid gap-4">
     <div class="flex flex-wrap gap-1.5">
       {
-        guide.tags.slice(0, 5).map((tag) => (
+        distinctTags.map((tag) => (
           <a
             href={withBasePath(guideTagPath(tag, root))}
             class="no-underline"
