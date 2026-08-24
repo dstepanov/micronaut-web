@@ -248,7 +248,10 @@ test("generated docs tooling uses Micronaut Platform catalog instead of the old 
     ([file]: any): any => file === "scripts/sync-docs-fixture.ts",
   )[1];
 
-  assert.match(workflow, /default:\s*micronaut-projects\/micronaut-platform/);
+  assert.match(
+    workflow,
+    /PLATFORM_REPOSITORY:\s*micronaut-projects\/micronaut-platform/,
+  );
   assert.match(workflow, /DOCS_RENDER_ALL:\s*"true"/);
   assert.match(workflow, /DOCS_SYNC_SOURCES:\s*"true"/);
   assert.doesNotMatch(workflow, /micronaut-guides/);
