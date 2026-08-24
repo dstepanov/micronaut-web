@@ -53,10 +53,10 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
   for (const project of docsProjects) {
     const card = cards.filter({ hasText: project.name });
     await expect(card).toBeVisible();
-    await expect(card.getByRole("link", { name: "Docs" })).toHaveAttribute(
-      "href",
-      docsProjectHrefPattern(project.slug),
-    );
+    // The whole card is the link now, so the redundant "Docs" button is gone.
+    await expect(
+      card.getByRole("link", { name: project.name, exact: true }),
+    ).toHaveAttribute("href", docsProjectHrefPattern(project.slug));
   }
 
   const searchButton = page.getByRole("button", { name: "Search Micronaut" });
@@ -408,7 +408,7 @@ test("docs page renders related latest guides from the guides manifest", async (
         .filter(
           (child) => !["script", "style"].includes(child.tagName.toLowerCase()),
         )
-        .slice(0, 3)
+        .slice(0, 4)
         .map((child) => {
           const element = child as HTMLElement;
           if (
@@ -420,9 +420,13 @@ test("docs page renders related latest guides from the guides manifest", async (
           return element.textContent?.replace(/\s+/g, " ").trim() || "";
         }),
     );
-  expect(generatedContentOrder[0]).toContain("Data");
-  expect(generatedContentOrder[1]).toBe("latest-guides");
-  expect(generatedContentOrder[2]).toContain("1 Introduction");
+  // The accordion no longer splits the chapter title from its first paragraph;
+  // it lives in the side column instead. The leading entry is the empty
+  // project-document anchor span that the renderer prepends.
+  const meaningfulOrder = generatedContentOrder.filter(Boolean);
+  expect(meaningfulOrder[0]).toContain("Data");
+  expect(meaningfulOrder[1]).toContain("1 Introduction");
+  expect(generatedContentOrder).not.toContain("latest-guides");
   const guideLink = relatedGuides
     .getByRole("link", {
       name: "Access a database with Micronaut Data JDBC",

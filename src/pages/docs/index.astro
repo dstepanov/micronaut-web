@@ -2,12 +2,44 @@
 import WebLayout from "@/layouts/WebLayout.astro";
 import DocsShell from "@/components/web/docs-shell.astro";
 import { ProjectCard } from "@/components/web/project-card";
+import { withBasePath } from "@/lib/base-path";
 import {
   docsCatalogProjectsByCategory,
   loadDocsProjectCatalog,
 } from "@/lib/docs-project-catalog";
 
 const docsProjectCatalog = await loadDocsProjectCatalog();
+
+// "Most Popular" is a shortcut into four modules that each also appear under
+// their own category, so rendering it as cards duplicated them on the page.
+// It stays as a quick-link row instead.
+const POPULAR_CATEGORY_SLUG = "most-popular";
+const popularCategory = docsProjectCatalog.categories.find(
+  (category) => category.slug === POPULAR_CATEGORY_SLUG,
+);
+const popularProjects = popularCategory
+  ? docsCatalogProjectsByCategory(docsProjectCatalog, popularCategory)
+  : [];
+const categories = docsProjectCatalog.categories.filter(
+  (category) => category.slug !== POPULAR_CATEGORY_SLUG,
+);
+
+/**
+ * A one- or two-project category in a four-column grid left three empty
+ * columns, so narrow sections get proportionally wider cards instead.
+ */
+function gridClassFor(count: number) {
+  if (count === 1) {
+    return "grid grid-cols-1 gap-3 sm:max-w-md";
+  }
+  if (count === 2) {
+    return "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-3xl";
+  }
+  if (count === 3) {
+    return "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3";
+  }
+  return "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4";
+}
 ---
 
 <WebLayout
@@ -18,9 +50,26 @@ const docsProjectCatalog = await loadDocsProjectCatalog();
   <DocsShell projectCatalog={docsProjectCatalog}>
     <section class="mx-auto grid w-full max-w-[1346px] gap-6 px-5 py-7 md:px-6">
       <h1 class="sr-only">Micronaut Docs</h1>
+      {
+        popularProjects.length > 0 && (
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[0.8rem] font-medium text-muted-foreground">
+              Most popular
+            </span>
+            {popularProjects.map((project) => (
+              <a
+                href={withBasePath(project.href)}
+                class="inline-flex min-h-7 items-center rounded-md border bg-background px-2.5 text-[0.82rem] text-foreground no-underline transition hover:bg-muted"
+              >
+                {project.shortName}
+              </a>
+            ))}
+          </div>
+        )
+      }
       <div class="grid gap-6">
         {
-          docsProjectCatalog.categories.map((category) => {
+          categories.map((category) => {
             const projects = docsCatalogProjectsByCategory(
               docsProjectCatalog,
               category,
@@ -38,7 +87,7 @@ const docsProjectCatalog = await loadDocsProjectCatalog();
                     </p>
                   </div>
                 </div>
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div class={gridClassFor(projects.length)}>
                   {projects.map((project) => (
                     <ProjectCard project={project} />
                   ))}

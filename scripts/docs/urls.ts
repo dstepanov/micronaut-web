@@ -129,9 +129,10 @@ export function rewriteUrls(input: string, project: DocsProject): string {
       ) {
         return match;
       }
-      const javadocUrl = canonicalJavadocUrl(value, project);
-      if (javadocUrl) {
-        return `${attributeName}="${attribute(javadocUrl)}"`;
+      // Already-resolved javadoc paths, with or without a leading "../".
+      const writtenJavadocUrl = canonicalJavadocUrl(value, project);
+      if (writtenJavadocUrl) {
+        return `${attributeName}="${attribute(writtenJavadocUrl)}"`;
       }
       if (value.startsWith("assets/")) {
         return `${attributeName}="${attribute(pageRelativeAssetUrl(value))}"`;
@@ -149,6 +150,13 @@ export function rewriteUrls(input: string, project: DocsProject): string {
             pathname.replaceAll("\\", "/"),
           ),
         ) + suffix;
+      // Checked after normalization: guide sources link javadoc as `../api/...`
+      // relative to the guide directory, which only lands in the project's
+      // javadoc folder once the path is resolved.
+      const javadocUrl = canonicalJavadocUrl(rewritten, project);
+      if (javadocUrl) {
+        return `${attributeName}="${attribute(javadocUrl)}"`;
+      }
       return `${attributeName}="${attribute(pageRelativeAssetUrl(rewritten))}"`;
     },
   );

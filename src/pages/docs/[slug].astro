@@ -29,7 +29,7 @@ import {
 } from "@/lib/docs-project-catalog";
 import {
   enhanceGeneratedContentHtml,
-  generatedHtmlLabel,
+  extractGeneratedDocSections,
 } from "@/lib/generated-docs-html";
 import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
 import "@/styles/generated-docs-content.css";
@@ -107,57 +107,6 @@ const initialCurrentSectionIndexHidden =
 const relatedGuideTopicAliases = project.guideTopicAliases || [];
 const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
 const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
-const generatedDocHtmlParts =
-  generatedDocHtml && shouldRenderRelatedGuides
-    ? splitGeneratedDocHtmlAfterProjectTitle(generatedDocHtml)
-    : undefined;
-
-function extractGeneratedDocSections(html: string) {
-  const sections: Array<{
-    id: string;
-    label: string;
-    depth: number;
-    parentId?: string;
-  }> = [];
-  const headingPattern =
-    /<h([1-6])\b([^>]*)\bid="([^"]+)"([^>]*)>([\s\S]*?)<\/h\1>/g;
-  let activeTopLevelId: string | undefined;
-  for (const match of html.matchAll(headingPattern)) {
-    const depth = Number(match[1]);
-    const label = generatedHtmlLabel(match[5]);
-    if (label) {
-      if (depth === 1) {
-        activeTopLevelId = match[3];
-      }
-      sections.push({
-        id: match[3],
-        label,
-        depth,
-        parentId: depth === 1 ? undefined : activeTopLevelId,
-      });
-    }
-    if (sections.length >= 600) {
-      break;
-    }
-  }
-  return sections;
-}
-
-function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
-  const projectStart = html.indexOf('<div class="project">');
-  if (projectStart < 0) {
-    return { titleHtml: "", bodyHtml: html };
-  }
-  const projectEnd = html.indexOf("</div>", projectStart);
-  if (projectEnd < 0) {
-    return { titleHtml: "", bodyHtml: html };
-  }
-  const splitIndex = projectEnd + "</div>".length;
-  return {
-    titleHtml: html.slice(0, splitIndex),
-    bodyHtml: html.slice(splitIndex),
-  };
-}
 ---
 
 <WebLayout
@@ -198,44 +147,48 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
           )
         }
         {
+          /* The "In this section" rail is xl-only, so below that the finest
+             jump available was a whole chapter. */
+          currentSectionLinks.length > 0 && (
+            <details class="mb-6 rounded-lg border px-4 py-3 xl:hidden">
+              <summary class="cursor-pointer text-sm font-medium">
+                On this page
+              </summary>
+              <nav aria-label="On this page">
+                <ul class="mt-3 grid gap-0.5 text-sm">
+                  {currentSectionLinks
+                    .filter((section) => section.parentId === initialRootId)
+                    .map((section) => (
+                      <li>
+                        <a
+                          href={`#${section.id}`}
+                          class:list={[
+                            "block rounded-md px-2 py-1 text-muted-foreground no-underline hover:bg-accent hover:text-foreground",
+                            section.indent === 3 && "pl-5",
+                            section.indent >= 4 && "pl-8",
+                          ]}
+                        >
+                          {section.label}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </nav>
+            </details>
+          )
+        }
+        {
           generatedDocHtml ? (
             <>
-              {shouldRenderRelatedGuides ? (
-                <div data-generated-docs>
-                  {generatedDocHtmlParts?.titleHtml && (
-                    <div
-                      class="generated-docs-content"
-                      set:html={generatedDocHtmlParts.titleHtml}
-                    />
-                  )}
-                  <DocsRelatedGuides
-                    manifestUrl={guidesManifestUrl}
-                    topicAliases={relatedGuideTopicAliases}
-                  />
-                  {generatedDocHtmlParts?.bodyHtml && (
-                    <div
-                      class="generated-docs-content"
-                      set:html={generatedDocHtmlParts.bodyHtml}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div
-                  class="generated-docs-content"
-                  data-generated-docs
-                  set:html={generatedDocHtml}
-                />
-              )}
+              <div
+                class="generated-docs-content"
+                data-generated-docs
+                set:html={generatedDocHtml}
+              />
               <GeneratedDocsStaticEnhancer />
             </>
           ) : (
             <>
-              {shouldRenderRelatedGuides && (
-                <DocsRelatedGuides
-                  manifestUrl={guidesManifestUrl}
-                  topicAliases={relatedGuideTopicAliases}
-                />
-              )}
               <div class="grid gap-8 text-base leading-7">
                 {project.sections.map((section) => (
                   <section id={section.id} class="scroll-mt-24">
@@ -277,40 +230,62 @@ function splitGeneratedDocHtmlAfterProjectTitle(html: string) {
         }
       </div>
       {
-        currentSectionLinks.length > 0 && (
-          <aside
-            class="hidden xl:block"
-            aria-label="In this section"
-            data-docs-current-section-index
-            hidden={initialCurrentSectionIndexHidden}
-          >
-            <div
-              class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]"
-              data-docs-scroll-container
-            >
-              <h2 class="font-medium">In this section</h2>
-              <Separator className="opacity-70" />
-              {currentSectionLinks.map((section) => (
-                <a
-                  href={`#${section.id}`}
-                  data-docs-current-section-link
-                  data-docs-scroll-link
-                  data-docs-section-root-id={section.parentId}
-                  hidden={section.parentId !== initialRootId}
-                  class:list={[
-                    "relative rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground",
-                    section.depth === 2 && "pl-2 text-[0.8rem]",
-                    section.depth === 3 && "pl-4 text-[0.78rem]",
-                    section.depth >= 4 && "pl-6 text-[0.76rem]",
-                  ]}
-                >
-                  {section.label}
-                </a>
-              ))}
-            </div>
-          </aside>
-        )
+        /* One grid child, so both rails stay in the side column: a second
+          top-level child would auto-place into the content column's next row
+          and overlap the prose. */
       }
+      <div class="min-w-0">
+        {
+          /* The related-guides accordion lives here rather than in the prose:
+             it used to sit between the chapter title and its first paragraph,
+             and putting it after the content buried it — these pages run to
+             hundreds of thousands of pixels, so it would never be seen, or even
+             lazily loaded. Below xl this column stacks after the article. */
+          shouldRenderRelatedGuides && (
+            <aside class="mt-8 xl:mt-0 xl:pr-6" aria-label="Latest guides">
+              <DocsRelatedGuides
+                manifestUrl={guidesManifestUrl}
+                topicAliases={relatedGuideTopicAliases}
+              />
+            </aside>
+          )
+        }
+        {
+          currentSectionLinks.length > 0 && (
+            <aside
+              class="hidden xl:block"
+              aria-label="In this section"
+              data-docs-current-section-index
+              hidden={initialCurrentSectionIndexHidden}
+            >
+              <div
+                class="sticky top-[calc(var(--topbar-height)+24px)] grid max-h-[calc(100vh-var(--topbar-height)-48px)] gap-1.5 overflow-y-auto pb-7 pl-2.5 pr-6 text-[0.82rem] [scrollbar-width:thin]"
+                data-docs-scroll-container
+              >
+                <h2 class="font-medium">In this section</h2>
+                <Separator className="opacity-70" />
+                {currentSectionLinks.map((section) => (
+                  <a
+                    href={`#${section.id}`}
+                    data-docs-current-section-link
+                    data-docs-scroll-link
+                    data-docs-section-root-id={section.parentId}
+                    hidden={section.parentId !== initialRootId}
+                    class:list={[
+                      "relative rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground",
+                      section.indent <= 2 && "pl-2 text-[0.8rem]",
+                      section.indent === 3 && "pl-4 text-[0.78rem]",
+                      section.indent >= 4 && "pl-6 text-[0.76rem]",
+                    ]}
+                  >
+                    {section.label}
+                  </a>
+                ))}
+              </div>
+            </aside>
+          )
+        }
+      </div>
     </article>
   </DocsShell>
 </WebLayout>

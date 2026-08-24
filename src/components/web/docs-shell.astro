@@ -68,14 +68,18 @@ const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
       <div
         class="sticky top-14 z-30 flex h-11 items-center border-b bg-background/95 px-4 backdrop-blur md:hidden"
       >
+        {
+          /* Labelled: this sits directly under the site's own hamburger, and two
+            bare icons gave no clue which one opened the chapter list. */
+        }
         <button
           type="button"
-          class="inline-flex size-8 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          class="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           data-docs-mobile-nav-trigger
           aria-label="Open docs navigation"
         >
           <span aria-hidden="true">☰</span>
-          <span class="sr-only">Open docs navigation</span>
+          Chapters
         </button>
         <dialog
           class="m-0 h-full w-[calc(100vw-1rem)] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground shadow-xl backdrop:bg-black/50"
