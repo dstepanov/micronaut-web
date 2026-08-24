@@ -257,31 +257,32 @@ Standalone docs and guides builds do not publish their own header shell. In prod
 | --- | --- | --- |
 | [`Validate Build`](.github/workflows/validate-build.yml) | Pull requests | Checks script formatting and builds the docs, guides, and main-site surfaces. Generated external content is disabled for this validation build. |
 | [`Deploy Web`](.github/workflows/deploy-web.yml) | Pushes to `main` or manual dispatch | Builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides. |
-| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds a requested Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` by default. Platform release events publish the exact supplied revision, retain only the newest patch for that major/minor line, and `/latest` always remains the highest retained Platform version. |
-| [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Builds Micronaut Guides and publishes it to `micronaut-projects/micronaut-guides-v2:gh-pages` by default. A `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
+| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds one Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages`. Manual runs take only `docs_version`; a platform release also supplies the exact source revision. Final releases retain only the newest patch for their major/minor line, and `/latest` follows the newest published version. |
+| [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Builds Micronaut Guides and publishes it to `micronaut-projects/micronaut-guides-v2:gh-pages`. Manual runs choose the source with `guides_repository` and `guides_ref`; a `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
+| [`Publish Upstream Updates`](.github/workflows/publish-upstream-updates.yml) | Hourly schedule or manual dispatch | Polls Micronaut Platform and Micronaut Guides, then starts `Deploy Docs` for platform releases that are not published yet and `Deploy Guides` when guides `master` has moved. |
 
-The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact. The docs and guides Pages targets branch-deploy to their configured `target_repository` and `target_branch`, defaulting to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`.
+The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact. The docs and guides Pages targets branch-deploy to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`. Those destinations are workflow-level constants rather than inputs, so a publish cannot be pointed at another branch by accident.
 
-The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides use `github.token` when the workflow runs in the target repository; if a workflow in `micronaut-web` pushes to a different repository, set `GH_TOKEN` with `contents:write` access to that target repository.
+The web workflow uses the repository's GitHub Pages Actions permissions (`pages:write` and `id-token:write`) and does not need a branch-publish token. Docs and guides push to a different repository, so both require `GH_TOKEN` with `contents:write` access to their publication target.
 
 External source repositories checked out by the manual docs and guides workflows are placed under `external/` in the GitHub workspace. `actions/checkout` paths must stay inside the workspace; do not use `${{ runner.temp }}` for those checkouts.
 
-The docs workflow resolves `platform_ref` explicitly as a branch first, then as an exact tag, then as a `v`-prefixed tag such as `v4.10.14`, and finally as a raw Git ref or SHA. When `platform_ref` is empty, it starts from `docs_version`, so publishing `docs_version=4.10.14` resolves the Platform tag `v4.10.14`.
+The docs workflow resolves the Platform ref explicitly as a branch first, then as an exact tag, then as a `v`-prefixed tag such as `v4.10.14`, and finally as a raw Git ref or SHA. The ref comes from `client_payload.sha` on a platform release and otherwise from `docs_version`, so publishing `docs_version=4.10.14` resolves the Platform tag `v4.10.14`.
 
 ### Routing Inputs
 
 The build reads these deployment inputs:
 
-- `ASTRO_BASE`: deployment path used for pages and assets, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`. Docs and guides workflows derive it from `target_repository`; an existing or configured custom domain uses `/`.
+- `ASTRO_BASE`: deployment path used for pages and assets, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`. Docs and guides workflows derive it from their publication repository; an existing or configured custom domain uses `/`.
 - `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
 - `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
 - `MICRONAUT_GUIDES_ROOT`: public guides root in the current artifact. Source guide pages are authored under `/guides`; standalone guides builds publish that rendered tree at `/latest`.
 - `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
 - `MICRONAUT_PREPARE_GENERATED_CONTENT`: set to `false`, `0`, or `none` to skip generated docs/guides rendering before Astro starts. `build:main` sets this to `false` by default; docs and guides builds leave it enabled but prepare only the generated content for their own surface.
-- `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the workflow repository owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io`. The current docs or guides surface URL is derived separately from `target_repository`.
+- `DEFAULT_GITHUB_PAGES_ORIGIN`: computed by GitHub Actions from the workflow repository owner, for example `https://${GITHUB_REPOSITORY_OWNER}.github.io`. The current docs or guides surface URL is derived separately from the publication repository.
 - `MICRONAUT_GITHUB_PAGES_ORIGIN`: effective GitHub Pages host override. When unset, it falls back to `DEFAULT_GITHUB_PAGES_ORIGIN`.
-- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. In docs and guides workflows, the active surface is derived from `target_repository` or its custom domain; remaining defaults use `MICRONAUT_GITHUB_PAGES_ORIGIN` plus the repository name.
+- `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. In docs and guides workflows, the active surface is derived from the publication repository or its custom domain; remaining defaults use `MICRONAUT_GITHUB_PAGES_ORIGIN` plus the repository name.
 - `MICRONAUT_DOCS_BASE`, `MICRONAUT_GUIDES_BASE`: optional repository variables that override the derived docs or guides deployment base.
 - `MICRONAUT_DOCS_CUSTOM_DOMAIN`, `MICRONAUT_GUIDES_CUSTOM_DOMAIN`: optional repository variables used when creating a custom-domain deployment. For branch deployments, an existing root `CNAME` is detected automatically and preserved.
 
@@ -289,14 +290,14 @@ All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-co
 
 ### Docs Versions and Latest
 
-Docs are versioned. The docs publish workflow accepts `docs_version`, for example `4.10.14`, and `publish_latest`. It also accepts a `platform-released` repository-dispatch event from Micronaut Platform with a `client_payload.version` in `major.minor.patch` format and an optional `client_payload.sha` for the exact source revision.
+Docs are versioned. The docs publish workflow takes a single input, `docs_version`, for example `4.10.14`. It also accepts a `platform-released` repository-dispatch event from Micronaut Platform with a `client_payload.version` in the same format and an optional `client_payload.sha` for the exact source revision. A version may carry a prerelease suffix, such as `5.2.0-M1`.
 
 The docs workflow:
 
 1. Checks out this repository.
-2. Checks out the target docs Pages repository on `target_branch`, normally `gh-pages`.
+2. Checks out `micronaut-projects/micronaut-docs-v2` on `gh-pages`.
 3. Checks out the requested Micronaut Platform ref for docs sources and metadata.
-4. For a `platform-released` patch, removes all published directories and compatibility redirects for earlier patches in the same major/minor line. For example, publishing `5.0.1` removes `5.0.0` but retains `5.1.0` and other major/minor lines. Every publication updates `/latest` only when the requested `publish_latest` value is `true` and the version is newer than every retained Platform version, so a later v4 publication cannot replace a v5 `/latest`.
+4. For a final release, removes all published directories and compatibility redirects for earlier patches in the same major/minor line. For example, publishing `5.0.1` removes `5.0.0` but retains `5.1.0` and other major/minor lines. A prerelease purges nothing. Every publication updates `/latest` only when the version is newer than every retained Platform version, so a later v4 publication cannot replace a v5 `/latest`, and a republish of an older version leaves `/latest` alone.
 5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the retained version folders plus the version currently being published.
 6. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
 7. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
@@ -306,13 +307,15 @@ The docs merge stores deployment metadata with the published artifact. If the ba
 
 The docs workflow does not check out or render Micronaut Guides.
 
-`.github/workflows/republish-published-docs.yml` runs weekly and can also be started manually. It reads the version folders already published to the docs Pages branch, filters them to `major.minor.patch` releases, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. The republish jobs leave `/latest` unchanged.
+`.github/workflows/publish-upstream-updates.yml` covers the fact that GitHub Actions cannot subscribe to events in another repository. It runs hourly and can also be started manually. For docs it lists the newest stable patch of every Micronaut Platform major/minor line, then publishes a release only when it supersedes the newest published patch of its own line or opens a line newer than everything published, so major/minor lines that were never published stay unpublished. Each version is dispatched to `Deploy Docs` oldest first, waiting for the previous publish because a queued run in the `docs-pages` concurrency group is cancelled when a newer one joins it. For guides it compares `.guides-revision` on the guides Pages branch, written by `Deploy Guides` with the revision it built, against `master` in `micronaut-projects/micronaut-guides`, and dispatches `Deploy Guides` for the exact upstream commit when they differ. Once Micronaut Platform and Micronaut Guides send `platform-released` and `guides-updated` repository-dispatch events, this workflow becomes a safety net rather than the primary trigger.
+
+`.github/workflows/republish-published-docs.yml` is a manual-only workflow for occasional full refreshes, such as a base-path or shared-asset migration. It is deliberately not scheduled, because a full republish rebuilds every retained version. It reads the version folders already published to the docs Pages branch, filters them to `major.minor.patch` releases, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. Only the final, newest version refreshes `/latest`, because `Deploy Docs` moves `/latest` solely for the newest published version.
 
 The published docs branch layout is:
 
 - `/index.html`: docs selector/index.
 - `/versions.json`: compact selector data for published versions. `scripts/update-docs-version-manifest.ts` regenerates `src/data/docs-versions.json` from the published docs branch during a docs deploy; the tracked copy is only the static fallback the selector renders before that fetch resolves, so it deliberately carries no patch version and must not be updated per release.
-- `/latest/`: latest docs tree when `publish_latest=true`.
+- `/latest/`: copy of the newest published version's tree.
 - `/latest.html`: redirect to `/latest/`.
 - `/latest/guide/index.html`: compatibility redirect to `/latest/core/`.
 - `/<version>/`: immutable docs tree for a published version.
@@ -325,7 +328,7 @@ Older docs are not copied into new builds. They remain in `gh-pages` from previo
 
 ### Guides Latest
 
-Guides are currently published as a latest-only surface. The guides workflow accepts the guides repository/ref to build from, checks out the target guides Pages repository on `target_branch`, builds `npm run build:guides`, replaces the published branch contents with the pruned `dist`, and pushes `gh-pages`. It does not check out Micronaut Platform or render generated docs.
+Guides are currently published as a latest-only surface. The guides workflow accepts the guides repository/ref to build from, checks out `micronaut-projects/micronaut-guides-v2` on `gh-pages`, builds `npm run build:guides`, replaces the published branch contents with the pruned `dist` plus a `.guides-revision` marker recording the built commit, and pushes `gh-pages`. It does not check out Micronaut Platform or render generated docs.
 
 The published guides branch layout is:
 
