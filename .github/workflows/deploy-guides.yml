@@ -6,14 +6,6 @@ on:
       - guides-updated
   workflow_dispatch:
     inputs:
-      target_repository:
-        description: Repository that owns the guides GitHub Pages branch
-        required: false
-        default: micronaut-projects/micronaut-guides-v2
-      target_branch:
-        description: GitHub Pages source branch in the guides repository
-        required: false
-        default: gh-pages
       guides_repository:
         description: Guides repository to build from
         required: false
@@ -30,6 +22,10 @@ concurrency:
   group: guides-pages
   cancel-in-progress: false
 
+env:
+  TARGET_REPOSITORY: micronaut-projects/micronaut-guides-v2
+  TARGET_BRANCH: gh-pages
+
 run-name: Publish guides from ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}
 
 jobs:
@@ -43,20 +39,19 @@ jobs:
       - name: Validate GitHub token
         env:
           HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
         run: |
-          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_GH_TOKEN" != "true" ]; then
-            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
+          if [ "$HAS_GH_TOKEN" != "true" ]; then
+            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY."
             exit 1
           fi
 
       - name: Check out guides Pages repository
         uses: actions/checkout@v7
         with:
-          repository: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
-          ref: ${{ inputs.target_branch || 'gh-pages' }}
+          repository: ${{ env.TARGET_REPOSITORY }}
+          ref: ${{ env.TARGET_BRANCH }}
           path: published-guides
-          token: ${{ secrets.GH_TOKEN || github.token }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Check out guides project
         uses: actions/checkout@v7
@@ -64,6 +59,11 @@ jobs:
           repository: ${{ inputs.guides_repository || 'micronaut-projects/micronaut-guides' }}
           ref: ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}
           path: external/micronaut-guides
+
+      - name: Resolve guides revision
+        id: guides
+        working-directory: external/micronaut-guides
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node
         uses: actions/setup-node@v7
@@ -83,7 +83,6 @@ jobs:
           CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
           CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_GUIDES_CUSTOM_DOMAIN }}
           CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_GUIDES_BASE }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-guides-v2' }}
           PUBLISHED_DIRECTORY: published-guides
         run: node scripts/configure-pages-deployment.ts --surface guides --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
 
@@ -98,9 +97,14 @@ jobs:
         run: npm run build:guides
 
       - name: Replace guides Pages artifact
+        env:
+          GUIDES_SHA: ${{ steps.guides.outputs.sha }}
         run: |
           find published-guides -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -R dist/. published-guides/
+          # Records the built revision so the upstream poller sees that master
+          # moved even when the rendered output is byte-identical.
+          echo "$GUIDES_SHA" > published-guides/.guides-revision
 
       - name: Commit and push guides Pages branch
         working-directory: published-guides
@@ -109,8 +113,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "Publish Micronaut guides from ${{ github.event.client_payload.sha || inputs.guides_ref || 'master' }}"
-            git push origin HEAD:${{ inputs.target_branch || 'gh-pages' }}
+            git commit -m "Publish Micronaut guides from ${{ steps.guides.outputs.sha }}"
+            git push origin HEAD:${{ env.TARGET_BRANCH }}
           else
             echo "Guides Pages branch is already up to date."
           fi

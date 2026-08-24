@@ -9,32 +9,6 @@ on:
       docs_version:
         description: Version folder to publish, for example 4.10.14
         required: true
-      publish_latest:
-        description: Also update /latest to this version
-        required: true
-        default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
-      target_repository:
-        description: Repository that owns the docs GitHub Pages branch
-        required: false
-        default: micronaut-projects/micronaut-docs-v2
-      target_branch:
-        description: GitHub Pages source branch in the docs repository
-        required: false
-        default: gh-pages
-      platform_repository:
-        description: Platform repository used for docs metadata and sources
-        required: false
-        default: micronaut-projects/micronaut-platform
-      platform_ref:
-        description: Optional platform branch, tag, or SHA. Defaults to docs_version, with v-prefixed tag fallback.
-        required: false
-      republish_request_id:
-        description: Internal identifier used by the published-docs republish workflow
-        required: false
 
 permissions:
   contents: write
@@ -43,7 +17,12 @@ concurrency:
   group: docs-pages
   cancel-in-progress: false
 
-run-name: Publish docs ${{ github.event.client_payload.version || inputs.docs_version }}${{ inputs.republish_request_id && format(' (republish {0})', inputs.republish_request_id) || '' }}
+env:
+  TARGET_REPOSITORY: micronaut-projects/micronaut-docs-v2
+  TARGET_BRANCH: gh-pages
+  PLATFORM_REPOSITORY: micronaut-projects/micronaut-platform
+
+run-name: Publish docs ${{ github.event.client_payload.version || inputs.docs_version }}
 
 jobs:
   publish:
@@ -56,20 +35,19 @@ jobs:
       - name: Validate GitHub token
         env:
           HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
         run: |
-          if [ "$TARGET_REPOSITORY" != "$GITHUB_REPOSITORY" ] && [ "$HAS_GH_TOKEN" != "true" ]; then
-            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY, or run this workflow from the target repository."
+          if [ "$HAS_GH_TOKEN" != "true" ]; then
+            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY."
             exit 1
           fi
 
       - name: Check out docs Pages repository
         uses: actions/checkout@v7
         with:
-          repository: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
-          ref: ${{ inputs.target_branch || 'gh-pages' }}
+          repository: ${{ env.TARGET_REPOSITORY }}
+          ref: ${{ env.TARGET_BRANCH }}
           path: published-docs
-          token: ${{ secrets.GH_TOKEN || github.token }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Set up Node
         uses: actions/setup-node@v7
@@ -84,33 +62,30 @@ jobs:
         id: release
         env:
           DOCS_VERSION: ${{ github.event.client_payload.version || inputs.docs_version }}
-          PLATFORM_REF: ${{ github.event.client_payload.sha || inputs.platform_ref }}
-          REQUESTED_PUBLISH_LATEST: ${{ inputs.publish_latest || 'true' }}
-          IS_PLATFORM_RELEASE: ${{ github.event_name == 'repository_dispatch' }}
+          PLATFORM_REF: ${{ github.event.client_payload.sha }}
         run: |
           set -euo pipefail
-          if [ -z "$DOCS_VERSION" ]; then
-            echo "::error::Provide docs_version or a platform-released payload version."
+          if ! [[ "$DOCS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::Docs version must use major.minor.patch with an optional prerelease suffix; received '$DOCS_VERSION'."
             exit 1
           fi
-          if [ "$IS_PLATFORM_RELEASE" = "true" ] && ! [[ "$DOCS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Platform release version must use major.minor.patch format; received '$DOCS_VERSION'."
-            exit 1
+          # A final release supersedes every earlier patch of its own line. A
+          # prerelease is published alongside them and purges nothing.
+          purge_patches=false
+          if [[ "$DOCS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            purge_patches=true
           fi
-          is_newest="$(node --input-type=module --eval 'import { isNewestPublishedDocsVersion } from "./scripts/update-docs-version-manifest.ts"; process.stdout.write(String(await isNewestPublishedDocsVersion({ publishedDirectory: "published-docs", version: process.env.DOCS_VERSION })));')"
-          publish_latest=false
-          if [ "$REQUESTED_PUBLISH_LATEST" = "true" ] && [ "$is_newest" = "true" ]; then
-            publish_latest=true
-          fi
+          # /latest tracks the newest retained version, so it moves only when the
+          # version being published is newer than everything already published.
+          publish_latest="$(node --input-type=module --eval 'import { isNewestPublishedDocsVersion } from "./scripts/update-docs-version-manifest.ts"; process.stdout.write(String(await isNewestPublishedDocsVersion({ publishedDirectory: "published-docs", version: process.env.DOCS_VERSION })));')"
           echo "docs_version=$DOCS_VERSION" >> "$GITHUB_OUTPUT"
           echo "platform_ref=${PLATFORM_REF:-$DOCS_VERSION}" >> "$GITHUB_OUTPUT"
           echo "publish_latest=$publish_latest" >> "$GITHUB_OUTPUT"
-          echo "purge_patches=$IS_PLATFORM_RELEASE" >> "$GITHUB_OUTPUT"
+          echo "purge_patches=$purge_patches" >> "$GITHUB_OUTPUT"
 
       - name: Check out platform project
         env:
           DOCS_VERSION: ${{ steps.release.outputs.docs_version }}
-          PLATFORM_REPOSITORY: ${{ inputs.platform_repository || 'micronaut-projects/micronaut-platform' }}
           PLATFORM_REF: ${{ steps.release.outputs.platform_ref }}
         run: |
           set -euo pipefail
@@ -156,7 +131,6 @@ jobs:
           CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
           CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_DOCS_CUSTOM_DOMAIN }}
           CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_DOCS_BASE }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
           PUBLISHED_DIRECTORY: published-docs
         run: node scripts/configure-pages-deployment.ts --surface docs --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
 
@@ -189,7 +163,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git add .
             git commit -m "Publish Micronaut docs ${{ steps.release.outputs.docs_version }}"
-            git push origin HEAD:${{ inputs.target_branch || 'gh-pages' }}
+            git push origin HEAD:${{ env.TARGET_BRANCH }}
           else
             echo "Docs Pages branch is already up to date."
           fi
@@ -201,8 +175,7 @@ jobs:
       - name: Wait for docs Pages build
         working-directory: published-docs
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
-          TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           sha="$(git rev-parse HEAD)"
           for attempt in $(seq 1 60); do

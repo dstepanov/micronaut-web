@@ -1,18 +1,7 @@
 name: Republish Published Docs
 
 on:
-  schedule:
-    - cron: "0 3 * * 0"
   workflow_dispatch:
-    inputs:
-      target_repository:
-        description: Repository that owns the docs GitHub Pages branch
-        required: false
-        default: micronaut-projects/micronaut-docs-v2
-      target_branch:
-        description: GitHub Pages source branch in the docs repository
-        required: false
-        default: gh-pages
 
 permissions:
   actions: write
@@ -28,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      TARGET_REPOSITORY: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
-      TARGET_BRANCH: ${{ inputs.target_branch || 'gh-pages' }}
+      TARGET_REPOSITORY: micronaut-projects/micronaut-docs-v2
+      TARGET_BRANCH: gh-pages
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
     steps:
       - name: Check out published docs
         uses: actions/checkout@v7
         with:
-          repository: ${{ inputs.target_repository || 'micronaut-projects/micronaut-docs-v2' }}
-          ref: ${{ inputs.target_branch || 'gh-pages' }}
+          repository: micronaut-projects/micronaut-docs-v2
+          ref: gh-pages
           path: published-docs
           token: ${{ secrets.GH_TOKEN || github.token }}
 
@@ -56,40 +45,28 @@ jobs:
             exit 0
           fi
 
-          latest_version="${versions[$((${#versions[@]} - 1))]}"
           printf 'Published versions, oldest first:\n%s\n' "${versions[*]}"
           printf '%s\n' "${versions[@]}" > "$RUNNER_TEMP/published-docs-versions"
-          echo "latest_version=$latest_version" >> "$GITHUB_OUTPUT"
           echo "has_versions=true" >> "$GITHUB_OUTPUT"
 
       - name: Trigger and wait for each republish
         if: steps.versions.outputs.has_versions == 'true'
         env:
           VERSION_FILE: ${{ runner.temp }}/published-docs-versions
-          REQUEST_PREFIX: republish-${{ github.run_id }}
-          LATEST_VERSION: ${{ steps.versions.outputs.latest_version }}
         run: |
           set -euo pipefail
           while IFS= read -r version; do
-            request_id="${REQUEST_PREFIX}-${version}"
-            title="Publish docs ${version} (republish ${request_id})"
-            publish_latest=false
-            if [ "$version" = "$LATEST_VERSION" ]; then
-              publish_latest=true
-            fi
+            title="Publish docs ${version}"
+            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "Dispatching ${version}."
             gh workflow run deploy-docs.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref "$GITHUB_REF_NAME" \
-              --field "docs_version=$version" \
-              --field "publish_latest=$publish_latest" \
-              --field "target_repository=$TARGET_REPOSITORY" \
-              --field "target_branch=$TARGET_BRANCH" \
-              --field "republish_request_id=$request_id"
+              --field "docs_version=$version"
 
             run_id=""
             for attempt in {1..24}; do
-              run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-docs.yml --event workflow_dispatch --limit 50 --json databaseId,displayTitle | jq -r --arg title "$title" '.[] | select(.displayTitle == $title) | .databaseId' | head -n 1)"
+              run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-docs.yml --event workflow_dispatch --limit 50 --json databaseId,displayTitle,createdAt | jq -r --arg title "$title" --arg since "$started" '[.[] | select(.displayTitle == $title and .createdAt >= $since)] | sort_by(.createdAt) | last | .databaseId // empty')"
               if [ -n "$run_id" ]; then
                 break
               fi

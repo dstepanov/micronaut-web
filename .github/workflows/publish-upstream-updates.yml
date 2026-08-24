@@ -1,0 +1,176 @@
+name: Publish Upstream Updates
+
+# GitHub Actions cannot subscribe to events in another repository, so this
+# workflow polls Micronaut Platform and Micronaut Guides and starts the matching
+# publish workflow when an upstream revision has not been published yet.
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: publish-upstream-updates
+  cancel-in-progress: false
+
+env:
+  TARGET_BRANCH: gh-pages
+  GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+
+jobs:
+  docs:
+    name: Publish unpublished platform releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      TARGET_REPOSITORY: micronaut-projects/micronaut-docs-v2
+      PLATFORM_REPOSITORY: micronaut-projects/micronaut-platform
+    steps:
+      - name: Check out published docs
+        uses: actions/checkout@v7
+        with:
+          repository: micronaut-projects/micronaut-docs-v2
+          ref: gh-pages
+          path: published-docs
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Find unpublished platform releases
+        id: pending
+        run: |
+          set -euo pipefail
+          mapfile -t published < <(
+            find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V
+          )
+          if [ "${#published[@]}" -eq 0 ]; then
+            echo "::error::No published docs versions were found in ${TARGET_REPOSITORY}:${TARGET_BRANCH}; publish a baseline version first."
+            exit 1
+          fi
+          newest_published="${published[-1]}"
+
+          # Newest stable patch of every major/minor line the platform has released.
+          mapfile -t candidates < <(
+            gh release list --repo "$PLATFORM_REPOSITORY" --limit 100 \
+              --exclude-drafts --exclude-pre-releases --json tagName --jq '.[].tagName' \
+              | sed 's/^v//' \
+              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V \
+              | awk -F. '{ leader[$1"."$2] = $0 } END { for (line in leader) print leader[line] }' \
+              | sort -V
+          )
+
+          # Publish a release only when it supersedes the newest published patch of
+          # its own line, or when it opens a line newer than everything published.
+          # Older lines that were never published stay unpublished.
+          newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]; }
+          pending=()
+          for version in "${candidates[@]}"; do
+            line_newest=""
+            for entry in "${published[@]}"; do
+              if [ "${entry%.*}" = "${version%.*}" ]; then
+                line_newest="$entry"
+              fi
+            done
+            if [ -n "$line_newest" ]; then
+              newer "$version" "$line_newest" && pending+=("$version")
+            else
+              newer "$version" "$newest_published" && pending+=("$version")
+            fi
+          done
+
+          if [ "${#pending[@]}" -eq 0 ]; then
+            echo "Published docs are up to date with ${PLATFORM_REPOSITORY}."
+            echo "has_pending=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printf 'Unpublished platform releases, oldest first:\n%s\n' "${pending[*]}"
+          printf '%s\n' "${pending[@]}" > "$RUNNER_TEMP/pending-docs-versions"
+          echo "has_pending=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger and wait for each docs publish
+        if: steps.pending.outputs.has_pending == 'true'
+        env:
+          VERSION_FILE: ${{ runner.temp }}/pending-docs-versions
+        run: |
+          set -euo pipefail
+          while IFS= read -r version; do
+            title="Publish docs ${version}"
+            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Dispatching ${version}."
+            gh workflow run deploy-docs.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref "$GITHUB_REF_NAME" \
+              --field "docs_version=$version"
+
+            run_id=""
+            for attempt in {1..24}; do
+              run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-docs.yml --event workflow_dispatch --limit 50 --json databaseId,displayTitle,createdAt | jq -r --arg title "$title" --arg since "$started" '[.[] | select(.displayTitle == $title and .createdAt >= $since)] | sort_by(.createdAt) | last | .databaseId // empty')"
+              if [ -n "$run_id" ]; then
+                break
+              fi
+              sleep 5
+            done
+
+            if [ -z "$run_id" ]; then
+              echo "::error::Could not find the workflow run for ${version}."
+              exit 1
+            fi
+
+            # Deploy Docs serializes on the docs-pages concurrency group, and a
+            # queued run is cancelled when a newer one joins the group, so wait
+            # for each publish before dispatching the next version.
+            echo "Waiting for docs publish run ${run_id} (${version})."
+            gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          done < "$VERSION_FILE"
+
+  guides:
+    name: Publish guides when master moved
+    runs-on: ubuntu-latest
+    env:
+      GUIDES_REPOSITORY: micronaut-projects/micronaut-guides
+    steps:
+      - name: Check out published guides
+        uses: actions/checkout@v7
+        with:
+          repository: micronaut-projects/micronaut-guides-v2
+          ref: gh-pages
+          path: published-guides
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Compare published guides revision with upstream master
+        id: revision
+        run: |
+          set -euo pipefail
+          # Deploy Guides records the built revision in .guides-revision, so an
+          # upstream commit that renders identically still updates the marker.
+          published_sha="$(tr -d '[:space:]' < published-guides/.guides-revision 2>/dev/null || true)"
+          upstream_sha="$(gh api "repos/${GUIDES_REPOSITORY}/commits/master" --jq '.sha')"
+          echo "Published guides revision: ${published_sha:-unknown}"
+          echo "Upstream guides revision:  $upstream_sha"
+          if [ "$published_sha" = "$upstream_sha" ]; then
+            echo "Published guides are up to date with ${GUIDES_REPOSITORY}."
+            echo "needs_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_publish=true" >> "$GITHUB_OUTPUT"
+            echo "guides_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger the guides publish
+        if: steps.revision.outputs.needs_publish == 'true'
+        env:
+          GUIDES_SHA: ${{ steps.revision.outputs.guides_sha }}
+        run: |
+          set -euo pipefail
+          # Deploy Guides reports its own outcome, and .guides-revision stays
+          # behind until a build succeeds, so a failed publish is retried by the
+          # next poll rather than waited on here.
+          gh workflow run deploy-guides.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$GITHUB_REF_NAME" \
+            --field "guides_ref=$GUIDES_SHA" \
+            --field "guides_repository=$GUIDES_REPOSITORY"

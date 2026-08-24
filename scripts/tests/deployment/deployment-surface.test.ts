@@ -599,18 +599,12 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   const [docsWorkflow, guidesWorkflow] = branchWorkflows;
   assert.doesNotMatch(webWorkflow, pagesArtifactTokenPattern);
   for (const workflow of branchWorkflows) {
-    assert.match(workflow, /target_repository:/);
+    assert.match(workflow, /TARGET_REPOSITORY:\s*micronaut-projects\//);
+    assert.match(workflow, /repository:\s*\$\{\{ env\.TARGET_REPOSITORY \}\}/);
+    assert.match(workflow, /token:\s*\$\{\{ secrets\.GH_TOKEN \}\}/);
     assert.match(
       workflow,
-      /repository:\s*\$\{\{ inputs\.target_repository(?: \|\| '[^']+')? \}\}/,
-    );
-    assert.match(
-      workflow,
-      /token:\s*\$\{\{ secrets\.GH_TOKEN \|\| github\.token \}\}/,
-    );
-    assert.match(
-      workflow,
-      /git push origin HEAD:\$\{\{ inputs\.target_branch(?: \|\| '[^']+')? \}\}/,
+      /git push origin HEAD:\$\{\{ env\.TARGET_BRANCH \}\}/,
     );
     assert.doesNotMatch(workflow, pagesArtifactTokenPattern);
     assert.doesNotMatch(workflow, /upload-pages-artifact/);
@@ -618,13 +612,13 @@ test("docs and guides workflows branch-deploy to configured target repositories"
   }
   assert.match(
     docsWorkflow,
-    /default:\s*micronaut-projects\/micronaut-docs-v2/,
+    /TARGET_REPOSITORY:\s*micronaut-projects\/micronaut-docs-v2/,
   );
   assert.match(docsWorkflow, /path:\s*published-docs/);
   assert.match(docsWorkflow, /working-directory:\s*published-docs/);
   assert.match(
     guidesWorkflow,
-    /default:\s*micronaut-projects\/micronaut-guides-v2/,
+    /TARGET_REPOSITORY:\s*micronaut-projects\/micronaut-guides-v2/,
   );
   assert.match(guidesWorkflow, /path:\s*published-guides/);
   assert.match(guidesWorkflow, /working-directory:\s*published-guides/);
@@ -658,12 +652,12 @@ test("published docs republish workflow refreshes latest after older versions", 
     ),
   );
 
-  assert.match(republishWorkflow, /schedule:/);
+  assert.doesNotMatch(republishWorkflow, /schedule:/);
   assert.match(republishWorkflow, /workflow_dispatch:/);
   assert.match(republishWorkflow, /actions:\s*write/);
   assert.match(
     republishWorkflow,
-    /repository:\s*\$\{\{ inputs\.target_repository/,
+    /repository:\s*micronaut-projects\/micronaut-docs-v2/,
   );
   assert.match(republishWorkflow, /path:\s*published-docs/);
   assert.match(
@@ -672,11 +666,11 @@ test("published docs republish workflow refreshes latest after older versions", 
   );
   assert.match(republishWorkflow, /sort -V/);
   assert.match(republishWorkflow, /gh workflow run deploy-docs\.yml/);
-  assert.match(republishWorkflow, /latest_version=/);
-  assert.match(republishWorkflow, /if \[ "\$version" = "\$LATEST_VERSION" \]/);
-  assert.match(republishWorkflow, /--field "publish_latest=\$publish_latest"/);
+  assert.match(republishWorkflow, /--field "docs_version=\$version"/);
   assert.match(republishWorkflow, /gh run watch .*--exit-status/);
-  assert.match(docsWorkflow, /republish_request_id:/);
+  // /latest follows the newest published version, so republishing an older one
+  // must not be able to ask for it.
+  assert.doesNotMatch(docsWorkflow, /publish_latest:/);
 });
 
 test("local surface build defaults match the transferred repositories", async () => {
@@ -795,7 +789,7 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
   );
   assert.match(
     workflow,
-    /PLATFORM_REF:\s*\$\{\{ github\.event\.client_payload\.sha \|\| inputs\.platform_ref \}\}/,
+    /PLATFORM_REF:\s*\$\{\{ github\.event\.client_payload\.sha \}\}/,
   );
   assert.match(workflow, /purge-docs-patch-versions\.ts/);
   assert.match(workflow, /effective_ref="\$\{PLATFORM_REF:-\$DOCS_VERSION\}"/);
