@@ -80,6 +80,11 @@ if (catalog) {
     });
   }
 
+  openTargetedCategoryGroup(catalog);
+  window.addEventListener("hashchange", () => {
+    openTargetedCategoryGroup(catalog);
+  });
+
   const categoryJump = catalog.querySelector<HTMLDetailsElement>(
     "[data-guide-category-jump]",
   );
@@ -103,6 +108,26 @@ function expandAllCategoryGroups(catalog: HTMLElement) {
     catalog.querySelectorAll<HTMLElement>("[data-guide-show-all]"),
   )) {
     button.hidden = true;
+  }
+  for (const group of Array.from(
+    catalog.querySelectorAll<HTMLDetailsElement>("[data-guide-category-group]"),
+  )) {
+    group.open = true;
+  }
+}
+
+/** A jump link must open the section it targets, not scroll to a closed one. */
+function openTargetedCategoryGroup(catalog: HTMLElement) {
+  const id = window.location.hash.slice(1);
+  if (!id) {
+    return;
+  }
+  const group = catalog.querySelector<HTMLDetailsElement>(
+    `[data-guide-category-group]#${CSS.escape(decodeURIComponent(id))}`,
+  );
+  if (group && !group.open) {
+    group.open = true;
+    group.scrollIntoView();
   }
 }
 
