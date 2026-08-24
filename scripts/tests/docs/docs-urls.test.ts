@@ -102,16 +102,28 @@ describe("rewriteUrls", () => {
   });
 
   test("sends hand-written javadoc paths to the published javadoc host", () => {
-    // Nothing publishes assets/{slug}/docs/api, so these used to 404.
+    // Nothing publishes assets/{slug}/docs/api, so these used to 404. Guide
+    // sources write them relative to the guide directory ("../api/..."), which
+    // only resolves into the javadoc folder after the path is normalized.
     for (const href of [
       "assets/fixture/docs/api/index.html",
       "../assets/fixture/docs/api/io/micronaut/fixture/Client.html#run--",
+      "../api/io/micronaut/inject/ast/package-summary.html",
+      "../api/io/micronaut/fixture/Client.html#run--",
     ]) {
       assert.match(
         rewriteUrls(`<a href="${href}">x</a>`, project),
         /^<a href="https:\/\/micronaut-projects\.github\.io\/micronaut-fixture\/latest\/api\//,
+        href,
       );
     }
+  });
+
+  test("keeps non-javadoc guide-relative assets page-relative", () => {
+    assert.equal(
+      rewriteUrls('<a href="../img/diagram.png">x</a>', project),
+      '<a href="../assets/fixture/docs/img/diagram.png">x</a>',
+    );
   });
 
   test("canonicalizes links to the published Micronaut sites", () => {
