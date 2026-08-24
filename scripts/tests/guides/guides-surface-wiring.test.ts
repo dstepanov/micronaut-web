@@ -239,7 +239,7 @@ test("latest guide replacement routes and parallel generated-content preparation
   assert.match(sectionPageIndexSource, /syncCurrentSectionLinks/);
   assert.match(sectionPageIndexSource, /requestAnimationFrame/);
   assert.match(sectionPageIndexSource, /setActiveIdFromHash/);
-  assert.match(guidesRoute, /guideOptionPath\(option, guidesRoot\)/);
+  assert.match(guidesRoute, /guideOptionPath\(option, GUIDES_ROOT\)/);
   assert.doesNotMatch(guidesRoute, /legacyGuidesBase/);
   assert.match(guidesRoute, /GeneratedDocsStaticEnhancer/);
   assertNoRuntimeGeneratedRendering("guides route", guidesRoute);
@@ -286,6 +286,37 @@ test("latest guide replacement routes and parallel generated-content preparation
   );
   assert.doesNotMatch(generatedDocsStaticEnhancer, /define:vars/);
   assert.doesNotMatch(guideCatalog, /guides-version-selector|Guides version/);
+});
+
+// `npm run build:guides` runs on every pull request with
+// MICRONAUT_PREPARE_GENERATED_CONTENT=false, so this fixture is the catalog
+// the production build is validated against. It once held three guides in
+// three categories, which meant no guide ever had a same-category sibling:
+// the reader's "More in <category>" branch never ran, and a `guidesRoot is
+// not defined` bug inside `getStaticPaths` — invisible in `astro dev`, where
+// frontmatter and `getStaticPaths` share one scope — reached production.
+test("the fallback guide catalog covers a category with siblings", async (): Promise<void> => {
+  const fixture = JSON.parse(
+    await fs.readFile(
+      path.join(
+        projectDirectory,
+        "src",
+        "data",
+        "generated-guides.fixture.json",
+      ),
+      "utf8",
+    ),
+  );
+  const guidesPerCategory = new Map<string, number>();
+  for (const guide of fixture.guides) {
+    const category = guide.categories[0];
+    guidesPerCategory.set(category, (guidesPerCategory.get(category) ?? 0) + 1);
+  }
+  const siblings = [...guidesPerCategory.values()].filter((count) => count > 1);
+  assert.ok(
+    siblings.length > 0,
+    "expected at least one category with more than one guide, so the prerendered build exercises related-guide selection",
+  );
 });
 
 function lines(value: string): string[] {

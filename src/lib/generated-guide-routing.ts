@@ -1,3 +1,10 @@
+/**
+ * Base path of the guides surface. Lives here rather than in the route's
+ * frontmatter because Astro hoists `getStaticPaths` into its own bundle,
+ * where only imported bindings are in scope.
+ */
+export const GUIDES_ROOT = "/guides";
+
 export type GeneratedGuideOption = {
   id: string;
   label: string;

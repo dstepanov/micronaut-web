@@ -12,6 +12,7 @@ import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-
 import LatestGuidesCatalog from "@/components/web/latest-guides-catalog.astro";
 import { ArrowUp } from "lucide-react";
 import {
+  GUIDES_ROOT,
   allGeneratedGuideTags,
   guideCategoryPath,
   guideOptionPath,
@@ -27,8 +28,6 @@ import { withBasePath } from "@/lib/base-path";
 import { clientRedirectDocument } from "@/lib/route-compatibility";
 import { shouldBuildGuidesRoutes } from "@/lib/surface-routes";
 import "@/styles/generated-docs-content.css";
-
-const guidesRoot = "/guides";
 
 type TagProps = {
   kind: "tag";
@@ -90,7 +89,12 @@ export async function getStaticPaths() {
     ).flatMap((other) => {
       const preferred = preferredGuideOption(other);
       return preferred
-        ? [{ title: other.title, path: guideOptionPath(preferred, guidesRoot) }]
+        ? [
+            {
+              title: other.title,
+              path: guideOptionPath(preferred, GUIDES_ROOT),
+            },
+          ]
         : [];
     });
     for (const option of guide.options) {
@@ -116,8 +120,8 @@ const overviewDestination =
         (() => {
           const overviewOption = preferredGuideOption(props.guide);
           return overviewOption
-            ? guideOptionPath(overviewOption, guidesRoot)
-            : `${guidesRoot}/`;
+            ? guideOptionPath(overviewOption, GUIDES_ROOT)
+            : `${GUIDES_ROOT}/`;
         })(),
       )
     : undefined;
@@ -219,7 +223,7 @@ function buildGuidePageIndexSections(
       <LatestGuidesCatalog
         guides={props.guides}
         activeTag={props.tag}
-        root={guidesRoot}
+        root={GUIDES_ROOT}
       />
     </WebLayout>
   )
@@ -265,7 +269,7 @@ function buildGuidePageIndexSections(
             </h3>
             {props.guide.options.map((option) => (
               <a
-                href={withBasePath(guideOptionPath(option, guidesRoot))}
+                href={withBasePath(guideOptionPath(option, GUIDES_ROOT))}
                 data-guide-variant-language={option.language}
                 data-guide-variant-build-tool={option.buildTool}
                 aria-label={option.label}
@@ -290,7 +294,7 @@ function buildGuidePageIndexSections(
               class="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground"
             >
               <a
-                href={withBasePath(`${guidesRoot}/`)}
+                href={withBasePath(`${GUIDES_ROOT}/`)}
                 class="no-underline transition-colors hover:text-foreground"
               >
                 Guides
@@ -300,7 +304,7 @@ function buildGuidePageIndexSections(
                   <span aria-hidden="true">›</span>
                   <a
                     href={withBasePath(
-                      guideCategoryPath(props.guide.categories[0], guidesRoot),
+                      guideCategoryPath(props.guide.categories[0], GUIDES_ROOT),
                     )}
                     class="no-underline transition-colors hover:text-foreground"
                   >
@@ -356,7 +360,7 @@ function buildGuidePageIndexSections(
               </h3>
               {props.guide.options.map((option) => (
                 <a
-                  href={withBasePath(guideOptionPath(option, guidesRoot))}
+                  href={withBasePath(guideOptionPath(option, GUIDES_ROOT))}
                   data-guide-variant-language={option.language}
                   data-guide-variant-build-tool={option.buildTool}
                   aria-label={option.label}
@@ -445,7 +449,7 @@ function buildGuidePageIndexSections(
               </ul>
               <a
                 href={withBasePath(
-                  guideCategoryPath(props.guide.categories[0], guidesRoot),
+                  guideCategoryPath(props.guide.categories[0], GUIDES_ROOT),
                 )}
                 class="mt-4 inline-block text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
               >
