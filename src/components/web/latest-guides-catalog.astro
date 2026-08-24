@@ -47,6 +47,29 @@ const visibleGuides = sortGuides(
   ),
   sortMode,
 );
+// The index used to list 54 category sections in latest-guide order, with
+// Getting Started last and no way to jump between them. Order the journey
+// explicitly, give every section an anchor, and collapse long sections.
+const CATEGORY_ORDER = [
+  "Getting Started",
+  "Core Basics",
+  "HTTP Server",
+  "HTTP Client",
+  "Development",
+  "Testing",
+  "Data Access",
+  "Data JDBC",
+  "Data JPA",
+  "Data R2DBC",
+  "GraalVM",
+  "Serverless",
+  "AWS Lambda",
+  "Kubernetes",
+];
+const categoryRank = new Map(
+  CATEGORY_ORDER.map((category, index) => [category, index]),
+);
+const COLLAPSED_CARD_COUNT = 6;
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
   const category = guide.categories[0] || "Guides";
@@ -55,6 +78,13 @@ for (const guide of visibleGuides) {
     guide,
   ]);
 }
+const orderedCategoryGroups = [...categoryGroups.entries()].sort(
+  ([left], [right]) => {
+    const leftRank = categoryRank.get(left) ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = categoryRank.get(right) ?? Number.MAX_SAFE_INTEGER;
+    return leftRank - rightRank || left.localeCompare(right);
+  },
+);
 const hasFilters = Boolean(
   query || selectedCategory || selectedTag || sortMode !== "latest",
 );
@@ -234,44 +264,127 @@ function tagHref(tag: string) {
     )
   }
 
-  <section id="guides-list" class="grid gap-7">
-    {
-      Array.from(categoryGroups.entries()).map(([category, categoryGuides]) => (
-        <div class="grid gap-4" data-guide-category-group>
-          <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
-          <div
-            class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-            data-guide-card-grid
-          >
-            {categoryGuides.map((guide) => (
-              <div
-                data-guide-card
-                data-title={guide.title}
-                data-search={[
-                  guide.slug,
-                  guide.title,
-                  guide.intro,
-                  guide.authors.join(" "),
-                  guide.categories.join(" "),
-                  guide.tags.join(" "),
-                  guide.categories.map(categorySlug).join(" "),
-                  guide.tags.map(categorySlug).join(" "),
-                ]
-                  .join(" ")
-                  .toLowerCase()}
-                data-categories={guide.categories.map(categorySlug).join("|")}
-                data-tags={guide.tags.map(categorySlug).join("|")}
-                data-date={guide.publicationDate}
-                data-minutes={guide.estimatedMinutes}
+  <div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start">
+    <nav
+      class="sticky top-20 hidden max-h-[calc(100vh-6rem)] overflow-y-auto pr-2 lg:block"
+      aria-label="Guide categories"
+    >
+      <p
+        class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+      >
+        Categories
+      </p>
+      <ul class="mt-3 grid gap-0.5 text-sm">
+        {
+          orderedCategoryGroups.map(([category, categoryGuides]) => (
+            <li>
+              <a
+                href={`#category-${categorySlug(category)}`}
+                class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground"
+                data-guide-category-jump-link
               >
-                <LatestGuideCard guide={guide} root={root} />
+                <span>{category}</span>
+                <span class="text-xs text-muted-foreground/70 tabular-nums">
+                  {categoryGuides.length}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="grid min-w-0 gap-7">
+      <details
+        class="rounded-lg border px-4 py-3 lg:hidden"
+        data-guide-category-jump
+      >
+        <summary class="cursor-pointer text-sm font-medium">
+          Jump to category
+        </summary>
+        <nav aria-label="Guide categories">
+          <ul class="mt-3 grid gap-0.5 text-sm">
+            {
+              orderedCategoryGroups.map(([category, categoryGuides]) => (
+                <li>
+                  <a
+                    href={`#category-${categorySlug(category)}`}
+                    class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground"
+                    data-guide-category-jump-link
+                  >
+                    <span>{category}</span>
+                    <span class="text-xs text-muted-foreground/70 tabular-nums">
+                      {categoryGuides.length}
+                    </span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </details>
+      <section id="guides-list" class="grid gap-7">
+        {
+          orderedCategoryGroups.map(([category, categoryGuides]) => (
+            <div
+              class="grid gap-4"
+              id={`category-${categorySlug(category)}`}
+              data-guide-category-group
+            >
+              <h2 class="text-2xl font-semibold tracking-tight">{category}</h2>
+              <div
+                class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 [&[data-collapsed]>*:nth-child(n+7)]:hidden"
+                data-guide-card-grid
+                data-collapsed={
+                  !hasFilters && categoryGuides.length > COLLAPSED_CARD_COUNT
+                    ? ""
+                    : undefined
+                }
+              >
+                {categoryGuides.map((guide) => (
+                  <div
+                    data-guide-card
+                    data-title={guide.title}
+                    data-search={[
+                      guide.slug,
+                      guide.title,
+                      guide.intro,
+                      guide.authors.join(" "),
+                      guide.categories.join(" "),
+                      guide.tags.join(" "),
+                      guide.categories.map(categorySlug).join(" "),
+                      guide.tags.map(categorySlug).join(" "),
+                    ]
+                      .join(" ")
+                      .toLowerCase()}
+                    data-categories={guide.categories
+                      .map(categorySlug)
+                      .join("|")}
+                    data-tags={guide.tags.map(categorySlug).join("|")}
+                    data-date={guide.publicationDate}
+                    data-minutes={guide.estimatedMinutes}
+                  >
+                    <LatestGuideCard guide={guide} root={root} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      ))
-    }
-  </section>
+              {!hasFilters && categoryGuides.length > COLLAPSED_CARD_COUNT && (
+                <button
+                  type="button"
+                  class:list={[
+                    buttonVariants({ size: "sm", variant: "outline" }),
+                    "justify-self-start",
+                  ]}
+                  data-guide-show-all
+                >
+                  Show all {categoryGuides.length} guides
+                </button>
+              )}
+            </div>
+          ))
+        }
+      </section>
+    </div>
+  </div>
 
   <div data-guides-empty hidden={visibleGuides.length > 0}>
     <Card>
