@@ -19,6 +19,19 @@ if (catalog) {
   );
 
   if (hasFilters) {
+    // The static page ships with the category directory visible and the
+    // (much larger) guide listing hidden; filters swap the two.
+    const directory = catalog.querySelector<HTMLElement>(
+      "[data-guides-directory]",
+    );
+    if (directory) {
+      directory.hidden = true;
+    }
+    const results = catalog.querySelector<HTMLElement>("[data-guides-results]");
+    if (results) {
+      results.hidden = false;
+    }
+
     const normalizedQuery = query.toLowerCase();
     const querySlug = normalizeTopic(query);
     const visibleCards = new Set<HTMLElement>();
@@ -50,6 +63,25 @@ if (catalog) {
       ).some((card) => !card.hidden);
     }
 
+    // The category navigation stays complete while browsing a category so it
+    // works as a switcher, but a text search prunes it to the categories
+    // that still have matches.
+    for (const link of Array.from(
+      catalog.querySelectorAll<HTMLAnchorElement>(
+        "[data-guide-category-jump-link]",
+      ),
+    )) {
+      if (link.dataset.category === category) {
+        link.setAttribute("aria-current", "true");
+      }
+      if (query) {
+        const group = document.getElementById(
+          `category-${link.dataset.category || ""}`,
+        );
+        (link.closest("li") ?? link).hidden = !group || group.hidden;
+      }
+    }
+
     const latestSection = catalog.querySelector<HTMLElement>(
       "[data-guides-latest-section]",
     );
@@ -63,27 +95,7 @@ if (catalog) {
     if (emptyState) {
       emptyState.hidden = visibleCards.size > 0;
     }
-
-    // Filter results must not hide matches behind collapsed sections.
-    expandAllCategoryGroups(catalog);
   }
-
-  for (const button of Array.from(
-    catalog.querySelectorAll<HTMLButtonElement>("[data-guide-show-all]"),
-  )) {
-    button.addEventListener("click", () => {
-      button
-        .closest("[data-guide-category-group]")
-        ?.querySelector("[data-guide-card-grid]")
-        ?.removeAttribute("data-collapsed");
-      button.hidden = true;
-    });
-  }
-
-  openTargetedCategoryGroup(catalog);
-  window.addEventListener("hashchange", () => {
-    openTargetedCategoryGroup(catalog);
-  });
 
   const categoryJump = catalog.querySelector<HTMLDetailsElement>(
     "[data-guide-category-jump]",
@@ -96,39 +108,6 @@ if (catalog) {
       categoryJump.open = false;
     }
   });
-}
-
-function expandAllCategoryGroups(catalog: HTMLElement) {
-  for (const grid of Array.from(
-    catalog.querySelectorAll<HTMLElement>("[data-guide-card-grid]"),
-  )) {
-    grid.removeAttribute("data-collapsed");
-  }
-  for (const button of Array.from(
-    catalog.querySelectorAll<HTMLElement>("[data-guide-show-all]"),
-  )) {
-    button.hidden = true;
-  }
-  for (const group of Array.from(
-    catalog.querySelectorAll<HTMLDetailsElement>("[data-guide-category-group]"),
-  )) {
-    group.open = true;
-  }
-}
-
-/** A jump link must open the section it targets, not scroll to a closed one. */
-function openTargetedCategoryGroup(catalog: HTMLElement) {
-  const id = window.location.hash.slice(1);
-  if (!id) {
-    return;
-  }
-  const group = catalog.querySelector<HTMLDetailsElement>(
-    `[data-guide-category-group]#${CSS.escape(decodeURIComponent(id))}`,
-  );
-  if (group && !group.open) {
-    group.open = true;
-    group.scrollIntoView();
-  }
 }
 
 function guideCardMatches(

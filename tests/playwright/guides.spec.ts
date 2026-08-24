@@ -156,6 +156,20 @@ test("guide catalog renders static cards and hydrates only the variant menu", as
     page.getByRole("heading", { level: 1, name: "Micronaut Guides" }),
   ).toBeVisible();
 
+  await expect(
+    page
+      .getByRole("link", { name: "Open guides tagged micronaut-data" })
+      .first(),
+  ).toHaveAttribute("href", tagHrefPattern("micronaut-data"));
+
+  // The default view is the category directory; guide rows appear after
+  // picking a category.
+  await page
+    .locator("[data-guides-directory]")
+    .getByRole("link", { name: /HTTP Client/ })
+    .click();
+  await expect(page).toHaveURL(/category=http-client/);
+
   const card = page
     .locator("[data-guide-card]", { hasText: httpClientGuideTitle })
     .first();
@@ -179,10 +193,6 @@ test("guide catalog renders static cards and hydrates only the variant menu", as
     "href",
     guideHrefPattern("micronaut-http-client-gradle-java.html"),
   );
-  await expect(
-    page.getByRole("link", { name: "Filter guides tagged micronaut-data" }),
-  ).toHaveAttribute("href", tagHrefPattern("micronaut-data"));
-
   await card
     .getByRole("button", { name: `Choose variant for ${httpClientGuideTitle}` })
     .click();
