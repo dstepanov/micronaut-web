@@ -1,5 +1,9 @@
-import docsProjectCatalogFixture from "@/data/docs-projects.fixture.json";
-import generatedGuidesManifest from "@/data/generated-guides.fixture.json";
+import {
+  guideOverviewPath,
+  guideTagPath,
+  type GeneratedGuide,
+} from "./generated-guide-routing.ts";
+
 export type CatalogCategory = {
   slug: string;
   name: string;
@@ -56,44 +60,13 @@ export type DocsProjectCatalog = {
   projects: DocsCatalogProject[];
 };
 
-export type GeneratedGuideOption = {
-  id: string;
-  label: string;
-  language: string;
-  languageLabel: string;
-  buildTool: string;
-  buildToolLabel: string;
-  file: string;
-  fragment: string;
-  zipUrl: string;
-};
-
-export type GeneratedGuide = {
-  slug: string;
-  title: string;
-  intro: string;
-  authors: string[];
-  tags: string[];
-  categories: string[];
-  publicationDate: string;
-  estimatedMinutes: number;
-  overviewFile: string;
-  defaultOptionFile: string;
-  options: GeneratedGuideOption[];
-};
-
-export type GeneratedGuidesManifest = {
-  generatedAt: string;
-  guideCount: number;
-  guides: GeneratedGuide[];
-};
-
 export type SearchItem = {
   kind:
     | "Project"
     | "Guide"
     | "Section"
     | "Tag"
+    | "Post"
     | "Docs"
     | "Property"
     | "Class"
@@ -106,11 +79,13 @@ export type SearchItem = {
   weight?: number;
 };
 
-export const staticDocsProjectCatalog =
-  docsProjectCatalogFixture as DocsProjectCatalog;
-
-export const staticGeneratedGuidesManifest =
-  generatedGuidesManifest as GeneratedGuidesManifest;
+/** A blog post reduced to what the search index needs. */
+export type BlogSearchPost = {
+  title: string;
+  description: string;
+  href: string;
+  topics: string[];
+};
 
 export function docsProjectFromCatalog(
   project: DocsCatalogProject,
@@ -124,101 +99,20 @@ export function docsProjectFromCatalog(
   };
 }
 
-export function docsProjectBySlug(slug: string): DocsProject | undefined {
-  const project = staticDocsProjectCatalog.projects.find(
-    (candidate) => candidate.slug === slug,
-  );
-  return project ? docsProjectFromCatalog(project) : undefined;
-}
-
-export function featuredProjects() {
-  const preferred = [
-    "core",
-    "serde",
-    "data",
-    "security",
-    "mcp",
-    "oracle-cloud",
-    "sourcegen",
-    "openapi",
-  ];
-  return preferred
-    .map((slug) => docsProjectBySlug(slug))
-    .filter(Boolean) as DocsProject[];
-}
-
-export function featuredGuides() {
-  const preferred = [
-    "creating-your-first-micronaut-app",
-    "micronaut-http-client",
-    "micronaut-data-jdbc-repository",
-    "micronaut-security-jwt",
-    "micronaut-mcp-server",
-    "micronaut-graalvm-native-image",
-  ];
-  const selected = preferred
-    .map((slug) =>
-      staticGeneratedGuidesManifest.guides.find((guide) => guide.slug === slug),
-    )
-    .filter(Boolean) as GeneratedGuide[];
-  return selected.length ? selected : staticGeneratedGuidesManifest.guides;
-}
-
-export function latestGuideSummaries(limit = 8) {
-  return latestGuides(staticGeneratedGuidesManifest.guides, limit);
-}
-
-export function guideCategories() {
-  return Array.from(
-    new Set(
-      staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.categories),
-    ),
-  )
-    .sort()
-    .map((category) => ({
-      slug: tagSlug(category),
-      name: category,
-      icon: "book-open",
-    }));
-}
-
-export function guideOverviewPath(
-  guide: Pick<GeneratedGuide, "overviewFile" | "options" | "defaultOptionFile">,
-  root = "/latest",
-) {
-  const option = preferredGuideOption(guide);
-  return `${normalizedRoot(root)}/${(option?.file || guide.overviewFile).replace(/\.html$/, "")}/`;
-}
-
-function preferredGuideOption(
-  guide: Pick<GeneratedGuide, "options" | "defaultOptionFile">,
-) {
-  return (
-    guide.options.find(
-      (option) => option.language === "java" && option.buildTool === "gradle",
-    ) ||
-    guide.options.find((option) => option.file === guide.defaultOptionFile) ||
-    guide.options.find((option) => option.language === "java") ||
-    guide.options[0]
-  );
-}
-
-export function guideTagPath(tag: string, root = "/latest") {
-  return `${normalizedRoot(root)}/tag-${tagSlug(tag)}/`;
-}
-
-export function tagSlug(tag: string) {
-  return tag
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-export function searchItems(): SearchItem[] {
-  const projects = staticDocsProjectCatalog.projects.map(
-    docsProjectFromCatalog,
-  );
+/**
+ * The site-mode search catalog. Every input is passed in because the callers
+ * load the *generated* catalogs: building this from the checked-in fixtures
+ * shipped an index that knew 4 of 177 guides and no posts at all.
+ */
+export function searchItems({
+  projects,
+  guides,
+  posts,
+}: {
+  projects: DocsProject[];
+  guides: GeneratedGuide[];
+  posts: BlogSearchPost[];
+}): SearchItem[] {
   const projectItems: SearchItem[] = projects.map((project) => ({
     kind: "Project",
     title: project.displayName,
@@ -240,28 +134,30 @@ export function searchItems(): SearchItem[] {
       terms: [project.displayName, section.title, section.summary].join(" "),
     })),
   );
-  const guideItems: SearchItem[] = staticGeneratedGuidesManifest.guides.map(
-    (guide) => ({
-      kind: "Guide",
-      title: guide.title,
-      description: guide.intro,
-      href: guideOverviewPath(guide, "/guides"),
-      terms: [
-        guide.title,
-        guide.intro,
-        ...guide.tags,
-        ...guide.categories,
-        ...guide.authors,
-      ].join(" "),
-    }),
-  );
+  const guideItems: SearchItem[] = guides.map((guide) => ({
+    kind: "Guide",
+    title: guide.title,
+    description: guide.intro,
+    href: guideOverviewPath(guide, "/guides"),
+    terms: [
+      guide.title,
+      guide.intro,
+      ...guide.tags,
+      ...guide.categories,
+      ...guide.authors,
+    ].join(" "),
+  }));
+  const postItems: SearchItem[] = posts.map((post) => ({
+    kind: "Post",
+    title: post.title,
+    description: post.description,
+    href: post.href,
+    terms: [post.title, post.description, ...post.topics].join(" "),
+  }));
   const tagItems: SearchItem[] = Array.from(
-    new Set(
-      staticGeneratedGuidesManifest.guides.flatMap((guide) => guide.tags),
-    ),
+    new Set(guides.flatMap((guide) => guide.tags)),
   )
     .sort()
-    .slice(0, 80)
     .map((tag) => ({
       kind: "Tag",
       title: tag,
@@ -269,7 +165,13 @@ export function searchItems(): SearchItem[] {
       href: guideTagPath(tag, "/guides"),
       terms: tag,
     }));
-  return [...projectItems, ...sectionItems, ...guideItems, ...tagItems];
+  return [
+    ...projectItems,
+    ...sectionItems,
+    ...guideItems,
+    ...postItems,
+    ...tagItems,
+  ];
 }
 
 function docsProjectSections(project: DocsCatalogProject): DocsSection[] {
@@ -318,19 +220,4 @@ function docsProjectSearchTerms(project: DocsCatalogProject): string[] {
     project.primaryCategory,
     ...project.categorySlugs,
   ].filter(Boolean);
-}
-
-function latestGuides(guides: GeneratedGuide[], limit = 8) {
-  return [...guides]
-    .sort(
-      (left, right) =>
-        right.publicationDate.localeCompare(left.publicationDate) ||
-        left.title.localeCompare(right.title),
-    )
-    .slice(0, limit);
-}
-
-function normalizedRoot(root: string) {
-  const value = root.endsWith("/") ? root.slice(0, -1) : root;
-  return value || "";
 }
