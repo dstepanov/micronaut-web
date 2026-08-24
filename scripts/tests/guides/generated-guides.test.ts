@@ -76,6 +76,11 @@ describe("render-guides", () => {
     assert.match(text, /Hello DEFAULT from template/);
     assert.match(text, /Injected value: World/);
     assert.doesNotMatch(html, /<style\b[^>]*data-docs-shiki/i);
+
+    // Admonition labels render as text; Font Awesome is never loaded, so the
+    // `icons=font` `<i>` markup would show nothing.
+    assert.match(html, /<td class="icon">\s*<div class="title">Note<\/div>/);
+    assert.doesNotMatch(html, /class="fa icon-/);
     assertNoRuntimeGeneratedRendering("generated guide HTML", html);
 
     // Dependencies group into one card whose callouts follow it.

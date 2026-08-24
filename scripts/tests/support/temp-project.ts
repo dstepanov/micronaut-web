@@ -342,6 +342,8 @@ export async function writeGuideFixture(
   await writeTextFile(path.join(guideDirectory, `${slug}.adoc`), [
     "common-template::template.adoc[arg0=default]",
     "callout::fixture[arg0=World]",
+    "NOTE: Fixture admonition label should render as text.",
+    "",
     "guideLink:another-guide[Another Guide]",
     "https://guides.micronaut.io/latest/legacy-guide.html[Legacy Guide]",
     "https://micronaut-projects.github.io/micronaut-guides-v2/micronaut-jpa-hibernate-gradle-java/[JPA Guide]",
