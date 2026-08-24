@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BookOpen,
   FileCode2,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { bestScore, rankSearchItems } from "@/lib/search-ranking";
 import {
   withConfiguredBasePath,
   withBasePath,
@@ -37,6 +38,10 @@ type MainSiteSearchPage = {
   eyebrow: string;
   description: string;
 };
+
+type SiteGroup =
+  | { key: string; badge: string; kind: "page"; items: MainSiteSearchPage[] }
+  | { key: string; badge: string; kind: "item"; items: SearchItem[] };
 
 function ResultIcon({ kind }: { kind: SearchItem["kind"] }) {
   if (kind === "Guide") return <BookOpen />;
@@ -124,48 +129,6 @@ function scopeForItem(item: SearchItem): Exclude<DocsScope, "All"> {
   return "Docs";
 }
 
-/**
- * Scores every item once, then sorts. Lowercasing inside the comparator would
- * repeat the same work O(n log n) times per keystroke over the whole index.
- */
-function matchingDocsSearchItems(items: SearchItem[], query: string) {
-  const normalized = query.trim().toLowerCase();
-  const scored: Array<{ item: SearchItem; score: number }> = [];
-  for (const item of items) {
-    if (!normalized) {
-      scored.push({ item, score: 0 });
-      continue;
-    }
-    const title = item.title.toLowerCase();
-    const description = item.description.toLowerCase();
-    const terms = item.terms.toLowerCase();
-    if (
-      !`${item.kind.toLowerCase()} ${title} ${description} ${terms}`.includes(
-        normalized,
-      )
-    ) {
-      continue;
-    }
-    scored.push({
-      item,
-      score: title.startsWith(normalized)
-        ? 3
-        : title.includes(normalized)
-          ? 2
-          : description.includes(normalized) || terms.includes(normalized)
-            ? 1
-            : 0,
-    });
-  }
-  scored.sort(
-    (left, right) =>
-      right.score - left.score ||
-      (right.item.weight || 0) - (left.item.weight || 0) ||
-      left.item.title.localeCompare(right.item.title),
-  );
-  return scored.map((entry) => entry.item);
-}
-
 export function SearchDialog({
   className,
   docsSearchIndexUrl,
@@ -190,22 +153,39 @@ export function SearchDialog({
   // first opened. Importing it instead put the docs and guides fixtures in the
   // header bundle, which every page hydrates.
   const [items, setItems] = useState<SearchItem[]>([]);
+  // Rank against the query first: these lists used to be truncated before any
+  // query ran, so a match outside the first 80 entries could never surface.
   const docs = useMemo(
-    () => items.filter((item) => item.href.startsWith("/docs/")).slice(0, 80),
-    [items],
+    () =>
+      rankSearchItems(
+        items.filter((item) => item.href.startsWith("/docs/")),
+        searchQuery,
+      ).slice(0, 40),
+    [items, searchQuery],
   );
   const guides = useMemo(
-    () => items.filter((item) => item.href.startsWith("/guides/")).slice(0, 80),
-    [items],
+    () =>
+      rankSearchItems(
+        items.filter((item) => item.href.startsWith("/guides/")),
+        searchQuery,
+      ).slice(0, 40),
+    [items, searchQuery],
   );
   const tags = useMemo(
-    () => items.filter((item) => item.kind === "Tag").slice(0, 40),
-    [items],
+    () =>
+      rankSearchItems(
+        items.filter((item) => item.kind === "Tag"),
+        searchQuery,
+      ).slice(0, 20),
+    [items, searchQuery],
   );
-  const pages = useMemo(() => mainSitePages.slice(0, 80), [mainSitePages]);
+  const pages = useMemo(
+    () => rankSearchItems(mainSitePages, searchQuery).slice(0, 40),
+    [mainSitePages, searchQuery],
+  );
   const docsModeItems = useMemo(
     () =>
-      matchingDocsSearchItems(
+      rankSearchItems(
         items.filter(
           (item) => docsScope === "All" || scopeForItem(item) === docsScope,
         ),
@@ -252,6 +232,66 @@ export function SearchDialog({
     };
   }, [docsSearchIndexUrl, items.length, mode, open, siteSearchIndexUrl]);
 
+  // cmdk's own filter is disabled, so the static action has to be matched by
+  // hand; otherwise "Launch a project" answered every query.
+  const showLaunchAction = useMemo(
+    () =>
+      rankSearchItems(
+        [
+          {
+            title: "Launch a project",
+            description:
+              "Choose features and generate a Micronaut application.",
+            terms: "launch starter create new project application generate",
+          },
+        ],
+        searchQuery,
+      ).length > 0,
+    [searchQuery],
+  );
+
+  // Docs groups follow relevance too: an exact class match used to sit under
+  // "Classes" below whichever projects merely mentioned the term.
+  const docsGroups = useMemo(() => {
+    const groups = docsScopes
+      .filter((scope) => scope !== "All")
+      .map((scope) => ({
+        scope,
+        items: docsModeItems.filter((item) => scopeForItem(item) === scope),
+      }))
+      .filter((group) => group.items.length > 0);
+    if (!searchQuery.trim()) {
+      return groups;
+    }
+    return groups
+      .map((group) => ({ group, score: bestScore(group.items, searchQuery) }))
+      .sort((left, right) => right.score - left.score)
+      .map((entry) => entry.group);
+  }, [docsModeItems, searchQuery]);
+
+  // Group order follows relevance instead of a fixed list, so a query that
+  // clearly targets docs or guides no longer sits under "Main site".
+  const siteGroups = useMemo(() => {
+    const groups: SiteGroup[] = [
+      { key: "Main site", badge: "Page", kind: "page" as const, items: pages },
+      {
+        key: "Docs and APIs",
+        badge: "Docs",
+        kind: "item" as const,
+        items: docs,
+      },
+      { key: "Guides", badge: "Guide", kind: "item" as const, items: guides },
+      { key: "Tags", badge: "Tag", kind: "item" as const, items: tags },
+    ].filter((group) => group.items.length > 0);
+    if (!searchQuery.trim()) {
+      return groups;
+    }
+    return groups
+      .map((group) => ({ group, score: bestScore(group.items, searchQuery) }))
+      .sort((left, right) => right.score - left.score)
+      .map((entry) => entry.group);
+  }, [docs, guides, pages, searchQuery, tags]);
+
   const navigateTo = (href: string) => {
     window.location.href = withConfiguredBasePath(href, navigationUrls);
     setOpen(false);
@@ -267,7 +307,8 @@ export function SearchDialog({
     mode === "docs"
       ? "Search projects, classes, properties, docs..."
       : "Search projects, guides, sections, and tags...";
-  const resolvedButtonLabel = buttonLabel || "Search docs...";
+  const resolvedButtonLabel =
+    buttonLabel || (mode === "docs" ? "Search docs..." : "Search Micronaut...");
 
   return (
     <>
@@ -297,7 +338,7 @@ export function SearchDialog({
         title={dialogTitle}
         description={dialogDescription}
         className="max-w-2xl"
-        commandProps={mode === "docs" ? { shouldFilter: false } : undefined}
+        commandProps={{ shouldFilter: false }}
       >
         <CommandInput
           placeholder={placeholder}
@@ -305,7 +346,14 @@ export function SearchDialog({
           onValueChange={setSearchQuery}
         />
         <CommandList className="max-h-[28rem]">
-          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandEmpty>
+            <span className="grid gap-1">
+              <span className="font-medium">No results found.</span>
+              <span className="text-xs text-muted-foreground">
+                Try fewer words, or drop punctuation such as @ and ().
+              </span>
+            </span>
+          </CommandEmpty>
           {mode === "docs" ? (
             <>
               <div className="flex flex-wrap gap-1 border-b p-2">
@@ -324,83 +372,83 @@ export function SearchDialog({
                   </button>
                 ))}
               </div>
-              {docsScopes
-                .filter((scope) => scope !== "All")
-                .map((scope) => {
-                  const scopedItems = docsModeItems.filter(
-                    (item) => scopeForItem(item) === scope,
-                  );
-                  if (!scopedItems.length) return null;
-                  return (
-                    <CommandGroup key={scope} heading={scope}>
-                      <SearchItemResults
-                        badge={scope}
-                        items={scopedItems}
-                        onSelect={navigateTo}
-                      />
-                    </CommandGroup>
-                  );
-                })}
+              {docsGroups.map(({ scope, items: scopedItems }) => {
+                return (
+                  <CommandGroup key={scope} heading={scope}>
+                    <SearchItemResults
+                      badge={scope}
+                      items={scopedItems}
+                      onSelect={navigateTo}
+                    />
+                  </CommandGroup>
+                );
+              })}
             </>
           ) : (
             <>
-              <CommandGroup heading="Actions">
-                <CommandItem
-                  value="Launch create project application starter"
-                  onSelect={() => navigateTo("https://launch.micronaut.io")}
-                >
-                  <Rocket />
-                  <span className="grid min-w-0 gap-0.5">
-                    <span className="truncate font-medium">
-                      Launch a project
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      Choose features and generate a Micronaut application.
-                    </span>
-                  </span>
-                </CommandItem>
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup heading="Main site">
-                {pages.map((page) => (
-                  <ResultItem
-                    key={page.slug}
-                    badge="Page"
-                    description={page.description}
-                    icon={<FileText />}
-                    onSelect={() => navigateTo(`/${page.slug}/`)}
-                    title={page.title}
-                    value={`Page ${page.title} ${page.eyebrow} ${page.description}`}
-                  />
-                ))}
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup heading="Docs and APIs">
-                <SearchItemResults
-                  badge="Docs"
-                  items={docs}
-                  onSelect={navigateTo}
-                />
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup heading="Guides">
-                <SearchItemResults
-                  badge="Guide"
-                  items={guides}
-                  onSelect={navigateTo}
-                />
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup heading="Tags">
-                <SearchItemResults
-                  badge="Tag"
-                  items={tags}
-                  onSelect={navigateTo}
-                />
-              </CommandGroup>
+              {showLaunchAction && (
+                <>
+                  <CommandGroup heading="Actions">
+                    <CommandItem
+                      value="Launch create project application starter"
+                      onSelect={() => navigateTo("https://launch.micronaut.io")}
+                    >
+                      <Rocket />
+                      <span className="grid min-w-0 gap-0.5">
+                        <span className="truncate font-medium">
+                          Launch a project
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          Choose features and generate a Micronaut application.
+                        </span>
+                      </span>
+                    </CommandItem>
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+              {siteGroups.map((group, index) => (
+                <Fragment key={group.key}>
+                  {index > 0 ? <CommandSeparator /> : null}
+                  <CommandGroup heading={group.key}>
+                    {group.kind === "page"
+                      ? group.items.map((page) => (
+                          <ResultItem
+                            key={page.slug}
+                            badge="Page"
+                            description={page.description}
+                            icon={<FileText />}
+                            onSelect={() => navigateTo(`/${page.slug}/`)}
+                            title={page.title}
+                            value={`Page ${page.title} ${page.eyebrow} ${page.description}`}
+                          />
+                        ))
+                      : null}
+                    {group.kind === "item" ? (
+                      <SearchItemResults
+                        badge={group.badge}
+                        items={group.items}
+                        onSelect={navigateTo}
+                      />
+                    ) : null}
+                  </CommandGroup>
+                </Fragment>
+              ))}
             </>
           )}
         </CommandList>
+        <div className="flex items-center gap-3 border-t px-3 py-2 text-[0.7rem] text-muted-foreground">
+          <span>
+            <kbd className="rounded border px-1">↑</kbd>
+            <kbd className="ml-0.5 rounded border px-1">↓</kbd> to navigate
+          </span>
+          <span>
+            <kbd className="rounded border px-1">↵</kbd> to open
+          </span>
+          <span>
+            <kbd className="rounded border px-1">esc</kbd> to close
+          </span>
+        </div>
       </CommandDialog>
     </>
   );
