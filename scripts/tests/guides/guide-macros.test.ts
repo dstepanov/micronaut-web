@@ -9,6 +9,7 @@ import {
   isIgnoredGuideDiagnostic,
 } from "../../guides/renderer.ts";
 import {
+  admonitions,
   highlightedLines,
   manualCallouts,
   snippetCards,
@@ -362,13 +363,14 @@ describe("source snippets", () => {
         "source::MissingController[]",
       ].join("\n"),
     );
-    const codes = snippetCards(html).map((card) => card.activeCode);
-
-    assert.deepEqual(codes, [
-      "NOTE: Missing tag `missing` in `java/src/main/java/example/micronaut/GalleryController.java`.",
-      "NOTE: Empty tag `empty` in `java/src/main/java/example/micronaut/EmptyController.java`.",
-      "NOTE: Missing tag `missing-config` in `src/main/resources/application.yml`.",
-      "NOTE: Missing source `MissingController`.",
+    // Admonitions, not snippet cards: rendering these as code published the
+    // placeholder as though it were the sample the guide meant to show.
+    assert.deepEqual(snippetCards(html), []);
+    assert.deepEqual(admonitions(html), [
+      "Missing tag missing in java/src/main/java/example/micronaut/GalleryController.java.",
+      "Empty tag empty in java/src/main/java/example/micronaut/EmptyController.java.",
+      "Missing tag missing-config in src/main/resources/application.yml.",
+      "Missing source MissingController.",
     ]);
   });
 
