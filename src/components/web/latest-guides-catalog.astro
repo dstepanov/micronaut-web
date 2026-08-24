@@ -1,4 +1,6 @@
 ---
+import { ArrowLeftIcon, SearchIcon } from "lucide-react";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +13,12 @@ import {
 import GuideListRow from "@/components/web/guide-list-row.astro";
 import LatestGuideCard from "@/components/web/latest-guide-card.astro";
 import { GuideVariantPreferencePicker } from "@/components/web/guide-variant-preference";
-import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
+import {
+  guideCategoryPath,
+  latestGuides,
+  tagSlug,
+  type GeneratedGuide,
+} from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 
 type Props = {
@@ -31,6 +38,7 @@ const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
 const sortMode: SortMode =
   sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
+const categorySlug = tagSlug;
 const visibleGuides = sortGuides(
   guides.filter(
     (guide) =>
@@ -41,12 +49,12 @@ const visibleGuides = sortGuides(
   sortMode,
 );
 // The index used to list 54 category sections in latest-guide order, with
-// Getting Started last and no way to jump between them. Order the journey
-// explicitly. With ~230 guides the catalog is too large to list outright, so
-// the default view is a category directory; picking a category (or
-// searching) swaps it for the matching guides as compact rows. Everything is
-// prerendered: `?category=` and `?q=` are applied by the client filter
-// script on the static page.
+// Getting Started last and no way to jump between them. With ~230 guides the
+// catalog is too large to list outright, so the default view is a category
+// directory split into the ordered learning path and the topical rest;
+// picking a category shows its guides as compact rows, and a text query
+// renders one flat latest-first result list. Everything is prerendered:
+// `?category=` and `?q=` are applied by the client filter script.
 const CATEGORY_ORDER = [
   "Getting Started",
   "Core Basics",
@@ -81,20 +89,23 @@ const orderedCategoryGroups = [...categoryGroups.entries()].sort(
     return leftRank - rightRank || left.localeCompare(right);
   },
 );
+const rankedCategoryGroups = orderedCategoryGroups.filter(([category]) =>
+  categoryRank.has(category),
+);
+const otherCategoryGroups = orderedCategoryGroups.filter(
+  ([category]) => !categoryRank.has(category),
+);
 const hasFilters = Boolean(
   query || selectedCategory || selectedTag || sortMode !== "latest",
 );
 const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
-function categorySlug(category: string) {
-  return category
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function categoryHref(category: string) {
-  return withBasePath(`${rootPath}?category=${categorySlug(category)}`);
+  return withBasePath(guideCategoryPath(category, root));
+}
+
+function guideCount(count: number) {
+  return `${count} ${count === 1 ? "guide" : "guides"}`;
 }
 
 function matchesCategory(guide: GeneratedGuide, category: string) {
@@ -161,54 +172,61 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
 ---
 
 <main
-  class="mx-auto grid w-full max-w-[var(--page-max)] gap-8 px-4 py-8 sm:px-6 lg:py-10 xl:px-0"
+  class="mx-auto grid w-full max-w-[var(--page-max)] gap-10 px-4 py-8 sm:px-6 lg:py-10 xl:px-0"
   data-guides-catalog
   data-active-tag={activeTag || ""}
 >
   <header class="max-w-3xl">
-    <div class="max-w-3xl">
-      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-        {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
-      </h1>
-      <p class="mt-4 text-lg leading-8 text-muted-foreground">
-        Learn how to build Micronaut applications with focused tutorials,
-        runnable examples, and language/build variants.
-      </p>
-      <form method="get" class="mt-5 flex max-w-xl gap-2" role="search">
-        {
-          selectedCategory && (
-            <input type="hidden" name="category" value={selectedCategory} />
-          )
-        }
-        {selectedTag && <input type="hidden" name="tag" value={selectedTag} />}
-        {
-          sortMode !== "latest" && (
-            <input type="hidden" name="sort" value={sortMode} />
-          )
-        }
-        <label class="sr-only" for="guides-search">Search guides</label>
+    <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
+      {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
+    </h1>
+    <p class="mt-4 text-lg leading-8 text-muted-foreground">
+      Learn how to build Micronaut applications with focused tutorials, runnable
+      examples, and language/build variants.
+    </p>
+    {
+      /* This is the catalog filter, not a second site search: it narrows the
+         guides below as you type, while the header dialog searches the docs. */
+    }
+    <form method="get" class="mt-6 flex max-w-xl gap-2" role="search">
+      {
+        selectedCategory && (
+          <input type="hidden" name="category" value={selectedCategory} />
+        )
+      }
+      {selectedTag && <input type="hidden" name="tag" value={selectedTag} />}
+      {
+        sortMode !== "latest" && (
+          <input type="hidden" name="sort" value={sortMode} />
+        )
+      }
+      <label class="sr-only" for="guides-search">Filter guides</label>
+      <div class="relative flex-1">
+        <SearchIcon
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
         <Input
           id="guides-search"
           name="q"
           type="search"
           defaultValue={query}
-          placeholder="Search guides"
+          placeholder={`Filter ${guides.length} guides…`}
           autoComplete="off"
+          className="h-11 pl-9"
         />
-        <Button type="submit">Search</Button>
-      </form>
-      <div class="mt-5">
-        <GuideVariantPreferencePicker client:idle />
       </div>
+      <Button type="submit" variant="outline" className="h-11">Filter</Button>
+    </form>
+    <div class="mt-5">
+      <GuideVariantPreferencePicker client:idle />
     </div>
   </header>
 
   {
     !activeTag && recentGuides.length > 0 && (
       <section class="grid gap-4" data-guides-latest-section>
-        <div class="flex items-center justify-between gap-4">
-          <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
-        </div>
+        <h2 class="text-2xl font-semibold tracking-tight">Latest Guides</h2>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {recentGuides.map((guide) => (
             <LatestGuideCard guide={guide} root={root} />
@@ -218,25 +236,72 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
     )
   }
 
+  <section class="grid gap-4" data-guides-search-results hidden>
+    <div class="flex items-baseline gap-3">
+      <h2 class="text-2xl font-semibold tracking-tight">Search Results</h2>
+      <span
+        class="text-sm text-muted-foreground tabular-nums"
+        data-guides-search-count></span>
+    </div>
+    <div
+      class="divide-y divide-border [&_[data-guide-row-category]]:inline-flex"
+      data-guides-search-list
+    >
+    </div>
+  </section>
+
   {
     !hasFilters && (
-      <section class="grid gap-4" data-guides-directory>
-        <h2 class="text-2xl font-semibold tracking-tight">
-          Browse by Category
-        </h2>
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {orderedCategoryGroups.map(([category, categoryGuides]) => (
-            <a
-              href={categoryHref(category)}
-              class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 no-underline transition-colors hover:border-brand/50 hover:bg-accent"
-            >
-              <span class="font-medium">{category}</span>
-              <span class="text-sm text-muted-foreground tabular-nums">
-                {categoryGuides.length}
-              </span>
-            </a>
-          ))}
+      <section class="grid gap-10" data-guides-directory>
+        <div class="grid gap-5">
+          <div>
+            <h2 class="text-2xl font-semibold tracking-tight">Learning Path</h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              Work through these in order to get productive with Micronaut.
+            </p>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {rankedCategoryGroups.map(([category, categoryGuides], index) => (
+              <a
+                href={categoryHref(category)}
+                class="group flex items-center gap-4 rounded-lg border px-4 py-3.5 no-underline transition-colors hover:border-brand/50 hover:bg-accent"
+              >
+                <span class="text-sm font-semibold text-muted-foreground/60 tabular-nums transition-colors group-hover:text-brand">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span class="min-w-0">
+                  <span class="block truncate font-medium">{category}</span>
+                  <span class="block text-xs text-muted-foreground">
+                    {guideCount(categoryGuides.length)}
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
+        {otherCategoryGroups.length > 0 && (
+          <div class="grid gap-5">
+            <div>
+              <h2 class="text-2xl font-semibold tracking-tight">All Topics</h2>
+              <p class="mt-1 text-sm text-muted-foreground">
+                Deep dives by feature and integration.
+              </p>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {otherCategoryGroups.map(([category, categoryGuides]) => (
+                <a
+                  href={categoryHref(category)}
+                  class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 no-underline transition-colors hover:border-brand/50 hover:bg-accent"
+                >
+                  <span class="min-w-0 truncate font-medium">{category}</span>
+                  <span class="shrink-0 text-sm text-muted-foreground tabular-nums">
+                    {categoryGuides.length}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     )
   }
@@ -275,7 +340,14 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
         }
       </ul>
     </nav>
-    <div class="grid min-w-0 gap-9">
+    <div class="grid min-w-0 gap-6">
+      <a
+        href={withBasePath(rootPath)}
+        class="inline-flex items-center gap-1.5 justify-self-start text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-4" aria-hidden="true" />
+        All categories
+      </a>
       <details
         class="rounded-lg border px-4 py-3 lg:hidden"
         data-guide-category-jump
@@ -357,7 +429,8 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
       <CardHeader>
         <CardTitle>No guides found</CardTitle>
         <CardDescription
-          >The generated guide catalog does not contain entries for this filter.</CardDescription
+          >Nothing matches this filter. Try a different term, or browse the
+          catalog by category.</CardDescription
         >
       </CardHeader>
       <CardContent>
@@ -365,7 +438,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
           href={withBasePath(`${root}/`)}
           class:list={[buttonVariants(), "no-underline"]}
         >
-          Open all guides
+          Browse all categories
         </a>
       </CardContent>
     </Card>

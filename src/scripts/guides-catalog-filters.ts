@@ -1,71 +1,115 @@
 const catalog = document.querySelector<HTMLElement>("[data-guides-catalog]");
 
 if (catalog) {
-  const params = new URLSearchParams(window.location.search);
   const activeTag = catalog.dataset.activeTag || "";
-  const query = (params.get("q") || "").trim();
-  const category = normalizeTopic(params.get("category") || "");
-  const tag = normalizeTopic(activeTag || params.get("tag") || "");
-  const sort = params.get("sort") || "latest";
-  const hasFilters = Boolean(query || category || tag || sort !== "latest");
   const searchInput =
     catalog.querySelector<HTMLInputElement>('input[name="q"]');
-
-  if (searchInput) {
-    searchInput.value = query;
-  }
   const cards = Array.from(
     catalog.querySelectorAll<HTMLElement>("[data-guide-card]"),
   );
+  // Cards move into the flat search list while a query is active; remember
+  // where each came from so clearing the query restores the grouped browser.
+  const homeGrid = new Map<HTMLElement, HTMLElement | null>(
+    cards.map((card) => [card, card.parentElement]),
+  );
 
-  if (hasFilters) {
-    // The static page ships with the category directory visible and the
-    // (much larger) guide listing hidden; filters swap the two.
-    const directory = catalog.querySelector<HTMLElement>(
-      "[data-guides-directory]",
-    );
-    if (directory) {
-      directory.hidden = true;
-    }
-    const results = catalog.querySelector<HTMLElement>("[data-guides-results]");
-    if (results) {
-      results.hidden = false;
-    }
+  type FilterState = {
+    query: string;
+    category: string;
+    tag: string;
+    sort: string;
+  };
 
+  const readState = (): FilterState => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      query: (params.get("q") || "").trim(),
+      category: normalizeTopic(params.get("category") || ""),
+      tag: normalizeTopic(activeTag || params.get("tag") || ""),
+      sort: params.get("sort") || "latest",
+    };
+  };
+
+  const render = (state: FilterState) => {
+    const { query, category, tag, sort } = state;
+    const hasFilters = Boolean(query || category || tag || sort !== "latest");
     const normalizedQuery = query.toLowerCase();
     const querySlug = normalizeTopic(query);
-    const visibleCards = new Set<HTMLElement>();
 
+    // Rebuild every grid in its prerendered order before filtering, so
+    // repeated live-search renders always start from the same layout.
     for (const card of cards) {
-      const visible = guideCardMatches(card, {
+      homeGrid.get(card)?.append(card);
+      card.hidden = !guideCardMatches(card, {
         category,
         normalizedQuery,
         querySlug,
         tag,
       });
-      card.hidden = !visible;
-      if (visible) {
-        visibleCards.add(card);
-      }
+    }
+    const visibleCount = cards.filter((card) => !card.hidden).length;
+
+    const directory = catalog.querySelector<HTMLElement>(
+      "[data-guides-directory]",
+    );
+    if (directory) {
+      directory.hidden = hasFilters;
+    }
+    const latestSection = catalog.querySelector<HTMLElement>(
+      "[data-guides-latest-section]",
+    );
+    if (latestSection) {
+      latestSection.hidden = hasFilters;
     }
 
-    for (const grid of Array.from(
-      catalog.querySelectorAll<HTMLElement>("[data-guide-card-grid]"),
-    )) {
-      sortGuideCards(grid, sort);
+    // A text search asks "what matches, newest first", so it renders as one
+    // flat sorted list; without a query, filters show the grouped browser.
+    const results = catalog.querySelector<HTMLElement>("[data-guides-results]");
+    if (results) {
+      results.hidden = !hasFilters || Boolean(query);
+    }
+    const searchSection = catalog.querySelector<HTMLElement>(
+      "[data-guides-search-results]",
+    );
+    const searchList = searchSection?.querySelector<HTMLElement>(
+      "[data-guides-search-list]",
+    );
+    if (searchSection && searchList) {
+      if (query) {
+        for (const card of cards) {
+          if (!card.hidden) {
+            searchList.append(card);
+          }
+        }
+        sortGuideCards(searchList, sort);
+        const count = searchSection.querySelector<HTMLElement>(
+          "[data-guides-search-count]",
+        );
+        if (count) {
+          count.textContent = `${visibleCount} ${
+            visibleCount === 1 ? "guide" : "guides"
+          }`;
+        }
+      }
+      searchSection.hidden = !query || visibleCount === 0;
     }
 
     for (const group of Array.from(
       catalog.querySelectorAll<HTMLElement>("[data-guide-category-group]"),
     )) {
-      group.hidden = !Array.from(
-        group.querySelectorAll<HTMLElement>("[data-guide-card]"),
-      ).some((card) => !card.hidden);
+      group.hidden =
+        hasFilters && !query
+          ? !group.querySelector("[data-guide-card]:not([hidden])")
+          : false;
+    }
+    if (hasFilters && !query) {
+      for (const grid of Array.from(
+        catalog.querySelectorAll<HTMLElement>("[data-guide-card-grid]"),
+      )) {
+        sortGuideCards(grid, sort);
+      }
     }
 
-    // The category navigation stays complete while browsing a category so it
-    // works as a switcher, but a text search prunes it to the categories
-    // that still have matches.
     for (const link of Array.from(
       catalog.querySelectorAll<HTMLAnchorElement>(
         "[data-guide-category-jump-link]",
@@ -73,29 +117,54 @@ if (catalog) {
     )) {
       if (link.dataset.category === category) {
         link.setAttribute("aria-current", "true");
+      } else {
+        link.removeAttribute("aria-current");
       }
-      if (query) {
-        const group = document.getElementById(
-          `category-${link.dataset.category || ""}`,
-        );
-        (link.closest("li") ?? link).hidden = !group || group.hidden;
-      }
-    }
-
-    const latestSection = catalog.querySelector<HTMLElement>(
-      "[data-guides-latest-section]",
-    );
-    if (latestSection) {
-      latestSection.hidden = true;
     }
 
     const emptyState = catalog.querySelector<HTMLElement>(
       "[data-guides-empty]",
     );
     if (emptyState) {
-      emptyState.hidden = visibleCards.size > 0;
+      emptyState.hidden = !hasFilters || visibleCount > 0;
     }
+  };
+
+  const initial = readState();
+  if (searchInput) {
+    searchInput.value = initial.query;
   }
+  render(initial);
+
+  // Live search: keep the URL shareable while filtering on every keystroke.
+  let debounceTimer: number | undefined;
+  searchInput?.addEventListener("input", () => {
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const value = searchInput.value.trim();
+      if (value) {
+        params.set("q", value);
+      } else {
+        params.delete("q");
+      }
+      const suffix = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${suffix ? `?${suffix}` : ""}`,
+      );
+      render(readState());
+    }, 150);
+  });
+
+  window.addEventListener("popstate", () => {
+    const state = readState();
+    if (searchInput) {
+      searchInput.value = state.query;
+    }
+    render(state);
+  });
 
   const categoryJump = catalog.querySelector<HTMLDetailsElement>(
     "[data-guide-category-jump]",
