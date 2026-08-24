@@ -79,6 +79,22 @@ describe("site search catalog", () => {
     assert.match(post.terms, /micronaut-5/);
   });
 
+  test("the web deploy refreshes the guide catalog before it builds", async () => {
+    // The main surface renders no guide content, so its search index is built
+    // from the checked-in catalog, which is only a small offline sample. The
+    // published index described 4 of 177 guides until the deploy refreshed it.
+    const workflow = await fs.readFile(
+      path.join(projectDirectory, ".github/workflows/deploy-web.yml"),
+      "utf8",
+    );
+
+    assert.ok(
+      workflow.indexOf("npm run sync:guides") <
+        workflow.indexOf("npm run build:main"),
+      "deploy-web must sync the guide catalog before building",
+    );
+  });
+
   test("the route builds the catalog from generated content, never fixtures", async () => {
     const route = await fs.readFile(
       path.join(projectDirectory, "src", "pages", "search-index.json.ts"),

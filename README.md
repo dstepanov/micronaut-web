@@ -19,6 +19,7 @@ npm run build:guides
 `npm run check` validates TypeScript, script formatting, tests, and shared snippet styles.
 `npm run sync:docs-projects` refreshes the test fixture at `src/data/docs-projects.fixture.json` from a local `micronaut-projects/micronaut-platform` checkout's `gradle/libs.versions.toml` plus the metadata already stored in the fixture.
 `src/data/docs-projects.fixture.json` is the checked-in docs project metadata source so CI can run the docs renderer without an external metadata checkout.
+`npm run sync:guides` refreshes `src/data/generated-guides.fixture.json` from the published guides manifest. The main surface renders no guide content, so it builds its search index from that catalog; `Deploy Web` runs this before building, and the checked-in copy is only the offline fallback.
 `npm run build` also prepares plain HTML template artifacts under `dist/micronaut-web`.
 
 ## Script Development
@@ -32,6 +33,7 @@ All repository scripts under `scripts/` must be TypeScript files. Add new script
 | `npm run check`                     | Runs TypeScript checks, script formatting, script tests, browser-backed surface tests, and snippet style validation.    |
 | `npm run snippet-styles`            | Verifies generated docs snippet styles stay shared instead of copied into runtime layout code.                          |
 | `npm run sync:docs-projects`        | Refreshes `src/data/docs-projects.fixture.json` from a local Micronaut Platform checkout.                               |
+| `npm run sync:guides`               | Refreshes `src/data/generated-guides.fixture.json` from the published guides manifest.                                  |
 | `npm run render:docs`               | Renders generated docs fragments and the docs project catalog.                                                          |
 | `npm run render:guides`             | Renders generated guide fragments and the guide manifest.                                                               |
 | `npm run prepare:generated-docs`    | Alias for `render:docs`, used by docs preparation flows.                                                                |

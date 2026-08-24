@@ -50,6 +50,16 @@ jobs:
           echo "DEFAULT_GITHUB_PAGES_ORIGIN=$default_github_pages_origin" >> "$GITHUB_ENV"
           echo "MICRONAUT_GITHUB_PAGES_ORIGIN=$github_pages_origin" >> "$GITHUB_ENV"
 
+      # The main surface renders no guide content, so it builds its search
+      # index from the checked-in guide catalog. Refreshing it here keeps the
+      # index describing the guides that are actually published; the catalog
+      # in the tree is only the offline fallback. A failure fails the deploy
+      # rather than quietly publishing an index that is missing guides.
+      - name: Sync the published guide catalog
+        env:
+          MICRONAUT_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
+        run: npm run sync:guides
+
       - name: Build web
         env:
           MICRONAUT_DEPLOY_SURFACE: main

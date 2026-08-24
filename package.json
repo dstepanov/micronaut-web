@@ -7,6 +7,7 @@
     "check": "npm run typecheck && npm run typecheck:scripts && npm run style && npm run test:asciidoc && npm run test:docs && npm run test:guides && npm run test:main-site && npm run test:deployment && node scripts/validate-docs-snippet-style-sharing.ts",
     "snippet-styles": "node scripts/validate-docs-snippet-style-sharing.ts",
     "sync:docs-projects": "node scripts/sync-docs-fixture.ts",
+    "sync:guides": "node scripts/sync-guides-fixture.ts",
     "render:docs": "node scripts/render-docs.ts",
     "render:guides": "node scripts/render-guides.ts",
     "prepare:generated-docs": "npm run render:docs",
