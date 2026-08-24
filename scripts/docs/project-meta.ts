@@ -1,5 +1,7 @@
 import path from "node:path";
 
+import { projectApiBaseUri } from "../asciidoc/api-links.ts";
+
 import type { DocsProject, Properties } from "./project-manifest.ts";
 
 export function renderAttributes(
@@ -52,7 +54,9 @@ export function renderAttributes(
     docdir: submoduleDirectory,
   };
   if (!attributes.api) {
-    attributes.api = `assets/${project.slug}/docs/api`;
+    // Direct `{api}/...` links share the canonical javadoc host with the
+    // `api:` macros; the local assets tree never contained javadoc.
+    attributes.api = projectApiBaseUri({ project });
   }
   if (!attributes.githubSlug && project.repositoryUrl.includes("github.com/")) {
     attributes.githubSlug = project.repositoryUrl

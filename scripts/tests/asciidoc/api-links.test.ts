@@ -47,31 +47,31 @@ describe("apiLink", () => {
     [
       "api",
       "context.BeanContext",
-      "assets/core/docs/api/io/micronaut/context/BeanContext.html",
+      "https://docs.micronaut.io/latest/api/io/micronaut/context/BeanContext.html",
       "BeanContext",
     ],
     [
       "api",
       "io.micronaut.context.BeanContext.getBean(Class)",
-      "assets/core/docs/api/io/micronaut/context/BeanContext.html#getBean-Class-",
+      "https://docs.micronaut.io/latest/api/io/micronaut/context/BeanContext.html#getBean-Class-",
       "BeanContext.getBean(Class)",
     ],
     [
       "api",
       "http.HttpRequest$Builder",
-      "assets/core/docs/api/io/micronaut/http/HttpRequest.Builder.html",
+      "https://docs.micronaut.io/latest/api/io/micronaut/http/HttpRequest.Builder.html",
       "HttpRequest$Builder",
     ],
     [
       "api",
       "io.micronaut.http.HttpRequest.Builder",
-      "assets/core/docs/api/io/micronaut/http/HttpRequest.Builder.html",
+      "https://docs.micronaut.io/latest/api/io/micronaut/http/HttpRequest.Builder.html",
       "Builder",
     ],
     [
       "ann",
       "serde.annotation.Serdeable",
-      "assets/core/docs/api/io/micronaut/serde/annotation/Serdeable.html",
+      "https://docs.micronaut.io/latest/api/io/micronaut/serde/annotation/Serdeable.html",
       "@Serdeable",
     ],
     [
@@ -118,10 +118,27 @@ describe("apiLink", () => {
     });
   }
 
-  test("uses the project slug for local API links", () => {
+  test("routes module projects to their published repository javadoc", () => {
     assert.equal(
-      apiLink({ project: { slug: "data" } }, "api", "data.model.Page", {}).href,
-      "assets/data/docs/api/io/micronaut/data/model/Page.html",
+      apiLink(
+        { project: { slug: "data", repositoryName: "micronaut-data" } },
+        "api",
+        "data.model.Page",
+        {},
+      ).href,
+      "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/model/Page.html",
+    );
+    // The repository name wins when it differs from the slug.
+    assert.equal(
+      apiLink(
+        {
+          project: { slug: "serde", repositoryName: "micronaut-serialization" },
+        },
+        "ann",
+        "serde.annotation.Serdeable",
+        {},
+      ).href,
+      "https://micronaut-projects.github.io/micronaut-serialization/latest/api/io/micronaut/serde/annotation/Serdeable.html",
     );
   });
 
@@ -180,7 +197,7 @@ describe("apiLink", () => {
 describe("packageLink", () => {
   test("links to the package summary under the project's javadoc", () => {
     assert.deepEqual(packageLink(context, "data.annotation", {}), {
-      href: "assets/core/docs/api/io/micronaut/data/annotation/package-summary.html",
+      href: "https://docs.micronaut.io/latest/api/io/micronaut/data/annotation/package-summary.html",
       label: "io.micronaut.data.annotation",
     });
     assert.deepEqual(
@@ -190,7 +207,7 @@ describe("packageLink", () => {
         { text: "model package" },
       ),
       {
-        href: "assets/data/docs/api/io/micronaut/data/model/package-summary.html",
+        href: "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/model/package-summary.html",
         label: "model package",
       },
     );

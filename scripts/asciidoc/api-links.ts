@@ -23,6 +23,7 @@ export type ApiKind = (typeof API_MACRO_KINDS)[number];
 export type ApiMacroContext = Record<string, unknown> & {
   project?: {
     slug?: string;
+    repositoryName?: string;
   };
   attributes?: Record<string, unknown>;
 };
@@ -42,6 +43,23 @@ type ApiLibrary = {
 
 export type ResolvedLink = { href: string; label: string };
 
+/**
+ * Canonical published javadoc for the current project. `api:`/`ann:`/`pkg:`
+ * links used to target a local `assets/{slug}/docs/api` tree, but the
+ * pipeline never generates or copies javadoc, so every one of those links
+ * returned 404 on the published site.
+ */
+export function projectApiBaseUri(context: ApiMacroContext): string {
+  const projectSlug =
+    context.project?.slug || String(context.attributes?.projectSlug || "core");
+  if (projectSlug === "core") {
+    return "https://docs.micronaut.io/latest/api";
+  }
+  const repositoryName =
+    context.project?.repositoryName || `micronaut-${projectSlug}`;
+  return `https://micronaut-projects.github.io/${repositoryName}/latest/api`;
+}
+
 export function packageLink(
   context: ApiMacroContext,
   target: string,
@@ -51,10 +69,8 @@ export function packageLink(
   if (!packageName.startsWith("io.micronaut.")) {
     packageName = `io.micronaut.${packageName}`;
   }
-  const projectSlug =
-    context.project?.slug || String(context.attributes?.projectSlug || "core");
   return {
-    href: `assets/${projectSlug}/docs/api/${packageName.replaceAll(".", "/")}/package-summary.html`,
+    href: `${projectApiBaseUri(context)}/${packageName.replaceAll(".", "/")}/package-summary.html`,
     label: macroText(attrs) || packageName,
   };
 }
@@ -122,16 +138,15 @@ function apiLibrary(
   kind: ApiKind,
   attrs: MacroAttributes,
 ): ApiLibrary {
-  const projectSlug = context.project?.slug || "core";
-  const localApi = `assets/${projectSlug}/docs/api`;
+  const projectApi = projectApiBaseUri(context);
   const libraries: Record<ApiKind, ApiLibrary> = {
     api: {
-      defaultUri: localApi,
+      defaultUri: projectApi,
       packagePrefix: "io.micronaut.",
       attributeKey: null,
     },
     ann: {
-      defaultUri: localApi,
+      defaultUri: projectApi,
       packagePrefix: "io.micronaut.",
       attributeKey: null,
     },
