@@ -54,8 +54,8 @@ const generatedGuidePages = [
     expectedText: "Download and unzip the source",
     requireDependency: true,
     requireProperties: true,
-    sourceLanguage: "kotlin",
-    slug: "micronaut-http-client-maven-kotlin",
+    sourceLanguage: "groovy",
+    slug: "micronaut-http-client-maven-groovy",
     title: httpClientGuideTitle,
   },
   {
@@ -346,10 +346,10 @@ test("guide overview redirects to the preferred variant and exposes variant navi
     guideNavigation.getByRole("link", { name: "Java / Gradle" }),
   ).toHaveAttribute("aria-current", "page");
   await expect(
-    guideNavigation.getByRole("link", { name: "Kotlin / Maven" }),
+    guideNavigation.getByRole("link", { name: "Groovy / Maven" }),
   ).toHaveAttribute(
     "href",
-    guideHrefPattern("micronaut-http-client-maven-kotlin.html"),
+    guideHrefPattern("micronaut-http-client-maven-groovy.html"),
   );
 
   const guidePageIndex = page.locator('aside[aria-label="In this section"]');

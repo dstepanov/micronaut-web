@@ -757,6 +757,24 @@ test("external source checkouts stay inside the GitHub workspace", async () => {
   assert.doesNotMatch(guidesWorkflow, /runner\.temp/);
 });
 
+test("guides publish builds the sample projects its snippets and downloads come from", async () => {
+  const workflow = await fs.readFile(
+    path.join(projectDirectory, ".github", "workflows", "deploy-guides.yml"),
+    "utf8",
+  );
+
+  assert.match(workflow, /uses:\s*actions\/setup-java/);
+  // The generation tasks do not declare the Java version as an input, so a
+  // cached entry from one Java version is a valid hit under another.
+  assert.match(workflow, /gradlew --no-build-cache [^\n]*generateCodeZip/);
+  // A guide page links its own archive, and the build writes a redirect stub
+  // in its place; publishing the stubs points every download at this site.
+  assert.match(
+    workflow,
+    /cp external\/micronaut-guides\/build\/dist\/\*\.zip dist\//,
+  );
+});
+
 test("validation runs fixture-based docs and guides tests without external checkouts", async () => {
   const workflow = await fs.readFile(
     path.join(projectDirectory, ".github", "workflows", "validate-build.yml"),
