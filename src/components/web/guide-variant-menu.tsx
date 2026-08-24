@@ -75,9 +75,9 @@ export function GuideVariantMenu({
     if (!preferredVariant) {
       return;
     }
-    // The static card links (title and "Read") are prerendered with the
+    // The static links (title and "Read") are prerendered with the
     // build-time default; re-point them at the preferred variant.
-    const card = triggerRef.current?.closest("[data-slot=card]");
+    const card = triggerRef.current?.closest("[data-guide-link-scope]");
     for (const link of card?.querySelectorAll<HTMLAnchorElement>(
       "a[data-guide-link]",
     ) ?? []) {

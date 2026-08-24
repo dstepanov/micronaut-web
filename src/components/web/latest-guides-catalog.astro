@@ -1,7 +1,4 @@
 ---
-import { ChevronRightIcon } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,13 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import GuideListRow from "@/components/web/guide-list-row.astro";
 import LatestGuideCard from "@/components/web/latest-guide-card.astro";
 import { GuideVariantPreferencePicker } from "@/components/web/guide-variant-preference";
-import {
-  guideTagPath,
-  latestGuides,
-  type GeneratedGuide,
-} from "@/lib/generated-guides";
+import { latestGuides, type GeneratedGuide } from "@/lib/generated-guides";
 import { withBasePath } from "@/lib/base-path";
 
 type Props = {
@@ -29,6 +23,7 @@ type Props = {
 type SortMode = "latest" | "title" | "duration";
 
 const { guides, activeTag, root = "/guides" } = Astro.props;
+const rootPath = `${root.replace(/\/+$/, "")}/`;
 const searchParams = Astro.url.searchParams;
 const query = (searchParams.get("q") || "").trim();
 const selectedCategory = (searchParams.get("category") || "").trim();
@@ -36,10 +31,6 @@ const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
 const sortMode: SortMode =
   sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
-const rootPath = `${root.replace(/\/+$/, "")}/`;
-const tags = Array.from(new Set(guides.flatMap((guide) => guide.tags))).sort(
-  (left, right) => left.localeCompare(right),
-);
 const visibleGuides = sortGuides(
   guides.filter(
     (guide) =>
@@ -51,7 +42,11 @@ const visibleGuides = sortGuides(
 );
 // The index used to list 54 category sections in latest-guide order, with
 // Getting Started last and no way to jump between them. Order the journey
-// explicitly, give every section an anchor, and collapse long sections.
+// explicitly. With ~230 guides the catalog is too large to list outright, so
+// the default view is a category directory; picking a category (or
+// searching) swaps it for the matching guides as compact rows. Everything is
+// prerendered: `?category=` and `?q=` are applied by the client filter
+// script on the static page.
 const CATEGORY_ORDER = [
   "Getting Started",
   "Core Basics",
@@ -71,12 +66,6 @@ const CATEGORY_ORDER = [
 const categoryRank = new Map(
   CATEGORY_ORDER.map((category, index) => [category, index]),
 );
-const COLLAPSED_CARD_COUNT = 6;
-// Only the first few journey sections stay open. 52 sections rendered in full
-// made the index ~32,000px tall even with per-section card collapsing, because
-// most categories hold only one or two cards; the height came from the sheer
-// number of sections.
-const OPEN_SECTION_COUNT = 4;
 const categoryGroups = new Map<string, GeneratedGuide[]>();
 for (const guide of visibleGuides) {
   const category = guide.categories[0] || "Guides";
@@ -102,6 +91,10 @@ function categorySlug(category: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function categoryHref(category: string) {
+  return withBasePath(`${rootPath}?category=${categorySlug(category)}`);
 }
 
 function matchesCategory(guide: GeneratedGuide, category: string) {
@@ -165,34 +158,6 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
     );
   });
 }
-
-function filterHref(
-  next: Partial<{ q: string; category: string; tag: string; sort: SortMode }>,
-) {
-  const params = new URLSearchParams();
-  const nextQuery = next.q ?? query;
-  const nextCategory = next.category ?? selectedCategory;
-  const nextTag = next.tag ?? selectedTag;
-  const nextSort = next.sort ?? sortMode;
-  if (nextQuery) {
-    params.set("q", nextQuery);
-  }
-  if (nextCategory) {
-    params.set("category", nextCategory);
-  }
-  if (nextTag) {
-    params.set("tag", nextTag);
-  }
-  if (nextSort !== "latest") {
-    params.set("sort", nextSort);
-  }
-  const suffix = params.toString();
-  return withBasePath(`${rootPath}${suffix ? `?${suffix}` : ""}`);
-}
-
-function tagHref(tag: string) {
-  return withBasePath(guideTagPath(tag, root).replace(/\.html$/, "/"));
-}
 ---
 
 <main
@@ -254,24 +219,33 @@ function tagHref(tag: string) {
   }
 
   {
-    tags.length > 0 && (
-      <section class="flex flex-wrap gap-2">
-        {tags.slice(0, 80).map((tag) => (
-          <a
-            href={tagHref(tag)}
-            class="no-underline"
-            aria-label={`Filter guides tagged ${tag}`}
-          >
-            <Badge variant={tag === selectedTag ? "default" : "outline"}>
-              {tag}
-            </Badge>
-          </a>
-        ))}
+    !hasFilters && (
+      <section class="grid gap-4" data-guides-directory>
+        <h2 class="text-2xl font-semibold tracking-tight">
+          Browse by Category
+        </h2>
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {orderedCategoryGroups.map(([category, categoryGuides]) => (
+            <a
+              href={categoryHref(category)}
+              class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 no-underline transition-colors hover:border-brand/50 hover:bg-accent"
+            >
+              <span class="font-medium">{category}</span>
+              <span class="text-sm text-muted-foreground tabular-nums">
+                {categoryGuides.length}
+              </span>
+            </a>
+          ))}
+        </div>
       </section>
     )
   }
 
-  <div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start">
+  <div
+    class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start"
+    data-guides-results
+    hidden={!hasFilters}
+  >
     <nav
       class="sticky top-20 hidden max-h-[calc(100vh-6rem)] overflow-y-auto pr-2 lg:block"
       aria-label="Guide categories"
@@ -286,9 +260,10 @@ function tagHref(tag: string) {
           orderedCategoryGroups.map(([category, categoryGuides]) => (
             <li>
               <a
-                href={`#category-${categorySlug(category)}`}
-                class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground"
+                href={categoryHref(category)}
+                class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground aria-[current=true]:bg-accent aria-[current=true]:font-medium aria-[current=true]:text-foreground"
                 data-guide-category-jump-link
+                data-category={categorySlug(category)}
               >
                 <span>{category}</span>
                 <span class="text-xs text-muted-foreground/70 tabular-nums">
@@ -300,23 +275,22 @@ function tagHref(tag: string) {
         }
       </ul>
     </nav>
-    <div class="grid min-w-0 gap-7">
+    <div class="grid min-w-0 gap-9">
       <details
         class="rounded-lg border px-4 py-3 lg:hidden"
         data-guide-category-jump
       >
-        <summary class="cursor-pointer text-sm font-medium">
-          Jump to category
-        </summary>
+        <summary class="cursor-pointer text-sm font-medium">Categories</summary>
         <nav aria-label="Guide categories">
           <ul class="mt-3 grid gap-0.5 text-sm">
             {
               orderedCategoryGroups.map(([category, categoryGuides]) => (
                 <li>
                   <a
-                    href={`#category-${categorySlug(category)}`}
-                    class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground"
+                    href={categoryHref(category)}
+                    class="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground aria-[current=true]:bg-accent aria-[current=true]:font-medium aria-[current=true]:text-foreground"
                     data-guide-category-jump-link
+                    data-category={categorySlug(category)}
                   >
                     <span>{category}</span>
                     <span class="text-xs text-muted-foreground/70 tabular-nums">
@@ -329,36 +303,21 @@ function tagHref(tag: string) {
           </ul>
         </nav>
       </details>
-      <section id="guides-list" class="grid gap-7">
+      <section id="guides-list" class="grid gap-9">
         {
-          orderedCategoryGroups.map(([category, categoryGuides], index) => (
-            <details
-              class="group/category grid gap-4"
+          orderedCategoryGroups.map(([category, categoryGuides]) => (
+            <section
+              class="scroll-mt-24"
               id={`category-${categorySlug(category)}`}
               data-guide-category-group
-              open={hasFilters || index < OPEN_SECTION_COUNT}
             >
-              <summary class="flex cursor-pointer list-none items-center gap-2 rounded-md">
-                <ChevronRightIcon
-                  className="size-5 shrink-0 text-muted-foreground transition-transform group-open/category:rotate-90"
-                  aria-hidden="true"
-                />
-                <h2 class="text-2xl font-semibold tracking-tight">
-                  {category}
-                </h2>
+              <div class="flex items-baseline gap-2 border-b pb-3">
+                <h2 class="text-xl font-semibold tracking-tight">{category}</h2>
                 <span class="text-sm text-muted-foreground tabular-nums">
                   {categoryGuides.length}
                 </span>
-              </summary>
-              <div
-                class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 [&[data-collapsed]>*:nth-child(n+7)]:hidden"
-                data-guide-card-grid
-                data-collapsed={
-                  !hasFilters && categoryGuides.length > COLLAPSED_CARD_COUNT
-                    ? ""
-                    : undefined
-                }
-              >
+              </div>
+              <div class="divide-y divide-border" data-guide-card-grid>
                 {categoryGuides.map((guide) => (
                   <div
                     data-guide-card
@@ -382,23 +341,11 @@ function tagHref(tag: string) {
                     data-date={guide.publicationDate}
                     data-minutes={guide.estimatedMinutes}
                   >
-                    <LatestGuideCard guide={guide} root={root} />
+                    <GuideListRow guide={guide} root={root} />
                   </div>
                 ))}
               </div>
-              {!hasFilters && categoryGuides.length > COLLAPSED_CARD_COUNT && (
-                <button
-                  type="button"
-                  class:list={[
-                    buttonVariants({ size: "sm", variant: "outline" }),
-                    "justify-self-start",
-                  ]}
-                  data-guide-show-all
-                >
-                  Show all {categoryGuides.length} guides
-                </button>
-              )}
-            </details>
+            </section>
           ))
         }
       </section>
