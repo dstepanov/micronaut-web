@@ -38,16 +38,24 @@ const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
 const sortMode: SortMode =
   sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
+const selectedLanguage = (searchParams.get("language") || "").trim();
 const categorySlug = tagSlug;
 const visibleGuides = sortGuides(
   guides.filter(
     (guide) =>
       matchesQuery(guide, query) &&
       matchesCategory(guide, selectedCategory) &&
-      matchesTag(guide, selectedTag),
+      matchesTag(guide, selectedTag) &&
+      matchesLanguage(guide, selectedLanguage),
   ),
   sortMode,
 );
+// Only a guide whose metadata opted into a Pyronaut variant renders one, so
+// the catalog offers the Python filter only where such guides exist: on a
+// guides repository without them the control would filter to nothing.
+const pythonGuideCount = guides.filter((guide) =>
+  guideLanguages(guide).includes("python"),
+).length;
 // The index used to list 54 category sections in latest-guide order, with
 // Getting Started last and no way to jump between them. With ~230 guides the
 // catalog is too large to list outright, so the default view is a category
@@ -96,7 +104,11 @@ const otherCategoryGroups = orderedCategoryGroups.filter(
   ([category]) => !categoryRank.has(category),
 );
 const hasFilters = Boolean(
-  query || selectedCategory || selectedTag || sortMode !== "latest",
+  query ||
+  selectedCategory ||
+  selectedTag ||
+  selectedLanguage ||
+  sortMode !== "latest",
 );
 const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
 
@@ -123,6 +135,17 @@ function matchesTag(guide: GeneratedGuide, tag: string) {
     return true;
   }
   return guide.tags.includes(tag);
+}
+
+function guideLanguages(guide: GeneratedGuide) {
+  return [...new Set(guide.options.map((option) => option.language))];
+}
+
+function matchesLanguage(guide: GeneratedGuide, language: string) {
+  if (!language) {
+    return true;
+  }
+  return guideLanguages(guide).includes(language);
 }
 
 function matchesQuery(guide: GeneratedGuide, value: string) {
@@ -196,6 +219,11 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
       }
       {selectedTag && <input type="hidden" name="tag" value={selectedTag} />}
       {
+        selectedLanguage && (
+          <input type="hidden" name="language" value={selectedLanguage} />
+        )
+      }
+      {
         sortMode !== "latest" && (
           <input type="hidden" name="sort" value={sortMode} />
         )
@@ -218,8 +246,26 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
       </div>
       <Button type="submit" variant="outline" className="h-11">Filter</Button>
     </form>
-    <div class="mt-5">
+    <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
       <GuideVariantPreferencePicker client:idle />
+      {
+        pythonGuideCount > 0 && (
+          <a
+            href={withBasePath(`${rootPath}?language=python`)}
+            data-guides-language-filter="python"
+            aria-pressed="false"
+            class:list={[
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "no-underline aria-pressed:border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground",
+            ]}
+          >
+            Python only
+            <span class="text-xs tabular-nums opacity-70">
+              {pythonGuideCount}
+            </span>
+          </a>
+        )
+      }
     </div>
   </header>
 
@@ -410,6 +456,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
                       .map(categorySlug)
                       .join("|")}
                     data-tags={guide.tags.map(categorySlug).join("|")}
+                    data-languages={guideLanguages(guide).join("|")}
                     data-date={guide.publicationDate}
                     data-minutes={guide.estimatedMinutes}
                   >

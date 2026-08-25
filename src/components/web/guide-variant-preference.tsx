@@ -14,11 +14,22 @@ const LANGUAGES = [
   { value: "java", label: "Java" },
   { value: "kotlin", label: "Kotlin" },
   { value: "groovy", label: "Groovy" },
+  { value: "python", label: "Python" },
 ];
 const BUILD_TOOLS = [
   { value: "gradle", label: "Gradle" },
   { value: "maven", label: "Maven" },
 ];
+const PYTHON_BUILD_TOOLS = [{ value: "pyronaut", label: "Pyronaut" }];
+
+/**
+ * Guides generate Python only for Pyronaut and Pyronaut only for Python, so
+ * the build group offers what the picked language actually builds with rather
+ * than a pairing no guide has a variant for.
+ */
+function buildToolsFor(language: string) {
+  return language === "python" ? PYTHON_BUILD_TOOLS : BUILD_TOOLS;
+}
 
 /**
  * Site-wide language/build preference for guide links. Persisted, so "Read"
@@ -56,6 +67,18 @@ export function GuideVariantPreferencePicker() {
     saveGuideVariantPreference({ ...preference, ...next });
   }
 
+  function selectLanguage(language: string) {
+    const buildTools = buildToolsFor(language);
+    update({
+      language,
+      buildTool: buildTools.some(
+        (buildTool) => buildTool.value === preference.buildTool,
+      )
+        ? preference.buildTool
+        : buildTools[0].value,
+    });
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <span className="text-sm text-muted-foreground">Preferred variant</span>
@@ -68,14 +91,14 @@ export function GuideVariantPreferencePicker() {
               preference.language === language.value ? "default" : "outline"
             }
             aria-pressed={preference.language === language.value}
-            onClick={() => update({ language: language.value })}
+            onClick={() => selectLanguage(language.value)}
           >
             {language.label}
           </Button>
         ))}
       </ButtonGroup>
       <ButtonGroup aria-label="Preferred guide build tool">
-        {BUILD_TOOLS.map((buildTool) => (
+        {buildToolsFor(preference.language).map((buildTool) => (
           <Button
             key={buildTool.value}
             size="sm"
