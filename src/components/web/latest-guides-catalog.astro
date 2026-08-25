@@ -247,7 +247,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
       <Button type="submit" variant="outline" className="h-11">Filter</Button>
     </form>
     <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
-      <GuideVariantPreferencePicker client:idle />
+      <GuideVariantPreferencePicker client:idle python={pythonGuideCount > 0} />
       {
         pythonGuideCount > 0 && (
           <a
