@@ -145,6 +145,40 @@ test("guides manifest endpoint exposes generated guide metadata", async ({
   );
 });
 
+test("top search finds a guide from the published guides manifest", async ({
+  page,
+}) => {
+  await page.goto(appPath("/guides/"));
+  // The search button is inert until the header island hydrates, and a click
+  // that lands before then opens nothing.
+  const headerIsland = page.locator(
+    'astro-island[component-export="SiteHeader"]',
+  );
+  await expect
+    .poll(() =>
+      headerIsland.evaluate((element) => !element.hasAttribute("ssr")),
+    )
+    .toBe(true);
+  await page.getByRole("button", { name: "Search Micronaut" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Search Micronaut" });
+  await expect(dialog).toBeVisible();
+  // The site index this dialog also reads carries no guides, so a guide only
+  // shows up when the guides manifest is loaded alongside it.
+  await dialog
+    .getByRole("combobox")
+    .fill("Access a database with Micronaut Data JDBC");
+  const result = dialog.getByRole("option", {
+    name: /Access a database with Micronaut Data JDBC/,
+  });
+  await expect(result).toBeVisible();
+  await result.click();
+
+  await expect(page).toHaveURL(
+    guideUrlPattern("micronaut-data-jdbc-repository-gradle-java"),
+  );
+});
+
 test("guide catalog renders static cards and hydrates only the variant menu", async ({
   page,
 }) => {

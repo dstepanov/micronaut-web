@@ -7,6 +7,7 @@ type HeaderSurface = "main" | "docs" | "guides";
 type HeaderElement = HTMLElement & {
   dataset: DOMStringMap & {
     docsSearchIndexUrl?: string;
+    guidesManifestUrl?: string;
     siteSearchIndexUrl?: string;
     docsUrl?: string;
     guidesUrl?: string;
@@ -28,6 +29,7 @@ export function mountAll(): void {
       header,
       <SiteHeader
         docsSearchIndexUrl={header.dataset.docsSearchIndexUrl}
+        guidesManifestUrl={header.dataset.guidesManifestUrl}
         siteSearchIndexUrl={header.dataset.siteSearchIndexUrl}
         navigationUrls={navigationUrls(header)}
         surface={surface(header.dataset.surface)}

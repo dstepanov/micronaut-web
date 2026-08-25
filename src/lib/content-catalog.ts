@@ -100,17 +100,17 @@ export function docsProjectFromCatalog(
 }
 
 /**
- * The site-mode search catalog. Every input is passed in because the callers
- * load the *generated* catalogs: building this from the checked-in fixtures
- * shipped an index that knew 4 of 177 guides and no posts at all.
+ * The build-time half of the site-mode search catalog: everything the surface
+ * being built actually renders. Guides are not in here — the main artifact is
+ * built without generated guide content, so a build-time guide list was the
+ * 4-guide fixture. `guideSearchItems` builds those in the browser from the
+ * guides surface's own manifest instead.
  */
 export function searchItems({
   projects,
-  guides,
   posts,
 }: {
   projects: DocsProject[];
-  guides: GeneratedGuide[];
   posts: BlogSearchPost[];
 }): SearchItem[] {
   const projectItems: SearchItem[] = projects.map((project) => ({
@@ -134,6 +134,23 @@ export function searchItems({
       terms: [project.displayName, section.title, section.summary].join(" "),
     })),
   );
+  const postItems: SearchItem[] = posts.map((post) => ({
+    kind: "Post",
+    title: post.title,
+    description: post.description,
+    href: post.href,
+    terms: [post.title, post.description, ...post.topics].join(" "),
+  }));
+  return [...projectItems, ...sectionItems, ...postItems];
+}
+
+/**
+ * The guide half of the site-mode catalog, built from the guides manifest the
+ * guides deployment publishes. Both surfaces read that manifest at search time,
+ * so the guide list is the full published set rather than whatever generated
+ * content happened to exist when the surface was built.
+ */
+export function guideSearchItems(guides: GeneratedGuide[]): SearchItem[] {
   const guideItems: SearchItem[] = guides.map((guide) => ({
     kind: "Guide",
     title: guide.title,
@@ -147,13 +164,6 @@ export function searchItems({
       ...guide.authors,
     ].join(" "),
   }));
-  const postItems: SearchItem[] = posts.map((post) => ({
-    kind: "Post",
-    title: post.title,
-    description: post.description,
-    href: post.href,
-    terms: [post.title, post.description, ...post.topics].join(" "),
-  }));
   const tagItems: SearchItem[] = Array.from(
     new Set(guides.flatMap((guide) => guide.tags)),
   )
@@ -165,13 +175,7 @@ export function searchItems({
       href: guideTagPath(tag, "/guides"),
       terms: tag,
     }));
-  return [
-    ...projectItems,
-    ...sectionItems,
-    ...guideItems,
-    ...postItems,
-    ...tagItems,
-  ];
+  return [...guideItems, ...tagItems];
 }
 
 function docsProjectSections(project: DocsCatalogProject): DocsSection[] {

@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, test } from "node:test";
 
 import {
+  guideSearchItems,
   searchItems,
   type DocsProject,
 } from "../../../src/lib/content-catalog.ts";
@@ -41,10 +42,7 @@ function guide(slug: string, title: string): GeneratedGuide {
 const projects: DocsProject[] = [];
 
 describe("site search catalog", () => {
-  test("indexes every guide and post it is given", () => {
-    const guides = Array.from({ length: 120 }, (_, index) =>
-      guide(`guide-${index}`, `Guide ${index}`),
-    );
+  test("indexes every post it is given", () => {
     const posts = Array.from({ length: 90 }, (_, index) => ({
       title: `Micronaut Framework 5.${index} Released!`,
       description: "Release announcement.",
@@ -52,16 +50,45 @@ describe("site search catalog", () => {
       topics: ["release-announcements"],
     }));
 
-    const items = searchItems({ projects, guides, posts });
+    const items = searchItems({ projects, posts });
 
-    assert.equal(items.filter((item) => item.kind === "Guide").length, 120);
     assert.equal(items.filter((item) => item.kind === "Post").length, 90);
+  });
+
+  test("indexes every guide in the published guides manifest", () => {
+    const guides = Array.from({ length: 177 }, (_, index) =>
+      guide(`guide-${index}`, `Guide ${index}`),
+    );
+
+    const items = guideSearchItems([
+      ...guides,
+      guide(
+        "micronaut-linkedin",
+        "Secure a Micronaut application with LinkedIn",
+      ),
+    ]);
+
+    assert.equal(items.filter((item) => item.kind === "Guide").length, 178);
+    // The published index once held 4 of 177 guides: it was built from the
+    // checked-in fixture on an artifact that renders no guide content.
+    assert.ok(
+      items.some(
+        (item) =>
+          item.kind === "Guide" &&
+          item.title === "Secure a Micronaut application with LinkedIn" &&
+          item.href === "/guides/micronaut-linkedin-gradle-java/",
+      ),
+    );
+    assert.ok(
+      items.some(
+        (item) => item.kind === "Tag" && item.href === "/guides/tag-jwt/",
+      ),
+    );
   });
 
   test("keeps post topics searchable and links to the post route", () => {
     const items = searchItems({
       projects,
-      guides: [],
       posts: [
         {
           title: "Micronaut Framework 5.0 with Java 25 baseline",
@@ -85,11 +112,39 @@ describe("site search catalog", () => {
       "utf8",
     );
 
-    // The published index once held 4 of 177 guides and no posts because the
-    // catalog was built from the checked-in `@/data` fixtures.
+    // The published index once held no posts because the catalog was built
+    // from the checked-in `@/data` fixtures.
     assert.doesNotMatch(route, /from "@\/data\//);
-    assert.match(route, /readGeneratedGuidesManifest/);
     assert.match(route, /loadDocsProjectCatalog/);
     assert.match(route, /getBlogPosts/);
+    // Guides stay out: this route is served by an artifact built without any
+    // generated guide content, so anything it indexed was a fixture guide.
+    assert.doesNotMatch(route, /readGeneratedGuidesManifest/);
+  });
+
+  test("search reads the guide list from the guides deployment manifest", async () => {
+    const [layout, dialog] = await Promise.all([
+      fs.readFile(
+        path.join(projectDirectory, "src", "layouts", "WebLayout.astro"),
+        "utf8",
+      ),
+      fs.readFile(
+        path.join(
+          projectDirectory,
+          "src",
+          "components",
+          "web",
+          "search-dialog.tsx",
+        ),
+        "utf8",
+      ),
+    ]);
+
+    assert.match(
+      layout,
+      /withSurfacePath\("guides", "\/guides\/manifest\.json"\)/,
+    );
+    assert.match(layout, /data-guides-manifest-url=\{guidesManifestUrl\}/);
+    assert.match(dialog, /guideSearchItems/);
   });
 });
