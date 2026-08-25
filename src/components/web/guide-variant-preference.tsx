@@ -14,8 +14,8 @@ const LANGUAGES = [
   { value: "java", label: "Java" },
   { value: "kotlin", label: "Kotlin" },
   { value: "groovy", label: "Groovy" },
-  { value: "python", label: "Python" },
 ];
+const PYTHON_LANGUAGE = { value: "python", label: "Python" };
 const BUILD_TOOLS = [
   { value: "gradle", label: "Gradle" },
   { value: "maven", label: "Maven" },
@@ -35,8 +35,18 @@ function buildToolsFor(language: string) {
  * Site-wide language/build preference for guide links. Persisted, so "Read"
  * on every card opens the preferred variant instead of the Java/Gradle
  * default; guides without an exact match fall back per `matchGuideVariant`.
+ *
+ * `python` offers the language only where guides render a Pyronaut variant,
+ * the same condition the catalog's Python filter uses: on a guides repository
+ * without them the preference is one nothing can satisfy, and because it is
+ * persisted the reader keeps a selection no card ever reflects.
  */
-export function GuideVariantPreferencePicker() {
+export function GuideVariantPreferencePicker({
+  python = false,
+}: {
+  python?: boolean;
+}) {
+  const languages = python ? [...LANGUAGES, PYTHON_LANGUAGE] : LANGUAGES;
   const [preference, setPreference] = useState<GuideVariantPreference>(
     DEFAULT_GUIDE_VARIANT_PREFERENCE,
   );
@@ -44,7 +54,13 @@ export function GuideVariantPreferencePicker() {
   useEffect(() => {
     const stored = readGuideVariantPreference();
     if (stored) {
-      setPreference(stored);
+      // A preference stored while Python was on offer would otherwise leave
+      // every language unpressed once it is not.
+      setPreference(
+        stored.language === PYTHON_LANGUAGE.value && !python
+          ? DEFAULT_GUIDE_VARIANT_PREFERENCE
+          : stored,
+      );
     }
 
     function onPreferenceChange(event: Event) {
@@ -83,7 +99,7 @@ export function GuideVariantPreferencePicker() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <span className="text-sm text-muted-foreground">Preferred variant</span>
       <ButtonGroup aria-label="Preferred guide language">
-        {LANGUAGES.map((language) => (
+        {languages.map((language) => (
           <Button
             key={language.value}
             size="sm"

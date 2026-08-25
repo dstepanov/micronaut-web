@@ -306,8 +306,26 @@ function snippetPayload(
   return { kind: "code", title, samples: [{ language, source }] };
 }
 
+/**
+ * A snippet is titled by the path a reader would find it at in their own
+ * project, so it is relative to whichever root it was resolved from. Titling
+ * everything against the guide directory published the escape path back out
+ * of it — `../../build/code/<slug>/<slug>-gradle-java/src/main/java/...` —
+ * for every file that came from a generated sample project.
+ */
 function relativeGuideFile(context: GuideRenderContext, file: string): string {
-  return path.relative(context.guide.directory, file).replaceAll(path.sep, "/");
+  const roots = [context.guide.directory, ...guideSourceRoots(context)];
+  const candidates = roots
+    .map((root) => path.relative(root, file))
+    .filter((relative) => relative && !relative.startsWith(".."))
+    .map((relative) => relative.replaceAll(path.sep, "/"));
+  // The shortest path is the closest containing root: a generated project
+  // nested under the guides repository also relativizes against that
+  // repository, but only through its own `build/code` prefix.
+  return (
+    candidates.sort((left, right) => left.length - right.length)[0] ||
+    path.relative(context.guide.directory, file).replaceAll(path.sep, "/")
+  );
 }
 
 async function findSourceFile(
