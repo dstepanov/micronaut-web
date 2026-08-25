@@ -152,6 +152,7 @@ function isActivePrimaryLink(
 
 export function SiteHeader({
   docsSearchIndexUrl,
+  guidesManifestUrl,
   siteSearchIndexUrl,
   surface = "main",
   isBlogRoute = false,
@@ -160,6 +161,7 @@ export function SiteHeader({
   navigationUrls,
 }: {
   docsSearchIndexUrl?: string;
+  guidesManifestUrl?: string;
   siteSearchIndexUrl?: string;
   surface?: SurfaceId;
   isBlogRoute?: boolean;
@@ -247,6 +249,7 @@ export function SiteHeader({
             mode={surface === "docs" ? "docs" : "site"}
             navigationUrls={navigationUrls}
             docsSearchIndexUrl={docsSearchIndexUrl}
+            guidesManifestUrl={guidesManifestUrl}
             siteSearchIndexUrl={siteSearchIndexUrl}
           />
           <Button

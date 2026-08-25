@@ -69,6 +69,10 @@ const docsSearchIndexUrl = externalSurfacePath(
 // The route only survives pruning on the main artifact, so the guides surface
 // reads it cross-origin the way docs search already reads its own index.
 const siteSearchIndexUrl = withSurfacePath("main", "/search-index.json");
+// That index carries no guides: the main artifact is built without generated
+// guide content, so search reads the guide list from the guides deployment,
+// the surface that actually renders every published guide.
+const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
 const siteHeaderFrameClass = "sticky top-0 z-40";
 // Share assets live on the main site so every surface points at one copy.
 const shareImageUrl = externalSurfacePath(
@@ -211,10 +215,12 @@ const structuredData = {
               data-guides-url={externalSurfaceUrls.guides}
               data-docs-search-index-url={docsSearchIndexUrl}
               data-site-search-index-url={siteSearchIndexUrl}
+              data-guides-manifest-url={guidesManifestUrl}
               class={siteHeaderFrameClass}
             >
               <SiteHeader
                 docsSearchIndexUrl={docsSearchIndexUrl}
+                guidesManifestUrl={guidesManifestUrl}
                 siteSearchIndexUrl={siteSearchIndexUrl}
                 navigationUrls={externalSurfaceUrls}
                 surface={surface}
@@ -229,6 +235,7 @@ const structuredData = {
           <div class={siteHeaderFrameClass}>
             <SiteHeader
               surface={surface}
+              guidesManifestUrl={guidesManifestUrl}
               siteSearchIndexUrl={siteSearchIndexUrl}
               isBlogRoute={
                 routePath === "/blog" || routePath.startsWith("/blog/")

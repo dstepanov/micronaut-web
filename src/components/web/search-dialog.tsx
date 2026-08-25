@@ -30,7 +30,8 @@ import {
   withBasePath,
   type SiteSurfaceUrls,
 } from "@/lib/base-path";
-import type { SearchItem } from "@/lib/content-catalog";
+import { guideSearchItems, type SearchItem } from "@/lib/content-catalog";
+import type { GeneratedGuide } from "@/lib/generated-guide-routing";
 
 type MainSiteSearchPage = {
   slug: string;
@@ -110,6 +111,28 @@ function SearchItemResults({
   ));
 }
 
+/** A catalog fetch never fails the dialog; a dead source just adds no rows. */
+async function fetchJson(url: string): Promise<unknown> {
+  try {
+    const response = await fetch(url);
+    return response.ok ? await response.json() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchIndexItems(url: string): Promise<SearchItem[]> {
+  const payload = (await fetchJson(url)) as { items?: SearchItem[] };
+  return Array.isArray(payload?.items) ? payload.items : [];
+}
+
+async function fetchGuideItems(url: string): Promise<SearchItem[]> {
+  const manifest = (await fetchJson(url)) as { guides?: GeneratedGuide[] };
+  return Array.isArray(manifest?.guides)
+    ? guideSearchItems(manifest.guides)
+    : [];
+}
+
 const docsScopes = [
   "All",
   "Projects",
@@ -132,6 +155,7 @@ function scopeForItem(item: SearchItem): Exclude<DocsScope, "All"> {
 export function SearchDialog({
   className,
   docsSearchIndexUrl,
+  guidesManifestUrl,
   siteSearchIndexUrl,
   mainSitePages = [],
   mode = "site",
@@ -140,6 +164,7 @@ export function SearchDialog({
 }: {
   className?: string;
   docsSearchIndexUrl?: string;
+  guidesManifestUrl?: string;
   siteSearchIndexUrl?: string;
   mainSitePages?: MainSiteSearchPage[];
   mode?: "site" | "docs";
@@ -166,7 +191,7 @@ export function SearchDialog({
   const guides = useMemo(
     () =>
       rankSearchItems(
-        items.filter((item) => item.href.startsWith("/guides/")),
+        items.filter((item) => item.kind === "Guide"),
         searchQuery,
       ).slice(0, 40),
     [items, searchQuery],
@@ -220,25 +245,43 @@ export function SearchDialog({
     if (!open || items.length) {
       return;
     }
-    const indexUrl =
-      mode === "docs"
-        ? docsSearchIndexUrl || withBasePath("/docs/search-index.json")
-        : siteSearchIndexUrl || withBasePath("/search-index.json");
     let cancelled = false;
-    fetch(indexUrl)
-      .then((response) => (response.ok ? response.json() : undefined))
-      .then((payload) => {
-        if (!cancelled && Array.isArray(payload?.items)) {
-          setItems(payload.items);
-        }
-      })
-      .catch(() => {
-        // Leaves the dialog on its "No results found." state.
-      });
+    // Site mode reads two catalogs: the surface's own index, and the guide
+    // manifest the guides deployment publishes. Guides are not in the index
+    // because the artifact that serves it is built without guide content, so
+    // an index-only search knew 4 of the 177 published guides.
+    const sources: Array<Promise<SearchItem[]>> =
+      mode === "docs"
+        ? [
+            fetchIndexItems(
+              docsSearchIndexUrl || withBasePath("/docs/search-index.json"),
+            ),
+          ]
+        : [
+            fetchIndexItems(
+              siteSearchIndexUrl || withBasePath("/search-index.json"),
+            ),
+            fetchGuideItems(
+              guidesManifestUrl || withBasePath("/guides/manifest.json"),
+            ),
+          ];
+    Promise.all(sources).then((loaded) => {
+      const merged = loaded.flat();
+      if (!cancelled && merged.length) {
+        setItems(merged);
+      }
+    });
     return () => {
       cancelled = true;
     };
-  }, [docsSearchIndexUrl, items.length, mode, open, siteSearchIndexUrl]);
+  }, [
+    docsSearchIndexUrl,
+    guidesManifestUrl,
+    items.length,
+    mode,
+    open,
+    siteSearchIndexUrl,
+  ]);
 
   // cmdk's own filter is disabled, so the static action has to be matched by
   // hand; otherwise "Launch a project" answered every query.
