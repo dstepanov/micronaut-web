@@ -14,6 +14,7 @@ import {
   cliCommandForApp,
   featuresWords,
   guideSourceRoots,
+  languageDirectoryRoots,
   languageExtension,
   type GuideRenderContext,
 } from "../model.ts";
@@ -527,8 +528,9 @@ function includeTargetCandidates(
     candidates.push(withoutAttributeRoot.slice(prefixedSlug.length));
   }
 
+  const languageRoots = languageDirectoryRoots(context.option.language);
   for (const candidate of [...candidates]) {
-    if (candidate.startsWith("src/")) {
+    if (languageRoots.some((root) => candidate.startsWith(`${root}/`))) {
       candidates.push(`${context.option.language}/${candidate}`);
     }
   }

@@ -61,8 +61,11 @@ export const DEFAULT_GUIDE_SLUGS = [
   "micronaut-data-jdbc-repository",
 ];
 
+const LANGUAGES = ["java", "kotlin", "groovy", "python"];
 const DEFAULT_LANGUAGES = ["java", "kotlin", "groovy"];
 const DEFAULT_BUILD_TOOLS = ["gradle", "maven"];
+export const PYTHON_LANGUAGE = "python";
+export const PYTHON_BUILD_TOOL = "pyronaut";
 
 export async function readGuides(
   guidesRepositoryDirectory: string,
@@ -111,14 +114,11 @@ export function selectGuides(
 export function guideOptions(guide: Guide): GuideOption[] {
   const options: GuideOption[] = [];
   for (const buildTool of guide.buildTools) {
-    for (const language of DEFAULT_LANGUAGES) {
-      if (!guide.languages.includes(language)) {
-        continue;
-      }
-      // The guides build refuses to generate a Maven/Kotlin project
-      // (`GuideUtils.isSupported`), so this combination has neither a sample
-      // project to render snippets from nor a zip to download.
-      if (buildTool === "maven" && language === "kotlin") {
+    for (const language of LANGUAGES) {
+      if (
+        !guide.languages.includes(language) ||
+        !isSupportedOption(buildTool, language)
+      ) {
         continue;
       }
       options.push({
@@ -136,6 +136,19 @@ export function guideOptions(guide: Guide): GuideOption[] {
     }
   }
   return options;
+}
+
+/**
+ * Mirrors `GuideUtils.isSupported` in the guides build: Python is generated
+ * only for Pyronaut and Pyronaut only for Python, and a Maven/Kotlin project
+ * is never generated. A combination the build skips has neither a sample
+ * project to render snippets from nor a zip to download.
+ */
+function isSupportedOption(buildTool: string, language: string): boolean {
+  if (buildTool === PYTHON_BUILD_TOOL || language === PYTHON_LANGUAGE) {
+    return buildTool === PYTHON_BUILD_TOOL && language === PYTHON_LANGUAGE;
+  }
+  return !(buildTool === "maven" && language === "kotlin");
 }
 
 export function defaultGuideOption(guide: Guide): GuideOption | undefined {
@@ -161,6 +174,7 @@ export function languageExtension(language: string): string {
     {
       groovy: "groovy",
       kotlin: "kt",
+      python: "py",
     }[language] || "java"
   );
 }
@@ -175,7 +189,62 @@ export function languageSourceDirectory(
   if (language === "groovy") {
     return sourceSet === "test" ? "src/test/groovy" : "src/main/groovy";
   }
+  if (language === PYTHON_LANGUAGE) {
+    return sourceSet === "test" ? "tests" : "src";
+  }
   return sourceSet === "test" ? "src/test/java" : "src/main/java";
+}
+
+/**
+ * Pyronaut projects keep configuration beside the sources rather than under a
+ * `resources` source set, matching `sourceConventionFolder` in the guides
+ * build. Guides also check in resources no variant rewrites — views, static
+ * assets, migrations — once under the JVM layout and share them across every
+ * option, so a Python lookup falls back to that shared copy.
+ */
+export function resourceSourceDirectories(
+  language: string,
+  sourceSet: string,
+): string[] {
+  const shared = `src/${sourceSet}/resources`;
+  if (language === PYTHON_LANGUAGE) {
+    return [sourceSet === "test" ? "tests-config" : "config", shared];
+  }
+  return [shared];
+}
+
+/**
+ * The directories a guide keeps its per-language files under. JVM options
+ * put sources, tests, and resources below `src`; a Pyronaut project makes
+ * them siblings, so an include below any of them is language-specific.
+ */
+export function languageDirectoryRoots(language: string): string[] {
+  return language === PYTHON_LANGUAGE
+    ? ["src", "tests", "config", "tests-config"]
+    : ["src"];
+}
+
+/**
+ * A guide macro targets a class name even for Python, where the file it names
+ * is a snake_case module: `HomeController` is `home_controller.py`. Mirrors
+ * `MacroUtils.pythonModuleName` in the guides build.
+ */
+export function pythonModuleName(target: string): string {
+  if (target.includes("_") || target === target.toLowerCase()) {
+    return target;
+  }
+  return target
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
+    .toLowerCase();
+}
+
+/** A Python test module trades the JVM `Test` suffix for a `test_` prefix. */
+export function pythonTestModuleName(target: string): string {
+  const name = pythonModuleName(
+    target.endsWith("Test") ? target.slice(0, -"Test".length) : target,
+  );
+  return name.startsWith("test_") ? name : `test_${name}`;
 }
 
 export function appFeatures(
@@ -233,8 +302,16 @@ function normalizeGuideMetadata(
     categories: strings(metadata.categories),
     publicationDate: string(metadata.publicationDate, "1970-01-01"),
     tags: strings(metadata.tags),
-    languages: lowerList(metadata.languages, DEFAULT_LANGUAGES),
-    buildTools: lowerList(metadata.buildTools, DEFAULT_BUILD_TOOLS),
+    languages: withPythonVariant(
+      lowerList(metadata.languages, DEFAULT_LANGUAGES),
+      PYTHON_LANGUAGE,
+      metadata.python === true,
+    ),
+    buildTools: withPythonVariant(
+      lowerList(metadata.buildTools, DEFAULT_BUILD_TOOLS),
+      PYTHON_BUILD_TOOL,
+      metadata.python === true,
+    ),
     testFramework: string(metadata.testFramework, ""),
     cloud: string(metadata.cloud, ""),
     publish: metadata.publish !== false,
@@ -279,7 +356,26 @@ function normalizeApps(value: unknown): GuideApp[] {
   });
 }
 
+/**
+ * `python: true` is how a guide's metadata opts into a Pyronaut variant. The
+ * guides build's parser adds the language and its build tool to the lists the
+ * option matrix is built from, so the site has to as well; a guide that spells
+ * either out itself already carries it.
+ */
+function withPythonVariant(
+  values: string[],
+  value: string,
+  python: boolean,
+): string[] {
+  return python && !values.includes(value) ? [...values, value] : values;
+}
+
 function testFrameworkFor(guide: Guide, language: string): string {
+  // Pyronaut projects are always generated with pytest, whatever test
+  // framework the guide names for its JVM variants.
+  if (language === PYTHON_LANGUAGE) {
+    return "pytest";
+  }
   if (guide.testFramework) {
     return guide.testFramework.toLowerCase();
   }
@@ -292,6 +388,7 @@ function languageLabel(language: string): string {
       groovy: "Groovy",
       java: "Java",
       kotlin: "Kotlin",
+      python: "Python",
     }[language] || language
   );
 }
@@ -301,6 +398,7 @@ function buildToolLabel(buildTool: string): string {
     {
       gradle: "Gradle",
       maven: "Maven",
+      pyronaut: "Pyronaut",
     }[buildTool] || buildTool
   );
 }

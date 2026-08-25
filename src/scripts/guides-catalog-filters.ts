@@ -12,11 +12,17 @@ if (catalog) {
   const homeGrid = new Map<HTMLElement, HTMLElement | null>(
     cards.map((card) => [card, card.parentElement]),
   );
+  const languageFilters = Array.from(
+    catalog.querySelectorAll<HTMLAnchorElement>(
+      "[data-guides-language-filter]",
+    ),
+  );
 
   type FilterState = {
     query: string;
     category: string;
     tag: string;
+    language: string;
     sort: string;
   };
 
@@ -26,13 +32,16 @@ if (catalog) {
       query: (params.get("q") || "").trim(),
       category: normalizeTopic(params.get("category") || ""),
       tag: normalizeTopic(activeTag || params.get("tag") || ""),
+      language: (params.get("language") || "").trim().toLowerCase(),
       sort: params.get("sort") || "latest",
     };
   };
 
   const render = (state: FilterState) => {
-    const { query, category, tag, sort } = state;
-    const hasFilters = Boolean(query || category || tag || sort !== "latest");
+    const { query, category, tag, language, sort } = state;
+    const hasFilters = Boolean(
+      query || category || tag || language || sort !== "latest",
+    );
     const normalizedQuery = query.toLowerCase();
     const querySlug = normalizeTopic(query);
 
@@ -42,6 +51,7 @@ if (catalog) {
       homeGrid.get(card)?.append(card);
       card.hidden = !guideCardMatches(card, {
         category,
+        language,
         normalizedQuery,
         querySlug,
         tag,
@@ -128,6 +138,27 @@ if (catalog) {
     if (emptyState) {
       emptyState.hidden = !hasFilters || visibleCount > 0;
     }
+
+    // The control is prerendered in its unpressed state, so it carries both
+    // halves of the toggle: pressed, its link clears the filter it applied.
+    for (const control of languageFilters) {
+      const pressed = control.dataset.guidesLanguageFilter === language;
+      control.setAttribute("aria-pressed", String(pressed));
+      control.href = filterHref(
+        pressed ? "" : control.dataset.guidesLanguageFilter || "",
+      );
+    }
+  };
+
+  const filterHref = (language: string) => {
+    const params = new URLSearchParams(window.location.search);
+    if (language) {
+      params.set("language", language);
+    } else {
+      params.delete("language");
+    }
+    const suffix = params.toString();
+    return `${window.location.pathname}${suffix ? `?${suffix}` : ""}`;
   };
 
   const initial = readState();
@@ -183,6 +214,7 @@ function guideCardMatches(
   card: HTMLElement,
   filters: {
     category: string;
+    language: string;
     normalizedQuery: string;
     querySlug: string;
     tag: string;
@@ -191,6 +223,7 @@ function guideCardMatches(
   const search = card.dataset.search || "";
   const categories = splitDatasetList(card.dataset.categories);
   const tags = splitDatasetList(card.dataset.tags);
+  const languages = splitDatasetList(card.dataset.languages);
 
   if (
     filters.normalizedQuery &&
@@ -203,6 +236,9 @@ function guideCardMatches(
     return false;
   }
   if (filters.tag && !tags.includes(filters.tag)) {
+    return false;
+  }
+  if (filters.language && !languages.includes(filters.language)) {
     return false;
   }
   return true;

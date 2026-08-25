@@ -20,8 +20,9 @@ import {
   gradleScope,
   mavenDependencyLines,
   mavenScope,
+  pyronautScope,
 } from "../../shared/dependency-coordinates.ts";
-import type { GuideRenderContext } from "../model.ts";
+import { PYTHON_BUILD_TOOL, type GuideRenderContext } from "../model.ts";
 import { GUIDE_DEPENDENCIES_BLOCK } from "./register-guide-preprocessor.ts";
 
 const DEPENDENCY_MACRO_LINE = /^dependency::([^\[]*)\[(.*)]\s*$/;
@@ -72,8 +73,8 @@ function parseDependencyMacroLine(line: string): MacroPayload | undefined {
     : undefined;
 }
 
-// One card for the active build tool: Gradle lines or Maven XML for every
-// dependency in the group.
+// One card for the active build tool: a Pyronaut dependency table, Gradle
+// lines, or Maven XML for every dependency in the group.
 export function dependencySnippetPayload(
   macros: MacroPayload[],
   context: GuideRenderContext,
@@ -86,7 +87,21 @@ export function dependencySnippetPayload(
     guideDependency(macro.target, macro.attributes, language),
   );
 
-  if (String(context.option.buildTool || "").toLowerCase() === "maven") {
+  const buildTool = String(context.option.buildTool || "").toLowerCase();
+  if (buildTool === PYTHON_BUILD_TOOL) {
+    return {
+      kind: "dependency",
+      title: "pyproject.toml",
+      samples: [
+        {
+          language: "toml",
+          highlighterLanguage: "toml",
+          source: pyronautDependencySource(dependencies),
+        },
+      ],
+    };
+  }
+  if (buildTool === "maven") {
     return {
       kind: "dependency",
       title: "pom.xml",
@@ -119,6 +134,39 @@ export function dependencySnippetPayload(
   };
 }
 
+/**
+ * A Pyronaut project declares dependencies as three coordinate lists under
+ * `[tool.pyronaut.dependencies]` rather than one entry per scope, so a group
+ * renders as a single table with the empty lists left out. Mirrors
+ * `DependencyLines.pyronautAsciidoc` in the guides build.
+ */
+function pyronautDependencySource(dependencies: Dependency[]): string {
+  const lines = ["[tool.pyronaut.dependencies]"];
+  for (const scope of ["runtime", "build", "test"]) {
+    const scoped = dependencies.filter(
+      (dependency) => dependency.pyronautScope === scope,
+    );
+    if (!scoped.length) {
+      continue;
+    }
+    lines.push(`${scope} = [`);
+    for (const dependency of scoped) {
+      const coordinate = [
+        dependency.groupId,
+        dependency.artifactId,
+        dependency.version,
+      ]
+        .filter(Boolean)
+        .join(":");
+      lines.push(
+        `    "${coordinate}",${dependency.callout ? ` # <${dependency.callout}>` : ""}`,
+      );
+    }
+    lines.push("]");
+  }
+  return lines.join("\n");
+}
+
 // Guide macros name the artifact directly and carry the group in attributes;
 // `groupdId` is a typo that existing guides rely on.
 function guideDependency(
@@ -132,6 +180,7 @@ function guideDependency(
     version: attributes.version,
     gradleScope: gradleScope(attributes.scope, language),
     mavenScope: mavenScope(attributes.scope),
+    pyronautScope: pyronautScope(attributes.scope),
     pom: String(attributes.pom || "false").toLowerCase() === "true",
     versionProperty: attributes.versionProperty,
     callout: attributes.callout,

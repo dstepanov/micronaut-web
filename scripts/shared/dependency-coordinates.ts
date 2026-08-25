@@ -12,6 +12,8 @@ export type Dependency = {
   gradleScope: string;
   // Resolved Maven scope, e.g. `compile`.
   mavenScope: string;
+  // Resolved Pyronaut dependency list, one of `runtime`, `build`, or `test`.
+  pyronautScope?: string;
   // A BOM imported as a Gradle platform / Maven dependencyManagement import.
   pom?: boolean;
   // Maven property used as the version of an annotation processor path when
@@ -53,6 +55,17 @@ const MAVEN_SCOPES: Record<string, string> = {
   testRuntimeOnly: "test",
 };
 
+const PYRONAUT_SCOPES: Record<string, string> = {
+  annotationProcessor: "build",
+  compileOnly: "build",
+  test: "test",
+  testAnnotationProcessor: "test",
+  testCompile: "test",
+  testCompileOnly: "test",
+  testImplementation: "test",
+  testRuntimeOnly: "test",
+};
+
 // Maps the scope written in a macro (Gradle or Maven vocabulary) to the Gradle
 // configuration it should render as.
 export function gradleScope(
@@ -79,6 +92,18 @@ export function mavenScope(scope: string | undefined): string {
     return "compile";
   }
   return MAVEN_SCOPES[scope] || scope;
+}
+
+/**
+ * A `pyproject.toml` sorts dependencies into three lists rather than naming a
+ * scope per dependency, so every JVM scope collapses to one of them. Mirrors
+ * `DependencyLines.toPyronautScope` in the guides build.
+ */
+export function pyronautScope(scope: string | undefined): string {
+  if (!scope) {
+    return "runtime";
+  }
+  return PYRONAUT_SCOPES[scope] || "runtime";
 }
 
 export function isAnnotationProcessor(dependency: Dependency): boolean {

@@ -23,6 +23,10 @@ import {
   guideSourceRoots,
   languageExtension,
   languageSourceDirectory,
+  PYTHON_LANGUAGE,
+  pythonModuleName,
+  pythonTestModuleName,
+  resourceSourceDirectories,
   type GuideRenderContext,
 } from "../model.ts";
 
@@ -314,23 +318,29 @@ async function findSourceFile(
 ): Promise<string | undefined> {
   const app = attributes.app || "";
   const sourceSet = kind === "main" ? "main" : "test";
+  // A Pyronaut project has one file layout, so its test sources are the raw
+  // test sources; only the JVM options keep a framework-specific source set.
+  const python = context.option.language === PYTHON_LANGUAGE;
   const extension =
-    kind === "raw-test"
+    kind === "raw-test" && !python
       ? rawTestExtension(context.option.testFramework)
       : languageExtension(context.option.language);
   const sourceDirectory =
-    kind === "raw-test"
+    kind === "raw-test" && !python
       ? rawTestSourceDirectory(context.option.testFramework)
       : languageSourceDirectory(context.option.language, sourceSet);
-  const className =
-    kind === "test" && target.endsWith("Test")
+  const fileName = python
+    ? sourceSet === "test"
+      ? pythonTestModuleName(target)
+      : pythonModuleName(target)
+    : kind === "test" && target.endsWith("Test")
       ? `${target.slice(0, -"Test".length)}${context.option.testFramework === "spock" ? "Spec" : "Test"}`
       : target;
   const sourcePath = path.join(
     sourceDirectory,
     "example",
     "micronaut",
-    `${className}.${extension}`,
+    `${fileName}.${extension}`,
   );
   const relativePath = path.join(app, sourcePath);
   return findExisting(
@@ -350,7 +360,7 @@ async function findSourceFile(
         path.join(root, context.option.language, sourcePath),
       ]),
     ],
-    path.basename(`${className}.${extension}`),
+    path.basename(`${fileName}.${extension}`),
     sourceSet,
   );
 }
@@ -362,15 +372,18 @@ async function findResourceFile(
   sourceSet: ResourceSourceSet,
 ): Promise<string | undefined> {
   const app = attributes.app || "";
-  const resourcePathWithoutApp = target.startsWith("../")
-    ? path.join(`src/${sourceSet}`, target.slice("../".length))
-    : path.join(`src/${sourceSet}`, "resources", target);
-  const resourcePath = target.startsWith("../")
-    ? path.join(app, `src/${sourceSet}`, target.slice("../".length))
-    : path.join(app, `src/${sourceSet}`, "resources", target);
-  return findExisting(
-    context,
-    [
+  const resourceDirectories = resourceSourceDirectories(
+    context.option.language,
+    sourceSet,
+  );
+  const candidates = resourceDirectories.flatMap((resourceDirectory) => {
+    const resourcePathWithoutApp = target.startsWith("../")
+      ? path.join(`src/${sourceSet}`, target.slice("../".length))
+      : path.join(resourceDirectory, target);
+    const resourcePath = target.startsWith("../")
+      ? path.join(app, `src/${sourceSet}`, target.slice("../".length))
+      : path.join(app, resourceDirectory, target);
+    return [
       path.join(context.guide.directory, resourcePath),
       path.join(
         context.guide.directory,
@@ -388,9 +401,13 @@ async function findResourceFile(
         path.join(root, app, context.option.language, resourcePathWithoutApp),
         path.join(root, context.option.language, resourcePathWithoutApp),
       ]),
-    ],
+    ];
+  });
+  return findExisting(
+    context,
+    candidates,
     path.basename(target),
-    `src/${sourceSet}/resources`,
+    resourceDirectories.at(-1),
   );
 }
 
