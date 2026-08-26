@@ -144,3 +144,21 @@
     ) !important;
   }
 }
+
+/* Brand pages show logo previews rather than illustrations. The artwork is
+   capped to a size you can take in at a glance, and each preview sits on the
+   backdrop its own artwork needs: the white logos are invisible on a light
+   page and the black Sally is invisible on a dark one, so the tile is keyed
+   off the file name rather than the site theme. */
+.main-site-markdown--brand img {
+  @apply max-h-[300px] w-auto max-w-[440px] rounded-lg object-contain p-5;
+}
+
+.main-site-markdown--brand img[src*="white"] {
+  @apply bg-[#1c2430] ring-1 ring-black/10;
+}
+
+.main-site-markdown--brand img[src*="black"],
+.main-site-markdown--brand img[src*="sally"] {
+  @apply bg-white ring-1 ring-black/10;
+}

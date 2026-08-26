@@ -279,17 +279,19 @@ test("homepage addresses PageSpeed image and accessibility findings", async ({
   expect(svgPathErrors).toEqual([]);
 });
 
-test("download page resolves its release links without calling GitHub from the browser", async ({
+test("release links refresh in the browser and survive a failed request", async ({
   page,
 }) => {
-  const githubApiRequests: string[] = [];
-  page.on("request", (request) => {
-    if (request.url().startsWith("https://api.github.com/")) {
-      githubApiRequests.push(request.url());
-    }
-  });
+  // Preview hosts are not on the launch.micronaut.io CORS allowlist, so the
+  // refresh reads the GitHub API here. Failing it proves the build-time
+  // version still stands on its own.
+  await page.route("https://api.github.com/**", (route) => route.abort());
+  const releaseRequest = page.waitForRequest(
+    "https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest",
+  );
 
   await page.goto(appPath("/download/"));
+  await releaseRequest;
 
   await expect(
     page.locator("[data-micronaut-download-version]"),
@@ -304,31 +306,40 @@ test("download page resolves its release links without calling GitHub from the b
     "href",
     /^https:\/\/github\.com\/micronaut-projects\/micronaut-starter\/releases\//,
   );
-  expect(githubApiRequests).toEqual([]);
+
+  // The homepage hero carries the same markers, so it refreshes with it. The
+  // rendered version is not asserted: when GitHub is unreachable at build time
+  // — its unauthenticated budget is 60 requests per hour per IP — the hero is
+  // meant to fall back to bare "Latest release" rather than render empty.
+  await page.goto(appPath("/"));
+  const heroVersion = page.locator("[data-micronaut-release-version]").first();
+  await expect(heroVersion).toHaveAttribute(
+    "data-micronaut-release-version",
+    "Latest release: Micronaut {version}",
+  );
+  await expect(heroVersion).not.toBeEmpty();
 });
 
-test("GraalVM startup diagram stacks complete steps on narrow viewports", async ({
+test("GraalVM comparison keeps every measurement readable on narrow viewports", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 860 });
   await page.goto(appPath("/"));
 
-  const diagram = page.locator("[data-graalvm-startup-diagram]");
-  const compileStep = diagram.locator('[data-graalvm-startup-step="compile"]');
-  const nativeImageStep = diagram.locator(
-    '[data-graalvm-startup-step="native-image"]',
-  );
+  const comparison = page.locator("[data-graalvm-comparison]");
+  await expect(comparison).toContainText("Startup");
+  await expect(comparison).toContainText("Memory");
 
-  await expect(nativeImageStep).toHaveText("Native image");
-  const [compileBox, nativeImageBox] = await Promise.all([
-    compileStep.boundingBox(),
-    nativeImageStep.boundingBox(),
+  // Wide content scrolls inside its own container rather than the page.
+  const [box, pageOverflows] = await Promise.all([
+    comparison.boundingBox(),
+    page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    ),
   ]);
-
-  expect(compileBox).not.toBeNull();
-  expect(nativeImageBox).not.toBeNull();
-  expect(nativeImageBox!.x).toBe(compileBox!.x);
-  expect(nativeImageBox!.height).toBe(compileBox!.height);
+  expect(box).not.toBeNull();
+  expect(box!.width).toBeLessThanOrEqual(390);
+  expect(pageOverflows).toBe(false);
 });
 
 test("footer exposes social and contact links as labelled icons", async ({

@@ -337,7 +337,14 @@ const postCategory =
             </section>
           ) : (
             <>
-              <MainSiteMarkdown html={pageHtml} />
+              <MainSiteMarkdown
+                html={pageHtml}
+                variantClass={
+                  routeSlug.startsWith("brand-guidelines")
+                    ? "main-site-markdown--brand"
+                    : undefined
+                }
+              />
               {pageHtml && <GeneratedDocsStaticEnhancer />}
             </>
           )}
@@ -479,3 +486,7 @@ const postCategory =
   }
   <SiteFooter />
 </WebLayout>
+
+<script>
+  import "@/scripts/latest-release-refresh";
+</script>

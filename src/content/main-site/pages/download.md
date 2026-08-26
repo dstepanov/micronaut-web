@@ -12,7 +12,7 @@ layoutVariant: public-markdown
 
 **For a quick and effortless start on macOS, Linux, or Windows, you can use [SDKMAN! (The Software Development Kit Manager)](http://sdkman.io) to download and configure any Micronaut version of your choice.**
 
-## Download Micronaut <span data-micronaut-download-version aria-live="polite">latest stable version</span>
+## Download Micronaut <span data-micronaut-download-version data-micronaut-release-version="v{version}" aria-live="polite">latest stable version</span>
 
 - <a data-micronaut-release-notes href="https://github.com/micronaut-projects/micronaut-starter/releases/latest">Release Notes</a>
 - <a data-micronaut-download-binary href="https://github.com/micronaut-projects/micronaut-starter/releases/latest">Binary</a>

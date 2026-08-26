@@ -1,4 +1,4 @@
-type StarterRelease = {
+export type StarterRelease = {
   version: string;
   releaseNotesUrl: string;
   binaryUrl: string;
@@ -7,14 +7,64 @@ type StarterRelease = {
 const latestReleaseUrl =
   "https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest";
 
+const launchVersionsUrl = "https://launch.micronaut.io/versions";
+
+/** The only origins launch.micronaut.io answers cross-origin reads for. */
+const launchCorsHosts = new Set(["micronaut.io", "www.micronaut.io"]);
+
+export type ReleaseSource = { kind: "launch" | "github"; url: string };
+
+/**
+ * Picks where the browser reads the current release from. The production site
+ * asks launch.micronaut.io, which is Micronaut's own service and imposes no
+ * request budget on visitors. Every other host — previews, localhost — is not
+ * on the launch CORS allowlist and falls back to the GitHub API, whose
+ * unauthenticated 60-per-hour-per-IP limit only has to cover preview traffic.
+ */
+export function releaseSourceFor(hostname: string): ReleaseSource {
+  return launchCorsHosts.has(hostname)
+    ? { kind: "launch", url: launchVersionsUrl }
+    : { kind: "github", url: latestReleaseUrl };
+}
+
+/** Reads the version out of whichever payload `releaseSourceFor` selected. */
+export function versionFromReleasePayload(
+  kind: ReleaseSource["kind"],
+  payload: unknown,
+): string | undefined {
+  const raw =
+    kind === "launch"
+      ? (payload as { versions?: Record<string, unknown> })?.versions?.[
+          "micronaut.version"
+        ]
+      : (payload as { tag_name?: unknown })?.tag_name;
+  if (typeof raw !== "string") {
+    return undefined;
+  }
+  const version = raw.replace(/^v/, "");
+  // Anything that is not a release number would build links to a missing tag.
+  return /^\d+\.\d+\.\d+/.test(version) ? version : undefined;
+}
+
+/** The release links a version resolves to, shared by build and browser. */
+export function starterReleaseUrls(version: string) {
+  const releases =
+    "https://github.com/micronaut-projects/micronaut-starter/releases";
+  return {
+    releaseNotesUrl: `${releases}/tag/v${version}`,
+    binaryUrl: `${releases}/download/v${version}/micronaut-cli-${version}.zip`,
+  };
+}
+
 let releasePromise: Promise<StarterRelease | undefined> | undefined;
 
 /**
- * Resolved once per build. Doing this in the visitor's browser meant an
- * unauthenticated api.github.com request per page view, which is limited to 60
- * per hour and per IP, so visitors behind a shared NAT were served a 403.
+ * Resolved once per build so the markup ships with a correct version even when
+ * the browser refresh in `latest-release-refresh.astro` cannot run — no
+ * scripting, a blocked request, or a preview host that launch.micronaut.io
+ * does not answer.
  */
-function latestStarterRelease(): Promise<StarterRelease | undefined> {
+export function latestStarterRelease(): Promise<StarterRelease | undefined> {
   return (releasePromise ??= fetch(latestReleaseUrl, {
     headers: { Accept: "application/vnd.github+json" },
     signal: AbortSignal.timeout(10_000),
