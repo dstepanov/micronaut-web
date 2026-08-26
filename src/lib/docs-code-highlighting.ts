@@ -69,7 +69,10 @@ export async function highlightCodeSnippetHtml(code: string, language: string) {
   }
 
   const codeHtml = extractCodeHtml(highlighted);
-  return normalizePropertiesHighlighting(codeHtml, language)
+  return dropBaseColorTokenSpans(
+    normalizePropertiesHighlighting(codeHtml, language),
+    highlighted,
+  )
     .replace(/&#x3C;(\d+)>/g, '<i class="conum" data-value="$1"></i>')
     .replace(
       new RegExp(`${calloutMarkerPrefix}(\\d+)${calloutMarkerSuffix}`, "g"),
@@ -117,6 +120,53 @@ function normalizePropertiesHighlighting(
     return highlightedHtml;
   }
   return normalizeEmptyPropertiesAssignmentHighlighting(highlightedHtml);
+}
+
+/**
+ * Shiki wraps every token, including the ones it paints the block's own
+ * foreground: on the Core guide that is 27,083 of 60,221 spans, a fifth of the
+ * page's DOM, around text that already renders that way. The colours come from
+ * the `<pre>` Shiki emits, so this stays right when the themes change, and the
+ * unwrapped text inherits `--code-foreground` from `.docs-highlighted-pre`.
+ */
+function dropBaseColorTokenSpans(codeHtml: string, highlighted: string) {
+  const base = styleDeclarations(
+    /<pre\b[^>]*\sstyle="([^"]*)"/.exec(highlighted)?.[1] || "",
+  );
+  const baseColors = tokenColors(base);
+  if (!baseColors) {
+    return codeHtml;
+  }
+  return codeHtml.replace(
+    /<span style="([^"]*)">([^<]*)<\/span>/g,
+    (match: string, style: string, text: string) => {
+      // Only a plain colour pair is dropped: an italic comment keeps its span
+      // even when the theme paints it the base colour.
+      const declarations = styleDeclarations(style);
+      return declarations.size === 2 && tokenColors(declarations) === baseColors
+        ? text
+        : match;
+    },
+  );
+}
+
+function styleDeclarations(style: string) {
+  return new Map(
+    style
+      .split(";")
+      .map((declaration) => declaration.split(":"))
+      .filter((parts) => parts.length === 2)
+      .map(([name, value]) => [
+        name.trim().toLowerCase(),
+        value.trim().toLowerCase(),
+      ]),
+  );
+}
+
+function tokenColors(declarations: Map<string, string>) {
+  const color = declarations.get("color");
+  const dark = declarations.get("--shiki-dark");
+  return color && dark ? `${color} ${dark}` : undefined;
 }
 
 function extractCodeHtml(source: string) {
