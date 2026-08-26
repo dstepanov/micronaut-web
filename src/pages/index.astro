@@ -1405,6 +1405,21 @@ const sallyVisorField =
   .sally-visor .sv-tw-4 {
     animation-delay: -1.7s;
   }
+  /* Phones only, and timings are deliberately left alone. WebKit does not
+     composite SVG group transforms, so every frame re-rasterises the clipped
+     overlay on the main thread; 39 concurrent animations driving a 96px badge
+     is enough to stall a handset. The twinkle is an opacity pulse on 1-3px
+     dots and invisible at that size, and the far layer is sub-pixel there, so
+     those two come off phones. Everything that stays keeps its own speed. */
+  @media (max-width: 639px) {
+    .sally-visor .sv-tw {
+      animation: none;
+    }
+    .sally-visor .sv-far {
+      display: none;
+      animation: none;
+    }
+  }
   /* WebKit turns animations off entirely under Reduce Motion, so pausing them
      yields nothing and hiding the overlay left the visor blank. Each mark is
      instead pinned where its own phase would have put it: a still starfield,
