@@ -83,6 +83,24 @@ export function guideCategoryPath(category: string, root = "/latest") {
   return `${normalizedRoot(root)}/?category=${tagSlug(category)}`;
 }
 
+/**
+ * Tag pages older guides.micronaut.io builds published for since-retired
+ * categories. Guide content and external sites still link to them — production
+ * keeps serving the stale files because its deploys only accumulate — so each
+ * redirects to the current listing of the same guides.
+ */
+export function legacyGuideTagRedirects(
+  root = "/latest",
+): Array<[slug: string, destination: string]> {
+  return [
+    ["spring_boot_to_micronaut", guideTagPath("spring-boot", root)],
+    [
+      "building_a_rest_api",
+      guideCategoryPath("Boot to Micronaut Building a REST API", root),
+    ],
+  ];
+}
+
 export function latestGuides(guides: GeneratedGuide[], limit = 8) {
   return [...guides]
     .sort(
