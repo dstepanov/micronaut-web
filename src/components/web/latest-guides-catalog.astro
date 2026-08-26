@@ -16,6 +16,7 @@ import { GuideVariantPreferencePicker } from "@/components/web/guide-variant-pre
 import {
   guideCategoryPath,
   latestGuides,
+  legacyCategoryAnchor,
   tagSlug,
   type GeneratedGuide,
 } from "@/lib/generated-guides";
@@ -429,6 +430,15 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
               id={`category-${categorySlug(category)}`}
               data-guide-category-group
             >
+              {/* The id the legacy guides index used for this section, kept so
+              old deep links still land on it. */}
+              {legacyCategoryAnchor(category) && (
+                <span
+                  id={legacyCategoryAnchor(category)}
+                  class="block scroll-mt-24"
+                  aria-hidden="true"
+                />
+              )}
               <div class="flex items-baseline gap-2 border-b pb-3">
                 <h2 class="text-xl font-semibold tracking-tight">{category}</h2>
                 <span class="text-sm text-muted-foreground tabular-nums">
