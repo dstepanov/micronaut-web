@@ -51,8 +51,11 @@ test("homepage code example Markdown files use plain fenced blocks", async (): P
     [
       { id: "server", languages: ["java", "kotlin", "groovy", "python"] },
       { id: "client", languages: ["java", "kotlin", "groovy", "python"] },
-      { id: "data", languages: ["java", "kotlin", "groovy"] },
-      { id: "serialization", languages: ["java", "kotlin", "groovy"] },
+      { id: "data", languages: ["java", "kotlin", "groovy", "python"] },
+      {
+        id: "serialization",
+        languages: ["java", "kotlin", "groovy", "python"],
+      },
       { id: "testing", languages: ["java", "kotlin", "groovy", "python"] },
     ],
   );
