@@ -2,8 +2,8 @@
 id: server
 order: 10
 label: HTTP server
-title: Non-Blocking HTTP Server Based on Netty
-description: Create an endpoint with familiar annotations and a compact controller.
+title: A controller in a few annotations
+description: Create a non-blocking endpoint on Netty with a compact controller.
 ---
 
 ```java

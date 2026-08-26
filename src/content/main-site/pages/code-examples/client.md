@@ -2,8 +2,8 @@
 id: client
 order: 20
 label: Declarative client
-title: Declarative, Reactive, Compile-Time HTTP Client
-description: Generate a declarative HTTP client from the same application contract.
+title: A client generated from the same contract
+description: Declare an interface and let the compiler generate the HTTP client.
 ---
 
 ```java

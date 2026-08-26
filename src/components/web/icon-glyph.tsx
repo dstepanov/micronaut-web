@@ -134,6 +134,8 @@ const icons: Record<string, LucideIcon> = {
 
 const brandIconColors: Record<string, string> = {
   apachecassandra: "#1287B1",
+  apachemaven: "#C71A36",
+  gradle: "#02303A",
   mongodb: "#47A248",
   neo4j: "#4581C3",
   opensearch: "#005EB8",

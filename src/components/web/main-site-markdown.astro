@@ -3,9 +3,19 @@ import "@/styles/main-site-markdown.css";
 
 type Props = {
   html?: string;
+  /** Extra class for pages that need to vary the rendered Markdown. */
+  variantClass?: string;
 };
 
-const { html = "" } = Astro.props;
+const { html = "", variantClass } = Astro.props;
 ---
 
-{html && <div class="main-site-markdown" data-generated-docs set:html={html} />}
+{
+  html && (
+    <div
+      class:list={["main-site-markdown", variantClass]}
+      data-generated-docs
+      set:html={html}
+    />
+  )
+}

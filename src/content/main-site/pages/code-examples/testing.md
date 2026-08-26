@@ -1,9 +1,9 @@
 ---
 id: testing
-order: 30
+order: 50
 label: Test
-title: Fast and Easy Testing
-description: Run framework-integrated tests with dependency injection support.
+title: Tests that boot the real application
+description: Inject the server and client into tests with a single annotation.
 ---
 
 ```java
