@@ -388,9 +388,10 @@ const sallyVisorField =
               <g clip-path="url(#sallyVisorClip)">
                 {
                   /* Centred on the visor so the sheen's own rotation and swell
-                pivot about the dome rather than the SVG origin. */
+                pivot about the dome rather than the SVG origin, and left
+                unrotated so the sweep itself travels straight across. */
                 }
-                <g transform="translate(404 226) rotate(-24)">
+                <g transform="translate(404 226)">
                   <g
                     class="sv-glint"
                     fill="none"
@@ -1275,18 +1276,20 @@ const sallyVisorField =
       opacity: 1;
     }
   }
-  /* The sheen rides over the dome: it enters tipped one way, straightens and
-     swells as it crosses the middle, then tips the other way on the far rim. */
+  /* The sheen travels straight left to right, lying at 29deg to match the two
+     highlights painted on the visor. It rides over the dome as it goes: tipped
+     a little past that angle on the near rim, square on it and swollen across
+     the middle, then tipped back the other side of it on the far rim. */
   @keyframes sallyGlint {
     0%,
     85% {
-      transform: translate(-225px, 18px) rotate(16deg) scale(0.84);
+      transform: translateX(-250px) rotate(36deg) scale(0.84);
     }
     92.5% {
-      transform: translate(2px, -9px) rotate(0deg) scale(1.1);
+      transform: translateX(0) rotate(29deg) scale(1.1);
     }
     100% {
-      transform: translate(225px, 18px) rotate(-16deg) scale(0.84);
+      transform: translateX(250px) rotate(22deg) scale(0.84);
     }
   }
   .sally-visor .sv-m {
