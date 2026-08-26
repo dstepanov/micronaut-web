@@ -66,3 +66,25 @@ interface BookRepository extends CrudRepository<Book, Long> {
     List<Book> findByPagesGreaterThan(int pages)
 }
 ```
+
+```python
+from dataclasses import dataclass
+from typing import Annotated
+
+from micronaut.data.annotation import GeneratedValue, Id, MappedEntity
+from micronaut.data.jdbc.annotation import JdbcRepository
+from micronaut.data.repository import CrudRepository
+
+
+@dataclass
+@MappedEntity
+class Book:
+    id: Annotated[int | None, Id, GeneratedValue] = None
+    title: str | None = None
+    pages: int = 0
+
+
+@JdbcRepository(dialect="POSTGRES")
+class BookRepository(CrudRepository[Book, int]):
+    def findByPagesGreaterThan(self, pages: int) -> list[Book]: ...
+```

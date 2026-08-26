@@ -104,3 +104,43 @@ class BookController {
 // $ curl localhost:8080/books/featured
 // {"name":"Micronaut in Action","pages":320,"publisher":"Manning","country":"USA"}
 ```
+
+```python
+from dataclasses import dataclass
+from typing import Annotated
+
+from com.fasterxml.jackson.annotation import JsonIgnore, JsonProperty, JsonUnwrapped
+from micronaut.http.annotation import Controller, Get
+from micronaut.serde.annotation import Serdeable
+
+
+@dataclass
+@Serdeable
+class Publisher:
+    publisher: str
+    country: str
+
+
+@dataclass
+@Serdeable
+class Book:
+    title: Annotated[str, JsonProperty("name")]
+    pages: int
+    published_by: Annotated[Publisher, JsonUnwrapped]
+    draft_notes: Annotated[str | None, JsonIgnore] = None
+
+
+@Controller("/books")
+class BookController:
+
+    @Get("/featured")
+    def featured(self) -> Book:
+        return Book(
+            "Micronaut in Action", 320,
+            Publisher("Manning", "USA"), "draft",
+        )
+
+
+# $ curl localhost:8080/books/featured
+# {"name":"Micronaut in Action","pages":320,"publisher":"Manning","country":"USA"}
+```
