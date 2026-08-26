@@ -90,9 +90,9 @@ export async function readGuides(
     parsed.push(normalizeGuideMetadata(metadata, directory, entry.name));
   }
 
-  // A guide naming a `base` inherits its tags, and a base is often itself
-  // unpublished, so the whole set has to be parsed before the published ones
-  // are selected.
+  // A guide naming a `base` inherits its tags and is co-authored by whoever
+  // wrote the base, and a base is often itself unpublished, so the whole set
+  // has to be parsed before the published ones are selected.
   const byName = new Map<string, Guide>();
   for (const guide of parsed) {
     byName.set(guide.slug, guide);
@@ -103,7 +103,11 @@ export async function readGuides(
     .map((guide) => {
       const base = guide.base ? byName.get(guide.base) : undefined;
       return base
-        ? { ...guide, tags: [...new Set([...guide.tags, ...base.tags])] }
+        ? {
+            ...guide,
+            authors: [...new Set([...base.authors, ...guide.authors])],
+            tags: [...new Set([...guide.tags, ...base.tags])],
+          }
         : guide;
     });
 
