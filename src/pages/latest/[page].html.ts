@@ -3,6 +3,7 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import {
   allGeneratedGuideTags,
   guideOptionPath,
+  legacyGuideTagRedirects,
   preferredGuideOption,
   guideTagPath,
   readGeneratedGuidesManifest,
@@ -40,6 +41,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const canonicalTagSlug = tagSlug(tag);
     addPath(`tag-${canonicalTagSlug}`, destination);
     addPath(`tag-${canonicalTagSlug.replaceAll("-", "_")}`, destination);
+  }
+  for (const [slug, destination] of legacyGuideTagRedirects(guidesRoot)) {
+    addPath(`tag-${slug}`, destination);
   }
   for (const guide of manifest.guides) {
     const overviewOption = preferredGuideOption(guide);
