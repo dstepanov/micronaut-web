@@ -320,6 +320,42 @@ test("release links refresh in the browser and survive a failed request", async 
   await expect(heroVersion).not.toBeEmpty();
 });
 
+test("visor keeps a still starfield under Reduce Motion", async ({ page }) => {
+  // Set before navigating: the project's device preset supplies its own context
+  // options, so a describe-level test.use for this does not survive.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(appPath("/"));
+
+  await expect(
+    page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches),
+  ).resolves.toBe(true);
+
+  // The marks sit off to the right of the visor and are clipped until
+  // something moves them, so hiding them or freezing them at their start
+  // renders as blank glass rather than as a still field.
+  const onGlass = await page.evaluate(() => {
+    const svg = document.querySelector("svg.sally-visor");
+    if (!svg) return -1;
+    return [...svg.querySelectorAll(".sv-m")].filter((mark) => {
+      const x = 600 + new DOMMatrix(getComputedStyle(mark).transform).m41;
+      return x > 290 && x < 526;
+    }).length;
+  });
+  expect(onGlass).toBeGreaterThan(4);
+
+  const positions = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll("svg.sally-visor .sv-m")]
+        .map((m) =>
+          Math.round(new DOMMatrix(getComputedStyle(m).transform).m41),
+        )
+        .join(","),
+    );
+  const before = await positions();
+  await page.waitForTimeout(700);
+  expect(await positions()).toBe(before);
+});
+
 test("GraalVM comparison keeps every measurement readable on narrow viewports", async ({
   page,
 }) => {
