@@ -76,7 +76,7 @@ export async function readGuides(
   }
 
   const entries = await fs.readdir(guidesDirectory, { withFileTypes: true });
-  const guides: Guide[] = [];
+  const parsed: Guide[] = [];
   for (const entry of entries) {
     if (!entry.isDirectory()) {
       continue;
@@ -87,11 +87,25 @@ export async function readGuides(
       continue;
     }
     const metadata = JSON.parse(await fs.readFile(metadataFile, "utf8"));
-    const guide = normalizeGuideMetadata(metadata, directory, entry.name);
-    if (guide.publish) {
-      guides.push(guide);
-    }
+    parsed.push(normalizeGuideMetadata(metadata, directory, entry.name));
   }
+
+  // A guide naming a `base` inherits its tags, and a base is often itself
+  // unpublished, so the whole set has to be parsed before the published ones
+  // are selected.
+  const byName = new Map<string, Guide>();
+  for (const guide of parsed) {
+    byName.set(guide.slug, guide);
+    byName.set(path.basename(guide.directory), guide);
+  }
+  const guides = parsed
+    .filter((guide) => guide.publish)
+    .map((guide) => {
+      const base = guide.base ? byName.get(guide.base) : undefined;
+      return base
+        ? { ...guide, tags: [...new Set([...guide.tags, ...base.tags])] }
+        : guide;
+    });
 
   return guides.sort(
     (left, right) =>
@@ -293,15 +307,16 @@ function normalizeGuideMetadata(
 ): Guide {
   const slug = string(metadata.slug, fallbackSlug);
   const apps = normalizeApps(metadata.apps);
+  const categories = strings(metadata.categories);
   return {
     slug,
     directory,
     title: string(metadata.title, slug),
     intro: string(metadata.intro, ""),
     authors: strings(metadata.authors),
-    categories: strings(metadata.categories),
+    categories,
     publicationDate: string(metadata.publicationDate, "1970-01-01"),
-    tags: strings(metadata.tags),
+    tags: guideTags(strings(metadata.tags), apps, categories),
     languages: withPythonVariant(
       lowerList(metadata.languages, DEFAULT_LANGUAGES),
       PYTHON_LANGUAGE,
@@ -336,6 +351,50 @@ function normalizeGuideMetadata(
     ),
     maximumJavaVersion: optionalStringOrNumber(metadata.maximumJavaVersion),
   };
+}
+
+/**
+ * Mirrors `GuideUtils.getTags` in the guides build: a guide is tagged by its
+ * own `tags`, by every Starter feature its apps request (minus the prefixes
+ * that name the framework rather than the subject), and by its categories.
+ *
+ * The union — not the `tags` array alone — is what the upstream index turned
+ * into `tag-*.html` pages, so it is also the set of tag pages the published
+ * site has to keep serving. Tags stay in their metadata spelling here;
+ * `tagSlug` decides the URL form.
+ */
+function guideTags(
+  tags: string[],
+  apps: GuideApp[],
+  categories: string[],
+): string[] {
+  const derived = new Set(tags);
+  for (const app of apps) {
+    for (const feature of [
+      ...app.features,
+      ...app.javaFeatures,
+      ...app.kotlinFeatures,
+      ...app.groovyFeatures,
+    ]) {
+      derived.add(featureTag(feature));
+    }
+  }
+  for (const category of categories) {
+    derived.add(category.toLowerCase().replaceAll(" ", "-"));
+  }
+  return [...derived].filter(Boolean);
+}
+
+const FEATURE_TAG_PREFIXES = ["micronaut-", "views-"];
+
+function featureTag(feature: string): string {
+  let tag = feature;
+  for (const prefix of FEATURE_TAG_PREFIXES) {
+    if (tag.startsWith(prefix)) {
+      tag = tag.slice(prefix.length);
+    }
+  }
+  return tag;
 }
 
 function normalizeApps(value: unknown): GuideApp[] {

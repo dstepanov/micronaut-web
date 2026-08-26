@@ -84,21 +84,97 @@ export function guideCategoryPath(category: string, root = "/latest") {
 }
 
 /**
- * Tag pages older guides.micronaut.io builds published for since-retired
- * categories. Guide content and external sites still link to them — production
- * keeps serving the stale files because its deploys only accumulate — so each
- * redirects to the current listing of the same guides.
+ * How the upstream guides index identified a category in URLs and anchors: by
+ * the Java enum constant name, which is not always the slug of the title it
+ * displays ("Testing" was `TEST`, "MongoDB" was `DATA_MONGO`). That index gave
+ * every category section an `id="<name>"` and linked a `tag-<name>.html` page
+ * beside it, so both forms have to keep resolving here.
+ */
+const legacyCategoryNames: Record<string, string> = {
+  getting_started: "Getting Started",
+  core_basics: "Core Basics",
+  validation: "Validation",
+  development: "Development",
+  test: "Testing",
+  mcp: "MCP",
+  object_storage: "Object Storage",
+  email: "Email",
+  messaging: "Messaging",
+  logging: "Logging",
+  scheduling: "Scheduling",
+  cache: "Cache",
+  patterns: "Patterns",
+  internationalization: "i18n",
+  database_modeling: "Database Modeling",
+  data_jdbc: "Data JDBC",
+  data_jpa: "Data JPA",
+  schema_migration: "Schema Migration",
+  data_rdbc: "Data R2DBC",
+  data_mongo: "MongoDB",
+  data_access: "Data Access",
+  security: "Micronaut Security",
+  authorization_code: "Authorization Code",
+  client_credentials: "Client Credentials",
+  secrets_manager: "Secrets Manager",
+  http: "HTTP Server",
+  http_client: "HTTP Client",
+  beyond_json: "Beyond JSON",
+  jax_rs: "JAX-RS",
+  websockets: "WebSockets",
+  graphql: "GraphQL",
+  open_api: "OpenAPI",
+  json_schema: "JSON Schema",
+  distributed_tracing: "Distributed Tracing",
+  service_discovery: "Service Discovery",
+  distributed_configuration: "Distributed Configuration",
+  metrics: "Metrics",
+  distribution: "Distribution",
+  registry: "Registry",
+  graalvm: "GraalVM",
+  crac: "Coordinated Restore at Checkpoint",
+  kubernetes: "Kubernetes",
+  serverless: "Serverless",
+  aws_lambda: "AWS Lambda",
+  scale_to_zero_containers: "Scale to Zero Containers",
+  views: "Views",
+  turbo: "Turbo",
+  static_resources: "Static Resources",
+  kotlin: "Kotlin",
+  graalpy: "GraalPy",
+  spring: "Spring Boot",
+  spring_boot_to_micronaut_building_a_rest_api:
+    "Boot to Micronaut Building a REST API",
+};
+
+/**
+ * Categories the upstream index published tag pages for that have since been
+ * renamed. Their pages survive on the legacy host only because its deploys
+ * accumulate files, but guide content still links to them.
+ */
+const retiredCategoryNames: Record<string, string> = {
+  spring_boot_to_micronaut: "Spring Boot",
+  building_a_rest_api: "Boot to Micronaut Building a REST API",
+};
+
+/**
+ * Legacy `tag-*` slugs that no current tag produces, each mapped to the tag
+ * page now listing the same guides. Categories become tags, so a category's
+ * own tag page is the destination for the name the old index used for it.
  */
 export function legacyGuideTagRedirects(
   root = "/latest",
 ): Array<[slug: string, destination: string]> {
-  return [
-    ["spring_boot_to_micronaut", guideTagPath("spring-boot", root)],
-    [
-      "building_a_rest_api",
-      guideCategoryPath("Boot to Micronaut Building a REST API", root),
-    ],
-  ];
+  return Object.entries({
+    ...legacyCategoryNames,
+    ...retiredCategoryNames,
+  }).map(([name, category]) => [name, guideTagPath(category, root)]);
+}
+
+/** The id the upstream index gave this category's section, for old deep links. */
+export function legacyCategoryAnchor(category: string): string | undefined {
+  return Object.entries(legacyCategoryNames).find(
+    ([, title]) => title === category,
+  )?.[0];
 }
 
 export function latestGuides(guides: GeneratedGuide[], limit = 8) {

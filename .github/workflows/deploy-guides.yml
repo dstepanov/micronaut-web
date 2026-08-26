@@ -170,7 +170,12 @@ jobs:
         env:
           GUIDES_SHA: ${{ steps.guides.outputs.sha }}
         run: |
-          find published-guides -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          # Pinned release-line trees (5.0.x, 5.1.x, ...) are snapshots the
+          # legacy host published per Micronaut version and cannot be rebuilt
+          # from current guide sources, so this replace leaves them alone
+          # instead of deleting URLs it has no way to regenerate.
+          find published-guides -mindepth 1 -maxdepth 1 \
+            ! -name .git ! -name '[0-9]*.[0-9]*.x' -exec rm -rf {} +
           cp -R dist/. published-guides/
           # Records the built revision so the upstream poller sees that master
           # moved even when the rendered output is byte-identical.
