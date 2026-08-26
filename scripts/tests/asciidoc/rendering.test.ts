@@ -96,16 +96,15 @@ describe("ordinary listing blocks", () => {
       ].join("\n"),
     );
     const lines = highlightedLineHtml(html);
-    const styleOf = (line: string): string => {
-      const style = /<span class="line"><span style="([^"]+)">/.exec(line)?.[1];
-      assert.ok(style, `expected a styled first token in ${line}`);
-      return style;
-    };
 
     assert.equal(lines.length, 4);
-    assert.equal(styleOf(lines[0]), styleOf(lines[1]));
-    assert.equal(styleOf(lines[0]), styleOf(lines[2]));
-    assert.doesNotMatch(lines[0], /#CF222E|#FF7B72/);
+    // All three empty assignments come out as the block's own foreground, which
+    // the highlighter leaves unwrapped, so none of them carries a token span.
+    assert.deepEqual(lines.slice(0, 3), [
+      '<span class="line">foo.bar.property=</span>',
+      '<span class="line">foo.bar[0]=</span>',
+      '<span class="line">foo.bar&lt;prop&gt;=</span>',
+    ]);
     const valueStart = lines[3].indexOf("=my-service");
     assert.notEqual(valueStart, -1);
     assert.match(lines[3].slice(0, valueStart), /#CF222E|#FF7B72/);

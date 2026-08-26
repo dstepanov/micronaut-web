@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { highlightCodeSnippetHtml } from "../../../src/lib/docs-code-highlighting.ts";
 import {
   normalizeStandaloneCalloutLines,
   shikiLanguage,
 } from "../../shared/highlight.ts";
+import { highlightedLines } from "../support/html.ts";
 
 test("standalone and comment-only callout markers move onto the next property line", (): void => {
   const source = [
@@ -48,4 +50,27 @@ test("shikiLanguage maps docs language names to Shiki grammars", (): void => {
   assert.equal(shikiLanguage("groovy-config"), "groovy");
   assert.equal(shikiLanguage(""), "text");
   assert.equal(shikiLanguage("java"), "java");
+});
+
+test("tokens painted the block foreground keep their text but lose their span", async (): Promise<void> => {
+  const source = [
+    "class Example {",
+    '    void greet() { System.out.println("hi"); } // <1>',
+    "}",
+  ].join("\n");
+  const html = await highlightCodeSnippetHtml(source, "java");
+
+  // The base colours of both themes, which `--code-foreground` already applies.
+  assert.doesNotMatch(html, /#1F2328|#E6EDF3/i);
+  // Everything the theme does colour still carries its span, callouts included.
+  assert.match(
+    html,
+    /<span style="color:#CF222E;--shiki-dark:#FF7B72">class<\/span>/,
+  );
+  assert.match(html, /<i class="conum" data-value="1"><\/i>/);
+  assert.deepEqual(highlightedLines(html), [
+    "class Example {",
+    '    void greet() { System.out.println("hi"); } // <1>',
+    "}",
+  ]);
 });
