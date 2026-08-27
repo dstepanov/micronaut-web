@@ -22,7 +22,7 @@ test("collapsed mobile navigation exposes primary destinations", async ({
   expect(failures).toEqual([]);
 });
 
-test("mobile header centers the search icon and navigates to Download", async ({
+test("mobile header centers the search icon and navigates to Releases", async ({
   page,
 }) => {
   const failures = collectBrowserFailures(page);
@@ -46,14 +46,20 @@ test("mobile header centers the search icon and navigates to Download", async ({
 
   await page.getByRole("button", { name: "Open navigation" }).click();
   const dialog = page.getByRole("dialog", { name: "Micronaut" });
-  const downloadLink = dialog
-    .locator('[data-mobile-navigation-group="Resources"]')
-    .getByRole("link", { name: "Download", exact: true });
-  await expect(downloadLink).toHaveAttribute("href", appPath("/download/"));
-  await downloadLink.click();
-  await expect(page).toHaveURL(appPath("/download/"));
+  const releasesLink = dialog
+    .locator('[data-mobile-navigation-group="Browse"]')
+    .getByRole("link", { name: "Releases", exact: true });
+  await expect(releasesLink).toHaveAttribute(
+    "href",
+    appPath("/category/release-announcements/"),
+  );
+  await releasesLink.click();
+  await expect(page).toHaveURL(appPath("/category/release-announcements/"));
   await expect(
-    page.getByRole("heading", { level: 1, name: "Micronaut Download" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: "Micronaut Release Announcements",
+    }),
   ).toBeVisible();
   await expectNoHorizontalOverflow(page);
   expect(failures).toEqual([]);
@@ -182,7 +188,7 @@ test("main-site runtime scripts do not include build-time content processors", a
   expect(failures).toEqual([]);
 });
 
-test("desktop navigation presents blog directly and download under resources", async ({
+test("desktop navigation presents blog and releases directly", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -196,10 +202,12 @@ test("desktop navigation presents blog directly and download under resources", a
     header.getByRole("link", { name: "Get Started", exact: true }),
   ).toHaveCount(0);
 
-  await header.getByRole("button", { name: "Resources" }).click();
   await expect(
-    header.locator('a[data-slot="navigation-menu-link"][href$="/download/"]'),
-  ).toHaveAttribute("href", /\/download\/$/);
+    header.getByRole("link", { name: "Releases", exact: true }),
+  ).toHaveAttribute("href", /\/category\/release-announcements\/$/);
+  await expect(
+    header.getByRole("button", { name: "Resources", exact: true }),
+  ).toHaveCount(0);
 });
 
 test("homepage code examples do not include a Python variant", async ({

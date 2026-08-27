@@ -3,12 +3,10 @@
 import { Menu } from "lucide-react";
 
 import {
-  NavigationMenuContent,
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +44,11 @@ const primaryLinks: Array<{
   { href: "/docs/", label: "Docs", surface: "docs" },
   { href: "/guides/", label: "Guides", surface: "guides" },
   { href: "/blog/", label: "Blog", surface: "main" },
+  {
+    href: "/category/release-announcements/",
+    label: "Releases",
+    surface: "main",
+  },
 ];
 
 type MobileMenuLink = {
@@ -54,59 +57,6 @@ type MobileMenuLink = {
   surface?: SurfaceId;
 };
 
-const menuGroups = [
-  {
-    label: "Resources",
-    links: [
-      {
-        href: "/download/",
-        label: "Download",
-        description: "Framework binaries and release notes.",
-      },
-      {
-        href: "/cli/",
-        label: "CLI",
-        description: "Install the command-line application generator.",
-      },
-      {
-        href: "/category/release-announcements/",
-        label: "Release Announcements",
-        description: "Framework and ecosystem release updates.",
-      },
-      {
-        href: "/micronaut-roadmap/",
-        label: "Roadmap",
-        description: "Project direction and planned investment areas.",
-      },
-      {
-        href: "/category/security-announcements/",
-        label: "Security Announcements",
-        description: "Security-related project communication.",
-      },
-      {
-        href: "/support/",
-        label: "Commercial Support",
-        description: "Support paths for production adoption.",
-      },
-      {
-        href: "/faq/",
-        label: "FAQ",
-        description: "Frequently asked questions.",
-      },
-      {
-        href: "/micronaut-success-stories/",
-        label: "Success Stories",
-        description: "Public production usage stories.",
-      },
-      {
-        href: "/partners/",
-        label: "Partners",
-        description: "Engineering, tools, and infrastructure partners.",
-      },
-    ],
-  },
-];
-
 const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
   {
     label: "Browse",
@@ -114,13 +64,14 @@ const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
       { href: "/docs/", label: "Docs", surface: "docs" },
       { href: "/guides/", label: "Guides", surface: "guides" },
       { href: "/blog/", label: "Blog", surface: "main" },
+      {
+        href: "/category/release-announcements/",
+        label: "Releases",
+        surface: "main",
+      },
       { href: "https://launch.micronaut.io", label: "Launch" },
     ],
   },
-  ...menuGroups.map((group) => ({
-    label: group.label,
-    links: group.links.map((link) => ({ href: link.href, label: link.label })),
-  })),
   {
     label: "Legal",
     links: [
@@ -215,34 +166,6 @@ export function SiteHeader({
                 >
                   {link.label}
                 </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-            {menuGroups.map((group) => (
-              <NavigationMenuItem key={group.label}>
-                <NavigationMenuTrigger className="h-8 bg-transparent px-3 text-[0.88rem]">
-                  {group.label}
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="w-[560px] p-2">
-                    <div className="grid grid-cols-2 gap-1">
-                      {group.links.map((link) => (
-                        <NavigationMenuLink
-                          key={link.href}
-                          href={withConfiguredBasePath(
-                            link.href,
-                            navigationUrls,
-                          )}
-                          className="min-h-20 rounded-md p-3"
-                        >
-                          <span className="font-medium">{link.label}</span>
-                          <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
-                            {link.description}
-                          </span>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </div>
-                </NavigationMenuContent>
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
