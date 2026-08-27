@@ -419,6 +419,9 @@ test("footer exposes social and contact links as labelled icons", async ({
     socialLinks.getByRole("link", { name: "BlueSky" }),
   ).toHaveAttribute("href", "https://bsky.app/profile/micronautfw.bsky.social");
   await expect(
+    socialLinks.getByRole("link", { name: "Mastodon" }),
+  ).toHaveAttribute("href", "https://fosstodon.org/@micronaut");
+  await expect(
     socialLinks.getByRole("link", { name: "YouTube" }),
   ).toHaveAttribute("href", "https://www.youtube.com/@MicronautFramework");
 });
