@@ -90,7 +90,11 @@ export async function buildDocsVersionOptions({
       href: "/latest/",
       ...(latest ? { current: true } : {}),
     },
-    ...sortedVersions.map(([label, href]) => ({ label, href })),
+    // The entry above already names the latest version, so listing its pinned
+    // root again showed the same number twice in the selector.
+    ...sortedVersions
+      .filter(([label]) => label !== latestVersion)
+      .map(([label, href]) => ({ label, href })),
   ];
 }
 
