@@ -296,9 +296,143 @@ const sallyVisorSheen = Array.from({ length: sheenSteps }, (_, index) => {
     1 - (1 - sheenFalloff(radius)) / (1 - sheenFalloff(radius + step));
   return `<path d="M0,-172 C48,-82 48,78 0,168" stroke-width="${(radius * 2).toFixed(1)}" stroke-opacity="${opacity.toFixed(4)}"/>`;
 }).join("");
-// Starfield drifting across Sally's visor, clipped to the visor path.
-const sallyVisorField =
-  '<g transform="translate(600 172)"><g class="sv-m sv-far sv-0 sv-bow-a"><g class="sv-tw sv-tw-0"><circle r="1.2" fill="#b9d4f7" opacity="0.4"/></g></g></g><g transform="translate(600 196)"><g class="sv-m sv-far sv-1 sv-bow-b"><g class="sv-tw sv-tw-1"><circle r="1.4" fill="#cfe0f5" opacity="0.46"/></g></g></g><g transform="translate(600 214)"><g class="sv-m sv-far sv-2 sv-bow-b"><g class="sv-tw sv-tw-2"><circle r="1.1" fill="#d8e8ff" opacity="0.36"/></g></g></g><g transform="translate(600 236)"><g class="sv-m sv-far sv-3 sv-bow-c"><g class="sv-tw sv-tw-3"><circle r="1.3" fill="#c6dcf7" opacity="0.42"/></g></g></g><g transform="translate(600 262)"><g class="sv-m sv-far sv-4 sv-bow-d"><g class="sv-tw sv-tw-4"><circle r="1.2" fill="#fff0dc" opacity="0.4"/></g></g></g><g transform="translate(600 288)"><g class="sv-m sv-far sv-5 sv-bow-d"><g class="sv-tw sv-tw-0"><circle r="1.4" fill="#cfe0f5" opacity="0.46"/></g></g></g><g transform="translate(600 306)"><g class="sv-m sv-far sv-6 sv-bow-e"><g class="sv-tw sv-tw-1"><circle r="1.1" fill="#b9d4f7" opacity="0.34"/></g></g></g><g transform="translate(600 324)"><g class="sv-m sv-far sv-7 sv-bow-e"><g class="sv-tw sv-tw-2"><circle r="1.3" fill="#dfeaff" opacity="0.43"/></g></g></g><g transform="translate(600 184)"><g class="sv-m sv-mid sv-8 sv-bow-a"><g class="sv-tw sv-tw-3"><circle r="2.0" fill="#e2eeff" opacity="0.74"/></g></g></g><g transform="translate(600 226)"><g class="sv-m sv-mid sv-9 sv-bow-c"><g class="sv-tw sv-tw-4"><circle r="2.3" fill="#fff2e0" opacity="0.8"/></g></g></g><g transform="translate(600 252)"><g class="sv-m sv-mid sv-10 sv-bow-c"><g class="sv-tw sv-tw-0"><circle r="1.9" fill="#d5e6ff" opacity="0.7"/></g></g></g><g transform="translate(600 280)"><g class="sv-m sv-mid sv-11 sv-bow-d"><g class="sv-tw sv-tw-1"><circle r="2.2" fill="#e2eeff" opacity="0.76"/></g></g></g><g transform="translate(600 300)"><g class="sv-m sv-mid sv-12 sv-bow-e"><g class="sv-tw sv-tw-2"><circle r="2.0" fill="#c9dcf7" opacity="0.72"/></g></g></g><g transform="translate(600 206)"><g class="sv-m sv-near sv-13 sv-bow-b"><g class="sv-tw sv-tw-3"><circle r="7.1" fill="#bfd8f5" opacity=".12"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="scale(0.16)" fill="#d7e8ff" opacity=".55"/><circle r="3.1" fill="#f2f8ff"/></g></g></g><g transform="translate(600 268)"><g class="sv-m sv-near sv-14 sv-bow-d"><g class="sv-tw sv-tw-4"><circle r="6.7" fill="#bfd8f5" opacity=".12"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="scale(0.15)" fill="#d7e8ff" opacity=".55"/><circle r="2.9" fill="#fff6ea"/></g></g></g><g transform="translate(600 316)"><g class="sv-m sv-near sv-15 sv-bow-e"><g class="sv-tw sv-tw-0"><circle r="7.6" fill="#bfd8f5" opacity=".12"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="scale(0.17)" fill="#d7e8ff" opacity=".55"/><circle r="3.3" fill="#eaf3ff"/></g></g></g><g transform="translate(600 192)"><g class="sv-m sv-gold-0 sv-bow-b"><g class="sv-tw sv-tw-1"><g transform="scale(0.6)"><circle r="13" fill="#ffcf5f" opacity=".13"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" fill="#ffcf5f" opacity=".92"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="rotate(45) scale(.48)" fill="#ffe6a4"/><circle r="2.4" fill="#fff8e2"/></g></g></g></g><g transform="translate(600 268)"><g class="sv-m sv-gold-1 sv-bow-d"><g class="sv-tw sv-tw-1"><g transform="scale(0.48)"><circle r="13" fill="#ffcf5f" opacity=".13"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" fill="#ffcf5f" opacity=".92"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="rotate(45) scale(.48)" fill="#ffe6a4"/><circle r="2.4" fill="#fff8e2"/></g></g></g></g><g transform="translate(600 228)"><g class="sv-m sv-big sv-bow-c"><g class="sv-tw sv-tw-2"><g transform="scale(1.05)"><circle r="17" fill="#cfe3ff" opacity=".12"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" fill="#eaf4ff" opacity=".95"/><path d="M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z" transform="rotate(45) scale(.42)" fill="#ffffff"/><circle r="3" fill="#ffffff"/></g></g></g></g>';
+// Starfield drifting across Sally's visor, clipped to the visor path. The
+// marks are dealt by a seeded generator rather than written out by hand, so
+// nothing about the scatter repeats on a beat the eye can pick up: position,
+// size, colour, speed, phase and bow are all drawn per mark. The seed keeps
+// every build identical; change it to deal a different sky.
+let starSeed = 0x5a11e5;
+const starRandom = () => {
+  starSeed = (starSeed + 0x6d2b79f5) | 0;
+  let t = Math.imul(starSeed ^ (starSeed >>> 15), 1 | starSeed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const between = (low: number, high: number) =>
+  low + starRandom() * (high - low);
+function pick<T>(items: T[]): T {
+  return items[Math.floor(starRandom() * items.length)];
+}
+// Star colours, loosely by spectral flavour: a soft outer glow, the body of
+// the mark, and a hotter near-white centre. Weights keep the sky mostly blue
+// and white, with the warm tints common enough to notice and the odd cyan or
+// lilac rare enough to feel like a find.
+const starTints = [
+  { weight: 5, glow: "#8fb6ef", body: "#bcd8ff", core: "#f2f8ff" },
+  { weight: 5, glow: "#9fc4ff", body: "#dbeaff", core: "#ffffff" },
+  { weight: 4, glow: "#cfe3ff", body: "#eaf4ff", core: "#ffffff" },
+  { weight: 4, glow: "#ffe6a4", body: "#fff6d6", core: "#ffffff" },
+  { weight: 3, glow: "#ffd68f", body: "#fff2e0", core: "#fffaf0" },
+  { weight: 3, glow: "#ffcf5f", body: "#ffe6a4", core: "#fff8e2" },
+  { weight: 2, glow: "#ffb473", body: "#ffd3a6", core: "#fff1e0" },
+  { weight: 2, glow: "#ff9d8f", body: "#ffc2b6", core: "#ffece7" },
+  { weight: 1, glow: "#7fd8d4", body: "#b7f0ee", core: "#eafffe" },
+  { weight: 1, glow: "#b39cff", body: "#d9c8ff", core: "#f3ecff" },
+];
+const starTintPool = starTints.flatMap((tint) =>
+  Array.from({ length: tint.weight }, () => tint),
+);
+// Depth reads off speed and size together: the far layer is small, dim and
+// slow, the near layer large, bright and quick. The leads are the rare slow
+// bright ones that cross on their own schedule.
+const starLayers = [
+  {
+    cls: "sv-far",
+    count: 16,
+    bright: false,
+    radius: [0.9, 1.7],
+    duration: [8.4, 11.6],
+    opacity: [0.3, 0.5],
+  },
+  {
+    cls: "sv-mid",
+    count: 8,
+    bright: false,
+    radius: [1.7, 2.5],
+    duration: [6.2, 8.4],
+    opacity: [0.62, 0.86],
+  },
+  {
+    cls: "sv-near",
+    count: 5,
+    bright: true,
+    radius: [2.5, 3.4],
+    duration: [4.2, 5.8],
+    opacity: [1, 1],
+  },
+  {
+    cls: "sv-lead",
+    count: 3,
+    bright: true,
+    radius: [2.6, 5.2],
+    duration: [18, 32],
+    opacity: [1, 1],
+  },
+];
+const starSpike =
+  "M0,-9 C1.6,-2.4 2.4,-1.6 9,0 C2.4,1.6 1.6,2.4 0,9 C-1.6,2.4 -2.4,1.6 -9,0 C-2.4,-1.6 -1.6,-2.4 0,-9 Z";
+// One full pass, matching the keyframes' 100% translate.
+const starTravel = 428;
+const starMarks = starLayers.flatMap((layer) =>
+  Array.from({ length: layer.count }, () => layer),
+);
+for (let i = starMarks.length - 1; i > 0; i--) {
+  const j = Math.floor(starRandom() * (i + 1));
+  [starMarks[i], starMarks[j]] = [starMarks[j], starMarks[i]];
+}
+// Marks are dealt one per band down the glass and then jittered past their
+// band's edges: pure uniform placement clumps and leaves bald patches at this
+// count, while a strict ladder reads as a grid. Overlapping the jitter keeps
+// the whole height covered and still lets pairs crowd together.
+const glassTop = 172;
+const glassBand = (324 - glassTop) / starMarks.length;
+const sallyVisorField = starMarks
+  .map((layer, index) => {
+    const y = Math.round(
+      Math.min(
+        324,
+        Math.max(
+          glassTop,
+          glassTop + (index + between(-0.35, 1.35)) * glassBand,
+        ),
+      ),
+    );
+    const radius = between(layer.radius[0], layer.radius[1]);
+    const duration = between(layer.duration[0], layer.duration[1]);
+    const twinkle = between(1.5, 2.7);
+    const tint = pick(starTintPool);
+    // Where the mark is in its own pass, as a fraction: it sets the negative
+    // delay that spreads the field across the glass, and the still position
+    // Reduce Motion falls back to.
+    const phase = starRandom();
+    const body = layer.bright
+      ? `<circle r="${(radius * 2.4).toFixed(1)}" fill="${tint.glow}" opacity=".14"/>` +
+        `<path d="${starSpike}" transform="scale(${(radius * 0.41).toFixed(2)})" fill="${tint.body}" opacity=".9"/>` +
+        `<path d="${starSpike}" transform="rotate(45) scale(${(radius * 0.19).toFixed(2)})" fill="${tint.core}" opacity=".75"/>` +
+        `<circle r="${radius.toFixed(1)}" fill="${tint.core}"/>`
+      : `<circle r="${radius.toFixed(1)}" fill="${tint.body}" opacity="${between(layer.opacity[0], layer.opacity[1]).toFixed(2)}"/>`;
+    // Timings ride on the mark's own style attribute as plain literals, so
+    // Safari never sees a duration built from calc(var(...)). The still
+    // transform sits there too rather than in a rule per mark: a running
+    // animation outranks an inline declaration, so it surfaces only once
+    // Reduce Motion has switched the animation off.
+    const motion =
+      `animation-duration:${duration.toFixed(2)}s;` +
+      `animation-delay:-${(duration * phase).toFixed(2)}s;` +
+      `transform:translate(${(-starTravel * phase).toFixed(0)}px,0) scale(1)`;
+    // A lead now and then crosses on the long pass instead of drifting, so it
+    // hangs off the glass and then streaks over it.
+    const track =
+      layer.cls === "sv-lead" && starRandom() < 0.4
+        ? "sv-pass"
+        : `sv-bow-${pick(["a", "b", "c", "d", "e"])}`;
+    return (
+      `<g transform="translate(600 ${y})"><g class="sv-m ${layer.cls} ${track}" style="${motion}">` +
+      `<g class="sv-tw" style="animation-duration:${twinkle.toFixed(2)}s;animation-delay:-${(twinkle * starRandom()).toFixed(2)}s">` +
+      `${body}</g></g></g>`
+    );
+  })
+  .join("");
 ---
 
 <WebLayout
@@ -1136,11 +1270,13 @@ const sallyVisorField =
   /* Starfield across Sally's visor. Travel is linear so the marks never appear
      to slow; depth comes from per-mark speed, bow and swell.
 
-     Timings are written out rather than derived with calc(var(...)), and the
-     vertical bow is baked into one keyframe set per track instead of read from
-     a custom property: Safari drops an animation shorthand whose duration is a
-     calc() of a variable, and is unreliable about var() inside @keyframes, so
-     either would leave the marks parked outside the visor and invisible. */
+     Speed and phase differ per mark, so they are literal values on each
+     mark's own style attribute; only what every mark shares lives here. They
+     are written out rather than derived with calc(var(...)), and the vertical
+     bow is baked into one keyframe set per track instead of read from a custom
+     property: Safari drops an animation shorthand whose duration is a calc()
+     of a variable, and is unreliable about var() inside @keyframes, so either
+     would leave the marks parked outside the visor and invisible. */
   @keyframes sallyStreakA {
     0%,
     0% {
@@ -1311,75 +1447,10 @@ const sallyVisorField =
   .sally-visor .sv-bow-e {
     animation-name: sallyStreakE;
   }
-  .sally-visor .sv-far {
-    animation-duration: 4.75s;
-  }
-  .sally-visor .sv-mid {
-    animation-duration: 3.6s;
-  }
-  .sally-visor .sv-near {
-    animation-duration: 2.5s;
-  }
-  .sally-visor .sv-0 {
-    animation-delay: -0s;
-  }
-  .sally-visor .sv-1 {
-    animation-delay: -2.65s;
-  }
-  .sally-visor .sv-2 {
-    animation-delay: -0.95s;
-  }
-  .sally-visor .sv-3 {
-    animation-delay: -4.05s;
-  }
-  .sally-visor .sv-4 {
-    animation-delay: -1.7s;
-  }
-  .sally-visor .sv-5 {
-    animation-delay: -3.35s;
-  }
-  .sally-visor .sv-6 {
-    animation-delay: -0.4s;
-  }
-  .sally-visor .sv-7 {
-    animation-delay: -4.6s;
-  }
-  .sally-visor .sv-8 {
-    animation-delay: -2.2s;
-  }
-  .sally-visor .sv-9 {
-    animation-delay: -3.6s;
-  }
-  .sally-visor .sv-10 {
-    animation-delay: -1.3s;
-  }
-  .sally-visor .sv-11 {
-    animation-delay: -3s;
-  }
-  .sally-visor .sv-12 {
-    animation-delay: -0.65s;
-  }
-  .sally-visor .sv-13 {
-    animation-delay: -4.3s;
-  }
-  .sally-visor .sv-14 {
-    animation-delay: -1.9s;
-  }
-  .sally-visor .sv-15 {
-    animation-delay: -4.8s;
-  }
-  .sally-visor .sv-gold-0 {
-    animation-duration: 12s;
-    animation-delay: -2s;
-  }
-  .sally-visor .sv-gold-1 {
-    animation-duration: 15.5s;
-    animation-delay: -9.5s;
-  }
-  .sally-visor .sv-big {
+  /* A lead on the long pass: off the glass for most of the cycle, then
+     across it in one streak. */
+  .sally-visor .sv-pass {
     animation-name: sallyBigPass;
-    animation-duration: 10s;
-    animation-delay: -6s;
   }
   .sally-visor .sv-glint {
     transform-box: view-box;
@@ -1392,28 +1463,16 @@ const sallyVisorField =
   }
   .sally-visor .sv-tw {
     animation-name: sallyTwinkle;
-    animation-duration: 1.9s;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
   }
-  .sally-visor .sv-tw-1 {
-    animation-delay: -0.55s;
-  }
-  .sally-visor .sv-tw-2 {
-    animation-delay: -1.05s;
-  }
-  .sally-visor .sv-tw-3 {
-    animation-delay: -1.45s;
-  }
-  .sally-visor .sv-tw-4 {
-    animation-delay: -1.7s;
-  }
   /* Phones only, and timings are deliberately left alone. WebKit does not
      composite SVG group transforms, so every frame re-rasterises the clipped
-     overlay on the main thread; 39 concurrent animations driving a 96px badge
-     is enough to stall a handset. The twinkle is an opacity pulse on 1-3px
-     dots and invisible at that size, and the far layer is sub-pixel there, so
-     those two come off phones. Everything that stays keeps its own speed. */
+     overlay on the main thread; the 65 concurrent animations this field runs
+     on a 96px badge are well past what stalls a handset. The twinkle is an
+     opacity pulse on 1-3px dots and invisible at that size, and the far layer
+     is sub-pixel there, so those two come off phones and leave 17. Everything
+     that stays keeps its own speed. */
   @media (max-width: 639px) {
     .sally-visor .sv-tw {
       animation: none;
@@ -1436,63 +1495,6 @@ const sallyVisorField =
     .sally-visor .sv-glint {
       animation: none;
       opacity: 0;
-    }
-    .sally-visor .sv-0 {
-      transform: translate(0px, 0) scale(1);
-    }
-    .sally-visor .sv-1 {
-      transform: translate(-227px, 0) scale(1);
-    }
-    .sally-visor .sv-2 {
-      transform: translate(-81px, 0) scale(1);
-    }
-    .sally-visor .sv-3 {
-      transform: translate(-347px, 0) scale(1);
-    }
-    .sally-visor .sv-4 {
-      transform: translate(-146px, 0) scale(1);
-    }
-    .sally-visor .sv-5 {
-      transform: translate(-287px, 0) scale(1);
-    }
-    .sally-visor .sv-6 {
-      transform: translate(-34px, 0) scale(1);
-    }
-    .sally-visor .sv-7 {
-      transform: translate(-394px, 0) scale(1);
-    }
-    .sally-visor .sv-8 {
-      transform: translate(-188px, 0) scale(1);
-    }
-    .sally-visor .sv-9 {
-      transform: translate(-308px, 0) scale(1);
-    }
-    .sally-visor .sv-10 {
-      transform: translate(-111px, 0) scale(1);
-    }
-    .sally-visor .sv-11 {
-      transform: translate(-257px, 0) scale(1);
-    }
-    .sally-visor .sv-12 {
-      transform: translate(-56px, 0) scale(1);
-    }
-    .sally-visor .sv-13 {
-      transform: translate(-368px, 0) scale(1);
-    }
-    .sally-visor .sv-14 {
-      transform: translate(-163px, 0) scale(1);
-    }
-    .sally-visor .sv-15 {
-      transform: translate(-411px, 0) scale(1);
-    }
-    .sally-visor .sv-gold-0 {
-      transform: translate(-73px, 0) scale(1);
-    }
-    .sally-visor .sv-gold-1 {
-      transform: translate(-261px, 0) scale(1);
-    }
-    .sally-visor .sv-big {
-      transform: translate(-193px, 0) scale(1);
     }
   }
 </style>
