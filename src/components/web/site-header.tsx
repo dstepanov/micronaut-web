@@ -91,12 +91,16 @@ function MobileColorModeSwitch() {
 }
 
 function isActivePrimaryLink(
-  link: { surface?: SurfaceId },
+  link: { href: string; surface?: SurfaceId },
   surface: SurfaceId,
   isBlogRoute: boolean,
+  isReleasesRoute: boolean,
 ) {
   if (link.surface === "main") {
-    return isBlogRoute;
+    return (
+      (link.href === "/blog/" && isBlogRoute) ||
+      (link.href === "/category/release-announcements/" && isReleasesRoute)
+    );
   }
   return link.surface === surface;
 }
@@ -107,6 +111,7 @@ export function SiteHeader({
   siteSearchIndexUrl,
   surface = "main",
   isBlogRoute = false,
+  isReleasesRoute = false,
   hideBrand = false,
   mainSitePages = [],
   navigationUrls,
@@ -116,6 +121,7 @@ export function SiteHeader({
   siteSearchIndexUrl?: string;
   surface?: SurfaceId;
   isBlogRoute?: boolean;
+  isReleasesRoute?: boolean;
   hideBrand?: boolean;
   mainSitePages?: MainSiteSearchPage[];
   navigationUrls?: SiteSurfaceUrls;
@@ -152,11 +158,20 @@ export function SiteHeader({
                       ? surfaceHref(link.surface, link.href)
                       : link.href
                   }
-                  active={isActivePrimaryLink(link, surface, isBlogRoute)}
+                  active={isActivePrimaryLink(
+                    link,
+                    surface,
+                    isBlogRoute,
+                    isReleasesRoute,
+                  )}
                   className={cn(
                     "h-8 rounded-md px-3 py-1.5 text-[0.88rem] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                    isActivePrimaryLink(link, surface, isBlogRoute) &&
-                      "bg-accent text-accent-foreground",
+                    isActivePrimaryLink(
+                      link,
+                      surface,
+                      isBlogRoute,
+                      isReleasesRoute,
+                    ) && "bg-accent text-accent-foreground",
                   )}
                 >
                   {link.label}
@@ -228,7 +243,12 @@ export function SiteHeader({
                             <a
                               href={mobileLinkHref(link)}
                               aria-current={
-                                isActivePrimaryLink(link, surface, isBlogRoute)
+                                isActivePrimaryLink(
+                                  link,
+                                  surface,
+                                  isBlogRoute,
+                                  isReleasesRoute,
+                                )
                                   ? "page"
                                   : undefined
                               }
@@ -241,6 +261,7 @@ export function SiteHeader({
                                   link,
                                   surface,
                                   isBlogRoute,
+                                  isReleasesRoute,
                                 ) && "bg-accent",
                               )}
                             >
