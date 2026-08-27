@@ -49,12 +49,3 @@ class HelloController {
     }
 }
 ```
-
-```python
-from micronaut.http.annotation import Get
-
-
-@Get("/hello")
-def index() -> dict[str, str]:
-    return {"message": "Hello World"}
-```

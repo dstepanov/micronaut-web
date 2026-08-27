@@ -62,16 +62,3 @@ class HelloControllerSpec extends Specification {
     }
 }
 ```
-
-```python
-from typing import Annotated
-from jakarta.inject import Inject
-
-MicronautTest()
-
-client: Annotated[PetClient, Inject]
-
-def test_returns_message() -> None:
-    response = client.index()
-    assert response["message"] == "Hello World"
-```

@@ -202,15 +202,13 @@ test("desktop navigation presents blog directly and download under resources", a
   ).toHaveAttribute("href", /\/download\/$/);
 });
 
-test("homepage code examples include a Python variant", async ({ page }) => {
+test("homepage code examples do not include a Python variant", async ({
+  page,
+}) => {
   await page.goto(appPath("/"));
 
   const pythonTab = page.locator('[role="tab"][data-lang="python"]').first();
-  await expect(pythonTab).toHaveText("Python");
-  await pythonTab.click();
-  await expect(page.locator('code[data-lang="python"]')).toContainText(
-    "from micronaut.http.annotation import Get",
-  );
+  await expect(pythonTab).toHaveCount(0);
 });
 
 test("homepage addresses PageSpeed image and accessibility findings", async ({

@@ -43,16 +43,3 @@ interface HelloClient {
     Map<String, String> index()
 }
 ```
-
-```python
-from micronaut.http.client.annotation import Client
-from io.micronaut.http.annotation import Get
-from typing import Protocol
-
-@Client("/pets")
-class PetClient(Protocol):
-
-    @Get
-    def index(self) -> dict[str, str]: 
-        ...
-```
