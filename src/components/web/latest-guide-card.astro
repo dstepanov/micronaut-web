@@ -1,10 +1,8 @@
 ---
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -14,7 +12,6 @@ import { GuideVariantMenu } from "@/components/web/guide-variant-menu";
 import {
   guideOptionPath,
   guideOverviewPath,
-  guideTagPath,
   preferredGuideOption,
   type GeneratedGuide,
 } from "@/lib/generated-guide-routing";
@@ -44,43 +41,10 @@ const variants =
         active: variant.file === option?.file,
       }))
     : [];
-const categories = (
-  guide.categories.length ? guide.categories : ["Guide"]
-).slice(0, 2);
-// Tags that restate the category badge ("Data JDBC" next to micronaut-data,
-// jdbc, database) add nothing; keep at most three of the rest.
-const categoryTokens = guide.categories.flatMap((category) =>
-  category
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean),
-);
-const distinctTags = guide.tags
-  .filter((tag) => {
-    const tagTokens = tag
-      .toLowerCase()
-      .split(/[^a-z0-9]+/)
-      .filter(Boolean);
-    return !tagTokens.some((tagToken) =>
-      categoryTokens.some(
-        (categoryToken) =>
-          tagToken.startsWith(categoryToken) ||
-          categoryToken.startsWith(tagToken),
-      ),
-    );
-  })
-  .slice(0, 3);
 ---
 
 <Card className="h-full" data-guide-link-scope>
   <CardHeader>
-    <div class="flex flex-wrap gap-2">
-      {
-        categories.map((category) => (
-          <Badge variant="secondary">{category}</Badge>
-        ))
-      }
-    </div>
     <CardTitle className="text-xl leading-tight">
       <a
         href={href}
@@ -92,21 +56,6 @@ const distinctTags = guide.tags
     </CardTitle>
     <CardDescription>{guide.intro}</CardDescription>
   </CardHeader>
-  <CardContent className="grid gap-4">
-    <div class="flex flex-wrap gap-1.5">
-      {
-        distinctTags.map((tag) => (
-          <a
-            href={withBasePath(guideTagPath(tag, root))}
-            class="no-underline"
-            aria-label={`Open guides tagged ${tag}`}
-          >
-            <Badge variant="outline">{tag}</Badge>
-          </a>
-        ))
-      }
-    </div>
-  </CardContent>
   {
     /* mt-auto pins the footer, so short cards don't leave the Read control floating mid-card. */
   }

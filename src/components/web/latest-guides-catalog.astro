@@ -110,7 +110,7 @@ const hasFilters = Boolean(
   selectedLanguage ||
   sortMode !== "latest",
 );
-const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 6);
+const recentGuides = hasFilters ? [] : latestGuides(visibleGuides, 3);
 
 function categoryHref(category: string) {
   return withBasePath(guideCategoryPath(category, root));
@@ -285,11 +285,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
         class="text-sm text-muted-foreground tabular-nums"
         data-guides-search-count></span>
     </div>
-    <div
-      class="divide-y divide-border [&_[data-guide-row-category]]:inline-flex"
-      data-guides-search-list
-    >
-    </div>
+    <div class="divide-y divide-border" data-guides-search-list></div>
   </section>
 
   {
