@@ -25,7 +25,6 @@ import {
   getMainSitePages,
   getSuccessStories,
   cleanExcerptText,
-  formatCategoryLabel,
   normalizeRouteSlug,
   renderFaqItems,
   renderMarkdownHtml,
@@ -172,10 +171,6 @@ const newerPost =
   blogSeriesIndex > 0 ? blogSeries[blogSeriesIndex - 1] : undefined;
 const olderPost =
   blogSeriesIndex >= 0 ? blogSeries[blogSeriesIndex + 1] : undefined;
-const postCategory =
-  post?.entry.data.category && post.entry.data.category !== "uncategorized"
-    ? post.entry.data.category
-    : undefined;
 ---
 
 <WebLayout
@@ -311,11 +306,6 @@ const postCategory =
                       {postDateFormatter.format(post.entry.data.date)}
                     </time>
                   )}
-                  {postCategory && (
-                    <Badge variant="outline">
-                      {formatCategoryLabel(postCategory)}
-                    </Badge>
-                  )}
                 </div>
               )}
               {intro && !isMinimalArchive && (
@@ -442,12 +432,6 @@ const postCategory =
                               {postDateFormatter.format(post.entry.data.date)}
                             </span>
                           )}
-                          {post.entry.data.category &&
-                            !routeSlug.startsWith("category/") && (
-                              <Badge variant="outline">
-                                {formatCategoryLabel(post.entry.data.category)}
-                              </Badge>
-                            )}
                         </div>
                         <CardTitle className="col-span-full text-xl leading-7">
                           {post.entry.data.title}
