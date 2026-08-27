@@ -53,10 +53,14 @@ export type BlogArchiveModel = {
 };
 
 export function isGeneralBlogPost(post: BlogPostModel): boolean {
-  return ![
-    "release-announcements",
-    "success-story",
-  ].includes(post.entry.data.category ?? "");
+  const categories = new Set([
+    post.entry.data.category,
+    ...post.entry.data.categories,
+  ]);
+  return (
+    !categories.has("release-announcements") &&
+    !categories.has("success-story")
+  );
 }
 
 export type SuccessStory = {
