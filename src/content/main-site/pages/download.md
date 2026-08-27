@@ -10,11 +10,6 @@ layoutVariant: public-markdown
 
 # Micronaut Download
 
-## Download Micronaut <span data-micronaut-download-version data-micronaut-release-version="v{version}" aria-live="polite">latest stable version</span>
+A Micronaut release is a [Micronaut Platform](https://github.com/micronaut-projects/micronaut-platform/releases) release. Micronaut Platform publishes a Bill of Materials (BOM) and a [Gradle version catalogue](https://docs.gradle.org/current/userguide/version_catalogs.html) that list a collection of Micronaut modules and third-party libraries that can be used to build Micronaut applications and have been verified to work well together.
 
-- <a data-micronaut-release-notes href="https://github.com/micronaut-projects/micronaut-starter/releases/latest">Release Notes</a>
-- <a data-micronaut-download-binary href="https://github.com/micronaut-projects/micronaut-starter/releases/latest">Binary</a>
-
-For historical release notes, refer to [GitHub](https://github.com/micronaut-projects/micronaut-platform/releases)
-
-To create Micronaut applications from the command line, see the [Micronaut CLI](/cli/).
+- [Release Notes](https://github.com/micronaut-projects/micronaut-starter/releases/latest)
