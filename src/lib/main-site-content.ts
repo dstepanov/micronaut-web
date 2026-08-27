@@ -126,6 +126,7 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
     title: "Resources",
     links: [
       { label: "Download", href: "/download/" },
+      { label: "CLI", href: "/cli/" },
       { label: "Blog", href: "/blog/" },
       {
         label: "Release Announcements",
