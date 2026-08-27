@@ -123,31 +123,6 @@ const socialLinks = [
         Micronaut is a modern JVM framework for building modular, testable cloud
         applications.
       </p>
-      <div class="mt-4 flex items-center gap-4 text-sm">
-        <nav
-          class="flex items-center gap-3"
-          aria-label="Micronaut social links"
-        >
-          {
-            socialLinks.map((link) => (
-              <a
-                class="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                href={link.href}
-                aria-label={link.label}
-              >
-                <svg
-                  class="size-4"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  fill="currentColor"
-                >
-                  <path d={link.iconPath} />
-                </svg>
-              </a>
-            ))
-          }
-        </nav>
-      </div>
     </div>
     <nav class="grid gap-8 sm:grid-cols-3" aria-label="Main site footer">
       {
@@ -200,6 +175,29 @@ const socialLinks = [
           class="hidden h-20 w-auto dark:block"
         />
       </a>
+      <nav
+        class="ml-auto flex items-center gap-3"
+        aria-label="Micronaut social links"
+      >
+        {
+          socialLinks.map((link) => (
+            <a
+              class="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              href={link.href}
+              aria-label={link.label}
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="currentColor"
+              >
+                <path d={link.iconPath} />
+              </svg>
+            </a>
+          ))
+        }
+      </nav>
     </div>
   </div>
 </footer>
