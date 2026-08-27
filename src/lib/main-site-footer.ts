@@ -82,6 +82,7 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
     title: "Support",
     links: [
       { label: "Commercial Support", href: "/support/" },
+      { label: "Financial Sponsors", href: "/financial-sponsors/" },
       { label: "Partners", href: "/partners/" },
     ],
   },
