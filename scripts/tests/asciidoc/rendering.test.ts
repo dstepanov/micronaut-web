@@ -83,7 +83,7 @@ describe("ordinary listing blocks", () => {
     ]);
   });
 
-  test("highlight empty dotted property assignments like indexed ones", async () => {
+  test("highlight the key of an empty property assignment", async () => {
     const html = await renderDocs(
       [
         "[source,properties]",
@@ -97,18 +97,39 @@ describe("ordinary listing blocks", () => {
     );
     const lines = highlightedLineHtml(html);
 
-    assert.equal(lines.length, 4);
-    // All three empty assignments come out as the block's own foreground, which
-    // the highlighter leaves unwrapped, so none of them carries a token span.
-    assert.deepEqual(lines.slice(0, 3), [
-      '<span class="line">foo.bar.property=</span>',
-      '<span class="line">foo.bar[0]=</span>',
-      '<span class="line">foo.bar&lt;prop&gt;=</span>',
+    const keyStyle = /<span style="([^"]+)">/.exec(lines[0])?.[1];
+
+    assert.match(keyStyle || "", /#CF222E/);
+    // A key keeps its colour whether or not the assignment has a value, and
+    // the separator and value stay the block's own foreground, which the
+    // highlighter leaves unwrapped.
+    assert.deepEqual(lines, [
+      `<span class="line"><span style="${keyStyle}">foo.bar.property</span>=</span>`,
+      `<span class="line"><span style="${keyStyle}">foo.bar[0]</span>=</span>`,
+      `<span class="line"><span style="${keyStyle}">foo.bar&lt;prop&gt;</span>=</span>`,
+      `<span class="line"><span style="${keyStyle}">kubernetes.client.discovery.includes[0]</span>=my-service</span>`,
     ]);
-    const valueStart = lines[3].indexOf("=my-service");
-    assert.notEqual(valueStart, -1);
-    assert.match(lines[3].slice(0, valueStart), /#CF222E|#FF7B72/);
-    assert.doesNotMatch(lines[3].slice(valueStart), /#CF222E|#FF7B72/);
+  });
+
+  test("grey out properties comments the highlighter misses", async () => {
+    const html = await renderDocs(
+      [
+        "[source,properties]",
+        "----",
+        "# hash comment",
+        "! bang comment",
+        "!bang.looking.like=key",
+        "----",
+      ].join("\n"),
+    );
+    const lines = highlightedLineHtml(html);
+    const commentStyle = /<span style="([^"]+)">/.exec(lines[0])?.[1];
+
+    assert.match(commentStyle || "", /#6E7781/);
+    assert.deepEqual(lines.slice(1), [
+      `<span class="line"><span style="${commentStyle}">! bang comment</span></span>`,
+      `<span class="line"><span style="${commentStyle}">!bang.looking.like=key</span></span>`,
+    ]);
   });
 
   test("render attribute-backed inline links inside callout footers", async () => {
