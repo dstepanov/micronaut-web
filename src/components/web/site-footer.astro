@@ -111,20 +111,10 @@ const socialLinks = [
         ))
       }
     </div>
-    <div>
-      <a
-        href={withBasePath("/")}
-        class="inline-flex items-center"
-        aria-label="Micronaut home"
-      >
-        <MicronautLogo className="h-12 w-[210px]" />
-      </a>
-      <p class="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
-        Micronaut is a modern JVM framework for building modular, testable cloud
-        applications.
-      </p>
-    </div>
-    <nav class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" aria-label="Main site footer">
+    <nav
+      class="grid gap-8 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-4"
+      aria-label="Main site footer"
+    >
       {
         mainSiteFooterGroups.map((group) => (
           <div>
@@ -149,7 +139,14 @@ const socialLinks = [
     <div
       class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs leading-6 text-muted-foreground lg:col-span-2"
     >
-      <p>Micronaut® is a project of the Commonhaus Foundation.</p>
+      <a
+        href={withBasePath("/")}
+        class="inline-flex items-center rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        aria-label="Micronaut home"
+      >
+        <MicronautLogo className="h-8 w-auto" />
+      </a>
+      <p>is a project of the</p>
       <a
         href="https://www.commonhaus.org/"
         aria-label="Commonhaus Foundation"
@@ -172,7 +169,7 @@ const socialLinks = [
           aria-hidden="true"
           width="800"
           height="350"
-          class="hidden h-20 w-auto dark:block"
+          class="hidden h-8 w-auto dark:block"
         />
       </a>
       <nav
