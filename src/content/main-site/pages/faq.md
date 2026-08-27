@@ -12,12 +12,12 @@ layoutVariant: public-markdown
 
 - ### [How is the Micronaut framework licensed?](#how-is-micronaut-licensed)
 
-  The Micronaut framework is an open source project licensed under the [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0). This includes all the code and documentation included in public repositories, as further defined in the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+  The Micronaut framework is an open source project licensed under the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0). This includes all the code and documentation included in public repositories, as further defined in the [Apache License](https://www.apache.org/licenses/LICENSE-2.0).
 
   The License specifically does not include permission to use the word “Micronaut” or Micronaut logos and trademarks. Use of the word “Micronaut” and Micronaut logos and trademarks is strictly prohibited except as otherwise set forth in the [Commonhaus Foundation Trademark Policy](https://www.commonhaus.org/policies/trademark-policy/).
 - ### [I see the Micronaut name is trademarked; does that mean the software is proprietary?](#i-see-the-micronaut-name-is-trademarked-does-that-mean-its-proprietary)
 
-  Micronaut® is a project of the [Commonhaus Foundation](https://www.commonhaus.org/), while the framework itself is open source. You are invited to use and modify its source code under the terms of the [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0).
+  Micronaut® is a project of the [Commonhaus Foundation](https://www.commonhaus.org/), while the framework itself is open source. You are invited to use and modify its source code under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0).
 - ### [Can I contribute code to the Micronaut framework?](#can-i-contribute-code-to-the-micronaut-framework)
 
   Yes please!
@@ -40,7 +40,7 @@ layoutVariant: public-markdown
   If you would like to make a formal feature request, please [create an issue](https://github.com/micronaut-projects/micronaut-core/issues/new).
 - ### [Where can I ask questions about a specific programming problem related to the Micronaut framework?](#where-can-i-ask-questions-about-a-specific-programming-problem-related-to-micronaut)
 
-  The Micronaut development team makes a priority of monitoring [Stack Overflow](http://stackoverflow.com/questions/tagged/micronaut) for technical questions. If you have a specific technical question about usage of the Framework, we recommend you post your question to Stack Overflow using the [#micronaut tag](http://stackoverflow.com/questions/tagged/micronaut).
+  The Micronaut development team makes a priority of monitoring [Stack Overflow](https://stackoverflow.com/questions/tagged/micronaut) for technical questions. If you have a specific technical question about usage of the Framework, we recommend you post your question to Stack Overflow using the [#micronaut tag](https://stackoverflow.com/questions/tagged/micronaut).
 - ### [What is the best way to get started?](#what-is-the-best-way-to-get-started-learning-micronaut)
 
   The main resource to learn about the Micronaut framework is [Micronaut documentation](https://micronaut.io/docs/).
@@ -50,16 +50,16 @@ layoutVariant: public-markdown
 
   Absolutely! The Micronaut project includes a couple of forms of documentation:
 
-  - The [reference documentation](http://docs.micronaut.io/snapshot/guide/index.html) contains language specification, user guides, a getting started tutorial, and more.
-  - The [JavaDoc APIs](http://docs.micronaut.io/snapshot/api/) document the classes of the Micronaut code base.
+  - The [reference documentation](https://docs.micronaut.io/snapshot/guide/index.html) contains language specification, user guides, a getting started tutorial, and more.
+  - The [JavaDoc APIs](https://docs.micronaut.io/snapshot/api/) document the classes of the Micronaut code base.
 
-  Contributing to the Micronaut documentation is fairly easy. Create a GitHub account or sign in with an existing account, navigate to the [Latest Guide](http://docs.micronaut.io/snapshot/guide/index.html), and select the button at the top of the section you wish to edit. Please don’t hesitate to help us make improvements, fix typos or broken language, clarify complicated sections, add new material, and anything else you feel will be helpful to other Micronaut users. And thank you!
+  Contributing to the Micronaut documentation is fairly easy. Create a GitHub account or sign in with an existing account, navigate to the [Latest Guide](https://docs.micronaut.io/snapshot/guide/index.html), and select the button at the top of the section you wish to edit. Please don’t hesitate to help us make improvements, fix typos or broken language, clarify complicated sections, add new material, and anything else you feel will be helpful to other Micronaut users. And thank you!
 - ### [Where can I interact with Micronaut developers and community?](#where-can-i-interact-with-micronaut-developers-and-community)
 
   The best place to chat with developers and users of the Micronaut framework is our [Discord community](https://discord.com/invite/9xRFsHv98T). Drop in and join the conversation!
 - ### [Is the Micronaut framework related to the Grails framework?](#how-does-micronaut-relate-to-grails-spring-boot)
 
-  The Micronaut framework was created by the same team that built the [Grails framework](http://grails.org), and they incorporated many of the lessons learned from the Grails framework into the design of the new Framework. Unlike the Grails framework and other JVM web frameworks, the Micronaut framework is designed to function as both a client and a server framework in a microservice environment. The Micronaut framework’s modularity and lack of external dependencies means that Grails developers can take advantage of many key Micronaut features within their existing Grails applications.
+  The Micronaut framework was created by the same team that built the [Grails framework](https://grails.org), and they incorporated many of the lessons learned from the Grails framework into the design of the new Framework. Unlike the Grails framework and other JVM web frameworks, the Micronaut framework is designed to function as both a client and a server framework in a microservice environment. The Micronaut framework’s modularity and lack of external dependencies means that Grails developers can take advantage of many key Micronaut features within their existing Grails applications.
 - ### [How can I get permission to use the Micronaut name or logo on my materials?](#how-can-i-get-permission-to-use-the-micronaut-name-or-logo-on-my-materials)
 
   The [Commonhaus Foundation Trademark Policy](https://www.commonhaus.org/policies/trademark-policy/) governs the use of the word “Micronaut” and all Micronaut logos and trademarks.
