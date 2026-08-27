@@ -1,7 +1,7 @@
 {
   "source": "micronaut-projects/micronaut-platform gradle/libs.versions.toml plus checked-in docs metadata",
   "publishedSource": "https://github.com/micronaut-projects/micronaut-platform/blob/master/gradle/libs.versions.toml",
-  "projectCount": 68,
+  "projectCount": 71,
   "categories": [
     {
       "slug": "most-popular",
@@ -53,6 +53,7 @@
       "projectSlugs": [
         "aot",
         "gradle",
+        "projectgen",
         "sourcegen",
         "openrewrite"
       ]
@@ -142,6 +143,7 @@
         "jaxrs",
         "json-schema",
         "openapi",
+        "jakarta-el",
         "serde",
         "servlet",
         "spring"
@@ -194,6 +196,7 @@
         "acme",
         "cache",
         "chatbots",
+        "crac",
         "email",
         "picocli",
         "session"
@@ -1883,6 +1886,70 @@
       ],
       "shortDescription": "OpenRewrite recipes",
       "longDescription": "Micronaut OpenRewrite provides recipes for migrations, dependency updates, source transformations, and modernization tasks so teams apply consistent, reviewable changes across applications and libraries for current and future platform releases safely."
+    },
+    {
+      "slug": "projectgen",
+      "displayName": "Micronaut ProjectGen",
+      "shortName": "ProjectGen",
+      "projectKey": "projectgen",
+      "module": "io.micronaut.projectgen:micronaut-projectgen-bom",
+      "repositoryName": "micronaut-projectgen",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-projectgen.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-projectgen/latest/guide/",
+      "branch": "1.0.x",
+      "submodulePath": "repos/micronaut-projectgen",
+      "platformVersionKey": "managed-micronaut-projectgen",
+      "version": "1.1.0",
+      "icon": "lucide:wand-sparkles",
+      "primaryCategory": "build",
+      "categorySlugs": [
+        "build"
+      ],
+      "shortDescription": "JVM project generation API",
+      "longDescription": "Micronaut ProjectGen provides an API for generating Gradle and Maven JVM projects with reusable project models, build configuration, and source layout conventions."
+    },
+    {
+      "slug": "crac",
+      "displayName": "Micronaut CRaC",
+      "shortName": "CRaC",
+      "projectKey": "crac",
+      "module": "io.micronaut.crac:micronaut-crac-bom",
+      "repositoryName": "micronaut-crac",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-crac.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-crac/latest/guide/",
+      "branch": "3.1.x",
+      "submodulePath": "repos/micronaut-crac",
+      "platformVersionKey": "managed-micronaut-crac",
+      "version": "3.1.0",
+      "icon": "lucide:archive-restore",
+      "primaryCategory": "misc",
+      "categorySlugs": [
+        "misc"
+      ],
+      "shortDescription": "Coordinated Restore at Checkpoint support",
+      "longDescription": "Micronaut CRaC integrates Coordinated Restore at Checkpoint support so applications can prepare resources before checkpointing and restore quickly with framework-aware lifecycle handling."
+    },
+    {
+      "slug": "jakarta-el",
+      "documentationOnly": true,
+      "displayName": "Micronaut Jakarta EL",
+      "shortName": "Jakarta EL",
+      "projectKey": "jakarta-el",
+      "module": "io.micronaut:micronaut-jakarta-el",
+      "repositoryName": "micronaut-jakarta-el",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-jakarta-el.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-jakarta-el/snapshot/guide/",
+      "branch": "1.0.x",
+      "submodulePath": "repos/micronaut-jakarta-el",
+      "platformVersionKey": "managed-micronaut-jakarta-el",
+      "version": "1.0.0",
+      "icon": "lucide:braces",
+      "primaryCategory": "api",
+      "categorySlugs": [
+        "api"
+      ],
+      "shortDescription": "Compiled Jakarta Expression Language",
+      "longDescription": "Micronaut Jakarta EL provides a Jakarta Expression Language implementation compiled at build time for efficient expression evaluation without a separate runtime engine."
     }
   ]
 }

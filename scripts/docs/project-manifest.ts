@@ -36,7 +36,7 @@ const REPOSITORY_OVERRIDES: Record<string, string> = {
   oraclecloud: "micronaut-oracle-cloud",
   serialization: "micronaut-serialization",
 };
-const EXCLUDED_PROJECT_KEYS = new Set(["crac", "guides"]);
+const EXCLUDED_PROJECT_KEYS = new Set(["guides"]);
 const UPPERCASE_WORDS = new Set([
   "acme",
   "aot",

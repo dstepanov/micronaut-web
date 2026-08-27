@@ -15,6 +15,7 @@ export type DocsProjectCatalog = {
 };
 
 type DocsCatalogProject = DocsProject & {
+  documentationOnly?: boolean;
   shortName: string;
   version: string;
   icon: string;
@@ -62,7 +63,8 @@ export function buildDocsProjectCatalog({
   const categories = (existingCatalog.categories ||
     []) as DocsProjectCatalog["categories"];
 
-  const catalogProjects = projects
+  const catalogProjects = [
+    ...projects
     .map((project) => {
       const existingProject =
         existingProjectsBySlug.get(project.slug) ||
@@ -108,7 +110,13 @@ export function buildDocsProjectCatalog({
           existingProject.longDescription ||
           `${project.displayName} documentation and reference material.`,
       };
-    })
+    }),
+    ...((existingCatalog.projects || []) as DocsCatalogProject[]).filter(
+      (project) =>
+        project.documentationOnly &&
+        !projects.some(({ slug }) => slug === project.slug),
+    ),
+  ]
     .sort(
       (left, right) =>
         projectOrder(left, existingProjectOrder) -
