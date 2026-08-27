@@ -52,6 +52,13 @@ export type BlogArchiveModel = {
   totalPages?: number;
 };
 
+export function isGeneralBlogPost(post: BlogPostModel): boolean {
+  return ![
+    "release-announcements",
+    "success-story",
+  ].includes(post.entry.data.category ?? "");
+}
+
 export type SuccessStory = {
   title: string;
   organization: string;
@@ -128,14 +135,7 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       { label: "Download", href: "/download/" },
       { label: "CLI", href: "/cli/" },
       { label: "Blog", href: "/blog/" },
-      {
-        label: "Release Announcements",
-        href: "/category/release-announcements/",
-      },
-      { label: "Roadmap", href: "/micronaut-roadmap/" },
       { label: "Success Stories", href: "/micronaut-success-stories/" },
-      { label: "Commercial Support", href: "/support/" },
-      { label: "Partners", href: "/partners/" },
       { label: "FAQ", href: "/faq/" },
     ],
   },
@@ -160,6 +160,10 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       {
         label: "Contributor License Agreement",
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md",
+      },
+      {
+        label: "Intellectual Property",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/INTELLECTUAL_PROPERTY.md",
       },
       {
         label: "Trademark Policy",
@@ -189,9 +193,54 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md",
       },
       {
-        label: "All Policies",
-        href: "https://github.com/micronaut-projects/micronaut-policies#readme",
+        label: "Conflict",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONFLICT.md",
       },
+      {
+        label: "Succession",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SUCCESSION.md",
+      },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { label: "Commercial Support", href: "/support/" },
+      { label: "Partners", href: "/partners/" },
+    ],
+  },
+  {
+    title: "Planning",
+    links: [
+      {
+        label: "Release Announcements",
+        href: "/category/release-announcements/",
+      },
+      { label: "Roadmap", href: "/micronaut-roadmap/" },
+      {
+        label: "Versioning",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/VERSIONS_POLICY.md",
+      },
+      {
+        label: "Release Management",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_MANAGEMENT.md",
+      },
+      {
+        label: "Release Cadence",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/RELEASE_CADENCE.md",
+      },
+    ],
+  },
+  {
+    title: "Learning",
+    links: [
+      { label: "Guides", href: "/guides/" },
+      { label: "Docs", href: "/docs/" },
+      {
+        label: "Free Course",
+        href: "https://mylearn.oracle.com/ou/course/micronaut-fundamentals/151938/",
+      },
+      { label: "Podcast", href: "https://micronautpodcast.com" },
     ],
   },
 ];
@@ -255,9 +304,7 @@ export async function getBlogPostsForArchive(
   const posts = await getBlogPosts();
   const pageSize = 24;
   if (slug === "blog") {
-    return posts
-      .filter((post) => post.entry.data.category !== "success-story")
-      .slice(0, pageSize);
+    return posts.filter(isGeneralBlogPost).slice(0, pageSize);
   }
   const blogPageMatch = slug.match(/^blog\/page\/(\d+)$/);
   if (blogPageMatch) {
@@ -265,9 +312,7 @@ export async function getBlogPostsForArchive(
     if (!Number.isInteger(page) || page < 1) {
       return [];
     }
-    const blogPosts = posts.filter(
-      (post) => post.entry.data.category !== "success-story",
-    );
+    const blogPosts = posts.filter(isGeneralBlogPost);
     return blogPosts.slice((page - 1) * pageSize, page * pageSize);
   }
   if (slug.startsWith("tag/")) {
@@ -287,9 +332,7 @@ export async function getBlogPostsForArchive(
 
 export async function getBlogArchiveRoutes(): Promise<BlogArchiveModel[]> {
   const posts = await getBlogPosts();
-  const blogPosts = posts.filter(
-    (post) => post.entry.data.category !== "success-story",
-  );
+  const blogPosts = posts.filter(isGeneralBlogPost);
   const pageSize = 24;
   const totalPages = Math.ceil(blogPosts.length / pageSize);
   const blogPageRoutes = Array.from(
