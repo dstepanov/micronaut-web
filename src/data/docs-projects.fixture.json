@@ -1,7 +1,7 @@
 {
   "source": "micronaut-projects/micronaut-platform gradle/libs.versions.toml plus checked-in docs metadata",
   "publishedSource": "https://github.com/micronaut-projects/micronaut-platform/blob/master/gradle/libs.versions.toml",
-  "projectCount": 71,
+  "projectCount": 73,
   "categories": [
     {
       "slug": "most-popular",
@@ -22,6 +22,16 @@
       "description": "Core framework runtime, HTTP, dependency injection, configuration, and native-image support.",
       "projectSlugs": [
         "core"
+      ]
+    },
+    {
+      "slug": "build-plugins",
+      "name": "Build Plugins",
+      "icon": "package",
+      "description": "Build plugins for configuring, packaging, and running Micronaut applications with Gradle or Maven.",
+      "projectSlugs": [
+        "gradle",
+        "maven"
       ]
     },
     {
@@ -1907,6 +1917,52 @@
       ],
       "shortDescription": "JVM project generation API",
       "longDescription": "Micronaut ProjectGen provides an API for generating Gradle and Maven JVM projects with reusable project models, build configuration, and source layout conventions."
+    },
+    {
+      "slug": "gradle",
+      "documentationOnly": true,
+      "displayName": "Micronaut Gradle Plugin",
+      "shortName": "Gradle",
+      "projectKey": "gradle-plugin",
+      "module": "io.micronaut.gradle:micronaut-gradle-plugin",
+      "repositoryName": "micronaut-gradle-plugin",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-gradle-plugin.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-gradle-plugin/latest",
+      "externalUrl": "https://micronaut-projects.github.io/micronaut-gradle-plugin/latest",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-gradle-plugin",
+      "platformVersionKey": "managed-micronaut-gradle-plugin",
+      "version": "",
+      "icon": "brand:gradle",
+      "primaryCategory": "build-plugins",
+      "categorySlugs": [
+        "build-plugins"
+      ],
+      "shortDescription": "Micronaut Gradle build plugin",
+      "longDescription": "The Micronaut Gradle Plugin configures the platform, annotation processing, application packaging, and development workflows for Gradle builds."
+    },
+    {
+      "slug": "maven",
+      "documentationOnly": true,
+      "displayName": "Micronaut Maven Plugin",
+      "shortName": "Maven",
+      "projectKey": "maven-plugin",
+      "module": "io.micronaut.maven:micronaut-maven-plugin",
+      "repositoryName": "micronaut-maven-plugin",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-maven-plugin.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-maven-plugin/latest",
+      "externalUrl": "https://micronaut-projects.github.io/micronaut-maven-plugin/latest",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-maven-plugin",
+      "platformVersionKey": "managed-micronaut-maven-plugin",
+      "version": "",
+      "icon": "brand:apachemaven",
+      "primaryCategory": "build-plugins",
+      "categorySlugs": [
+        "build-plugins"
+      ],
+      "shortDescription": "Micronaut Maven build plugin",
+      "longDescription": "The Micronaut Maven Plugin supports building, packaging, and running Micronaut applications with Maven."
     },
     {
       "slug": "crac",

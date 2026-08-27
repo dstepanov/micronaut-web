@@ -16,6 +16,7 @@ export type DocsProjectCatalog = {
 
 type DocsCatalogProject = DocsProject & {
   documentationOnly?: boolean;
+  externalUrl?: string;
   shortName: string;
   version: string;
   icon: string;
@@ -90,6 +91,9 @@ export function buildDocsProjectCatalog({
         repositoryName: project.repositoryName,
         repositoryUrl: project.repositoryUrl,
         publishedGuideUrl: project.publishedGuideUrl,
+        ...(existingProject.externalUrl
+          ? { externalUrl: existingProject.externalUrl }
+          : {}),
         branch: project.branch,
         submodulePath: project.submodulePath,
         platformVersionKey: project.platformVersionKey,

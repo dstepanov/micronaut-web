@@ -13,6 +13,8 @@ import { withBasePath } from "@/lib/base-path";
 import type { DocsProject } from "@/lib/content-catalog";
 
 export function ProjectCard({ project }: { project: DocsProject }) {
+  const destination = project.externalUrl || withBasePath(project.href);
+
   return (
     <Card className="group relative grid h-full w-full grid-rows-[auto_1fr_auto] gap-2.5 rounded-lg p-3.5 py-3.5 transition focus-within:border-foreground/30 hover:border-foreground/30 hover:shadow-md">
       <CardHeader className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-1 px-4">
@@ -21,7 +23,7 @@ export function ProjectCard({ project }: { project: DocsProject }) {
           <CardTitle className="text-[0.96rem] leading-snug">
             {/* The whole card is the link; the GitHub control sits above it. */}
             <a
-              href={withBasePath(project.href)}
+              href={destination}
               className="text-foreground no-underline after:absolute after:inset-0 after:rounded-lg group-hover:underline"
             >
               {project.shortName}

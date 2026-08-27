@@ -33,6 +33,7 @@ export type DocsCatalogProject = {
   repositoryName: string;
   repositoryUrl: string;
   publishedGuideUrl: string;
+  externalUrl?: string;
   branch: string;
   submodulePath: string;
   platformVersionKey: string;
