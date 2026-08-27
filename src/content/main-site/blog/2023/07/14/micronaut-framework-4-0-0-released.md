@@ -32,7 +32,7 @@ In addition, Micronaut Kotlin updates to [Ktor 2](https://blog.jetbrains.com/kto
 
 ### GraalVM
 
-**Micronaut framework 4 supports the**[**latest GraalVM release**](https://www.graalvm.org/release-notes/)**and shifted to runtime initialisation for GraalVM** to ensure consistency in behavior between JIT and Native applications.
+**Micronaut framework 4 supports the [latest GraalVM release](https://www.graalvm.org/release-notes/) and shifted to runtime initialisation for GraalVM** to ensure consistency in behavior between JIT and Native applications.
 
 Additionally, the required metadata for GraalVM now resides on the [GraalVM Reachability Metadata Repository](https://github.com/oracle/graalvm-reachability-metadata) and both Micronaut Gradle and Maven plugins use it by default.
 

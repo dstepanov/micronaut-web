@@ -26,10 +26,10 @@ Loic Mathieu, Lead Software Engineer at [Kestra](https://kestra.io):
 >
 > Our CTO and Co-Founder, with a strong scripting background, was clear about one thing—we needed something modern, efficient, and purpose-built for the cloud. Building such a platform required a foundation that could keep up with our ambitions:
 >
-> - **Be lightweight**to minimize resource usage.
-> - **Start up fast,**given the dynamic nature of workflows.
-> - **Handle reactive, non-blocking operations**for high-concurrency workloads.
-> - **Align with our vision**of a cloud-native orchestration system.
+> - **Be lightweight** to minimize resource usage.
+> - **Start up fast,** given the dynamic nature of workflows.
+> - **Handle reactive, non-blocking operations** for high-concurrency workloads.
+> - **Align with our vision** of a cloud-native orchestration system.
 >
 > At the time, Micronaut framework was relatively new, but it showed immense promise. Unlike legacy frameworks that relied heavily on runtime reflection (a performance bottleneck), Micronaut framework generated the necessary metadata at compile time, ensuring better efficiency. This was crucial for Kestra, where every CPU cycle matters when orchestrating large-scale tasks.
 >

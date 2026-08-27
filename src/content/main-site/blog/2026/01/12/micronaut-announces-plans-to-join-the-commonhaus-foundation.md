@@ -14,7 +14,7 @@ tags: []
 href: /2026/01/12/micronaut-announces-plans-to-join-the-commonhaus-foundation/
 ---
 
-Today, we are announcing that**the**[**Micronaut**](https://micronaut.io/)**framework is applying to join the**[**Commonhaus Foundation**](https://www.commonhaus.org/)**.**This is an exciting new step in the Micronaut project’s journey, and we’re looking forward to the opportunity to continue innovating with our community under the Commonhaus Foundation banner.
+Today, we are announcing that **the [Micronaut](https://micronaut.io/) framework is applying to join the [Commonhaus Foundation](https://www.commonhaus.org/).** This is an exciting new step in the Micronaut project’s journey, and we’re looking forward to the opportunity to continue innovating with our community under the Commonhaus Foundation banner.
 
 As is customary at the turn of a new year, we’d like to spend some time revisiting the path we’ve taken, and looking to the horizon towards the potential that our future holds.
 
