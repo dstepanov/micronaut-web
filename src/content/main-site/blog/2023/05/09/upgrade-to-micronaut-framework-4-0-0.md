@@ -2,14 +2,15 @@
 slug: 2023/05/09/upgrade-to-micronaut-framework-4-0-0
 title: Upgrade to Micronaut Framework 4
 description: This post is a migration guide from Micronaut Framework 3 to Micronaut framework 4.0. You can read about Micronaut core 4 breaking changes. Moreover, To ease upgrading, we provide OpenRewrite integration for Gradle and Maven. Logback Remove true from src/main/resources/logback.xml Gradle Applications Version update Set micronautVersion property in gradle.properties. micronautVersion=4.0.0 Update Gradle to 8 Micronaut...
-date: '2023-05-09T16:11:22'
-modified: '2024-02-15T13:59:42'
+date: "2023-05-09T16:11:22"
+modified: "2024-02-15T13:59:42"
 sourceUrl: https://micronaut.io/2023/05/09/upgrade-to-micronaut-framework-4-0-0/
 wordpressId: 6199
 contentSource: wordpress-post
 category: micronaut-4
 categories:
   - micronaut-4
+  - upgrade
 tags:
   - micronaut4
   - upgrade
@@ -392,43 +393,43 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 ```
 
-| Javax annotations | Jakarta annotations |
-| --- | --- |
-| `javax.validation.constraints.NotNull`| `jakarta.validation.constraints.NotNull`|
-| `javax.validation.constraints.Pattern`| `jakarta.validation.constraints.Pattern`|
-| `javax.validation.constraints.NotBlank`| `jakarta.validation.constraints.NotBlank`|
-| `javax.validation.Constraint`| `jakarta.validation.Constraint`|
-| `javax.validation.Payload`| `jakarta.validation.Payload`|
-| `javax.validation.ConstraintViolation`| `jakarta.validation.ConstraintViolation`|
-| `javax.validation.Validator`| `jakarta.validation.Validator`|
-| `javax.validation.constraints.Positive`| `jakarta.validation.constraints.Positive`|
-| `javax.validation.constraints.PositiveOrZero`| `jakarta.validation.constraints.PositiveOrZero`|
-| `javax.validation.Valid`| `jakarta.validation.Valid`|
-| `javax.validation.ConstraintViolationException`| `jakarta.validation.ConstraintViolationException`|
+| Javax annotations                               | Jakarta annotations                               |
+| ----------------------------------------------- | ------------------------------------------------- |
+| `javax.validation.constraints.NotNull`          | `jakarta.validation.constraints.NotNull`          |
+| `javax.validation.constraints.Pattern`          | `jakarta.validation.constraints.Pattern`          |
+| `javax.validation.constraints.NotBlank`         | `jakarta.validation.constraints.NotBlank`         |
+| `javax.validation.Constraint`                   | `jakarta.validation.Constraint`                   |
+| `javax.validation.Payload`                      | `jakarta.validation.Payload`                      |
+| `javax.validation.ConstraintViolation`          | `jakarta.validation.ConstraintViolation`          |
+| `javax.validation.Validator`                    | `jakarta.validation.Validator`                    |
+| `javax.validation.constraints.Positive`         | `jakarta.validation.constraints.Positive`         |
+| `javax.validation.constraints.PositiveOrZero`   | `jakarta.validation.constraints.PositiveOrZero`   |
+| `javax.validation.Valid`                        | `jakarta.validation.Valid`                        |
+| `javax.validation.ConstraintViolationException` | `jakarta.validation.ConstraintViolationException` |
 
 ### Mail annotations
 
 Micronaut Email 2 migrates to [Jakarta Mail](https://jakartaee.github.io/mail-api/) package namespaces, from `javax.mail` to `jakarta.mail`.
 
-| Javax annotations | Jakarta annotations |
-| --- | --- |
-| `javax.mail.Message`| `jakarta.mail.Message`|
-| `javax.mail.MessagingException`| `jakarta.mail.MessagingException`|
-| `javax.mail.Flags`| `jakarta.mail.Flags`|
-| `javax.mail.Folder`| `jakarta.mail.Folder`|
-| `javax.mail.Session`| `jakarta.mail.Session`|
-| `javax.mail.Store`| `jakarta.mail.Store`|
-| `javax.mail.internet.MimeMessage`| `jakarta.mail.internet.MimeMessage`|
-| `javax.mail.internet.MimeMultipart`| `jakarta.mail.internet.MimeMultipart`|
-| `javax.mail.util.ByteArrayDataSource`| `jakarta.mail.util.ByteArrayDataSource`|
-| `javax.mail.Authenticator`| `jakarta.mail.Authenticator`|
-| `javax.mail.PasswordAuthentication`| `jakarta.mail.PasswordAuthentication`|
+| Javax annotations                     | Jakarta annotations                     |
+| ------------------------------------- | --------------------------------------- |
+| `javax.mail.Message`                  | `jakarta.mail.Message`                  |
+| `javax.mail.MessagingException`       | `jakarta.mail.MessagingException`       |
+| `javax.mail.Flags`                    | `jakarta.mail.Flags`                    |
+| `javax.mail.Folder`                   | `jakarta.mail.Folder`                   |
+| `javax.mail.Session`                  | `jakarta.mail.Session`                  |
+| `javax.mail.Store`                    | `jakarta.mail.Store`                    |
+| `javax.mail.internet.MimeMessage`     | `jakarta.mail.internet.MimeMessage`     |
+| `javax.mail.internet.MimeMultipart`   | `jakarta.mail.internet.MimeMultipart`   |
+| `javax.mail.util.ByteArrayDataSource` | `jakarta.mail.util.ByteArrayDataSource` |
+| `javax.mail.Authenticator`            | `jakarta.mail.Authenticator`            |
+| `javax.mail.PasswordAuthentication`   | `jakarta.mail.PasswordAuthentication`   |
 
 ### Transaction annotations
 
-| Javax annotations | Jakarta annotations |
-| --- | --- |
-| `javax.transaction.Transactional`| `jakarta.transaction.Transactional`|
+| Javax annotations                 | Jakarta annotations                 |
+| --------------------------------- | ----------------------------------- |
+| `javax.transaction.Transactional` | `jakarta.transaction.Transactional` |
 
 ### Jakarta Persistence Annotations
 

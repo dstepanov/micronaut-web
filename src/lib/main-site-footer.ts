@@ -13,6 +13,7 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       { label: "Download", href: "/download/" },
       { label: "CLI", href: "/cli/" },
       { label: "Blog", href: "/blog/" },
+      { label: "Upgrades", href: "/category/upgrade/" },
       { label: "Success Stories", href: "/micronaut-success-stories/" },
       { label: "FAQ", href: "/faq/" },
     ],
