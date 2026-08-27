@@ -292,12 +292,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
     !hasFilters && (
       <section class="grid gap-10" data-guides-directory>
         <div class="grid gap-5">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">Learning Path</h2>
-            <p class="mt-1 text-sm text-muted-foreground">
-              Work through these in order to get productive with Micronaut.
-            </p>
-          </div>
+          <h2 class="text-2xl font-semibold tracking-tight">Learning Path</h2>
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {rankedCategoryGroups.map(([category, categoryGuides], index) => (
               <a
@@ -319,12 +314,7 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
         </div>
         {otherCategoryGroups.length > 0 && (
           <div class="grid gap-5">
-            <div>
-              <h2 class="text-2xl font-semibold tracking-tight">All Topics</h2>
-              <p class="mt-1 text-sm text-muted-foreground">
-                Deep dives by feature and integration.
-              </p>
-            </div>
+            <h2 class="text-2xl font-semibold tracking-tight">All Topics</h2>
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {otherCategoryGroups.map(([category, categoryGuides]) => (
                 <a
