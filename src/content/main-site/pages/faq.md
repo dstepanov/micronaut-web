@@ -20,10 +20,14 @@ redirectFrom:
 
   [Micronaut Guides](https://guides.micronaut.io) are licensed under [CC By 4.0](https://creativecommons.org/licenses/by/4.0/deed.en) for the writing and media and [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) for the code.
 
+- ### [How did Micronaut begin?](#how-did-micronaut-begin)
+
+  Micronaut was first conceived at [Object Computing](https://objectcomputing.com/) in 2017. Its financial and organizational investment enabled the project to take root and grow before it was open-sourced in 2018. Object Computing continued that support by helping establish the Micronaut Foundation in 2020, which was the project's non-profit home until its move to the Commonhaus Foundation. We gratefully recognize Object Computing's foundational and continuing role in Micronaut.
+
 - ### [What is the best way to get started?](#what-is-the-best-way-to-get-started-learning-micronaut)
 
   [Micronaut Launch](https://launch.micronaut.io) is the easiest way to create a new project with the latest Micronaut version: choose an application type, language, build system, test framework, and features, then generate the project.
-  
+
   You can also easily generate an app locally with the [Micronaut CLI](/cli/).
 
 - ### [Learning via video](#video-courses)
