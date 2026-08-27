@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import WebLayout from "@/layouts/WebLayout.astro";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -132,13 +131,16 @@ const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
         {
           !generatedDocHtml && (
             <header id={`${project.slug}-docs`} class="mb-7 scroll-mt-24">
-              <div class="mb-4 flex items-center gap-3">
-                <IconBadge name={project.icon} size="lg" />
-                <Badge variant="secondary">{project.primaryCategory}</Badge>
+              <div class="flex items-center gap-3">
+                <IconBadge
+                  name={project.icon}
+                  size="lg"
+                  themeTreatment={project.iconThemeTreatment || "auto"}
+                />
+                <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
+                  {project.shortName}
+                </h1>
               </div>
-              <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
-                {project.shortName}
-              </h1>
               <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
                 {project.longDescription}
               </p>
