@@ -123,6 +123,8 @@ const isBlogArchiveRoute =
   routeSlug.startsWith("category/");
 const isFaqPage = routeSlug === "faq";
 const isCommercialSupportPage = routeSlug === "support";
+const isReleaseAnnouncementsArchive =
+  routeSlug === "category/release-announcements";
 const usesPublicMarkdownLayout =
   "layoutVariant" in pageData && pageData.layoutVariant === "public-markdown";
 const archivePosts = await getBlogPostsForArchive(routeSlug);
@@ -274,7 +276,12 @@ const postCategory =
           ]}
         >
           {(!usesPublicMarkdownLayout || isBlogArchiveRoute) && (
-            <header class="border-b pb-8">
+            <header
+              class:list={[
+                "pb-8",
+                !isReleaseAnnouncementsArchive && "border-b",
+              ]}
+            >
               {post ? (
                 <a
                   href={withBasePath("/blog/")}
@@ -311,7 +318,7 @@ const postCategory =
                   )}
                 </div>
               )}
-              {intro && (
+              {intro && !isReleaseAnnouncementsArchive && (
                 <p class="mt-5 text-base leading-8 text-muted-foreground md:text-[1.05rem]">
                   {intro}
                 </p>
@@ -389,27 +396,39 @@ const postCategory =
           )}
 
           {archivePosts.length > 0 && (
-            <section class:list={["pt-8", contentHtml ? "mt-10 border-t" : ""]}>
-              <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <h2 class="text-2xl font-semibold leading-tight text-foreground">
-                    {routeSlug === "blog"
-                      ? "Latest articles"
-                      : "Available articles"}
-                  </h2>
+            <section
+              class:list={[
+                isReleaseAnnouncementsArchive ? "pt-0" : "pt-8",
+                contentHtml ? "mt-10 border-t" : "",
+              ]}
+            >
+              {!isReleaseAnnouncementsArchive && (
+                <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <h2 class="text-2xl font-semibold leading-tight text-foreground">
+                      {routeSlug === "blog"
+                        ? "Latest articles"
+                        : "Available articles"}
+                    </h2>
+                  </div>
+                  {routeSlug === "blog" &&
+                    blogArchiveTotalPages &&
+                    blogArchiveTotalPages > 1 && (
+                      <a
+                        href={withBasePath("/blog/page/2/")}
+                        class="text-sm font-medium text-brand underline-offset-4 hover:underline"
+                      >
+                        Browse older articles &rarr;
+                      </a>
+                    )}
                 </div>
-                {routeSlug === "blog" &&
-                  blogArchiveTotalPages &&
-                  blogArchiveTotalPages > 1 && (
-                    <a
-                      href={withBasePath("/blog/page/2/")}
-                      class="text-sm font-medium text-brand underline-offset-4 hover:underline"
-                    >
-                      Browse older articles &rarr;
-                    </a>
-                  )}
-              </div>
-              <div class="mt-5 grid gap-4 lg:grid-cols-2">
+              )}
+              <div
+                class:list={[
+                  "grid gap-4 lg:grid-cols-2",
+                  !isReleaseAnnouncementsArchive && "mt-5",
+                ]}
+              >
                 {archivePosts.map((post) => (
                   <a
                     href={withBasePath(post.href)}
