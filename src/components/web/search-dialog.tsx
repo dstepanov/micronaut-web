@@ -178,6 +178,9 @@ export function SearchDialog({
   // first opened. Importing it instead put the docs and guides fixtures in the
   // header bundle, which every page hydrates.
   const [items, setItems] = useState<SearchItem[]>([]);
+  // Without this the empty state claimed "No results found." while the catalog
+  // was still in flight, so every fast typist was told their query had failed.
+  const [loadingItems, setLoadingItems] = useState(false);
   // Rank against the query first: these lists used to be truncated before any
   // query ran, so a match outside the first 80 entries could never surface.
   const docs = useMemo(
@@ -265,11 +268,16 @@ export function SearchDialog({
               guidesManifestUrl || withBasePath("/guides/manifest.json"),
             ),
           ];
+    setLoadingItems(true);
     Promise.all(sources).then((loaded) => {
       const merged = loaded.flat();
-      if (!cancelled && merged.length) {
+      if (cancelled) {
+        return;
+      }
+      if (merged.length) {
         setItems(merged);
       }
+      setLoadingItems(false);
     });
     return () => {
       cancelled = true;
@@ -399,12 +407,18 @@ export function SearchDialog({
         />
         <CommandList className="max-h-[28rem]">
           <CommandEmpty>
-            <span className="grid gap-1">
-              <span className="font-medium">No results found.</span>
-              <span className="text-xs text-muted-foreground">
-                Try fewer words, or drop punctuation such as @ and ().
+            {loadingItems ? (
+              <span className="font-medium" aria-live="polite">
+                Loading search results…
               </span>
-            </span>
+            ) : (
+              <span className="grid gap-1">
+                <span className="font-medium">No results found.</span>
+                <span className="text-xs text-muted-foreground">
+                  Try fewer words, or drop punctuation such as @ and ().
+                </span>
+              </span>
+            )}
           </CommandEmpty>
           {mode === "docs" ? (
             <>
