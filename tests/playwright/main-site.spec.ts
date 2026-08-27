@@ -211,6 +211,18 @@ test("homepage code examples do not include a Python variant", async ({
   await expect(pythonTab).toHaveCount(0);
 });
 
+test("homepage Download the CLI link opens the CLI page", async ({ page }) => {
+  await page.goto(appPath("/"));
+
+  const cliLink = page.getByRole("link", { name: "Download the CLI" });
+  await expect(cliLink).toHaveAttribute("href", appPath("/cli/"));
+  await cliLink.click();
+  await expect(page).toHaveURL(appPath("/cli/"));
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Micronaut CLI" }),
+  ).toBeVisible();
+});
+
 test("homepage addresses PageSpeed image and accessibility findings", async ({
   page,
 }) => {

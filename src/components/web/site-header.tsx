@@ -61,7 +61,12 @@ const menuGroups = [
       {
         href: "/download/",
         label: "Download",
-        description: "Launch, CLI, and build-tool starter options.",
+        description: "Framework binaries and release notes.",
+      },
+      {
+        href: "/cli/",
+        label: "CLI",
+        description: "Install the command-line application generator.",
       },
       {
         href: "/category/release-announcements/",
