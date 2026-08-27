@@ -1818,7 +1818,8 @@
       "submodulePath": "repos/micronaut-graal-languages",
       "platformVersionKey": "managed-micronaut-graal-languages",
       "version": "2.0.0",
-      "icon": "lucide:gem",
+      "icon": "image:brands/graalvm-mascot.svg",
+      "iconThemeTreatment": "preserve",
       "primaryCategory": "languages",
       "categorySlugs": [
         "languages"

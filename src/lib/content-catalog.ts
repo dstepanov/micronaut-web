@@ -39,6 +39,7 @@ export type DocsCatalogProject = {
   platformVersionKey: string;
   version: string;
   icon: string;
+  iconThemeTreatment?: "auto" | "inverted" | "monochrome" | "preserve";
   primaryCategory: string;
   categorySlugs: string[];
   guideTopicAliases?: string[];
