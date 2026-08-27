@@ -89,11 +89,6 @@ const menuGroups = [
         description: "Support paths for production adoption.",
       },
       {
-        href: "/resources/community-support/",
-        label: "Community Support",
-        description: "Community channels, repositories, and discussion.",
-      },
-      {
         href: "/faq/",
         label: "FAQ",
         description: "Frequently asked questions.",
