@@ -111,9 +111,8 @@ const distinctTags = guide.tags
     /* mt-auto pins the footer, so short cards don't leave the Read control floating mid-card. */
   }
   <CardFooter
-    className="mt-auto justify-between gap-3 text-sm text-muted-foreground"
+    className="mt-auto justify-end gap-3 text-sm text-muted-foreground"
   >
-    <span>{guide.estimatedMinutes} min</span>
     {
       variants.length > 0 ? (
         <ButtonGroup

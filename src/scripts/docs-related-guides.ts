@@ -119,14 +119,6 @@ function populateCard(item: HTMLElement, guide: GeneratedGuide) {
   } else {
     date?.remove();
   }
-  const minutes = item.querySelector<HTMLElement>(
-    "[data-related-guide-minutes]",
-  );
-  if (minutes && guide.estimatedMinutes > 0) {
-    minutes.textContent = `${guide.estimatedMinutes} min`;
-  } else {
-    minutes?.remove();
-  }
 }
 
 function populateBadges(item: HTMLElement, badges: string[]) {

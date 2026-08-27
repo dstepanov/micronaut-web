@@ -96,7 +96,7 @@ export function GuideVariantPreferencePicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
       <ButtonGroup aria-label="Preferred guide language">
         {languages.map((language) => (
           <Button

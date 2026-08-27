@@ -252,12 +252,6 @@ function sortGuideCards(grid: HTMLElement, sort: string) {
     if (sort === "title") {
       return dataTitle(left).localeCompare(dataTitle(right));
     }
-    if (sort === "duration") {
-      return (
-        dataNumber(left, "minutes") - dataNumber(right, "minutes") ||
-        dataTitle(left).localeCompare(dataTitle(right))
-      );
-    }
     return (
       (right.dataset.date || "").localeCompare(left.dataset.date || "") ||
       dataTitle(left).localeCompare(dataTitle(right))
@@ -270,11 +264,6 @@ function sortGuideCards(grid: HTMLElement, sort: string) {
 
 function dataTitle(card: HTMLElement) {
   return card.dataset.title || "";
-}
-
-function dataNumber(card: HTMLElement, key: string) {
-  const value = Number(card.dataset[key]);
-  return Number.isFinite(value) ? value : 0;
 }
 
 function splitDatasetList(value: string | undefined) {

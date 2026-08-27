@@ -28,7 +28,7 @@ type Props = {
   root?: string;
 };
 
-type SortMode = "latest" | "title" | "duration";
+type SortMode = "latest" | "title";
 
 const { guides, activeTag, root = "/guides" } = Astro.props;
 const rootPath = `${root.replace(/\/+$/, "")}/`;
@@ -37,8 +37,7 @@ const query = (searchParams.get("q") || "").trim();
 const selectedCategory = (searchParams.get("category") || "").trim();
 const selectedTag = activeTag || (searchParams.get("tag") || "").trim();
 const sortParam = (searchParams.get("sort") || "latest").trim();
-const sortMode: SortMode =
-  sortParam === "title" || sortParam === "duration" ? sortParam : "latest";
+const sortMode: SortMode = sortParam === "title" ? sortParam : "latest";
 const selectedLanguage = (searchParams.get("language") || "").trim();
 const categorySlug = tagSlug;
 const visibleGuides = sortGuides(
@@ -181,12 +180,6 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
     if (mode === "title") {
       return left.title.localeCompare(right.title);
     }
-    if (mode === "duration") {
-      return (
-        left.estimatedMinutes - right.estimatedMinutes ||
-        left.title.localeCompare(right.title)
-      );
-    }
     return (
       right.publicationDate.localeCompare(left.publicationDate) ||
       left.title.localeCompare(right.title)
@@ -200,20 +193,41 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
   data-guides-catalog
   data-active-tag={activeTag || ""}
 >
-  <header class="max-w-3xl">
-    <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
+  <header>
+    <h1 class="max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
       {activeTag ? `Micronaut Guides: ${activeTag}` : "Micronaut Guides"}
     </h1>
-    <p class="mt-4 text-lg leading-8 text-muted-foreground">
-      Learn how to build Micronaut applications with focused tutorials, runnable
-      examples, and language/build variants.
-    </p>
     {
       /* This is the catalog filter, not a second site search: it narrows the
          guides below as you type, while the header dialog searches the docs. */
     }
-    <div class="mt-6 flex flex-wrap items-center gap-3 xl:flex-nowrap">
-      <form method="get" class="flex min-w-0 flex-1 gap-2" role="search">
+    <div
+      class="mt-6 grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-center"
+    >
+      <GuideVariantPreferencePicker client:idle python={pythonGuideCount > 0} />
+      {
+        pythonGuideCount > 0 && (
+          <a
+            href={withBasePath(`${rootPath}?language=python`)}
+            data-guides-language-filter="python"
+            aria-pressed="false"
+            class:list={[
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "no-underline aria-pressed:border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground",
+            ]}
+          >
+            Python only
+            <span class="text-xs tabular-nums opacity-70">
+              {pythonGuideCount}
+            </span>
+          </a>
+        )
+      }
+      <form
+        method="get"
+        class="flex w-full min-w-0 gap-2 lg:col-start-2 lg:row-start-1 lg:max-w-[32rem] lg:justify-self-end"
+        role="search"
+      >
         {
           selectedCategory && (
             <input type="hidden" name="category" value={selectedCategory} />
@@ -248,25 +262,6 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
         </div>
         <Button type="submit" variant="outline" className="h-11">Filter</Button>
       </form>
-      <GuideVariantPreferencePicker client:idle python={pythonGuideCount > 0} />
-      {
-        pythonGuideCount > 0 && (
-          <a
-            href={withBasePath(`${rootPath}?language=python`)}
-            data-guides-language-filter="python"
-            aria-pressed="false"
-            class:list={[
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "no-underline aria-pressed:border-transparent aria-pressed:bg-primary aria-pressed:text-primary-foreground",
-            ]}
-          >
-            Python only
-            <span class="text-xs tabular-nums opacity-70">
-              {pythonGuideCount}
-            </span>
-          </a>
-        )
-      }
     </div>
   </header>
 
@@ -468,7 +463,6 @@ function sortGuides(items: GeneratedGuide[], mode: SortMode) {
                     data-tags={guide.tags.map(categorySlug).join("|")}
                     data-languages={guideLanguages(guide).join("|")}
                     data-date={guide.publicationDate}
-                    data-minutes={guide.estimatedMinutes}
                   >
                     <GuideListRow guide={guide} root={root} />
                   </div>
