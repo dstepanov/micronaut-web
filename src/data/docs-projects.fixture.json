@@ -19,9 +19,10 @@
       "slug": "core",
       "name": "Core",
       "icon": "atom",
-      "description": "Core framework runtime, HTTP, dependency injection, configuration, and native-image support.",
+      "description": "Core framework runtime, HTTP, dependency injection, configuration, native-image, and security support.",
       "projectSlugs": [
-        "core"
+        "core",
+        "security"
       ]
     },
     {
@@ -62,7 +63,6 @@
       "description": "Build-time optimization, source generation, Gradle support, and migration automation.",
       "projectSlugs": [
         "aot",
-        "gradle",
         "projectgen",
         "sourcegen",
         "openrewrite"
@@ -83,15 +83,6 @@
         "r2dbc",
         "redis",
         "sql"
-      ]
-    },
-    {
-      "slug": "security",
-      "name": "Security",
-      "icon": "lock",
-      "description": "Authentication, authorization, token handling, and endpoint protection.",
-      "projectSlugs": [
-        "security"
       ]
     },
     {
@@ -823,9 +814,9 @@
       "platformVersionKey": "managed-micronaut-security",
       "version": "5.0.0",
       "icon": "lucide:shield",
-      "primaryCategory": "security",
+      "primaryCategory": "core",
       "categorySlugs": [
-        "security"
+        "core"
       ],
       "guideTopicAliases": [
         "micronaut-security",
@@ -1727,6 +1718,7 @@
       "platformVersionKey": "managed-micronaut-eclipsestore",
       "version": "2.0.0",
       "icon": "image:projects/eclipsestore.webp",
+      "iconThemeTreatment": "preserve",
       "primaryCategory": "data-access",
       "categorySlugs": [
         "data-access"

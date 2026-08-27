@@ -20,6 +20,7 @@ type DocsCatalogProject = DocsProject & {
   shortName: string;
   version: string;
   icon: string;
+  iconThemeTreatment?: "auto" | "inverted" | "monochrome" | "preserve";
   primaryCategory: string;
   categorySlugs: string[];
   guideTopicAliases?: string[];
@@ -65,8 +66,7 @@ export function buildDocsProjectCatalog({
     []) as DocsProjectCatalog["categories"];
 
   const catalogProjects = [
-    ...projects
-    .map((project) => {
+    ...projects.map((project) => {
       const existingProject =
         existingProjectsBySlug.get(project.slug) ||
         ({} as DocsProjectCatalog["projects"][number]);
@@ -102,6 +102,9 @@ export function buildDocsProjectCatalog({
           existingProject.version ||
           "",
         icon: existingProject.icon || "lucide:book-open",
+        ...(existingProject.iconThemeTreatment
+          ? { iconThemeTreatment: existingProject.iconThemeTreatment }
+          : {}),
         primaryCategory,
         categorySlugs,
         ...(existingProject.guideTopicAliases?.length
@@ -120,13 +123,12 @@ export function buildDocsProjectCatalog({
         project.documentationOnly &&
         !projects.some(({ slug }) => slug === project.slug),
     ),
-  ]
-    .sort(
-      (left, right) =>
-        projectOrder(left, existingProjectOrder) -
-          projectOrder(right, existingProjectOrder) ||
-        left.displayName.localeCompare(right.displayName),
-    );
+  ].sort(
+    (left, right) =>
+      projectOrder(left, existingProjectOrder) -
+        projectOrder(right, existingProjectOrder) ||
+      left.displayName.localeCompare(right.displayName),
+  );
 
   return {
     source,

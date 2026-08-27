@@ -18,7 +18,11 @@ export function ProjectCard({ project }: { project: DocsProject }) {
   return (
     <Card className="group relative grid h-full w-full grid-rows-[auto_1fr_auto] gap-2.5 rounded-lg p-3.5 py-3.5 transition focus-within:border-foreground/30 hover:border-foreground/30 hover:shadow-md">
       <CardHeader className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-1 px-4">
-        <IconBadge name={project.icon} size="sm" themeTreatment="monochrome" />
+        <IconBadge
+          name={project.icon}
+          size="sm"
+          themeTreatment={project.iconThemeTreatment || "monochrome"}
+        />
         <div className="min-w-0">
           <CardTitle className="text-[0.96rem] leading-snug">
             {/* The whole card is the link; the GitHub control sits above it. */}
