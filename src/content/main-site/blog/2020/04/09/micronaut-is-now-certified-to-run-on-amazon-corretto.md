@@ -24,7 +24,7 @@ Amazon Corretto is an OpenJDK distribution that provides free, long-term support
 
 Since Micronaut offers [first-class support for AWS](https://micronaut-projects.github.io/micronaut-aws/latest/guide), particularly for Lambda functions, we thought it prudent to include a specific workflow to run Micronaut core tests with Corretto. We are also making sure that tests are run within an Amazon Linux 2 base image, which is the environment users will find in a java11 runtime-based Lambda.
 
-To enable the Micronaut team to continuously test and support Micronaut running on Corretto, we use the official `amazoncorretto:8` and `amazoncorreto:11` Docker images, which are built on top of `amazonlinux:2`.
+To enable the Micronaut team to continuously test and support Micronaut running on Corretto, we use the official `amazoncorretto:8` and `amazoncorretto:11` Docker images, which are built on top of `amazonlinux:2`.
 
 With the exception of some environment variables (which may be specific to the use case of running within GitHub Actions and within a Docker image), Corretto has proven to be a drop-in replacement for other OpenJDK distributions. It has not produced any difference compared to the main CI workflow, which is run with GitHub Actions’ default Zulu Community distribution of OpenJDK. You can check the whole workflow file [here](https://github.com/micronaut-projects/micronaut-core/blob/master/.github/workflows/corretto.yml).
 

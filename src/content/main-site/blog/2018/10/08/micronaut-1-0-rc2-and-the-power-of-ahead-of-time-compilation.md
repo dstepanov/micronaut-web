@@ -141,7 +141,7 @@ This has a number of benefits including:
 
 This may sound complex, but the simplicity it enables for developers is a huge win. For example, if you wish to implement your AOP advice, such as introduction advice, there are only a few steps required.
 
-As an example, say you want to implement logic from an interface at compilation time. Testing frameworks, for example, often have tools for creating stubs or mocks that return alternative values from interfaces. Let’s see how you could implement stubbing in Mironaut. Step 1 is to create an annotation, for example:
+As an example, say you want to implement logic from an interface at compilation time. Testing frameworks, for example, often have tools for creating stubs or mocks that return alternative values from interfaces. Let’s see how you could implement stubbing in Micronaut. Step 1 is to create an annotation, for example:
 
 ```java
 @Introduction

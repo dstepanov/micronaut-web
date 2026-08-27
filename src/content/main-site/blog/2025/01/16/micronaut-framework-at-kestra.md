@@ -43,6 +43,6 @@ Loic Mathieu, Lead Software Engineer at [Kestra](https://kestra.io):
 > - Maintain high performance while supporting growing workloads.
 > - Innovate with a modular and flexible architecture that evolves with our platform.
 >
-> Micronaut framework’s lightweight, reactive foundation lets us focus on what matters—building a robust, scalable orchestration platform that developers trust. With Micronaut  framework powering [Kestra](https://kestra.io/), we’ve created a tool that doesn’t just keep up with modern workflows but sets the standard for orchestration at scale.
+> Micronaut framework’s lightweight, reactive foundation lets us focus on what matters—building a robust, scalable orchestration platform that developers trust. With Micronaut framework powering [Kestra](https://kestra.io/), we’ve created a tool that doesn’t just keep up with modern workflows but sets the standard for orchestration at scale.
 >
 > Kestra continues to evolve, and with frameworks like Micronaut framework, we’re ready for whatever comes next.

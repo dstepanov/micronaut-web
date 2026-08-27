@@ -18,7 +18,7 @@ href: /2019/08/19/introduction-to-micronaut-multi-tenancy/
 
 Multi-tenancy, as it relates to software development, is when a single instance of an application is used to service multiple clients (tenants) in such a way that each tenant’s data is isolated from the others. Among other things, multi-tenancy enables you to build software as a service (SaaS) applications.
 
-In this complimentary webinar, JVM developers interested in learning how to integrate multi-tenancy in their Micronaut applications get an introduction to the Framework’s multi-tenancy capabilities, including microservice-specific features, such as tenant propogation, and an in-depth demonstration of how to implement this powerful functionality.
+In this complimentary webinar, JVM developers interested in learning how to integrate multi-tenancy in their Micronaut applications get an introduction to the Framework’s multi-tenancy capabilities, including microservice-specific features, such as tenant propagation, and an in-depth demonstration of how to implement this powerful functionality.
 
 The following topics are covered.
 

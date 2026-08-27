@@ -288,7 +288,7 @@ The first important part is the definition in the [@Adapter](https://docs.micron
 
 Interfaces passed to the [@Adapter](https://docs.micronaut.io/latest/api/io/micronaut/aop/Adapter.html) annotation have to contain a Single Abstract Method (often called SAM types). At compilation time, Micronaut will create an additional bean that implements the interface and delegates to the method that declares the annotation. So in this case a new `ApplicationEventListener` bean will be created that invokes the method that [@TransactionalEventListener](https://github.com/micronaut-projects/micronaut-data/blob/master/data-tx/src/main/java/io/micronaut/transaction/annotation/TransactionalEventListener.java) is declared on.
 
-The nice thing is that if you try to declare `@TransactionalEventListener` on a method that doesn’t conform to the signature of the `ApplicationEventListener` interface, you will get a compilation error. This is part of Micronaut’s nice ability to compile time check what you are doing with the framework is correct.
+The nice thing is that if you try to declare `@TransactionalEventListener` on a method that doesn’t conform to the signature of the `ApplicationEventListener` interface, you will get a compilation error. This is part of Micronaut’s ability to perform compile-time checks that what you are doing with the framework is correct.
 
 In addition to the Adapter advice, the `@TransactionalEventListener` annotation also declares an `@Around` advice implementation on line 5 called `@TransactionalEventAdvice`, which looks like:
 

@@ -1,7 +1,7 @@
 ---
 slug: 2024/02/06/micronaut-framework-4-3-0-released
 title: Micronaut Framework 4.3.0 Released!
-description: Micronaut Core Micronaut Core contains several improvements, including performance optimizations and enhancements to the Kotlin Symbol Processing (KSP) integration. Kotlin 1.9.22 This minor release updates to Kotlin 1.9.22 and KSP 1.9.22-1.0.17. New Modules Micronaut Chabots Micronaut Chatbots eases the creation of ChatBots (in this first release, with support for Telegram and Basecamp). Micronaut EclipseStore Micronaut...
+description: Micronaut Core Micronaut Core contains several improvements, including performance optimizations and enhancements to the Kotlin Symbol Processing (KSP) integration. Kotlin 1.9.22 This minor release updates to Kotlin 1.9.22 and KSP 1.9.22-1.0.17. New Modules Micronaut Chatbots Micronaut Chatbots eases the creation of ChatBots (in this first release, with support for Telegram and Basecamp). Micronaut EclipseStore Micronaut...
 date: '2024-02-06T18:14:26'
 modified: '2024-02-06T18:14:26'
 sourceUrl: https://micronaut.io/2024/02/06/micronaut-framework-4-3-0-released/
@@ -25,7 +25,7 @@ This minor release updates to [Kotlin 1.9.22](https://github.com/JetBrains/kotli
 
 ## New Modules
 
-### Micronaut Chabots
+### Micronaut Chatbots
 
 [Micronaut Chatbots](https://micronaut-projects.github.io/micronaut-chatbots/snapshot/guide/#telegram) eases the creation of ChatBots (in this first release, with support for [Telegram](https://core.telegram.org/bots/api) and [Basecamp](https://github.com/basecamp/bc3-api/blob/master/sections/chatbots.md)).
 

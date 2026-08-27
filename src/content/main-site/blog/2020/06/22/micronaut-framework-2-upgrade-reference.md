@@ -286,7 +286,7 @@ public class AccountUsernameValidator {
 <div class="sect4">
 <h5 id="_micronaut_data_support">Micronaut Data Support</h5>
 <div class="paragraph">
-<p>The <code>micronaut-coherence-data</code> module alows you to use <a href="https://micronaut-projects.github.io/micronaut-coherence/latest/guide/#repository">Micronaut Data with Coherence as a back end data store</a>.</p>
+<p>The <code>micronaut-coherence-data</code> module allows you to use <a href="https://micronaut-projects.github.io/micronaut-coherence/latest/guide/#repository">Micronaut Data with Coherence as a back-end data store</a>.</p>
 </div>
 </div>
 <div class="sect4">
@@ -1055,7 +1055,7 @@ $ ./gradlew dockerPushNative</code></pre>
 <div class="sect4">
 <h5 id="_livenessreadiness_probes">Liveness/Readiness Probes</h5>
 <div class="paragraph">
-<p>Micronaut&#8217;s <code>/health</code> endpoint now allows you to distinguish liveness and readiness probes at the URIs <code>/health/liveness</code> and <code>/health/readiness</code>. Micronaut Launch&#8217;s Kubernetes support has been updated to generate a Kubenetes descriptor that is configured to with these probe endpoints by default.</p>
+<p>Micronaut&#8217;s <code>/health</code> endpoint now allows you to distinguish liveness and readiness probes at the URIs <code>/health/liveness</code> and <code>/health/readiness</code>. Micronaut Launch&#8217;s Kubernetes support has been updated to generate a Kubernetes descriptor configured with these probe endpoints by default.</p>
 </div>
 </div>
 </div>
@@ -1311,7 +1311,7 @@ protected DefaultHttpClient httpClient(InjectionPoint&lt;?&gt; injectionPoint) {
 <div class="sect4">
 <h5 id="_support_for_eager_initialization_of_beans">Support for Eager Initialization of Beans</h5>
 <div class="paragraph">
-<p>Eager initialization of beans is useful in certain cases, such as on AWS Lambda where more CPU resources are assigned to Lamdba construction than execution. Therefore as for Micronaut 2.0, you can specify whether you want to eager initialization configuration or all singletons using the api:context.ApplicationContextBuilder[] interface:</p>
+<p>Eager initialization of beans is useful in certain cases, such as on AWS Lambda, where more CPU resources are assigned to Lambda construction than execution. Therefore, in Micronaut 2.0, you can specify whether you want eager initialization configured for all singletons using the api:context.ApplicationContextBuilder[] interface:</p>
 </div>
 <div class="listingblock">
 <div class="title">Enabling Eager Initialization</div>

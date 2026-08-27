@@ -116,7 +116,7 @@ During the initialization phase:
 - Java runtime loads and initializes handler class.
 - Lambda calls the handler method.
 
-The intialization phase has access to more CPU; because of that, Micronaut starts the application context and eagerly inits singletons during the intialization of the handler class.
+The initialization phase has access to more CPU; because of that, Micronaut starts the application context and eagerly initializes singletons during the initialization of the handler class.
 
 ## GraalVM and AWS Custom Runtimes
 

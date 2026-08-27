@@ -1110,7 +1110,7 @@ $ ./gradlew run --continuous</pre>
 <div class="sect3">
 <h4 id="_option_to_disable_environment_detection">Option to Disable Environment Detection</h4>
 <div class="paragraph">
-<p>Environment detection can be disabled through a method on the application context builder, system property, or evnironment variable.</p>
+<p>Environment detection can be disabled through a method on the application context builder, system property, or environment variable.</p>
 </div>
 <div class="paragraph">
 <p>See the <a href="#environments">Environment</a> documentation for more information.</p>
@@ -1242,7 +1242,7 @@ $ ./gradlew run --continuous</pre>
 <div class="sect3">
 <h4 id="_modularization_2">Modularization</h4>
 <div class="paragraph">
-<p>Micronaut is now modular with parts of Micronaut being shifted into subprojects. See the following links for new subprojects that now have indepent release cycles outside of Micronaut core:</p>
+<p>Micronaut is now modular, with parts of Micronaut being shifted into subprojects. See the following links for new subprojects that now have independent release cycles outside of Micronaut core:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1276,7 +1276,7 @@ $ ./gradlew run --continuous</pre>
 <div class="sect3">
 <h4 id="_graalvm_1_0_rc11_support">GraalVM 1.0 RC11 Support</h4>
 <div class="paragraph">
-<p>The GraalVM support has been updated to accomodate the latest changes in <a href="https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc11">GraalVM 1.0.0 RC11</a>.</p>
+<p>The GraalVM support has been updated to accommodate the latest changes in <a href="https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc11">GraalVM 1.0.0 RC11</a>.</p>
 </div>
 </div>
 <div class="sect3">

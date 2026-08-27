@@ -528,7 +528,7 @@ void runCron() {
 <div class="sect3">
 <h4 id="_micronaut_aot_and_maven">Micronaut AOT and Maven</h4>
 <div class="paragraph">
-<p><a href="https://micronaut-projects.github.io/micronaut-aot/latest/guide/">Micronaut AOT</a> is now fully supported for Maven users. Enabling AOT is as simply as passing <code>-Dmicronaut.aot.enabled</code> when running, testing, or packaging your application.</p>
+<p><a href="https://micronaut-projects.github.io/micronaut-aot/latest/guide/">Micronaut AOT</a> is now fully supported for Maven users. Enabling AOT is as simple as passing <code>-Dmicronaut.aot.enabled</code> when running, testing, or packaging your application.</p>
 </div>
 <div class="paragraph">
 <p>For more details, check the <a href="https://micronaut-projects.github.io/micronaut-maven-plugin/latest/examples/aot.html">Micronaut Maven Plugin documentation</a>.</p>
@@ -820,7 +820,7 @@ public class LegacyEnvEndpointFilter implements EnvironmentEndpointFilter {
 <div class="sect3">
 <h4 id="_graalvm_21_3_0">GraalVM 21.3.0</h4>
 <div class="paragraph">
-<p>Micronaut has been updated to support the latest GraalVM 21.3.0 release. Please keep in mind that starting with 21.3.0 GraalVM doesn&#8217;t release a version based on JDK 8. If you still use Java 8 use the GraalVM JDK 11 distribution.</p>
+<p>Micronaut has been updated to support the latest GraalVM 21.3.0 release. Please keep in mind that, starting with 21.3.0, GraalVM no longer releases a version based on JDK 8. If you still use Java 8, use the GraalVM JDK 11 distribution.</p>
 </div>
 <div class="paragraph">
 <p>The official GraalVM Maven plugin has new GAV coordinates so if you have declared it in your <code>pom.xml</code> update the coordinates to:</p>
@@ -1223,7 +1223,7 @@ The same applies for the <code>create</code> method that accepts an additional <
 <h4 id="_automating_upgrades_with_openrewrite">Automating Upgrades with OpenRewrite</h4>
 <div class="paragraph">
 <p>OpenRewrite works with Micronaut applications written in Java, but OpenRewrite doesn&#8217;t currently support Kotlin or Groovy.
-Like any automated tool it does much of the work for you, but be sure to review the resulting changes and manually make any changes that aren&#8217;t supported by OpenRewrite, for example converting from RxJava2 to Reactor.</p>
+Like any automated tool, it does much of the work for you, but be sure to review the resulting changes and manually make any changes that aren&#8217;t supported by OpenRewrite, for example converting from RxJava2 to Reactor.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -2785,7 +2785,7 @@ This resulted in generating executable method all non-private methods of classes
 The original intended usage of the annotation is to generate <a href="#introspection">Bean Introspection Metadata</a> so Micronaut can instantiate the class and call getters and setters without using reflection.</p>
 </div>
 <div class="paragraph">
-<p>Starting in Micronaut 3.x the <code>@Introspected</code> annotation doesn&#8217;t add the class to the GraalVM <code>reflect-config.json</code> file anymore, because in most of the cases is not really necessary.
+<p>Starting in Micronaut 3.x, the <code>@Introspected</code> annotation doesn&#8217;t add the class to the GraalVM <code>reflect-config.json</code> file anymore because, in most cases, it is not necessary.
 If you need to declare a class to be accessed by reflection, use the <code>@ReflectiveAccess</code> annotation instead.</p>
 </div>
 <div class="paragraph">
@@ -2839,7 +2839,7 @@ If you need to declare a class to be accessed by reflection, use the <code>@Refl
 <div class="sect4">
 <h5 id="_groovy_changes">Groovy changes</h5>
 <div class="paragraph">
-<p>In previous version the missing property wouldn&#8217;t set the field value to <code>null</code> as it would do for the Java code, in the version 3 it should behave in the same way.</p>
+<p>In the previous version, a missing property wouldn&#8217;t set the field value to <code>null</code> as it would for the Java code. In version 3, it should behave in the same way.</p>
 </div>
 <div class="paragraph">
 <p>Please refactor to use the default value in the <code>@Value</code> annotation:</p>

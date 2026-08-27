@@ -190,7 +190,7 @@ Micronaut AWS updates to:
 
 - Caffeine to 2.9.3
 - Hazelcast to 2.5
-- Inifinispan to 12.1.12.Final
+- Infinispan to 12.1.12.Final
 
 ### Micronaut Groovy
 
