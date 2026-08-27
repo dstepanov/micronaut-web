@@ -139,6 +139,7 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       },
       { label: "Success Stories", href: "/micronaut-success-stories/" },
       { label: "Commercial Support", href: "/support/" },
+      { label: "Partners", href: "/partners/" },
       { label: "FAQ", href: "/faq/" },
     ],
   },

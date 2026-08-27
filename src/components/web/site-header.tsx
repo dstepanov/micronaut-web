@@ -98,6 +98,11 @@ const menuGroups = [
         label: "Success Stories",
         description: "Public production usage stories.",
       },
+      {
+        href: "/partners/",
+        label: "Partners",
+        description: "Engineering, tools, and infrastructure partners.",
+      },
     ],
   },
 ];

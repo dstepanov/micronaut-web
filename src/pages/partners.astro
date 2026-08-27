@@ -1,0 +1,126 @@
+---
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import SiteFooter from "@/components/web/site-footer.astro";
+import { withBasePath } from "@/lib/base-path";
+import WebLayout from "@/layouts/WebLayout.astro";
+
+const engineeringPartners = [
+  {
+    name: "Oracle",
+    href: "https://www.oracle.com/",
+    logo: "/micronaut-assets/main-site/wp-content/uploads/2025/02/oracle.svg",
+    logoClass: "h-20",
+  },
+];
+
+const toolsAndInfrastructurePartners = [
+  {
+    name: "Gradle",
+    href: "https://gradle.com/",
+    logo: "/micronaut-assets/icons/brands/gradle.svg",
+    logoClass: "h-16 dark:invert",
+  },
+  {
+    name: "JetBrains",
+    href: "https://www.jetbrains.com/",
+    logo: "/micronaut-assets/main-site/wp-content/uploads/2024/11/jetbrains_logo.png-e1731082231197.webp",
+    logoClass: "h-16",
+  },
+  {
+    name: "GitHub",
+    href: "https://github.com/",
+    logo: "/micronaut-assets/icons/brands/github.svg",
+    logoClass: "h-16 dark:invert",
+  },
+  {
+    name: "Sonatype",
+    href: "https://www.sonatype.com/",
+    logo: "/micronaut-assets/icons/brands/sonatype.svg",
+    logoClass: "h-16 dark:invert",
+  },
+];
+---
+
+<WebLayout
+  title="Partners | Micronaut"
+  description="The engineering, tools, and infrastructure partners supporting the Micronaut project."
+  surface="main"
+>
+  <main class="bg-background">
+    <section class="border-b bg-card">
+      <div class="mx-auto max-w-[var(--page-max)] px-5 py-12 sm:px-6 sm:py-14 xl:px-0">
+        <h1 class="max-w-3xl text-4xl font-bold leading-tight text-foreground md:text-5xl">
+          Partners
+        </h1>
+      </div>
+    </section>
+
+    <section>
+      <div class="mx-auto max-w-[var(--page-max)] px-5 py-[var(--section-y)] sm:px-6 xl:px-0">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-10">
+          <div>
+            <h3 class="text-lg font-semibold text-foreground">
+              Engineering partners
+            </h3>
+            <div class="mt-4 grid gap-4">
+              {
+                engineeringPartners.map((partner) => (
+                  <a
+                    href={partner.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <Card className="h-full min-h-[174px] justify-center bg-card transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-accent/30 group-hover:shadow-md">
+                      <CardHeader className="items-center">
+                        <img
+                          src={withBasePath(partner.logo)}
+                          alt={partner.name}
+                          class:list={["w-full max-w-48 object-contain", partner.logoClass]}
+                        />
+                        <CardTitle className="sr-only">{partner.name}</CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-foreground">
+              Tools and infrastructure partners
+            </h3>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {
+                toolsAndInfrastructurePartners.map((partner) => (
+                  <a
+                    href={partner.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="group rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <Card className="h-full min-h-[174px] justify-center bg-card transition group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-accent/30 group-hover:shadow-md">
+                      <CardHeader className="items-center">
+                        <img
+                          src={withBasePath(partner.logo)}
+                          alt={partner.name}
+                          class:list={["w-full max-w-48 object-contain", partner.logoClass]}
+                        />
+                        <CardTitle className="sr-only">{partner.name}</CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <SiteFooter />
+</WebLayout>
