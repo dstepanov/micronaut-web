@@ -1,9 +1,5 @@
 ---
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import SiteFooter from "@/components/web/site-footer.astro";
 import { withBasePath } from "@/lib/base-path";
 import WebLayout from "@/layouts/WebLayout.astro";
@@ -58,16 +54,24 @@ const toolsAndInfrastructurePartners = [
 >
   <main class="bg-background">
     <section class="border-b bg-card">
-      <div class="mx-auto max-w-[var(--page-max)] px-5 py-12 sm:px-6 sm:py-14 xl:px-0">
-        <h1 class="max-w-3xl text-4xl font-bold leading-tight text-foreground md:text-5xl">
+      <div
+        class="mx-auto max-w-[var(--page-max)] px-5 py-12 sm:px-6 sm:py-14 xl:px-0"
+      >
+        <h1
+          class="max-w-3xl text-4xl font-bold leading-tight text-foreground md:text-5xl"
+        >
           Partners
         </h1>
       </div>
     </section>
 
     <section>
-      <div class="mx-auto max-w-[var(--page-max)] px-5 py-[var(--section-y)] sm:px-6 xl:px-0">
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-10">
+      <div
+        class="mx-auto max-w-[var(--page-max)] px-5 py-[var(--section-y)] sm:px-6 xl:px-0"
+      >
+        <div
+          class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-10"
+        >
           <div>
             <h3 class="text-lg font-semibold text-foreground">
               Engineering partners
@@ -86,9 +90,14 @@ const toolsAndInfrastructurePartners = [
                         <img
                           src={withBasePath(partner.logo)}
                           alt={partner.name}
-                          class:list={["w-full max-w-48 object-contain", partner.logoClass]}
+                          class:list={[
+                            "w-full max-w-48 object-contain",
+                            partner.logoClass,
+                          ]}
                         />
-                        <CardTitle className="sr-only">{partner.name}</CardTitle>
+                        <CardTitle className="sr-only">
+                          {partner.name}
+                        </CardTitle>
                       </CardHeader>
                     </Card>
                   </a>
@@ -114,9 +123,14 @@ const toolsAndInfrastructurePartners = [
                         <img
                           src={withBasePath(partner.logo)}
                           alt={partner.name}
-                          class:list={["w-full max-w-48 object-contain", partner.logoClass]}
+                          class:list={[
+                            "w-full max-w-48 object-contain",
+                            partner.logoClass,
+                          ]}
                         />
-                        <CardTitle className="sr-only">{partner.name}</CardTitle>
+                        <CardTitle className="sr-only">
+                          {partner.name}
+                        </CardTitle>
                       </CardHeader>
                     </Card>
                   </a>

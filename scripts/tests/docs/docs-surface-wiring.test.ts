@@ -335,7 +335,7 @@ test("docs project catalog retains a four-entry most popular landing-page sectio
     catalog.categories.find(
       (category: any): boolean => category.slug === "core",
     )?.projectSlugs,
-    ["core"],
+    ["core", "security"],
   );
   assert.deepEqual(
     catalog.categories
@@ -346,8 +346,8 @@ test("docs project catalog retains a four-entry most popular landing-page sectio
   assert.deepEqual(
     catalog.categories.find(
       (category: any): boolean => category.slug === "security",
-    )?.projectSlugs,
-    ["security"],
+    ),
+    undefined,
   );
   assert.equal(
     catalog.categories

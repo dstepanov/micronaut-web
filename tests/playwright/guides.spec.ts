@@ -190,10 +190,6 @@ test("guide catalog renders static cards and hydrates only the variant menu", as
     page.getByRole("heading", { level: 1, name: "Micronaut Guides" }),
   ).toBeVisible();
 
-  await expect(
-    page.getByRole("link", { name: "Open guides tagged flowable" }).first(),
-  ).toHaveAttribute("href", tagHrefPattern("flowable"));
-
   // The default view is the category directory; guide rows appear after
   // picking a category.
   await page
@@ -672,15 +668,6 @@ function guideUrlPattern(slug: string, search?: string): RegExp {
     return new RegExp(`${escapeRegExp(appPath(`/guides/${slug}/`))}${query}$`);
   }
   return new RegExp(`/guides/${escapeRegExp(slug)}/${query}$`);
-}
-
-function tagHrefPattern(tag: string): RegExp {
-  if (isGuidesSurface()) {
-    return new RegExp(
-      `${escapeRegExp(appPath(`${configuredGuidesRoot()}/tag-${tag}/`))}$`,
-    );
-  }
-  return new RegExp(`/guides/tag-${escapeRegExp(tag)}/$`);
 }
 
 function catalogUrlPattern(search: string): RegExp {

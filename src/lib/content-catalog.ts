@@ -3,6 +3,7 @@ import {
   guideTagPath,
   type GeneratedGuide,
 } from "./generated-guide-routing.ts";
+import { docsRoot } from "./deployment-config.ts";
 
 export type CatalogCategory = {
   slug: string;
@@ -94,11 +95,19 @@ export function docsProjectFromCatalog(
 ): DocsProject {
   return {
     ...project,
+    ...(project.slug === "platform"
+      ? { externalUrl: micronautPlatformGuideUrl() }
+      : {}),
     href: `/docs/${project.slug}/`,
     sections: docsProjectSections(project),
     references: docsProjectReferences(project),
     searchTerms: docsProjectSearchTerms(project),
   };
+}
+
+function micronautPlatformGuideUrl() {
+  const version = /^\/(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)$/.exec(docsRoot)?.[1];
+  return `https://micronaut-projects.github.io/micronaut-platform/${version || "latest"}/guide/`;
 }
 
 /**

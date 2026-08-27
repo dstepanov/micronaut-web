@@ -28,7 +28,7 @@
     {
       "slug": "build-plugins",
       "name": "Build Plugins",
-      "icon": "package",
+      "icon": "archive",
       "description": "Build plugins for configuring, packaging, and running Micronaut applications with Gradle or Maven.",
       "projectSlugs": [
         "gradle",
@@ -64,6 +64,7 @@
       "projectSlugs": [
         "aot",
         "projectgen",
+        "platform",
         "sourcegen",
         "openrewrite"
       ]
@@ -1912,6 +1913,29 @@
       "longDescription": "Micronaut ProjectGen provides an API for generating Gradle and Maven JVM projects with reusable project models, build configuration, and source layout conventions."
     },
     {
+      "slug": "platform",
+      "documentationOnly": true,
+      "displayName": "Micronaut Platform",
+      "shortName": "Platform",
+      "projectKey": "platform",
+      "module": "io.micronaut.platform:micronaut-bom",
+      "repositoryName": "micronaut-platform",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-platform.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-platform/latest/guide/",
+      "externalUrl": "https://micronaut-projects.github.io/micronaut-platform/latest/guide/",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-platform",
+      "platformVersionKey": "micronaut",
+      "version": "",
+      "icon": "lucide:library-big",
+      "primaryCategory": "build",
+      "categorySlugs": [
+        "build"
+      ],
+      "shortDescription": "Framework-aligned dependency BOM",
+      "longDescription": "The Micronaut Platform BOM aligns dependency versions for each Micronaut Framework release."
+    },
+    {
       "slug": "gradle",
       "documentationOnly": true,
       "displayName": "Micronaut Gradle Plugin",
@@ -1992,7 +2016,7 @@
       "submodulePath": "repos/micronaut-jakarta-el",
       "platformVersionKey": "managed-micronaut-jakarta-el",
       "version": "1.0.0",
-      "icon": "lucide:braces",
+      "icon": "lucide:file-check-2",
       "primaryCategory": "api",
       "categorySlugs": [
         "api"

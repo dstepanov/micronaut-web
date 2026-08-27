@@ -50,8 +50,7 @@ export function isGeneralBlogPost(post: BlogPostModel): boolean {
     ...post.entry.data.categories,
   ]);
   return (
-    !categories.has("release-announcements") &&
-    !categories.has("success-story")
+    !categories.has("release-announcements") && !categories.has("success-story")
   );
 }
 
