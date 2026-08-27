@@ -124,14 +124,18 @@ function docsCatalogProjectsByCategory(
             class="flex w-full min-w-0 flex-col gap-1"
           >
             {projects.map((project) => {
+              const isExternalProject = Boolean(project.externalUrl);
               const isActiveProject =
+                !isExternalProject &&
                 project.slug === activeSlug &&
                 category.slug === activeCategorySlug;
               const hasActiveSections =
                 isActiveProject && activeSections.length > 0;
-              const projectHref = isActiveProject
-                ? `#${project.slug}-docs`
-                : withBasePath(project.href);
+              const projectHref =
+                project.externalUrl ||
+                (isActiveProject
+                  ? `#${project.slug}-docs`
+                  : withBasePath(project.href));
               const projectSectionsId = `docs-${instanceId}-${project.slug}-sections`;
               return (
                 <li
