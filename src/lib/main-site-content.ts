@@ -133,14 +133,23 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
         href: "/category/release-announcements/",
       },
       { label: "Roadmap", href: "/micronaut-roadmap/" },
-      {
-        label: "Security Announcements",
-        href: "/category/security-announcements/",
-      },
       { label: "Success Stories", href: "/micronaut-success-stories/" },
       { label: "Commercial Support", href: "/support/" },
       { label: "Partners", href: "/partners/" },
       { label: "FAQ", href: "/faq/" },
+    ],
+  },
+  {
+    title: "Security",
+    links: [
+      {
+        label: "Security Announcements",
+        href: "/category/security-announcements/",
+      },
+      {
+        label: "Security Advisory Disclosure",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md",
+      },
     ],
   },
   {
@@ -178,10 +187,6 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       {
         label: "Code of Conduct",
         href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CODE_OF_CONDUCT.md",
-      },
-      {
-        label: "Security Advisory Disclosure",
-        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/SECURITY_ADVISORY_DISCLOSURE.md",
       },
       {
         label: "All Policies",
