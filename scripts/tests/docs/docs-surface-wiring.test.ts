@@ -454,15 +454,8 @@ test("docs routes render generated fragments and serve generated assets", async 
     /readFile\(\s*join\(\s*process\.cwd\(\),[\s\S]*"generated-docs",[\s\S]*`\$\{project\.slug\}\.html`/,
   );
   assert.match(docsPageSource, /data-generated-docs/);
-  // The chapter renders as one block: the related-guides accordion used to be
-  // spliced between the chapter title and its first paragraph.
   assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
   assert.doesNotMatch(docsPageSource, /generatedDocHtmlParts/);
-  assert.ok(
-    docsPageSource.indexOf("set:html={generatedDocHtml}") <
-      docsPageSource.indexOf("<DocsRelatedGuides"),
-    "related guides render after the generated chapter",
-  );
   assert.match(docsPageSource, /@\/scripts\/generated-docs-hash-aligner/);
   assert.doesNotMatch(docsPageSource, /generatedDocsHashAlignerUrl|\?url/);
   assert.doesNotMatch(docsPageSource, /<script is:inline>/);

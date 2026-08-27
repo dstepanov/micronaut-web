@@ -329,7 +329,8 @@ export function SearchDialog({
   }, [docsModeItems, searchQuery]);
 
   // Group order follows relevance instead of a fixed list, so a query that
-  // clearly targets docs or guides no longer sits under "Main site".
+  // clearly targets docs or guides no longer sits under "Main site". Tags are
+  // navigational refinements rather than primary content, so keep them last.
   const siteGroups = useMemo(() => {
     const groups: SiteGroup[] = [
       { key: "Main site", badge: "Page", kind: "page" as const, items: pages },
@@ -346,10 +347,13 @@ export function SearchDialog({
     if (!searchQuery.trim()) {
       return groups;
     }
-    return groups
+    const rankedGroups = groups
+      .filter((group) => group.key !== "Tags")
       .map((group) => ({ group, score: bestScore(group.items, searchQuery) }))
       .sort((left, right) => right.score - left.score)
       .map((entry) => entry.group);
+    const tagGroup = groups.find((group) => group.key === "Tags");
+    return tagGroup ? [...rankedGroups, tagGroup] : rankedGroups;
   }, [docs, guides, pages, posts, searchQuery, tags]);
 
   const navigateTo = (href: string) => {

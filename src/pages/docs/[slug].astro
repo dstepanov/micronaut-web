@@ -12,16 +12,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import DocsRelatedGuides from "@/components/web/docs-related-guides.astro";
 import DocsShell from "@/components/web/docs-shell.astro";
 import GeneratedDocsStaticEnhancer from "@/components/web/generated-docs-static-enhancer.astro";
 import { IconBadge } from "@/components/web/icon-badge";
 import { ProjectReferenceLinks } from "@/components/web/project-reference-links";
-import {
-  canonicalSurfaceUrl,
-  withBasePath,
-  withSurfacePath,
-} from "@/lib/base-path";
+import { canonicalSurfaceUrl, withBasePath } from "@/lib/base-path";
 import {
   docsCatalogProject,
   loadDocsProjectCatalog,
@@ -103,9 +98,6 @@ const initialRootId =
 const initialCurrentSectionIndexHidden =
   !initialRootId ||
   currentSectionLinks.every((section) => section.parentId !== initialRootId);
-const relatedGuideTopicAliases = project.guideTopicAliases || [];
-const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
-const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
 ---
 
 <WebLayout
@@ -231,27 +223,7 @@ const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
           )
         }
       </div>
-      {
-        /* One grid child, so both rails stay in the side column: a second
-          top-level child would auto-place into the content column's next row
-          and overlap the prose. */
-      }
       <div class="min-w-0">
-        {
-          /* The related-guides accordion lives here rather than in the prose:
-             it used to sit between the chapter title and its first paragraph,
-             and putting it after the content buried it — these pages run to
-             hundreds of thousands of pixels, so it would never be seen, or even
-             lazily loaded. Below xl this column stacks after the article. */
-          shouldRenderRelatedGuides && (
-            <aside class="mt-8 xl:mt-0 xl:pr-6" aria-label="Latest guides">
-              <DocsRelatedGuides
-                manifestUrl={guidesManifestUrl}
-                topicAliases={relatedGuideTopicAliases}
-              />
-            </aside>
-          )
-        }
         {
           currentSectionLinks.length > 0 && (
             <aside
