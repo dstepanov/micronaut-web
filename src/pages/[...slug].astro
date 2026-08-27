@@ -128,7 +128,8 @@ const isReleaseAnnouncementsArchive =
 const isMinimalArchive =
   isReleaseAnnouncementsArchive ||
   routeSlug === "blog" ||
-  routeSlug.startsWith("blog/page/");
+  routeSlug.startsWith("blog/page/") ||
+  routeSlug.startsWith("category/");
 const usesPublicMarkdownLayout =
   "layoutVariant" in pageData && pageData.layoutVariant === "public-markdown";
 const archivePosts = await getBlogPostsForArchive(routeSlug);
@@ -280,12 +281,7 @@ const postCategory =
           ]}
         >
           {(!usesPublicMarkdownLayout || isBlogArchiveRoute) && (
-            <header
-              class:list={[
-                "pb-8",
-                !isMinimalArchive && "border-b",
-              ]}
-            >
+            <header class:list={["pb-8", !isMinimalArchive && "border-b"]}>
               {post ? (
                 <a
                   href={withBasePath("/blog/")}
@@ -294,15 +290,15 @@ const postCategory =
                   &larr; Blog
                 </a>
               ) : (
-                pageData.eyebrow && pageData.eyebrow !== "Blog" && (
+                pageData.eyebrow &&
+                pageData.eyebrow !== "Blog" && (
                   <Badge variant="secondary">{pageData.eyebrow}</Badge>
                 )
               )}
               <h1
                 class:list={[
                   "text-3xl font-bold leading-tight text-balance text-foreground md:text-5xl",
-                  (post ||
-                    (pageData.eyebrow && pageData.eyebrow !== "Blog")) &&
+                  (post || (pageData.eyebrow && pageData.eyebrow !== "Blog")) &&
                     "mt-5",
                 ]}
               >
@@ -448,10 +444,10 @@ const postCategory =
                           )}
                           {post.entry.data.category &&
                             !routeSlug.startsWith("category/") && (
-                            <Badge variant="outline">
-                              {formatCategoryLabel(post.entry.data.category)}
-                            </Badge>
-                          )}
+                              <Badge variant="outline">
+                                {formatCategoryLabel(post.entry.data.category)}
+                              </Badge>
+                            )}
                         </div>
                         <CardTitle className="col-span-full text-xl leading-7">
                           {post.entry.data.title}
