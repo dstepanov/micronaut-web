@@ -401,9 +401,14 @@ const sallyVisorField = starMarks
     const duration = between(layer.duration[0], layer.duration[1]);
     const twinkle = between(1.5, 2.7);
     const tint = pick(starTintPool);
-    // Where the mark is in its own pass, as a fraction: it sets the negative
-    // delay that spreads the field across the glass, and the still position
-    // Reduce Motion falls back to.
+    // Where the mark sits in the settled field, as a fraction of its pass.
+    // The page opens on clear glass and the stars arrive afterwards, so the
+    // delay is what is left of the pass rather than what is behind it: the
+    // mark waits off the glass and drifts on to reach that point. The waits
+    // run the length of a pass, so marks trickle in over the first crossing
+    // rather than sweeping on as a front, and the field is settled once every
+    // layer has gone round once. It is also the still position Reduce Motion
+    // falls back to.
     const phase = starRandom();
     const body = layer.bright
       ? `<circle r="${(radius * 2.4).toFixed(1)}" fill="${tint.glow}" opacity=".14"/>` +
@@ -413,12 +418,13 @@ const sallyVisorField = starMarks
       : `<circle r="${radius.toFixed(1)}" fill="${tint.body}" opacity="${between(layer.opacity[0], layer.opacity[1]).toFixed(2)}"/>`;
     // Timings ride on the mark's own style attribute as plain literals, so
     // Safari never sees a duration built from calc(var(...)). The still
-    // transform sits there too rather than in a rule per mark: a running
-    // animation outranks an inline declaration, so it surfaces only once
+    // transform sits there too rather than in a rule per mark: an animation
+    // outranks an inline declaration, whether it is running or filling
+    // backwards through its delay, so the pinned position surfaces only once
     // Reduce Motion has switched the animation off.
     const motion =
       `animation-duration:${duration.toFixed(2)}s;` +
-      `animation-delay:-${(duration * phase).toFixed(2)}s;` +
+      `animation-delay:${(duration * (1 - phase)).toFixed(2)}s;` +
       `transform:translate(${(-starTravel * phase).toFixed(0)}px,0) scale(1)`;
     // A lead now and then crosses on the long pass instead of drifting, so it
     // hangs off the glass and then streaks over it.
@@ -1428,9 +1434,14 @@ const sallyVisorField = starMarks
       transform: translateX(250px) rotate(22deg) scale(0.84);
     }
   }
+  /* Backwards fill is what keeps the visor clear on arrival: through its
+     delay each mark takes the 0% frame, which parks it off the right of the
+     glass at zero opacity, rather than the still position on its own style
+     attribute. */
   .sally-visor .sv-m {
     animation-timing-function: linear;
     animation-iteration-count: infinite;
+    animation-fill-mode: backwards;
   }
   .sally-visor .sv-bow-a {
     animation-name: sallyStreakA;
