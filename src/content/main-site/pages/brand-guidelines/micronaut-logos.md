@@ -34,11 +34,11 @@ No third party, whether a Community or Commercial User, may alter or modify Micr
 
 [Download Black PNG](/micronaut-assets/main-site/objectcomputing/download-file/5208-micronaut_stacked_black.png)
 
-[Download Black SVG](/micronaut-assets/main-site/objectcomputing/download-file/5212-micronaut_stacked_black.svg)
+[Download Black SVG](/micronaut-assets/logos/micronaut-stacked-black.svg)
 
 [Download White](/micronaut-assets/main-site/objectcomputing/download-file/5209-micronaut_stacked_white.png)
 
-[Download White SVG](/micronaut-assets/main-site/objectcomputing/download-file/5213-micronaut_stacked_white.svg)
+[Download White SVG](/micronaut-assets/logos/micronaut-stacked-white.svg)
 
 ## Sally
 
