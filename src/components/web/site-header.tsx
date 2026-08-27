@@ -26,6 +26,7 @@ import {
   withConfiguredSurfacePath,
   type SiteSurfaceUrls,
 } from "@/lib/base-path";
+import { mainSiteFooterGroups } from "@/lib/main-site-footer";
 import { cn } from "@/lib/utils";
 
 type SurfaceId = "main" | "docs" | "guides";
@@ -72,16 +73,10 @@ const mobileGroups: Array<{ label: string; links: MobileMenuLink[] }> = [
       { href: "https://launch.micronaut.io", label: "Launch" },
     ],
   },
-  {
-    label: "Legal",
-    links: [
-      { href: "/brand-guidelines/micronaut-logos/", label: "Logos" },
-      {
-        href: "/brand-guidelines/micronaut-trademark-policy/",
-        label: "Trademark Policy",
-      },
-    ],
-  },
+  ...mainSiteFooterGroups.map((group) => ({
+    label: group.title,
+    links: group.links,
+  })),
 ];
 
 function MobileColorModeSwitch() {
@@ -208,7 +203,7 @@ export function SiteHeader({
                 </SheetDescription>
               </SheetHeader>
               <nav
-                className="grid gap-5 overflow-y-auto px-4 pb-6"
+                className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-4 pb-6"
                 data-mobile-navigation
               >
                 {mobileGroups.map((group) => {
