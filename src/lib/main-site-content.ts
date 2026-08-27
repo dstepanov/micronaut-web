@@ -149,6 +149,10 @@ export const mainSiteFooterGroups: MainSiteFooterGroup[] = [
       { label: "Brand Guidelines", href: "/brand-guidelines/" },
       { label: "Logos", href: "/brand-guidelines/micronaut-logos/" },
       {
+        label: "Contributor License Agreement",
+        href: "https://github.com/micronaut-projects/micronaut-policies/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md",
+      },
+      {
         label: "Trademark Policy",
         href: "/brand-guidelines/micronaut-trademark-policy/",
       },
