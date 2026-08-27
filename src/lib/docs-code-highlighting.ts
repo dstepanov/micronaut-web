@@ -2,7 +2,7 @@ import * as parse5 from "parse5";
 import { codeToHtml } from "shiki";
 import type { DefaultTreeAdapterMap } from "parse5";
 
-import { normalizeEmptyPropertiesAssignmentHighlighting } from "./properties-highlight-normalization.ts";
+import { normalizePropertiesAssignmentHighlighting } from "./properties-highlight-normalization.ts";
 
 type HighlightableVariant = {
   code: string;
@@ -119,7 +119,7 @@ function normalizePropertiesHighlighting(
   if (shikiLanguage(language) !== "properties") {
     return highlightedHtml;
   }
-  return normalizeEmptyPropertiesAssignmentHighlighting(highlightedHtml);
+  return normalizePropertiesAssignmentHighlighting(highlightedHtml);
 }
 
 /**

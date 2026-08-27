@@ -149,7 +149,7 @@ String index() {
   assert.doesNotMatch(html, /<pre><code class="language-java">/);
 });
 
-test("main-site Markdown properties snippets format empty dotted assignments like indexed assignments", async (): Promise<void> => {
+test("main-site Markdown properties snippets highlight the key of an empty assignment", async (): Promise<void> => {
   const { renderMainSiteCodeSnippets } = await modules;
   const kubernetesDiscoveryProperty = "kubernetes.client.discovery.includes[0]";
   const kubernetesDiscoveryValue = "my-service";
@@ -175,19 +175,19 @@ ${azureCredentialProperty}=${azureCredentialValue}
 ${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>
 `);
 
-  const dottedLine = highlightedLineContaining(html, "foo.bar.property=");
-  const indexedLine = highlightedLineContaining(html, "foo.bar[0]=");
+  const dottedLine = highlightedLineContaining(html, "foo.bar.property");
+  const indexedLine = highlightedLineContaining(html, "foo.bar[0]");
   const placeholderLine = highlightedLineContaining(
     html,
-    "foo.bar&lt;prop&gt;=",
+    "foo.bar&lt;prop&gt;",
   );
   const kubernetesIndexedLine = highlightedLineContaining(
     html,
-    "kubernetes.client.config-maps.includes[0]=",
+    "kubernetes.client.config-maps.includes[0]",
   );
   const encodedIndexedLine = highlightedLineContaining(
     html,
-    "kubernetes.client.config-maps.excludes[0]=",
+    "kubernetes.client.config-maps.excludes[0]",
   );
   const azureCredentialLine = highlightedLineContaining(
     html,
@@ -205,14 +205,19 @@ ${azureConnectionStringProperty}=${azureConnectionStringValue}</code></pre>
     html,
     azureConnectionStringProperty,
   );
-  const dottedStyle = highlightedLineTextStyle(dottedLine);
-
-  assert.notEqual(dottedLine, "");
-  assert.equal(dottedStyle, highlightedLineTextStyle(indexedLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(placeholderLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(kubernetesIndexedLine));
-  assert.equal(dottedStyle, highlightedLineTextStyle(encodedIndexedLine));
-  assert.doesNotMatch(dottedLine, /#CF222E|#FF7B72/);
+  assertOnlyPropertyKeyHighlighted(dottedLine, "foo.bar.property", "");
+  assertOnlyPropertyKeyHighlighted(indexedLine, "foo.bar[0]", "");
+  assertOnlyPropertyKeyHighlighted(placeholderLine, "foo.bar&lt;prop&gt;", "");
+  assertOnlyPropertyKeyHighlighted(
+    kubernetesIndexedLine,
+    "kubernetes.client.config-maps.includes[0]",
+    "",
+  );
+  assertOnlyPropertyKeyHighlighted(
+    encodedIndexedLine,
+    "kubernetes.client.config-maps.excludes[0]",
+    "",
+  );
   assertOnlyPropertyKeyHighlighted(
     kubernetesDiscoveryLine,
     kubernetesDiscoveryProperty,
@@ -317,23 +322,24 @@ function highlightedLineContaining(source: string, text: string): string {
   );
 }
 
-function highlightedLineTextStyle(line: string): string {
-  return /<span class="line"><span style="([^"]+)">/.exec(line)?.[1] || "";
-}
-
 function assertOnlyPropertyKeyHighlighted(
   line: string,
   property: string,
   value: string,
 ): void {
   assert.notEqual(line, "");
-  const valueStart = line.indexOf(`=${value}`);
-  assert.notEqual(valueStart, -1);
+  // Anchor on the key span's own end tag: an attribute in the markup carries an
+  // `=` of its own, so the first `=` in the line is not the separator.
+  const separator = line.indexOf(`</span>=${value}`);
+  assert.notEqual(separator, -1);
 
-  const keyHtml = line.slice(0, valueStart);
+  const keyHtml = line.slice(0, separator);
   assert.ok(keyHtml.includes(property));
   assert.match(keyHtml, /#CF222E|#FF7B72/);
-  assert.doesNotMatch(line.slice(valueStart), /#CF222E|#FF7B72/);
+  assert.doesNotMatch(
+    line.slice(separator + "</span>".length),
+    /#CF222E|#FF7B72/,
+  );
 }
 
 async function importSnippetModules(): Promise<any> {

@@ -1,7 +1,8 @@
 const DEFAULT_PROPERTIES_TEXT_STYLE = "color:#1F2328;--shiki-dark:#E6EDF3";
 const DEFAULT_PROPERTIES_KEY_STYLE = "color:#CF222E;--shiki-dark:#FF7B72";
+const DEFAULT_PROPERTIES_COMMENT_STYLE = "color:#6E7781;--shiki-dark:#8B949E";
 
-export function normalizeEmptyPropertiesAssignmentHighlighting(
+export function normalizePropertiesAssignmentHighlighting(
   highlightedHtml: string,
 ): string {
   return highlightedHtml.replace(
@@ -10,30 +11,29 @@ export function normalizeEmptyPropertiesAssignmentHighlighting(
       if (/\bclass="[^"]*\bconum\b/.test(lineInnerHtml)) {
         return lineHtml;
       }
-      const lineText = decodeHtml(lineInnerHtml.replace(/<[^>]+>/g, ""));
-      if (!emptyPropertiesAssignment(lineText)) {
-        return normalizePropertiesAssignmentValueHighlighting(
-          lineHtml,
-          lineInnerHtml,
-          lineText,
-        );
-      }
-      return `<span class="line"><span style="${propertiesDefaultTextStyle(lineInnerHtml)}">${escapeHtml(lineText)}</span></span>`;
+      return normalizePropertiesLineHighlighting(
+        lineHtml,
+        lineInnerHtml,
+        decodeHtml(lineInnerHtml.replace(/<[^>]+>/g, "")),
+      );
     },
   );
 }
 
-function emptyPropertiesAssignment(line: string): boolean {
-  return /^[ \t]*[^#!;:=\s][^=]*=[ \t]*$/.test(line);
-}
-
-function normalizePropertiesAssignmentValueHighlighting(
+function normalizePropertiesLineHighlighting(
   lineHtml: string,
   lineInnerHtml: string,
   lineText: string,
 ): string {
+  // The Shiki grammar only comments out `#` lines, so a `!` comment keeps the
+  // block's own foreground and anything that looks like `key=value` after the
+  // `!` is even painted as an assignment.
+  if (/^[ \t]*!/.test(lineText)) {
+    return `<span class="line"><span style="${DEFAULT_PROPERTIES_COMMENT_STYLE}">${escapeHtml(lineText)}</span></span>`;
+  }
+
   const valueStart = assignmentValueStartIndex(lineText);
-  if (valueStart < 0 || !/\S/.test(lineText.slice(valueStart + 1))) {
+  if (valueStart < 0) {
     return lineHtml;
   }
 
@@ -184,13 +184,6 @@ function highlightedLineTokens(
     });
   }
   return tokens;
-}
-
-function propertiesDefaultTextStyle(lineInnerHtml: string): string {
-  return (
-    /<span style="([^"]*)">=<\/span>\s*$/.exec(lineInnerHtml)?.[1] ||
-    DEFAULT_PROPERTIES_TEXT_STYLE
-  );
 }
 
 function decodeHtml(value: string): string {
