@@ -338,7 +338,7 @@ const starTintPool = starTints.flatMap((tint) =>
 const starLayers = [
   {
     cls: "sv-far",
-    count: 16,
+    count: 11,
     bright: false,
     radius: [0.9, 1.7],
     duration: [16.8, 23.2],
@@ -346,7 +346,7 @@ const starLayers = [
   },
   {
     cls: "sv-mid",
-    count: 8,
+    count: 6,
     bright: false,
     radius: [1.7, 2.5],
     duration: [12.4, 16.8],
@@ -354,7 +354,7 @@ const starLayers = [
   },
   {
     cls: "sv-near",
-    count: 5,
+    count: 3,
     bright: true,
     radius: [2.5, 3.4],
     duration: [8.4, 11.6],
@@ -362,7 +362,7 @@ const starLayers = [
   },
   {
     cls: "sv-lead",
-    count: 3,
+    count: 2,
     bright: true,
     radius: [2.6, 5.2],
     duration: [36, 64],
@@ -1468,10 +1468,10 @@ const sallyVisorField = starMarks
   }
   /* Phones only, and timings are deliberately left alone. WebKit does not
      composite SVG group transforms, so every frame re-rasterises the clipped
-     overlay on the main thread; the 65 concurrent animations this field runs
+     overlay on the main thread; the 45 concurrent animations this field runs
      on a 96px badge are well past what stalls a handset. The twinkle is an
      opacity pulse on 1-3px dots and invisible at that size, and the far layer
-     is sub-pixel there, so those two come off phones and leave 17. Everything
+     is sub-pixel there, so those two come off phones and leave 12. Everything
      that stays keeps its own speed. */
   @media (max-width: 639px) {
     .sally-visor .sv-tw {
