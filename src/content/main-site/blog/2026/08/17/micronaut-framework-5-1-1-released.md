@@ -10,7 +10,6 @@ contentSource: wordpress-post
 category: release-announcements
 categories:
   - release-announcements
-  - security-announcements
 tags:
   - release
 href: /2026/08/17/micronaut-framework-5-1-1-released/
