@@ -97,7 +97,6 @@ export function GuideVariantPreferencePicker({
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-      <span className="text-sm text-muted-foreground">Preferred variant</span>
       <ButtonGroup aria-label="Preferred guide language">
         {languages.map((language) => (
           <Button
