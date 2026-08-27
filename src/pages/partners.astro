@@ -19,6 +19,12 @@ const engineeringPartners = [
 
 const toolsAndInfrastructurePartners = [
   {
+    name: "Object Computing",
+    href: "https://objectcomputing.com/",
+    logo: "/micronaut-assets/main-site/wp-content/uploads/2022/05/OCI_HTM_V1_Colored.svg",
+    logoClass: "h-16",
+  },
+  {
     name: "Gradle",
     href: "https://gradle.com/",
     logo: "/micronaut-assets/icons/brands/gradle.svg",
@@ -94,7 +100,7 @@ const toolsAndInfrastructurePartners = [
             <h3 class="text-lg font-semibold text-foreground">
               Tools and infrastructure partners
             </h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {
                 toolsAndInfrastructurePartners.map((partner) => (
                   <a
