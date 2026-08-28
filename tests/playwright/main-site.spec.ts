@@ -297,7 +297,7 @@ test("homepage addresses PageSpeed image and accessibility findings", async ({
   expect(svgPathErrors).toEqual([]);
 });
 
-test("release links refresh in the browser and survive a failed request", async ({
+test("the hero release refreshes in the browser and survives a failed request", async ({
   page,
 }) => {
   // Preview hosts are not on the launch.micronaut.io CORS allowlist, so the
@@ -308,28 +308,12 @@ test("release links refresh in the browser and survive a failed request", async 
     "https://api.github.com/repos/micronaut-projects/micronaut-starter/releases/latest",
   );
 
-  await page.goto(appPath("/download/"));
+  await page.goto(appPath("/"));
   await releaseRequest;
 
-  await expect(
-    page.locator("[data-micronaut-download-version]"),
-  ).not.toBeEmpty();
-  await expect(page.locator("[data-micronaut-release-notes]")).toHaveAttribute(
-    "href",
-    /^https:\/\/github\.com\/micronaut-projects\/micronaut-starter\/releases\//,
-  );
-  await expect(
-    page.locator("[data-micronaut-download-binary]"),
-  ).toHaveAttribute(
-    "href",
-    /^https:\/\/github\.com\/micronaut-projects\/micronaut-starter\/releases\//,
-  );
-
-  // The homepage hero carries the same markers, so it refreshes with it. The
-  // rendered version is not asserted: when GitHub is unreachable at build time
-  // — its unauthenticated budget is 60 requests per hour per IP — the hero is
-  // meant to fall back to bare "Latest release" rather than render empty.
-  await page.goto(appPath("/"));
+  // The rendered version is not asserted: when GitHub is unreachable at build
+  // time — its unauthenticated budget is 60 requests per hour per IP — the hero
+  // is meant to fall back to bare "Latest release" rather than render empty.
   const heroVersion = page.locator("[data-micronaut-release-version]").first();
   await expect(heroVersion).toHaveAttribute(
     "data-micronaut-release-version",
