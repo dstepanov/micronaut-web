@@ -5,12 +5,13 @@ import path from "node:path";
 import test, { type TestContext } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { clientRedirectDocument } from "../../../src/lib/route-compatibility.ts";
 import { pruneSurface } from "../../prune-surface.ts";
 import { publishDocsSurface } from "../../publish-docs-surface.ts";
 import { configurePagesDeployment } from "../../configure-pages-deployment.ts";
-import { purgeDocsPatchVersions } from "../../purge-docs-patch-versions.ts";
 import {
   isNewestPublishedDocsVersion,
+  supersedingDocsLineRelease,
   updateDocsVersionManifest,
 } from "../../update-docs-version-manifest.ts";
 
@@ -809,7 +810,15 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
     workflow,
     /PLATFORM_REF:\s*\$\{\{ github\.event\.client_payload\.sha \}\}/,
   );
-  assert.match(workflow, /purge-docs-patch-versions\.ts/);
+  // Docs are published per release line, so nothing has to purge the patch
+  // folders a release supersedes.
+  assert.match(workflow, /docsVersionLine/);
+  assert.match(workflow, /supersedingDocsLineRelease/);
+  assert.match(
+    workflow,
+    /MICRONAUT_DOCS_ROOT:\s*\/\$\{\{ steps\.release\.outputs\.docs_line \}\}/,
+  );
+  assert.doesNotMatch(workflow, /purge-docs-patch-versions/);
   assert.match(workflow, /effective_ref="\$\{PLATFORM_REF:-\$DOCS_VERSION\}"/);
   assert.match(
     workflow,
@@ -840,97 +849,129 @@ test("docs workflow resolves platform refs as branches or tags", async () => {
   assert.doesNotMatch(workflow, /ref:\s*\$\{\{ inputs\.platform_ref \}\}/);
 });
 
-test("platform patch releases remove superseded patches for their minor line", async (t) => {
+test("publishing a patch replaces the whole line it belongs to", async (t) => {
+  const dist = await temporaryDirectory(t);
   const published = await temporaryDirectory(t);
+  await writeFiles(dist, ["5.0.x/index.html", "5.0.x/core/index.html"]);
   await writeFiles(published, [
     "5.0.0/index.html",
     "5.0.0.html",
-    "5.0.1/index.html",
-    "5.0.1.html",
+    "5.0.1/core/index.html",
     "5.1.0/index.html",
-    "5.1.0.html",
     "4.9.9/index.html",
-    "latest/index.html",
   ]);
 
-  assert.deepEqual(
-    await purgeDocsPatchVersions({
-      publishedDirectory: published,
-      version: "5.0.1",
-    }),
-    ["5.0.0", "5.0.0.html"],
-  );
+  await publishDocsSurface({
+    distDirectory: dist,
+    publishedDirectory: published,
+    version: "5.0.1",
+    base: "/micronaut-docs-v2/",
+    latest: false,
+  });
 
-  await assert.rejects(
-    fs.access(path.join(published, "5.0.0/index.html")),
-    /ENOENT/,
-  );
-  await assert.rejects(fs.access(path.join(published, "5.0.0.html")), /ENOENT/);
-  await fs.access(path.join(published, "5.0.1/index.html"));
-  await fs.access(path.join(published, "5.1.0/index.html"));
-  await fs.access(path.join(published, "4.9.9/index.html"));
-  await fs.access(path.join(published, "latest/index.html"));
+  await fs.access(path.join(published, "5.0.x", "core", "index.html"));
+  // The exact-version folders the line replaces stay reachable as redirects
+  // rather than 404ing the links that already point at them.
+  for (const superseded of [
+    "5.0.0/index.html",
+    "5.0.0.html",
+    "5.0.1/index.html",
+  ]) {
+    assert.match(
+      await fs.readFile(path.join(published, superseded), "utf8"),
+      /\/micronaut-docs-v2\/5\.0\.x\//,
+      superseded,
+    );
+  }
   assert.equal(
-    await isNewestPublishedDocsVersion({
-      publishedDirectory: published,
-      version: "5.0.1",
-    }),
+    await exists(path.join(published, "5.0.1", "core", "index.html")),
     false,
   );
+  // Lines the release does not belong to are left alone.
+  await fs.access(path.join(published, "5.1.0", "index.html"));
+  await fs.access(path.join(published, "4.9.9", "index.html"));
+
+  const versions = JSON.parse(
+    await fs.readFile(path.join(published, "versions.json"), "utf8"),
+  ) as { versions: Array<{ label: string; release?: string }> };
+  assert.deepEqual(
+    versions.versions.map((version) => version.label),
+    ["Latest (5.1.0)", "5.0.x", "4.9.9"],
+  );
+  assert.equal(
+    versions.versions.find((version) => version.label === "5.0.x")?.release,
+    "5.0.1",
+  );
+});
+
+test("publishing an older patch over a newer line is refused", async (t) => {
+  const published = await temporaryDirectory(t);
+  await writeTextFile(
+    published,
+    "versions.json",
+    JSON.stringify({
+      versions: [
+        { label: "Latest (5.0.x)", href: "/latest/", release: "5.0.3" },
+      ],
+    }),
+  );
+
+  // A replayed or re-dispatched release event for an older tag must not
+  // overwrite the line with docs that are older than what it already serves.
+  assert.equal(
+    await supersedingDocsLineRelease({
+      publishedDirectory: published,
+      version: "5.0.1",
+    }),
+    "5.0.3",
+  );
+  assert.equal(
+    await supersedingDocsLineRelease({
+      publishedDirectory: published,
+      version: "5.0.3",
+    }),
+    undefined,
+  );
+  assert.equal(
+    await supersedingDocsLineRelease({
+      publishedDirectory: published,
+      version: "5.0.4",
+    }),
+    undefined,
+  );
   assert.equal(
     await isNewestPublishedDocsVersion({
       publishedDirectory: published,
-      version: "5.2.0",
+      version: "5.0.4",
     }),
     true,
   );
 });
 
-test("publishing an older patch never removes newer published patches", async (t) => {
-  const published = await temporaryDirectory(t);
-  await writeFiles(published, [
-    "5.0.0/index.html",
-    "5.0.1/index.html",
-    "5.0.1.html",
-    "5.0.3/index.html",
-    "5.0.3.html",
-  ]);
-
-  // A replayed or re-dispatched release event for an older tag must not destroy
-  // docs that are newer than the version being published.
-  assert.deepEqual(
-    await purgeDocsPatchVersions({
-      publishedDirectory: published,
-      version: "5.0.1",
-    }),
-    ["5.0.0"],
-  );
-
-  await fs.access(path.join(published, "5.0.1/index.html"));
-  await fs.access(path.join(published, "5.0.3/index.html"));
-  await fs.access(path.join(published, "5.0.3.html"));
-});
-
-test("the published latest tree links to itself, not to the version it was built from", async (t) => {
+test("/latest redirects to the published line instead of copying it", async (t) => {
   const dist = await temporaryDirectory(t);
   const published = await temporaryDirectory(t);
   const base = "/micronaut-docs-v2/";
 
   await writeFiles(dist, ["_astro/app.css"]);
-  await fs.mkdir(path.join(dist, "5.1.1", "core"), { recursive: true });
-  await fs.writeFile(
-    path.join(dist, "5.1.1", "index.html"),
-    [
-      '<link rel="canonical" href="https://docs.example.test/micronaut-docs-v2/5.1.1/" />',
-      '<a href="/micronaut-docs-v2/5.1.1/core/">Core</a>',
-      '<a href="/micronaut-docs-v2/5.1.1/data/">Data</a>',
-    ].join("\n"),
-    "utf8",
+  await fs.mkdir(path.join(dist, "5.1.x", "core"), { recursive: true });
+  await writeTextFile(
+    dist,
+    "5.1.x/index.html",
+    '<a href="/micronaut-docs-v2/5.1.x/core/">Core</a>',
   );
-  await fs.writeFile(
-    path.join(dist, "5.1.1", "core", "index.html"),
-    '<a href="/micronaut-docs-v2/5.1.1/">Index</a>',
-    "utf8",
+  await writeTextFile(
+    dist,
+    "5.1.x/core/index.html",
+    '<a href="/micronaut-docs-v2/5.1.x/">Index</a>',
+  );
+  await writeTextFile(
+    dist,
+    "5.1.x/guide/index.html",
+    clientRedirectDocument(
+      "/micronaut-docs-v2/5.1.x/core/",
+      "Micronaut Core docs",
+    ),
   );
 
   await publishDocsSurface({
@@ -941,41 +982,50 @@ test("the published latest tree links to itself, not to the version it was built
     latest: true,
   });
 
-  const latestIndex = await fs.readFile(
-    path.join(published, "latest", "index.html"),
-    "utf8",
-  );
-  assert.doesNotMatch(
-    latestIndex,
-    /micronaut-docs-v2\/5\.1\.1\//,
-    "the latest tree must not link back into the version directory a later patch deletes",
-  );
-  assert.match(latestIndex, /href="\/micronaut-docs-v2\/latest\/core\/"/);
+  // A reader who opens /latest ends up on the versioned URL, so what they
+  // bookmark and share names the line the docs actually came from.
+  for (const [stub, destination] of [
+    ["latest/index.html", "/micronaut-docs-v2/5.1.x/"],
+    ["latest/core/index.html", "/micronaut-docs-v2/5.1.x/core/"],
+    ["latest.html", "/micronaut-docs-v2/5.1.x/"],
+    ["5.1.x.html", "/micronaut-docs-v2/5.1.x/"],
+  ] as const) {
+    const html = await fs.readFile(path.join(published, stub), "utf8");
+    assert.match(
+      html,
+      new RegExp(`location\\.replace\\("${escapeRegExp(destination)}"`),
+      stub,
+    );
+  }
+
+  // A page in the line that is itself a redirect hands /latest its own
+  // destination, so the historical Core alias stays one hop from the docs.
   assert.match(
-    latestIndex,
-    /rel="canonical" href="https:\/\/docs\.example\.test\/micronaut-docs-v2\/latest\/"/,
+    await fs.readFile(
+      path.join(published, "latest", "guide", "index.html"),
+      "utf8",
+    ),
+    /location\.replace\("\/micronaut-docs-v2\/5\.1\.x\/core\/"/,
   );
 
-  const latestCore = await fs.readFile(
-    path.join(published, "latest", "core", "index.html"),
+  // Nothing under /latest is a copy of the docs.
+  assert.doesNotMatch(
+    await fs.readFile(path.join(published, "latest", "index.html"), "utf8"),
+    /href="\/micronaut-docs-v2\/5\.1\.x\/core\/">Core</,
+  );
+  const lineIndex = await fs.readFile(
+    path.join(published, "5.1.x", "index.html"),
     "utf8",
   );
-  assert.match(latestCore, /href="\/micronaut-docs-v2\/latest\/"/);
-
-  // The version directory itself keeps its own roots.
-  const versionIndex = await fs.readFile(
-    path.join(published, "5.1.1", "index.html"),
-    "utf8",
-  );
-  assert.match(versionIndex, /href="\/micronaut-docs-v2\/5\.1\.1\/core\/"/);
+  assert.match(lineIndex, /href="\/micronaut-docs-v2\/5\.1\.x\/core\/"/);
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {
   const published = await temporaryDirectory(t);
   const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
   await writeFiles(published, [
-    "4.10.1/index.html",
-    "4.9.4.html",
+    "4.9.x/index.html",
+    "4.8.4.html",
     "assets/stylesheets/site.css",
     "docsassets/css/main.css",
   ]);
@@ -987,28 +1037,33 @@ test("docs version manifest is rebuilt from the published docs branch", async (t
   });
 
   assert.deepEqual(versions.slice(0, 3), [
-    { label: "Latest (4.10.14)", href: "/latest/", current: true },
-    { label: "4.10.1", href: "/4.10.1/" },
-    { label: "4.9.4", href: "/4.9.4.html" },
+    {
+      label: "Latest (4.10.x)",
+      href: "/latest/",
+      release: "4.10.14",
+      current: true,
+    },
+    { label: "4.9.x", href: "/4.9.x/" },
+    { label: "4.8.4", href: "/4.8.4.html" },
   ]);
-  assert.match(await fs.readFile(manifest, "utf8"), /"Latest \(4\.10\.14\)"/);
+  assert.match(await fs.readFile(manifest, "utf8"), /"Latest \(4\.10\.x\)"/);
 });
 
 test("docs version manifest preserves latest label for non-latest publishes", async (t) => {
   const published = await temporaryDirectory(t);
   const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
-  await writeFiles(published, [
-    "4.10.14/index.html",
-    "4.10.1/index.html",
-    "4.9.4/index.html",
-  ]);
+  await writeFiles(published, ["4.10.x/index.html", "4.9.x/index.html"]);
   await writeTextFile(
     published,
     "versions.json",
     JSON.stringify({
       versions: [
-        { label: "Latest (4.10.14)", href: "/latest/", current: true },
-        { label: "4.10.14", href: "/4.10.14/" },
+        {
+          label: "Latest (4.10.x)",
+          href: "/latest/",
+          release: "4.10.14",
+          current: true,
+        },
       ],
     }),
   );
@@ -1021,10 +1076,8 @@ test("docs version manifest preserves latest label for non-latest publishes", as
   });
 
   assert.deepEqual(versions, [
-    { label: "Latest (4.10.14)", href: "/latest/" },
-    { label: "4.10.1", href: "/4.10.1/" },
-    { label: "4.9.5", href: "/4.9.5/" },
-    { label: "4.9.4", href: "/4.9.4/" },
+    { label: "Latest (4.10.x)", href: "/latest/", release: "4.10.14" },
+    { label: "4.9.x", href: "/4.9.x/", release: "4.9.5" },
   ]);
 });
 
@@ -1043,6 +1096,8 @@ test("docs version manifest sorts final releases before prereleases", async (t) 
     latest: false,
   });
 
+  // Versions published before docs moved to release lines keep their exact
+  // folders until the line that replaces them is republished.
   assert.deepEqual(
     versions.map((version) => version.label),
     ["Latest (5.0.0)", "5.0.0-rc1", "4.10.14"],
@@ -1059,8 +1114,8 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     "robots.txt",
     "sitemap-index.xml",
     "sitemap-0.xml",
-    "4.10.14/index.html",
-    "4.10.14/core/index.html",
+    "4.10.x/index.html",
+    "4.10.x/core/index.html",
     "micronaut-assets/icons/brands/apachekafka.svg",
     "micronaut-assets/icons/projects/reactor.webp",
   ]);
@@ -1071,17 +1126,17 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     "assets/core/old.bbbbbbbbbbbbbbbb.png",
     "assets/stylesheets/site.css",
     "docsassets/css/main.css",
-    "4.10.1/core/index.html",
-    "4.10.1/index.html",
+    "4.9.x/core/index.html",
+    "4.9.x/index.html",
   ]);
   await writeTextFile(
     dist,
-    "4.10.14/core/index.html",
+    "4.10.x/core/index.html",
     '<img src="../../assets/core/diagram.1111111111111111.svg">',
   );
   await writeTextFile(
     published,
-    "4.10.1/core/index.html",
+    "4.9.x/core/index.html",
     [
       '<img src="../../assets/bbbbbbbbbbbbbbbb/old.png">',
       '<img src="/assets/core/old.bbbbbbbbbbbbbbbb.png">',
@@ -1162,27 +1217,31 @@ test("docs publish merge preserves shared assets and updates version roots", asy
     false,
   );
   assert.equal(
-    await exists(path.join(published, "4.10.14", "core", "index.html")),
-    true,
-  );
-  assert.equal(
-    await exists(path.join(published, "latest", "core", "index.html")),
+    await exists(path.join(published, "4.10.x", "core", "index.html")),
     true,
   );
   assert.match(
-    await fs.readFile(path.join(published, "4.10.14.html"), "utf8"),
-    /\/micronaut-docs\/4\.10\.14\//,
+    await fs.readFile(
+      path.join(published, "latest", "core", "index.html"),
+      "utf8",
+    ),
+    /location\.replace\("\/micronaut-docs\/4\.10\.x\/core\/"/,
   );
   assert.match(
-    await fs.readFile(path.join(published, "4.10.14.html"), "utf8"),
-    /location\.replace/,
+    await fs.readFile(path.join(published, "4.10.x.html"), "utf8"),
+    /location\.replace\("\/micronaut-docs\/4\.10\.x\/"/,
   );
   const versionsJson = JSON.parse(
     await fs.readFile(path.join(published, "versions.json"), "utf8"),
   );
   assert.deepEqual(versionsJson.versions.slice(0, 2), [
-    { label: "Latest (4.10.14)", href: "/latest/", current: true },
-    { label: "4.10.1", href: "/4.10.1/" },
+    {
+      label: "Latest (4.10.x)",
+      href: "/latest/",
+      release: "4.10.14",
+      current: true,
+    },
+    { label: "4.9.x", href: "/4.9.x/" },
   ]);
 });
 
@@ -1191,24 +1250,24 @@ test("docs publish migrates retained versions to a custom domain", async (t) => 
   const published = await temporaryDirectory(t);
   await writeFiles(dist, [
     "_astro/new.js",
-    "5.0.0/index.html",
-    "5.0.0/core/index.html",
+    "5.0.x/index.html",
+    "5.0.x/core/index.html",
   ]);
   await writeTextFile(dist, "CNAME", "docs.micronaut.io\n");
   await writeTextFile(
     dist,
-    "5.0.0/core/index.html",
+    "5.0.x/core/index.html",
     '<script src="/_astro/new.js"></script>',
   );
   await writeFiles(published, [
     "_astro/old.js",
     "_astro/unused.js",
-    "4.10.14/index.html",
-    "4.10.14/core/index.html",
+    "4.10.x/index.html",
+    "4.10.x/core/index.html",
   ]);
   await writeTextFile(
     published,
-    "4.10.14/core/index.html",
+    "4.10.x/core/index.html",
     [
       '<script src="/micronaut-docs-v2/_astro/old.js"></script>',
       '<script src="https://micronaut-projects.github.io/micronaut-web/shell/site-header.js"></script>',
@@ -1229,7 +1288,7 @@ test("docs publish migrates retained versions to a custom domain", async (t) => 
   });
 
   const retainedHtml = await fs.readFile(
-    path.join(published, "4.10.14", "core", "index.html"),
+    path.join(published, "4.10.x", "core", "index.html"),
     "utf8",
   );
   assert.match(retainedHtml, /src="\/_astro\/old\.js"/);

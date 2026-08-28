@@ -8,6 +8,7 @@ import { parseArgs, stringArg } from "./shared/cli.ts";
 export type DocsVersionOption = {
   label: string;
   href: string;
+  release?: string;
   current?: boolean;
 };
 
@@ -27,6 +28,25 @@ if (isMainModule()) {
     version: stringArg(options.version) || process.env.MICRONAUT_DOCS_VERSION,
     latest: stringArg(options.latest) !== "false",
   });
+}
+
+/**
+ * Docs are published once per release line: every 5.0 patch replaces the same
+ * `/5.0.x/` tree, so a reader's bookmark survives patch releases and only has to
+ * move when they follow a new minor.
+ */
+export function docsVersionLine(version: string): string {
+  const match = /^(\d+)\.(\d+)(?:[.-]|$)/.exec(version);
+  if (!match) {
+    throw new Error(
+      `Expected a Micronaut version such as 5.0.3; received ${JSON.stringify(version)}.`,
+    );
+  }
+  return `${match[1]}.${match[2]}.x`;
+}
+
+export function isDocsVersionLine(value: string): boolean {
+  return /^\d+\.\d+\.x$/.test(value);
 }
 
 export async function updateDocsVersionManifest({
@@ -64,58 +84,89 @@ export async function buildDocsVersionOptions({
   version?: string;
   latest?: boolean;
 }): Promise<DocsVersionOption[]> {
-  const versions = new Map<string, string>();
+  // A line folder is named after the line, not the patch inside it, so the
+  // release it was built from only survives in the manifest.
+  const releases = await readPublishedReleases(publishedDirectory);
+  const lines = new Map<string, string>();
   if (publishedDirectory) {
     for (const option of await readPublishedVersions(publishedDirectory)) {
-      versions.set(option.label, option.href);
+      lines.set(option.label, option.href);
     }
   }
-  if (version && version !== "latest") {
-    versions.set(version, `/${version}/`);
+  const publishedLine =
+    version && version !== "latest" ? docsVersionLine(version) : undefined;
+  if (publishedLine && version) {
+    lines.set(publishedLine, `/${publishedLine}/`);
+    releases.set(publishedLine, version);
   }
 
-  const sortedVersions = Array.from(versions.entries()).sort(
-    ([left], [right]) => compareVersions(right, left),
+  const release = (label: string) => releases.get(label) || label;
+  const sortedLines = Array.from(lines.entries()).sort(([left], [right]) =>
+    compareVersions(release(right), release(left)),
   );
-  const latestVersion = await resolveLatestVersionName({
-    publishedDirectory,
-    version,
-    latest,
-    sortedVersions,
-  });
+  const latestLine =
+    latest && publishedLine
+      ? publishedLine
+      : (await readExistingLatestLine(publishedDirectory)) ||
+        sortedLines[0]?.[0];
 
   return [
     {
-      label: latestVersion ? `Latest (${latestVersion})` : "Latest",
+      label: latestLine ? `Latest (${latestLine})` : "Latest",
       href: "/latest/",
+      ...releaseFields(releases, latestLine),
       ...(latest ? { current: true } : {}),
     },
-    // The entry above already names the latest version, so listing its pinned
-    // root again showed the same number twice in the selector.
-    ...sortedVersions
-      .filter(([label]) => label !== latestVersion)
-      .map(([label, href]) => ({ label, href })),
+    // The entry above already names the latest line, so listing its pinned root
+    // again showed the same number twice in the selector.
+    ...sortedLines
+      .filter(([label]) => label !== latestLine)
+      .map(([label, href]) => ({
+        label,
+        href,
+        ...releaseFields(releases, label),
+      })),
   ];
 }
 
-async function resolveLatestVersionName({
+export async function isNewestPublishedDocsVersion({
   publishedDirectory,
   version,
-  latest,
-  sortedVersions,
 }: {
-  publishedDirectory?: string;
-  version?: string;
-  latest: boolean;
-  sortedVersions: Array<[string, string]>;
-}) {
-  if (latest && version && version !== "latest") {
-    return version;
-  }
-  return (
-    (await readExistingLatestVersionName(publishedDirectory)) ||
-    sortedVersions[0]?.[0]
+  publishedDirectory: string;
+  version: string;
+}): Promise<boolean> {
+  const releases = await readPublishedReleases(publishedDirectory);
+  return !(await readPublishedVersions(publishedDirectory)).some(
+    (published) =>
+      compareVersions(
+        releases.get(published.label) || published.label,
+        version,
+      ) > 0,
   );
+}
+
+/**
+ * A line folder is replaced wholesale on every publish, so a replayed or
+ * re-dispatched release event for an older patch would silently downgrade the
+ * published docs. Returns the newer release the line already serves, if any, so
+ * the caller can refuse.
+ */
+export async function supersedingDocsLineRelease({
+  publishedDirectory,
+  version,
+}: {
+  publishedDirectory: string;
+  version: string;
+}): Promise<string | undefined> {
+  const releases = await readPublishedReleases(publishedDirectory);
+  const release = releases.get(docsVersionLine(version));
+  return release && compareVersions(release, version) > 0 ? release : undefined;
+}
+
+function releaseFields(releases: Map<string, string>, label?: string) {
+  const release = label ? releases.get(label) : undefined;
+  return release ? { release } : {};
 }
 
 async function readPublishedVersions(
@@ -143,25 +194,50 @@ async function readPublishedVersions(
     }
   }
 
-  return Array.from(versions.entries()).map(([label, href]) => ({
-    label,
-    href,
-  }));
-}
-
-export async function isNewestPublishedDocsVersion({
-  publishedDirectory,
-  version,
-}: {
-  publishedDirectory: string;
-  version: string;
-}): Promise<boolean> {
-  return !(await readPublishedVersions(publishedDirectory)).some(
-    (published) => compareVersions(published.label, version) > 0,
+  return (
+    Array.from(versions.entries())
+      // Publishing a line leaves redirects behind for the exact versions it
+      // replaced; listing those beside `5.0.x` would show the same docs twice.
+      .filter(
+        ([label]) =>
+          isDocsVersionLine(label) || !versions.has(docsVersionLine(label)),
+      )
+      .map(([label, href]) => ({ label, href }))
   );
 }
 
-async function readExistingLatestVersionName(publishedDirectory?: string) {
+async function readPublishedReleases(publishedDirectory?: string) {
+  const releases = new Map<string, string>();
+  for (const option of (await readPublishedManifest(publishedDirectory))
+    ?.versions || []) {
+    const line = latestLabelLine(option.label) || option.label;
+    if (option.release) {
+      releases.set(line, option.release);
+    }
+  }
+  return releases;
+}
+
+async function readExistingLatestLine(publishedDirectory?: string) {
+  const payload = await readPublishedManifest(publishedDirectory);
+  if (!payload) {
+    return undefined;
+  }
+  const latestIndex = payload.versions.findIndex(
+    (option) => option.href === "/latest/",
+  );
+  const labeledLine = latestLabelLine(
+    latestIndex >= 0 ? payload.versions[latestIndex].label : "",
+  );
+  if (labeledLine) {
+    return labeledLine;
+  }
+  return payload.versions
+    .slice(Math.max(latestIndex + 1, 0))
+    .find((option) => isVersion(option.label))?.label;
+}
+
+async function readPublishedManifest(publishedDirectory?: string) {
   if (!publishedDirectory) {
     return undefined;
   }
@@ -176,21 +252,11 @@ async function readExistingLatestVersionName(publishedDirectory?: string) {
     }
     throw error;
   }
-  if (!isVersionsPayload(payload)) {
-    return undefined;
-  }
-  const latestIndex = payload.versions.findIndex(
-    (option) => option.href === "/latest/",
-  );
-  const latestLabel =
-    latestIndex >= 0 ? payload.versions[latestIndex].label : undefined;
-  const labeledVersion = latestLabel?.match(/^Latest \((.+)\)$/)?.[1];
-  if (labeledVersion) {
-    return labeledVersion;
-  }
-  return payload.versions
-    .slice(Math.max(latestIndex + 1, 0))
-    .find((option) => isVersion(option.label))?.label;
+  return isVersionsPayload(payload) ? payload : undefined;
+}
+
+function latestLabelLine(label: string) {
+  return label.match(/^Latest \((.+)\)$/)?.[1];
 }
 
 function isVersionsPayload(
