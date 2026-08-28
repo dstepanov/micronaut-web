@@ -302,7 +302,7 @@ The docs workflow:
 2. Checks out `micronaut-projects/micronaut-docs-v2` on `gh-pages`.
 3. Checks out the requested Micronaut Platform ref for docs sources and metadata.
 4. Resolves the release line for `docs_version` and refuses the run when that line already publishes a newer release, so a replayed or re-dispatched release event cannot downgrade published docs. Every publication moves `/latest` only when the version is newer than every retained Platform version, so a later v4 publication cannot replace a v5 `/latest`, and a republish of an older line leaves `/latest` alone.
-5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the published lines plus the line currently being published. Because a line folder is named after the line and not the patch inside it, each entry also records the `release` it was built from.
+5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the published lines plus the line currently being published. Because a line folder is named after the line and not the patch inside it, each entry also records the `release` it was built from, and the selector shows that release — `5.0.3`, not `5.0.x` — so a reader is told which docs they are actually reading. A line published before the manifest recorded a release falls back to naming itself.
 6. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_line}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
 7. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
 8. Commits and pushes the branch.

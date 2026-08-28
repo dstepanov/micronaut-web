@@ -896,11 +896,13 @@ test("publishing a patch replaces the whole line it belongs to", async (t) => {
   ) as { versions: Array<{ label: string; release?: string }> };
   assert.deepEqual(
     versions.versions.map((version) => version.label),
-    ["Latest (5.1.0)", "5.0.x", "4.9.9"],
+    ["Latest (5.1.0)", "5.0.1", "4.9.9"],
   );
-  assert.equal(
-    versions.versions.find((version) => version.label === "5.0.x")?.release,
-    "5.0.1",
+  // The selector names the release, but the entry still links to the line and
+  // carries the release the publish guard and republish workflow read.
+  assert.deepEqual(
+    versions.versions.find((version) => version.label === "5.0.1"),
+    { label: "5.0.1", href: "/5.0.x/", release: "5.0.1" },
   );
 });
 
@@ -1038,18 +1040,20 @@ test("docs version manifest is rebuilt from the published docs branch", async (t
 
   assert.deepEqual(versions.slice(0, 3), [
     {
-      label: "Latest (4.10.x)",
+      label: "Latest (4.10.14)",
       href: "/latest/",
       release: "4.10.14",
       current: true,
     },
+    // A line published before the manifest recorded its release falls back to
+    // naming itself.
     { label: "4.9.x", href: "/4.9.x/" },
     { label: "4.8.4", href: "/4.8.4.html" },
   ]);
-  assert.match(await fs.readFile(manifest, "utf8"), /"Latest \(4\.10\.x\)"/);
+  assert.match(await fs.readFile(manifest, "utf8"), /"Latest \(4\.10\.14\)"/);
 });
 
-test("docs version manifest preserves latest label for non-latest publishes", async (t) => {
+test("docs version manifest preserves the latest release for non-latest publishes", async (t) => {
   const published = await temporaryDirectory(t);
   const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
   await writeFiles(published, ["4.10.x/index.html", "4.9.x/index.html"]);
@@ -1076,8 +1080,8 @@ test("docs version manifest preserves latest label for non-latest publishes", as
   });
 
   assert.deepEqual(versions, [
-    { label: "Latest (4.10.x)", href: "/latest/", release: "4.10.14" },
-    { label: "4.9.x", href: "/4.9.x/", release: "4.9.5" },
+    { label: "Latest (4.10.14)", href: "/latest/", release: "4.10.14" },
+    { label: "4.9.5", href: "/4.9.x/", release: "4.9.5" },
   ]);
 });
 
@@ -1236,7 +1240,7 @@ test("docs publish merge preserves shared assets and updates version roots", asy
   );
   assert.deepEqual(versionsJson.versions.slice(0, 2), [
     {
-      label: "Latest (4.10.x)",
+      label: "Latest (4.10.14)",
       href: "/latest/",
       release: "4.10.14",
       current: true,
