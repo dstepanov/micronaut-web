@@ -100,9 +100,13 @@ export async function buildDocsVersionOptions({
     releases.set(publishedLine, version);
   }
 
-  const release = (label: string) => releases.get(label) || label;
+  // `/5.0.x/` is where the docs live, but it is not what a reader wants to be
+  // told they are reading, so the selector names the release the line was built
+  // from. A line published before the manifest recorded that falls back to its
+  // own name.
+  const displayed = (line: string) => releases.get(line) || line;
   const sortedLines = Array.from(lines.entries()).sort(([left], [right]) =>
-    compareVersions(release(right), release(left)),
+    compareVersions(displayed(right), displayed(left)),
   );
   const latestLine =
     latest && publishedLine
@@ -112,19 +116,19 @@ export async function buildDocsVersionOptions({
 
   return [
     {
-      label: latestLine ? `Latest (${latestLine})` : "Latest",
+      label: latestLine ? `Latest (${displayed(latestLine)})` : "Latest",
       href: "/latest/",
       ...releaseFields(releases, latestLine),
       ...(latest ? { current: true } : {}),
     },
-    // The entry above already names the latest line, so listing its pinned root
-    // again showed the same number twice in the selector.
+    // The entry above already names the latest release, so listing its pinned
+    // line root again showed the same number twice in the selector.
     ...sortedLines
-      .filter(([label]) => label !== latestLine)
-      .map(([label, href]) => ({
-        label,
+      .filter(([line]) => line !== latestLine)
+      .map(([line, href]) => ({
+        label: displayed(line),
         href,
-        ...releaseFields(releases, label),
+        ...releaseFields(releases, line),
       })),
   ];
 }
@@ -210,9 +214,8 @@ async function readPublishedReleases(publishedDirectory?: string) {
   const releases = new Map<string, string>();
   for (const option of (await readPublishedManifest(publishedDirectory))
     ?.versions || []) {
-    const line = latestLabelLine(option.label) || option.label;
-    if (option.release) {
-      releases.set(line, option.release);
+    if (option.release && isVersion(option.release)) {
+      releases.set(docsVersionLine(option.release), option.release);
     }
   }
   return releases;
@@ -226,11 +229,16 @@ async function readExistingLatestLine(publishedDirectory?: string) {
   const latestIndex = payload.versions.findIndex(
     (option) => option.href === "/latest/",
   );
-  const labeledLine = latestLabelLine(
-    latestIndex >= 0 ? payload.versions[latestIndex].label : "",
-  );
-  if (labeledLine) {
-    return labeledLine;
+  const latestOption =
+    latestIndex >= 0 ? payload.versions[latestIndex] : undefined;
+  if (latestOption?.release && isVersion(latestOption.release)) {
+    return docsVersionLine(latestOption.release);
+  }
+  // Published before docs moved to release lines: the label names the exact
+  // version, whose own folder is still what the entry stands for.
+  const labeled = latestOption?.label.match(/^Latest \((.+)\)$/)?.[1];
+  if (labeled) {
+    return labeled;
   }
   return payload.versions
     .slice(Math.max(latestIndex + 1, 0))
@@ -253,10 +261,6 @@ async function readPublishedManifest(publishedDirectory?: string) {
     throw error;
   }
   return isVersionsPayload(payload) ? payload : undefined;
-}
-
-function latestLabelLine(label: string) {
-  return label.match(/^Latest \((.+)\)$/)?.[1];
 }
 
 function isVersionsPayload(
