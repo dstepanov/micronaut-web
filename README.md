@@ -211,7 +211,7 @@ Neither catalog is imported into the dialog. `SiteHeader` is hydrated on every p
 
 Main-site search groups results into actions, main-site pages, docs and APIs, guides, and tags. Each command item exposes a searchable value made from its kind, title, description, and terms; the `cmdk` command component handles the visible filtering. The source groups are capped before rendering to keep the dialog small: up to 80 main-site pages, 80 docs entries, 80 guide entries, and 40 tags. This mode does not read generated docs HTML, so deep generated headings, configuration properties, and API classes are available only in docs search mode.
 
-Docs search mode is used when `SiteHeader` is rendered with `surface="docs"`. On open it fetches the configured docs search index URL or `withBasePath("/docs/search-index.json")`. In standalone docs deployments that path is routed to `/latest/search-index.json`; in the all-in-one preview it stays under `/docs/search-index.json`. `WebLayout` passes both index URLs (`docsSearchIndexUrl`, `siteSearchIndexUrl`) as absolute surface URLs, and the remote header shell reads them from `data-docs-search-index-url` and `data-site-search-index-url`. If a fetch fails the dialog shows no catalog results; main-site pages stay searchable.
+Docs search mode is used when `SiteHeader` is rendered with `surface="docs"`. On open it fetches the configured docs search index URL or `withBasePath("/docs/search-index.json")`. In standalone docs deployments that path is routed to `/<line>/search-index.json`; in the all-in-one preview it stays under `/docs/search-index.json`. `WebLayout` passes both index URLs (`docsSearchIndexUrl`, `siteSearchIndexUrl`) as absolute surface URLs, and the remote header shell reads them from `data-docs-search-index-url` and `data-site-search-index-url`. If a fetch fails the dialog shows no catalog results; main-site pages stay searchable.
 
 The docs search index route is `src/pages/docs/[searchIndex].json.ts`. It is prerendered only when docs routes are enabled and returns JSON as `{ "items": [...] }`; because it is prerendered, only the body is emitted and response headers come from the host serving the artifact. It loads the docs project catalog from `src/content/generated-docs/project-catalog.json` when present, otherwise from `src/data/docs-projects.fixture.json`, then reads generated HTML from `src/content/generated-docs/*.html` and calls `buildDocsSearchIndex(...)` in `scripts/docs/search-index.ts`.
 
@@ -238,7 +238,7 @@ Production-compatible hosts are:
 Temporary GitHub Pages hosts keep the repository names in the path:
 
 - `micronaut-web`: main site at `/micronaut-web/`
-- `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, latest docs at `/micronaut-docs-v2/latest/`, and version folders such as `/micronaut-docs-v2/4.10.14/`
+- `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, release-line folders such as `/micronaut-docs-v2/5.0.x/`, and `/micronaut-docs-v2/latest/` redirecting to the newest of them
 - `micronaut-guides-v2`: guides at `/micronaut-guides-v2/`
 
 ### Surface Split
@@ -249,7 +249,7 @@ Surface builds are selected with `MICRONAUT_DEPLOY_SURFACE=main|docs|guides`. `s
 - `npm run build:docs` keeps the docs index, docs project pages, search index, docs version selector, docs redirects, `_astro`, `.nojekyll`, and shared docs assets. It prepares only generated docs content and removes unrelated main and guides route trees.
 - `npm run build:guides` renders the generated guides once under `/guides`, moves that tree to `/latest` for the standalone guides artifact, and keeps the root redirect, guide compatibility routes, `_astro`, `.nojekyll`, and shared guide assets. It prepares only generated guides content and removes unrelated main and docs route trees.
 
-Every surface publishes its own `robots.txt` and sitemap. `src/pages/robots.txt.ts` resolves the `Sitemap:` line from that build's site and base, and `@astrojs/sitemap` is filtered to the pages that survive pruning and serialized to the paths they are served from, so the docs sitemap lists `/latest/<project>/` and the guides sitemap lists root-level guides. Pages that ask to stay out of search results are dropped as well: the filter reads the built HTML back and skips anything carrying a `robots` `noindex` meta, which covers both the refresh stubs Astro emits for `Astro.redirect()` and pages passing `noindex` to `WebLayout`. Both files are written to the build root, so `scripts/prune-surface.ts` and `scripts/publish-docs-surface.ts` carry them across through `scripts/shared/crawler-files.ts`.
+Every surface publishes its own `robots.txt` and sitemap. `src/pages/robots.txt.ts` resolves the `Sitemap:` line from that build's site and base, and `@astrojs/sitemap` is filtered to the pages that survive pruning and serialized to the paths they are served from, so the docs sitemap lists `/<line>/<project>/` and the guides sitemap lists root-level guides. Pages that ask to stay out of search results are dropped as well: the filter reads the built HTML back and skips anything carrying a `robots` `noindex` meta, which covers both the refresh stubs Astro emits for `Astro.redirect()` and pages passing `noindex` to `WebLayout`. Both files are written to the build root, so `scripts/prune-surface.ts` and `scripts/publish-docs-surface.ts` carry them across through `scripts/shared/crawler-files.ts`.
 
 Standalone docs and guides builds do not publish their own header shell. In production they render a small static fallback header, load the header stylesheet and React shell from the configured main-site URL, then mount the current `SiteHeader` implementation from `micronaut-web`. This keeps the top navigation owned by the web repository even when docs and guides content are generated from separate repositories. The fallback links use `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, and `MICRONAUT_GUIDES_SITE_URL`, so split-repo Pages deployments can point at the correct published artifacts without hard-coded repository names.
 
@@ -259,7 +259,7 @@ Standalone docs and guides builds do not publish their own header shell. In prod
 | --- | --- | --- |
 | [`Validate Build`](.github/workflows/validate-build.yml) | Pull requests | Checks script formatting and builds the docs, guides, and main-site surfaces. Generated external content is disabled for this validation build. |
 | [`Deploy Web`](.github/workflows/deploy-web.yml) | Pushes to `main` or manual dispatch | Builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides. |
-| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds one Docs version from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages`. Manual runs take only `docs_version`; a platform release also supplies the exact source revision. Final releases retain only the newest patch for their major/minor line, and `/latest` follows the newest published version. |
+| [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds one Docs release from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` under its release line, for example `5.0.3` to `/5.0.x/`. Manual runs take only `docs_version`; a platform release also supplies the exact source revision. `/latest` redirects to the newest published line. |
 | [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Runs the guides project's own Gradle build to generate the sample projects and their downloadable archives, renders the guides against them, and publishes everything to `micronaut-projects/micronaut-guides-v2:gh-pages`. Manual runs choose the source with `guides_repository` and `guides_ref`; a `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
 | [`Publish Upstream Updates`](.github/workflows/publish-upstream-updates.yml) | Hourly schedule or manual dispatch | Polls Micronaut Platform and Micronaut Guides, then starts `Deploy Docs` for platform releases that are not published yet and `Deploy Guides` when guides `master` has moved. |
 
@@ -277,7 +277,7 @@ The build reads these deployment inputs:
 
 - `ASTRO_BASE`: deployment path used for pages and assets, such as `/micronaut-web/`, `/micronaut-docs-v2/`, or `/micronaut-guides-v2/`. Docs and guides workflows derive it from their publication repository; an existing or configured custom domain uses `/`.
 - `MICRONAUT_DEPLOY_SURFACE`: active surface, one of `main`, `docs`, `guides`, or `all`.
-- `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview and `/<version>` or `/latest` for standalone docs.
+- `MICRONAUT_DOCS_ROOT`: docs root in the current artifact. It is `/docs` for all-in-one preview, `/<major>.<minor>.x` for a published docs release, and `/latest` for a local standalone docs build.
 - `MICRONAUT_DOCS_LATEST_ROOT`: latest docs root, normally `/latest`.
 - `MICRONAUT_GUIDES_ROOT`: public guides root in the current artifact. Source guide pages are authored under `/guides`; standalone guides builds publish that rendered tree at `/latest`.
 - `MICRONAUT_GUIDES_LATEST_ROOT`: latest guides root, normally `/latest`.
@@ -292,16 +292,18 @@ All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-co
 
 ### Docs Versions and Latest
 
-Docs are versioned. The docs publish workflow takes a single input, `docs_version`, for example `4.10.14`. It also accepts a `platform-released` repository-dispatch event from Micronaut Platform with a `client_payload.version` in the same format and an optional `client_payload.sha` for the exact source revision. A version may carry a prerelease suffix, such as `5.2.0-M1`.
+Docs are versioned by release line. The docs publish workflow takes a single input, `docs_version`, for example `4.10.14`. It also accepts a `platform-released` repository-dispatch event from Micronaut Platform with a `client_payload.version` in the same format and an optional `client_payload.sha` for the exact source revision. A version may carry a prerelease suffix, such as `5.2.0-M1`.
+
+Each release is published under its `major.minor.x` line, so `5.0.3` replaces the `/5.0.x/` tree `5.0.2` published. A reader's bookmark survives every patch and only has to move when they follow a new minor. `/latest` is never a copy of the docs: it is a tree of redirects onto the newest line, so opening `/latest/core/` lands on `/5.2.x/core/` and the URL that gets shared, indexed, and bookmarked names the line the docs came from.
 
 The docs workflow:
 
 1. Checks out this repository.
 2. Checks out `micronaut-projects/micronaut-docs-v2` on `gh-pages`.
 3. Checks out the requested Micronaut Platform ref for docs sources and metadata.
-4. For a final release, removes all published directories and compatibility redirects for earlier patches in the same major/minor line. For example, publishing `5.0.1` removes `5.0.0` but retains `5.1.0` and other major/minor lines. A prerelease purges nothing. Every publication updates `/latest` only when the version is newer than every retained Platform version, so a later v4 publication cannot replace a v5 `/latest`, and a republish of an older version leaves `/latest` alone.
-5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the retained version folders plus the version currently being published.
-6. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_version}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
+4. Resolves the release line for `docs_version` and refuses the run when that line already publishes a newer release, so a replayed or re-dispatched release event cannot downgrade published docs. Every publication moves `/latest` only when the version is newer than every retained Platform version, so a later v4 publication cannot replace a v5 `/latest`, and a republish of an older line leaves `/latest` alone.
+5. Runs `scripts/update-docs-version-manifest.ts` against the existing published branch. This rebuilds the selector data from the published lines plus the line currently being published. Because a line folder is named after the line and not the patch inside it, each entry also records the `release` it was built from.
+6. Builds a docs surface with `MICRONAUT_DOCS_ROOT=/${docs_line}` and `MICRONAUT_DOCS_LATEST_ROOT=/latest`.
 7. Runs `scripts/publish-docs-surface.ts` to merge the new version into the published branch.
 8. Commits and pushes the branch.
 
@@ -311,22 +313,22 @@ The docs workflow does not check out or render Micronaut Guides.
 
 `.github/workflows/publish-upstream-updates.yml` covers the fact that GitHub Actions cannot subscribe to events in another repository. It runs hourly and can also be started manually. For docs it lists the newest stable patch of every Micronaut Platform major/minor line, then publishes a release only when it supersedes the newest published patch of its own line or opens a line newer than everything published, so major/minor lines that were never published stay unpublished. Each version is dispatched to `Deploy Docs` oldest first, waiting for the previous publish because a queued run in the `docs-pages` concurrency group is cancelled when a newer one joins it. For guides it compares `.guides-revision` on the guides Pages branch, written by `Deploy Guides` with the revision it built, against `master` in `micronaut-projects/micronaut-guides`, and dispatches `Deploy Guides` for the exact upstream commit when they differ. Once Micronaut Platform and Micronaut Guides send `platform-released` and `guides-updated` repository-dispatch events, this workflow becomes a safety net rather than the primary trigger.
 
-`.github/workflows/republish-published-docs.yml` is a manual-only workflow for occasional full refreshes, such as a base-path or shared-asset migration. It is deliberately not scheduled, because a full republish rebuilds every retained version. It reads the version folders already published to the docs Pages branch, filters them to `major.minor.patch` releases, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. Only the final, newest version refreshes `/latest`, because `Deploy Docs` moves `/latest` solely for the newest published version.
+`.github/workflows/republish-published-docs.yml` is a manual-only workflow for occasional full refreshes, such as a base-path or shared-asset migration. It is deliberately not scheduled, because a full republish rebuilds every retained line. It reads the releases recorded in the published `versions.json` together with any exact-version folders left from before docs moved to release lines, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. Only the final, newest version refreshes `/latest`, because `Deploy Docs` moves `/latest` solely for the newest published version.
 
 The published docs branch layout is:
 
 - `/index.html`: docs selector/index.
 - `/versions.json`: compact selector data for published versions. `scripts/update-docs-version-manifest.ts` regenerates `src/data/docs-versions.json` from the published docs branch during a docs deploy; the tracked copy is only the static fallback the selector renders before that fetch resolves, so it deliberately carries no patch version and must not be updated per release.
-- `/latest/`: copy of the newest published version's tree.
-- `/latest.html`: redirect to `/latest/`.
-- `/latest/guide/index.html`: compatibility redirect to `/latest/core/`.
-- `/<version>/`: immutable docs tree for a published version.
-- `/<version>.html`: compatibility redirect to `/<version>/`.
+- `/latest/<page>/`: redirect onto the same page of the newest published line. Every page of that line is mirrored, so historical `/latest/...` links keep working; `/latest/guide/` is the compatibility alias for Core docs and redirects straight to `/<line>/core/`.
+- `/latest.html`: redirect to the newest published line.
+- `/<major>.<minor>.x/`: docs tree for a published release line, replaced by each new patch of that line.
+- `/<major>.<minor>.x.html`: compatibility redirect to `/<major>.<minor>.x/`.
+- `/<version>/` and `/<version>.html`: redirects to the line that replaced an exact version published before docs moved to release lines.
 - `/_astro/`: Astro-generated scripts and styles.
 - `/assets/<hash>/...`: shared generated content assets.
 - `/assets/...` and `/docsassets/...`: preserved upstream docs assets when already present in the published branch.
 
-Older docs are not copied into new builds. They remain in `gh-pages` from previous publishes, and the selector links to those existing version folders or legacy external URLs.
+Older lines are not copied into new builds. They remain in `gh-pages` from previous publishes, and the selector links to those existing line folders or legacy external URLs.
 
 ### Guides Latest
 
@@ -413,8 +415,8 @@ When a legacy route is added, update the manifest and add or update one route mo
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
 | `https://micronaut.io/core/`                                                                  | Deferred until `/core/` routing is resumed                                                                        | Deferred until main-host Core routing is resumed     | Tracked here as a known legacy URL, but not implemented in this pass.      |
 | `/core/?q=bean`                                                                               | Deferred until `/core/` routing is resumed                                                                        | Deferred until main-host Core routing is resumed     | Query/hash preservation should be covered when this route is reintroduced. |
-| `https://docs.micronaut.io/latest/guide/`                                                     | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/`                                           | Remains Core docs on docs host                       | Production may serve this as canonical or alias.                           |
-| `https://docs.micronaut.io/latest/guide/index.html#ioc`                                       | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirect or alias to Core docs with the same section | Fragments require client redirect pages.                                   |
+| `https://docs.micronaut.io/latest/guide/`                                                     | `/micronaut-web/latest/guide/` redirects to `/micronaut-web/docs/core/`                                           | Redirects to Core docs on the newest published line  | Every `/latest/` page redirects onto the line it mirrors.                  |
+| `https://docs.micronaut.io/latest/guide/index.html#ioc`                                       | `/micronaut-web/latest/guide/index.html` redirects to `/micronaut-web/docs/core/#ioc` in client-capable redirects | Redirects to Core docs on the newest line, same section | Fragments require client redirect pages.                                |
 | `https://guides.micronaut.io/latest/index.html`                                               | `/micronaut-web/latest/index.html` redirects to `/micronaut-web/guides/`                                          | Redirects to `https://guides.micronaut.io/`          | Query strings are preserved.                                               |
 | `https://guides.micronaut.io/latest/tag-security.html`                                        | Redirects to the generated `/guides/` tag route when present, otherwise external production tag URL               | Redirects to the root-level guide tag                | Existing tag compatibility stays generated from guide metadata.            |
 | `https://guides.micronaut.io/latest/micronaut-http-client.html`                               | Redirects to slash-style generated `/guides/` overview when present, otherwise external production URL            | Redirects to the root-level guide overview           | Applies to guide overview `.html` pages.                                   |

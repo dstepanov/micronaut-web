@@ -9,7 +9,11 @@ import {
   mergeSharedSurfaceAssets,
   pruneUnusedHashedSurfaceAssets,
 } from "./shared/surface-assets.ts";
-import { buildDocsVersionOptions } from "./update-docs-version-manifest.ts";
+import {
+  buildDocsVersionOptions,
+  docsVersionLine,
+  isDocsVersionLine,
+} from "./update-docs-version-manifest.ts";
 import {
   resolveDeploymentSettings,
   type DeploymentSettings,
@@ -78,6 +82,7 @@ export async function publishDocsSurface({
     throw new Error("Expected --published-dir or PUBLISHED_DOCS_DIR.");
   }
   const publishVersion = sanitizeVersion(version);
+  const publishLine = docsVersionLine(publishVersion);
   await fs.mkdir(publishedDirectory, { recursive: true });
   const previousDeployment = await readDeploymentMetadata(publishedDirectory);
   const resolvedSurfaceUrls =
@@ -113,38 +118,29 @@ export async function publishDocsSurface({
     path.join(publishedDirectory, "index.html"),
   );
   await copyIfExists(
-    path.join(distDirectory, "latest.html"),
-    path.join(publishedDirectory, "latest.html"),
-  );
-  await copyIfExists(
     path.join(distDirectory, "CNAME"),
     path.join(publishedDirectory, "CNAME"),
   );
   await copyCrawlerFiles(distDirectory, publishedDirectory);
   await writeNoJekyll(publishedDirectory);
 
-  const versionSource = await docsRootSource(distDirectory, publishVersion);
+  const lineDirectory = path.join(publishedDirectory, publishLine);
   await replaceIfExists(
-    versionSource,
-    path.join(publishedDirectory, publishVersion),
+    await docsRootSource(distDirectory, publishLine),
+    lineDirectory,
   );
   await writeRedirect(
-    path.join(publishedDirectory, `${publishVersion}.html`),
-    withBase(base, `/${publishVersion}/`),
-    `Micronaut ${publishVersion} docs`,
+    path.join(publishedDirectory, `${publishLine}.html`),
+    withBase(base, `/${publishLine}/`),
+    `Micronaut ${publishLine} docs`,
   );
+  await redirectSupersededVersions(publishedDirectory, publishLine, base);
 
   if (latest) {
-    const latestDirectory = path.join(publishedDirectory, "latest");
-    await replaceIfExists(versionSource, latestDirectory);
-    await rewriteVersionRootToLatest(
-      latestDirectory,
-      currentDeployment.base,
-      publishVersion,
-    );
+    await writeLatestRedirects(publishedDirectory, publishLine, base);
     await writeRedirect(
       path.join(publishedDirectory, "latest.html"),
-      withBase(base, "/latest/"),
+      withBase(base, `/${publishLine}/`),
       "Micronaut latest docs",
     );
   }
@@ -160,17 +156,19 @@ export async function publishDocsSurface({
   await pruneUnreferencedAstroAssets(publishedDirectory);
 }
 
-async function docsRootSource(distDirectory: string, version: string) {
-  const versionDirectory = path.join(distDirectory, version);
-  if (await exists(versionDirectory)) {
-    return versionDirectory;
+async function docsRootSource(distDirectory: string, line: string) {
+  const lineDirectory = path.join(distDirectory, line);
+  if (await exists(lineDirectory)) {
+    return lineDirectory;
   }
+  // A local `npm run build:docs` roots the artifact at /latest instead of the
+  // line, so the fixture builds the deployment tests publish still resolve.
   const latestDirectory = path.join(distDirectory, "latest");
   if (await exists(latestDirectory)) {
     return latestDirectory;
   }
   throw new Error(
-    `Expected docs artifact to contain ${versionDirectory} or ${latestDirectory}.`,
+    `Expected docs artifact to contain ${lineDirectory} or ${latestDirectory}.`,
   );
 }
 
@@ -194,36 +192,91 @@ async function writeVersionsJson(
 }
 
 /**
- * The docs surface is built once, rooted at the version being published, and
- * that same tree is copied to `/latest`. Without this pass every link, canonical
- * URL, and redirect stub inside `/latest` points back at `/<version>/`, so
- * visitors who enter at `/latest/` are moved onto a version-pinned tree that the
- * next patch release deletes. Re-root the copy so `/latest` links to itself.
+ * `/latest` is never a copy of the docs: a reader who lands there is moved onto
+ * the current line, so the URL they bookmark, share, and see in search results
+ * is the versioned one. Mirroring the line's pages as redirect stubs keeps every
+ * historical `/latest/<page>/` link working instead of only `/latest/` itself.
  */
-async function rewriteVersionRootToLatest(
-  latestDirectory: string,
+async function writeLatestRedirects(
+  publishedDirectory: string,
+  line: string,
   base: string,
-  version: string,
 ) {
-  if (!(await exists(latestDirectory))) {
-    return;
-  }
-  const normalizedBase = normalizeBase(base);
-  const replacements: Array<[string, string]> = [
-    [`${normalizedBase}${version}/`, `${normalizedBase}latest/`],
-    [`${normalizedBase}${version}.html`, `${normalizedBase}latest.html`],
-  ];
-
-  for (const file of await listTextFiles(latestDirectory)) {
-    const source = await fs.readFile(file, "utf8");
-    const rewritten = replacements.reduce(
-      (value, [from, to]) => value.replaceAll(from, to),
-      source,
+  const lineDirectory = path.join(publishedDirectory, line);
+  const latestDirectory = path.join(publishedDirectory, "latest");
+  await fs.rm(latestDirectory, { force: true, recursive: true });
+  for (const file of await listHtmlFiles(lineDirectory)) {
+    const page = toPosixPath(path.relative(lineDirectory, file));
+    await writeRedirect(
+      path.join(latestDirectory, ...page.split("/")),
+      redirectDestination(await fs.readFile(file, "utf8")) ||
+        withBase(base, `/${line}/${page.replace(/(^|\/)index\.html$/, "$1")}`),
+      "the current Micronaut docs",
     );
-    if (rewritten !== source) {
-      await fs.writeFile(file, rewritten, "utf8");
-    }
   }
+}
+
+/**
+ * Pages in the line tree that are themselves redirects — `/{line}/guide/` is the
+ * historical Core alias — hand the mirror their own destination, so the most
+ * linked docs URL on the web costs one hop rather than two.
+ */
+function redirectDestination(html: string) {
+  return /<meta http-equiv="refresh" content="0;url=([^"]+)"/.exec(html)?.[1];
+}
+
+/**
+ * Docs used to be published under the exact release, so `/5.0.3/` trees are
+ * still out there and still linked. The line replaces them; leave a redirect
+ * where each one stood rather than deleting the URL.
+ */
+async function redirectSupersededVersions(
+  publishedDirectory: string,
+  line: string,
+  base: string,
+) {
+  const destination = withBase(base, `/${line}/`);
+  const entries = await fs.readdir(publishedDirectory, { withFileTypes: true });
+  for (const entry of entries) {
+    const isHtmlStub = entry.isFile() && entry.name.endsWith(".html");
+    if (!entry.isDirectory() && !isHtmlStub) {
+      continue;
+    }
+    const version = isHtmlStub
+      ? entry.name.slice(0, -".html".length)
+      : entry.name;
+    if (
+      isDocsVersionLine(version) ||
+      !isPublishedVersion(version) ||
+      docsVersionLine(version) !== line
+    ) {
+      continue;
+    }
+    const target = isHtmlStub
+      ? path.join(publishedDirectory, entry.name)
+      : path.join(publishedDirectory, entry.name, "index.html");
+    if (entry.isDirectory()) {
+      await fs.rm(path.join(publishedDirectory, entry.name), {
+        force: true,
+        recursive: true,
+      });
+    }
+    await writeRedirect(target, destination, `Micronaut ${line} docs`);
+  }
+}
+
+function isPublishedVersion(value: string) {
+  return /^\d+\.\d+(?:\.\d+)?(?:[-.][A-Za-z0-9]+)?$/.test(value);
+}
+
+async function listHtmlFiles(directory: string): Promise<string[]> {
+  return (await listTextFiles(directory)).filter((file) =>
+    file.endsWith(".html"),
+  );
+}
+
+function toPosixPath(value: string) {
+  return value.split(path.sep).join("/");
 }
 
 async function migratePublishedDeployment(

@@ -126,11 +126,6 @@ async function pruneDocs(
       withBase(base, joinUrlPath(root, "/core/")),
       "Micronaut Core docs",
     );
-    await writeRedirect(
-      path.join(temporaryDirectory, "latest", "guide", "index.html"),
-      withBase(base, "/latest/core/"),
-      "Micronaut latest docs",
-    );
     if (root !== "/") {
       await writeRedirect(
         path.join(temporaryDirectory, `${root.replace(/^\/+|\/+$/g, "")}.html`),

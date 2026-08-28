@@ -33,10 +33,15 @@ jobs:
         id: versions
         run: |
           set -euo pipefail
+          # A line folder is named /5.0.x, so the release it was built from only
+          # survives in versions.json. Legacy exact-version folders predate that
+          # and are still worth republishing onto their line.
           mapfile -t versions < <(
-            find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
-              | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
-              | sort -V
+            {
+              jq -r '.versions[].release // empty' published-docs/versions.json 2>/dev/null || true
+              find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+                | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true
+            } | sort -V -u
           )
 
           if [ "${#versions[@]}" -eq 0 ]; then
