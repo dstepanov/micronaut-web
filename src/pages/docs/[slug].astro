@@ -173,8 +173,9 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
           )
         }
         {
-          /* The "In this section" rail is xl-only, so below that the finest
-             jump available was a whole chapter. */
+          /* The sidebar rails are xl-only, so below that this disclosure is
+             the page's whole outline — every chapter with its subsections,
+             not just the first chapter's. */
           currentSectionLinks.length > 0 && (
             <details class="mb-6 rounded-lg border px-4 py-3 xl:hidden">
               <summary class="cursor-pointer text-sm font-medium">
@@ -182,22 +183,24 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
               </summary>
               <nav aria-label="On this page">
                 <ul class="mt-3 grid gap-0.5 text-sm">
-                  {currentSectionLinks
-                    .filter((section) => section.parentId === initialRootId)
-                    .map((section) => (
-                      <li>
-                        <a
-                          href={`#${section.id}`}
-                          class:list={[
-                            "block rounded-md px-2 py-1 text-muted-foreground no-underline hover:bg-accent hover:text-foreground",
-                            section.indent === 3 && "pl-5",
-                            section.indent >= 4 && "pl-8",
-                          ]}
-                        >
-                          {section.label}
-                        </a>
-                      </li>
-                    ))}
+                  {contentSections.map((section) => (
+                    <li>
+                      <a
+                        href={`#${section.id}`}
+                        class:list={[
+                          "block rounded-md px-2 py-1 no-underline hover:bg-accent hover:text-foreground",
+                          section.depth === 1
+                            ? "font-medium"
+                            : "text-muted-foreground",
+                          section.depth > 1 && section.indent <= 2 && "pl-4",
+                          section.indent === 3 && "pl-7",
+                          section.indent >= 4 && "pl-10",
+                        ]}
+                      >
+                        {section.label}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </nav>
             </details>
@@ -267,6 +270,27 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
             </>
           )
         }
+        {
+          /* The floating pair is sm-and-up only, so after a long chapter a
+             phone reader gets the references again without scrolling back. */
+        }
+        <nav
+          aria-label="Reference documentation"
+          class="mt-8 flex flex-wrap gap-2 sm:hidden"
+        >
+          {
+            referenceLinks.map((reference) => (
+              <a
+                href={reference.href}
+                target="_blank"
+                rel="noreferrer"
+                class:list={buttonVariants({ size: "sm", variant: "outline" })}
+              >
+                {reference.label}
+              </a>
+            ))
+          }
+        </nav>
       </div>
       {
         /* One grid child, so both rails stay in the side column: a second

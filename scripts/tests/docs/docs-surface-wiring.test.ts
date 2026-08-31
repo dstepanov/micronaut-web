@@ -558,9 +558,14 @@ test("docs routes render generated fragments and serve generated assets", async 
     /currentSectionLinks = contentSections\.filter\(\s*\(section\) => section\.depth > 1 && section\.parentId,?\s*\)/,
   );
   assert.match(docsSidebarContentSource, /data-docs-project-section-link/);
+  // The mobile "On this page" outline lists every section but stays out of
+  // the scroll spy; only the rails' links participate.
+  const mobileOutline =
+    /<details[\s\S]*?<\/details>/.exec(docsPageSource)?.[0] || "";
+  assert.match(mobileOutline, /contentSections\.map\(\(section\) => \(/);
   assert.doesNotMatch(
-    docsPageSource,
-    /contentSections\.map\(\(section\) => \([\s\S]*?data-docs-scroll-link/,
+    mobileOutline,
+    /data-docs-scroll-link|data-docs-current-section-link/,
   );
   assert.doesNotMatch(docsPageSource, /data-docs-section-depth/);
   assert.match(docsVersionSelectorSource, /data-docs-version-selector/);
