@@ -13,6 +13,14 @@ const empty = root?.querySelector<HTMLElement>(
 const modules = Array.from(
   root?.querySelectorAll<HTMLElement>("[data-docs-configuration-module]") || [],
 );
+const moduleLinks = new Map(
+  Array.from(
+    root?.querySelectorAll<HTMLAnchorElement>(
+      "[data-docs-configuration-module-link]",
+    ) || [],
+    (link) => [link.hash.slice(1), link],
+  ),
+);
 
 input?.addEventListener("input", () => {
   const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -29,6 +37,10 @@ input?.addEventListener("input", () => {
       }
     }
     module.hidden = moduleMatches === 0;
+    const link = moduleLinks.get(module.id);
+    if (link) {
+      link.hidden = module.hidden;
+    }
     visibleProperties += moduleMatches;
     if (moduleMatches > 0) {
       visibleModules += 1;
