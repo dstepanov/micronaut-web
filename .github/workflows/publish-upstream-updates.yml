@@ -42,13 +42,15 @@ jobs:
         id: pending
         run: |
           set -euo pipefail
+          # Docs are published per release line, so the release each line was
+          # built from only survives in the versions.json manifest.
           mapfile -t published < <(
-            find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+            jq -r '.versions[].release // empty' published-docs/versions.json \
               | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
               | sort -V
           )
           if [ "${#published[@]}" -eq 0 ]; then
-            echo "::error::No published docs versions were found in ${TARGET_REPOSITORY}:${TARGET_BRANCH}; publish a baseline version first."
+            echo "::error::No published docs releases were recorded in versions.json on ${TARGET_REPOSITORY}:${TARGET_BRANCH}; publish a baseline version first."
             exit 1
           fi
           newest_published="${published[-1]}"
