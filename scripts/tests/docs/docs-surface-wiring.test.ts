@@ -459,9 +459,9 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsPageSource, /set:html=\{generatedDocHtml\}/);
   assert.doesNotMatch(docsPageSource, /generatedDocHtmlParts/);
   assert.ok(
-    docsPageSource.indexOf("set:html={generatedDocHtml}") <
-      docsPageSource.indexOf("<DocsRelatedGuides"),
-    "related guides render after the generated chapter",
+    docsPageSource.indexOf("<DocsRelatedGuides") <
+      docsPageSource.indexOf("set:html={generatedDocHtml}"),
+    "related guides lead the content column ahead of the generated chapter",
   );
   assert.match(docsPageSource, /@\/scripts\/generated-docs-hash-aligner/);
   assert.doesNotMatch(docsPageSource, /generatedDocsHashAlignerUrl|\?url/);

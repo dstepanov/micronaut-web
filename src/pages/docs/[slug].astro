@@ -32,6 +32,7 @@ import {
   extractGeneratedDocSections,
 } from "@/lib/generated-docs-html";
 import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
+import { projectReferenceLinks } from "../../../scripts/docs/search-index.ts";
 import "@/styles/generated-docs-content.css";
 
 export async function getStaticPaths() {
@@ -107,22 +108,7 @@ const initialCurrentSectionIndexHidden =
 const relatedGuideTopicAliases = project.guideTopicAliases || [];
 const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
 const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
-/**
- * Every module publishes its API and configuration references next to the
- * guide the catalog already records, so both corner links derive from
- * `publishedGuideUrl` rather than being catalogued per project.
- */
-const referenceLinks = [
-  {
-    label: "API Reference",
-    href: new URL("../api/", project.publishedGuideUrl).href,
-  },
-  {
-    label: "Configuration Reference",
-    href: new URL("configurationreference.html", project.publishedGuideUrl)
-      .href,
-  },
-];
+const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
 ---
 
 <WebLayout
@@ -218,6 +204,19 @@ const referenceLinks = [
           )
         }
         {
+          /* Ahead of the chapter, in the content column: collapsed it is one
+             disclosure row, and the side rail is too narrow for the card grid
+             while the end of these very long chapters is never reached. */
+          shouldRenderRelatedGuides && (
+            <aside aria-label="Latest guides">
+              <DocsRelatedGuides
+                manifestUrl={guidesManifestUrl}
+                topicAliases={relatedGuideTopicAliases}
+              />
+            </aside>
+          )
+        }
+        {
           generatedDocHtml ? (
             <>
               <div
@@ -275,21 +274,6 @@ const referenceLinks = [
           and overlap the prose. */
       }
       <div class="min-w-0">
-        {
-          /* The related-guides accordion lives here rather than in the prose:
-             it used to sit between the chapter title and its first paragraph,
-             and putting it after the content buried it — these pages run to
-             hundreds of thousands of pixels, so it would never be seen, or even
-             lazily loaded. Below xl this column stacks after the article. */
-          shouldRenderRelatedGuides && (
-            <aside class="mt-8 xl:mt-0 xl:pr-6" aria-label="Latest guides">
-              <DocsRelatedGuides
-                manifestUrl={guidesManifestUrl}
-                topicAliases={relatedGuideTopicAliases}
-              />
-            </aside>
-          )
-        }
         {
           currentSectionLinks.length > 0 && (
             <aside
