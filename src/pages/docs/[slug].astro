@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import WebLayout from "@/layouts/WebLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -106,6 +107,22 @@ const initialCurrentSectionIndexHidden =
 const relatedGuideTopicAliases = project.guideTopicAliases || [];
 const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
 const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
+/**
+ * Every module publishes its API and configuration references next to the
+ * guide the catalog already records, so both corner links derive from
+ * `publishedGuideUrl` rather than being catalogued per project.
+ */
+const referenceLinks = [
+  {
+    label: "API Reference",
+    href: new URL("../api/", project.publishedGuideUrl).href,
+  },
+  {
+    label: "Configuration Reference",
+    href: new URL("configurationreference.html", project.publishedGuideUrl)
+      .href,
+  },
+];
 ---
 
 <WebLayout
@@ -128,6 +145,27 @@ const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
       ]}
     >
       <div class:list={["min-w-0", !generatedDocHtml && "xl:px-14"]}>
+        {
+          /* The corner links float only where they don't cover content, so on
+             small screens the same pair opens the page instead. */
+        }
+        <nav
+          aria-label="Reference documentation"
+          class="mb-6 flex flex-wrap gap-2 sm:hidden"
+        >
+          {
+            referenceLinks.map((reference) => (
+              <a
+                href={reference.href}
+                target="_blank"
+                rel="noreferrer"
+                class:list={buttonVariants({ size: "sm", variant: "outline" })}
+              >
+                {reference.label}
+              </a>
+            ))
+          }
+        </nav>
         {
           !generatedDocHtml && (
             <header id={`${project.slug}-docs`} class="mb-7 scroll-mt-24">
@@ -289,6 +327,30 @@ const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
         }
       </div>
     </article>
+    {
+      /* The old docs floated both references in the lower-right corner of
+         every module guide. */
+    }
+    <nav
+      aria-label="Reference documentation"
+      class="fixed right-4 bottom-4 z-40 hidden gap-2 sm:flex print:hidden"
+    >
+      {
+        referenceLinks.map((reference) => (
+          <a
+            href={reference.href}
+            target="_blank"
+            rel="noreferrer"
+            class:list={[
+              buttonVariants({ size: "sm", variant: "outline" }),
+              "shadow-md",
+            ]}
+          >
+            {reference.label}
+          </a>
+        ))
+      }
+    </nav>
   </DocsShell>
 </WebLayout>
 
