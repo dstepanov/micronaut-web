@@ -18,7 +18,7 @@ import java.util.List;
 record Book(@Id @GeneratedValue Long id, String title, int pages) {
 }
 
-@JdbcRepository(dialect = Dialect.POSTGRES)
+@JdbcRepository(dialect = Dialect.MYSQL)
 interface BookRepository extends CrudRepository<Book, Long> {
 
     List<Book> findByPagesGreaterThan(int pages);
@@ -38,7 +38,7 @@ data class Book(
     val pages: Int,
 )
 
-@JdbcRepository(dialect = Dialect.POSTGRES)
+@JdbcRepository(dialect = Dialect.MYSQL)
 interface BookRepository : CrudRepository<Book, Long> {
 
     fun findByPagesGreaterThan(pages: Int): List<Book>
@@ -60,7 +60,7 @@ class Book {
     int pages
 }
 
-@JdbcRepository(dialect = Dialect.POSTGRES)
+@JdbcRepository(dialect = Dialect.MYSQL)
 interface BookRepository extends CrudRepository<Book, Long> {
 
     List<Book> findByPagesGreaterThan(int pages)
