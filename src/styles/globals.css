@@ -645,7 +645,7 @@
   }
 
   .docs-related-guides {
-    @apply my-8;
+    @apply mb-8;
   }
 
   .docs-related-guides-disclosure {
