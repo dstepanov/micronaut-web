@@ -11,8 +11,27 @@ export interface SearchProject {
   repositoryUrl?: string;
   shortDescription?: string;
   longDescription?: string;
+  publishedGuideUrl?: string;
   searchTerms?: string[];
   sections?: SearchSection[];
+}
+
+/**
+ * Every module publishes its API and configuration references next to the
+ * guide the catalog records, so both links derive from `publishedGuideUrl`.
+ * Shared by the docs pages' corner links and the search index.
+ */
+export function projectReferenceLinks(publishedGuideUrl: string) {
+  return [
+    {
+      label: "API Reference",
+      href: new URL("../api/", publishedGuideUrl).href,
+    },
+    {
+      label: "Configuration Reference",
+      href: new URL("configurationreference.html", publishedGuideUrl).href,
+    },
+  ];
 }
 
 interface SearchSection {
@@ -38,6 +57,18 @@ export function buildDocsSearchIndex(
 ): SearchItem[] {
   const items: SearchItem[] = [];
   const seen = new Set<string>();
+
+  pushItem(items, seen, {
+    kind: "Docs",
+    title: "Configuration Reference",
+    description:
+      "Every documented configuration property across Micronaut modules, unified into one searchable reference.",
+    href: "/docs/configuration-reference/",
+    terms:
+      "configuration reference properties settings options unified all modules",
+    scope: "Docs",
+    weight: 2,
+  });
 
   for (const project of projects) {
     pushItem(items, seen, {
@@ -99,6 +130,32 @@ export function buildDocsSearchIndex(
           .join(" "),
         scope: "Repos",
       });
+    }
+
+    if (project.publishedGuideUrl) {
+      for (const reference of projectReferenceLinks(
+        project.publishedGuideUrl,
+      )) {
+        pushItem(items, seen, {
+          kind: "Docs",
+          title: `${project.displayName}: ${reference.label}`,
+          description:
+            reference.label === "API Reference"
+              ? `Published API documentation for ${project.displayName}.`
+              : `Published configuration reference for ${project.displayName}.`,
+          href: reference.href,
+          terms: [
+            project.displayName,
+            project.projectKey,
+            project.module,
+            reference.label,
+            "javadoc api configuration reference",
+          ]
+            .filter(Boolean)
+            .join(" "),
+          scope: "Docs",
+        });
+      }
     }
 
     const generatedItems = extractGeneratedDocSearchItems(
@@ -199,7 +256,8 @@ function extractPropertyItems(
       title: property,
       description:
         details.join(" - ") || `${project.displayName} configuration property.`,
-      href: `${project.href || `/docs/${project.slug}/`}#${project.slug}-configuration`,
+      // The unified reference guarantees this anchor; the module page does not.
+      href: `/docs/configuration-reference/#${project.slug}-configuration-reference`,
       terms: [
         project.displayName,
         project.projectKey,
@@ -288,8 +346,15 @@ function looksLikeClassName(value: string): boolean {
   );
 }
 
+/**
+ * Configuration keys are lowercase kebab-case segments joined by dots, e.g.
+ * `micronaut.server.cors.configurations.*.allowed-origins`. Case-sensitive
+ * and dot-required on purpose: the guides' tables also list Java class names
+ * (`java.util.Optional`), camelCase examples (`myApp.myStuff`), and CLI
+ * commands (`create-app`), none of which are properties.
+ */
 function isConfigurationPropertyName(value: string): boolean {
-  return /^[a-z][a-z0-9]*(?:[.\-][a-z0-9*[\]-]+)+$/i.test(
+  return /^[a-z][a-z0-9-]*(?:\.[a-z0-9*[\]-]+)+$/.test(
     String(value || "").trim(),
   );
 }
