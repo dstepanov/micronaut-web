@@ -114,7 +114,7 @@ export function DocsSidebarMobileSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         {/* Labelled: stacked under the site's own hamburger, two bare icons
-            gave no clue which one opened the chapter list. */}
+            gave no clue which one opened the docs navigation. */}
         <Button
           type="button"
           variant="ghost"
@@ -123,7 +123,7 @@ export function DocsSidebarMobileSheet({
           aria-label="Open docs navigation"
         >
           <PanelLeftIcon />
-          <span className="text-xs font-medium">Chapters</span>
+          <span className="text-xs font-medium">Docs</span>
         </Button>
       </SheetTrigger>
       <SheetContent

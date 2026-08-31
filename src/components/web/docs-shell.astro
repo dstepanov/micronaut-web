@@ -69,8 +69,10 @@ const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
         class="sticky top-14 z-30 flex h-11 items-center border-b bg-background/95 px-4 backdrop-blur md:hidden"
       >
         {
-          /* Labelled: this sits directly under the site's own hamburger, and two
-            bare icons gave no clue which one opened the chapter list. */
+          /* Labelled: this sits directly under the site's own hamburger, and
+            two bare icons gave no clue which one opened the docs navigation.
+            "Docs", because the drawer holds the whole docs catalog, not just
+            this page's chapters. */
         }
         <button
           type="button"
@@ -79,7 +81,7 @@ const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
           aria-label="Open docs navigation"
         >
           <span aria-hidden="true">☰</span>
-          Chapters
+          Docs
         </button>
         <dialog
           class="m-0 h-full w-[calc(100vw-1rem)] max-w-sm border-0 bg-sidebar p-0 text-sidebar-foreground shadow-xl backdrop:bg-black/50"
