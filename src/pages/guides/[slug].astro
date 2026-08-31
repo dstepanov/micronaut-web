@@ -161,14 +161,6 @@ if (props.kind === "variant") {
   );
 }
 
-const initialGuideRootId =
-  guideSectionLinks[0]?.id || currentGuideSectionLinks[0]?.rootId;
-const initialGuideSectionIndexHidden =
-  !initialGuideRootId ||
-  currentGuideSectionLinks.every(
-    (section) => section.rootId !== initialGuideRootId,
-  );
-
 function extractSections(html: string) {
   const found: Array<{ id: string; label: string; depth: number }> = [];
   const pattern = /<h([2-6]) id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g;
@@ -461,7 +453,6 @@ function buildGuidePageIndexSections(
             class="hidden min-w-0 lg:block"
             aria-label="In this section"
             data-guide-page-index
-            hidden={initialGuideSectionIndexHidden}
           >
             <div
               class="sticky top-[calc(var(--topbar-height)+24px)] max-h-[calc(100vh-var(--topbar-height)-48px)] overflow-y-auto pb-7 pr-6 font-[var(--shell-font)] [scrollbar-width:thin]"
@@ -484,24 +475,31 @@ function buildGuidePageIndexSections(
                 aria-label="Current guide sections"
                 data-guide-page-index-nav
               >
-                {currentGuideSectionLinks.map((section) => (
-                  <a
-                    href={`#${section.id}`}
-                    aria-label={section.label}
-                    class:list={[
-                      "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
-                      section.level === 1 && "pl-2",
-                      section.level === 2 && "pl-3.5",
-                      section.level >= 3 && "pl-5",
-                    ]}
-                    data-guide-page-index-link
-                    data-root-id={section.rootId}
-                    data-section-id={section.id}
-                    hidden={section.rootId !== initialGuideRootId}
-                  >
-                    {section.label}
-                  </a>
-                ))}
+                {
+                  /* The whole outline, not just the active root's subsections:
+                     limited to one root, the panel read as the entire guide. */
+                  pageIndexSections.map((section) => (
+                    <a
+                      href={`#${section.id}`}
+                      aria-label={section.label}
+                      class:list={[
+                        "relative block min-w-0 rounded-md py-1 pr-2 text-[0.78rem] leading-[1.4] break-words no-underline hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:text-accent-foreground [&.active]:font-medium [&.active]:text-foreground [&.active]:before:absolute [&.active]:before:bottom-[7px] [&.active]:before:left-[-11px] [&.active]:before:top-[7px] [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-brand [&.active]:before:content-['']",
+                        section.level === 0
+                          ? "font-medium text-foreground/90"
+                          : "text-muted-foreground",
+                        section.level === 0 && "pl-2",
+                        section.level === 1 && "pl-3.5",
+                        section.level === 2 && "pl-5",
+                        section.level >= 3 && "pl-[1.625rem]",
+                      ]}
+                      data-guide-page-index-link
+                      data-root-id={section.rootId}
+                      data-section-id={section.id}
+                    >
+                      {section.label}
+                    </a>
+                  ))
+                }
               </nav>
             </div>
           </aside>
