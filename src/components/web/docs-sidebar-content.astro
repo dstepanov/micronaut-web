@@ -228,3 +228,30 @@ function docsCatalogProjectsByCategory(
     })
   }
 </div>
+{/* Pinned below the scrolling project list, so it stays reachable anywhere. */}
+<div
+  data-slot="sidebar-footer"
+  data-sidebar="footer"
+  class="border-t border-sidebar-border p-2"
+>
+  <a
+    href={withBasePath("/docs/configuration-reference/")}
+    data-slot="sidebar-menu-button"
+    data-sidebar="menu-button"
+    data-active={activeSlug === "configuration-reference" ? "true" : "false"}
+    aria-current={activeSlug === "configuration-reference" ? "page" : undefined}
+    title="Configuration Reference"
+    class="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-[0.85rem] leading-[1.19rem] ring-sidebar-ring outline-hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2!"
+  >
+    <IconGlyph
+      name="sliders-horizontal"
+      className="size-4 shrink-0"
+      themeTreatment="monochrome"
+    />
+    <span
+      class="whitespace-normal break-words group-data-[collapsible=icon]:sr-only"
+    >
+      Configuration Reference
+    </span>
+  </a>
+</div>

@@ -1,0 +1,160 @@
+---
+import { readFile, readdir } from "node:fs/promises";
+import { basename, join } from "node:path";
+
+import WebLayout from "@/layouts/WebLayout.astro";
+import DocsShell from "@/components/web/docs-shell.astro";
+import { canonicalSurfaceUrl, withBasePath } from "@/lib/base-path";
+import { loadDocsProjectCatalog } from "@/lib/docs-project-catalog";
+import { extractConfigurationPropertyRows } from "../../../scripts/docs/search-index.ts";
+
+const generatedDocsDirectory = join(
+  process.cwd(),
+  "src",
+  "content",
+  "generated-docs",
+);
+
+const docsProjectCatalog = await loadDocsProjectCatalog();
+const generatedHtmlBySlug = await readGeneratedDocsHtml();
+const modules = docsProjectCatalog.projects.flatMap((project) => {
+  const rows = extractConfigurationPropertyRows(
+    generatedHtmlBySlug[project.slug] || "",
+  );
+  return rows.length ? [{ project, rows }] : [];
+});
+const propertyCount = modules.reduce(
+  (total, { rows }) => total + rows.length,
+  0,
+);
+const modulesLabel = `${modules.length} ${modules.length === 1 ? "module" : "modules"}`;
+const canonicalUrl = canonicalSurfaceUrl(
+  "docs",
+  "/docs/configuration-reference/",
+);
+
+async function readGeneratedDocsHtml() {
+  try {
+    const files = (await readdir(generatedDocsDirectory)).filter((file) =>
+      file.endsWith(".html"),
+    );
+    const entries = await Promise.all(
+      files.map(async (file) => [
+        basename(file, ".html"),
+        await readFile(join(generatedDocsDirectory, file), "utf8"),
+      ]),
+    );
+    return Object.fromEntries(entries) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+---
+
+<WebLayout
+  title="Configuration Reference"
+  description="Every documented configuration property across Micronaut modules, unified into one searchable reference."
+  surface="docs"
+  canonicalUrl={canonicalUrl}
+>
+  <DocsShell
+    projectCatalog={docsProjectCatalog}
+    activeSlug="configuration-reference"
+  >
+    <section
+      class="mx-auto grid w-full max-w-[1100px] gap-6 px-5 py-7 md:px-6"
+      data-docs-configuration-reference
+    >
+      <header>
+        <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
+          Configuration Reference
+        </h1>
+        <p class="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+          Every documented configuration property across Micronaut modules,
+          unified into one searchable reference. Each module heading links to
+          its full documentation.
+        </p>
+      </header>
+      <div class="grid gap-2">
+        <label class="sr-only" for="docs-configuration-filter">
+          Filter configuration properties
+        </label>
+        <input
+          id="docs-configuration-filter"
+          type="search"
+          placeholder="Filter properties, e.g. micronaut.server"
+          autocomplete="off"
+          data-docs-configuration-filter
+          class="h-10 w-full max-w-xl rounded-md border bg-background px-3 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        />
+        <p
+          class="text-sm text-muted-foreground"
+          data-docs-configuration-count
+          data-docs-configuration-total={propertyCount}
+        >
+          {propertyCount} properties across {modulesLabel}
+        </p>
+      </div>
+      {
+        modules.map(({ project, rows }) => (
+          <section
+            class="min-w-0 scroll-mt-24"
+            id={`${project.slug}-configuration-reference`}
+            data-docs-configuration-module
+          >
+            <h2 class="mb-2 text-xl font-semibold tracking-tight">
+              <a
+                href={withBasePath(`/docs/${project.slug}/`)}
+                class="no-underline hover:underline"
+              >
+                {project.displayName}
+              </a>
+            </h2>
+            <div class="overflow-x-auto rounded-lg border">
+              <table class="w-full border-collapse text-sm">
+                <thead>
+                  <tr class="border-b bg-muted/50 text-left">
+                    <th class="px-3 py-2 font-medium">Property</th>
+                    <th class="px-3 py-2 font-medium">Type</th>
+                    <th class="px-3 py-2 font-medium">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(({ property, details }) => (
+                    <tr
+                      class="border-b align-top last:border-b-0"
+                      data-terms={[property, ...details, project.displayName]
+                        .join(" ")
+                        .toLowerCase()}
+                    >
+                      <td class="px-3 py-2">
+                        <code class="break-all text-[0.8rem]">{property}</code>
+                      </td>
+                      <td class="px-3 py-2 whitespace-nowrap text-muted-foreground">
+                        {details[0]}
+                      </td>
+                      <td class="px-3 py-2 text-muted-foreground">
+                        {details.slice(1).join(" — ")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ))
+      }
+      <p
+        class="text-sm text-muted-foreground"
+        data-docs-configuration-empty
+        hidden
+      >
+        No properties match this filter.
+      </p>
+    </section>
+  </DocsShell>
+</WebLayout>
+
+<script>
+  import "@/scripts/docs-configuration-reference";
+</script>
