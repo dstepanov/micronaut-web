@@ -186,7 +186,11 @@ export function SearchDialog({
   const docs = useMemo(
     () =>
       rankSearchItems(
-        items.filter((item) => item.href.startsWith("/docs/")),
+        // References live on the modules' own published sites, so they are
+        // the one external kind the "Docs and APIs" group carries.
+        items.filter(
+          (item) => item.href.startsWith("/docs/") || item.kind === "Reference",
+        ),
         searchQuery,
       ).slice(0, 40),
     [items, searchQuery],

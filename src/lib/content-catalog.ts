@@ -4,6 +4,7 @@ import {
   type GeneratedGuide,
 } from "./generated-guide-routing.ts";
 import { docsRoot } from "./deployment-config.ts";
+import { projectReferenceLinks } from "../../scripts/docs/search-index.ts";
 
 export type CatalogCategory = {
   slug: string;
@@ -73,6 +74,7 @@ export type SearchItem = {
     | "Docs"
     | "Property"
     | "Class"
+    | "Reference"
     | "Repo";
   title: string;
   description: string;
@@ -152,7 +154,37 @@ export function searchItems({
     href: post.href,
     terms: [post.title, post.description, ...post.topics].join(" "),
   }));
-  return [...projectItems, ...sectionItems, ...postItems];
+  const referenceItems: SearchItem[] = [
+    {
+      kind: "Docs",
+      title: "Configuration Reference",
+      description:
+        "Every documented configuration property across Micronaut modules, unified into one searchable reference.",
+      href: "/docs/configuration-reference/",
+      terms:
+        "configuration reference properties settings options unified all modules",
+    },
+    ...projects.flatMap((project) =>
+      projectReferenceLinks(project.publishedGuideUrl).map(
+        (reference): SearchItem => ({
+          kind: "Reference",
+          title: `${project.displayName}: ${reference.label}`,
+          description:
+            reference.label === "API Reference"
+              ? `Published API documentation for ${project.displayName}.`
+              : `Published configuration reference for ${project.displayName}.`,
+          href: reference.href,
+          terms: [
+            project.displayName,
+            project.projectKey,
+            reference.label,
+            "javadoc api configuration reference",
+          ].join(" "),
+        }),
+      ),
+    ),
+  ];
+  return [...projectItems, ...sectionItems, ...postItems, ...referenceItems];
 }
 
 /**
