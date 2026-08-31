@@ -1,0 +1,4 @@
+interface:
+  display_name: "Micronaut Release Blog"
+  short_description: "Write a Micronaut release announcement"
+  default_prompt: "Use $micronaut-release-blog to turn a GitHub release URL into a Micronaut blog post."
