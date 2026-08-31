@@ -161,11 +161,14 @@ function extractHeadingItems(
   return items;
 }
 
-function extractPropertyItems(
-  project: SearchProject,
+/**
+ * Table rows of a generated module guide whose first cell reads as a
+ * configuration property name, e.g. `micronaut.server.port`.
+ */
+export function extractConfigurationPropertyRows(
   html: string,
-): SearchItem[] {
-  const items: SearchItem[] = [];
+): { property: string; details: string[] }[] {
+  const rows: { property: string; details: string[] }[] = [];
   const rowPattern = /<tr\b[^>]*>([\s\S]*?)<\/tr>/g;
 
   for (const match of html.matchAll(rowPattern)) {
@@ -180,21 +183,35 @@ function extractPropertyItems(
     if (!isConfigurationPropertyName(property)) {
       continue;
     }
-    items.push({
+    rows.push({ property, details: cells.slice(1).filter(Boolean) });
+  }
+
+  return rows;
+}
+
+function extractPropertyItems(
+  project: SearchProject,
+  html: string,
+): SearchItem[] {
+  return extractConfigurationPropertyRows(html).map(
+    ({ property, details }) => ({
       kind: "Property",
       title: property,
       description:
-        cells.slice(1).filter(Boolean).join(" - ") ||
-        `${project.displayName} configuration property.`,
+        details.join(" - ") || `${project.displayName} configuration property.`,
       href: `${project.href || `/docs/${project.slug}/`}#${project.slug}-configuration`,
-      terms: [project.displayName, project.projectKey, project.module, ...cells]
+      terms: [
+        project.displayName,
+        project.projectKey,
+        project.module,
+        property,
+        ...details,
+      ]
         .filter(Boolean)
         .join(" "),
       scope: "Properties",
-    });
-  }
-
-  return items;
+    }),
+  );
 }
 
 function extractClassItems(project: SearchProject, html: string): SearchItem[] {
