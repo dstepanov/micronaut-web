@@ -644,6 +644,90 @@
     @apply flex h-full w-full flex-col;
   }
 
+  .docs-related-guides {
+    @apply my-8;
+  }
+
+  .docs-related-guides-disclosure {
+    @apply rounded-lg border bg-card/40;
+  }
+
+  .docs-related-guides-summary {
+    @apply flex cursor-pointer list-none items-center gap-2 rounded-lg px-4 py-3 outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden;
+  }
+
+  .docs-related-guides-marker {
+    @apply size-4 shrink-0 text-muted-foreground transition-transform;
+  }
+
+  .docs-related-guides-disclosure[open] .docs-related-guides-marker {
+    @apply rotate-90;
+  }
+
+  .docs-related-guides-heading {
+    @apply text-lg font-semibold tracking-normal;
+  }
+
+  .docs-related-guides-grid {
+    @apply grid gap-4 px-4 pb-4 lg:grid-cols-3;
+  }
+
+  .docs-related-guide-item {
+    @apply grid h-full grid-rows-[1fr_auto] gap-3;
+  }
+
+  .docs-related-guides-more-row {
+    @apply flex min-h-8 items-center lg:justify-end;
+  }
+
+  .docs-related-guides-more-button {
+    @apply !h-auto !justify-start !px-0;
+  }
+
+  .docs-related-guides-icon {
+    @apply size-4;
+  }
+
+  .docs-related-guides-spacer {
+    @apply hidden min-h-8 lg:block;
+  }
+
+  .docs-related-guide-card {
+    @apply h-full !rounded-lg;
+  }
+
+  .docs-related-guide-skeleton-badges {
+    @apply flex gap-2;
+  }
+
+  .docs-related-guide-skeleton-badge-primary {
+    @apply h-6 w-24 !rounded-full;
+  }
+
+  .docs-related-guide-skeleton-badge-secondary {
+    @apply h-6 w-16 !rounded-full;
+  }
+
+  .docs-related-guide-skeleton-title {
+    @apply h-6 w-4/5;
+  }
+
+  .docs-related-guide-skeleton-description {
+    @apply grid gap-2;
+  }
+
+  .docs-related-guide-skeleton-line-full {
+    @apply h-4 w-full;
+  }
+
+  .docs-related-guide-skeleton-line-short {
+    @apply h-4 w-5/6;
+  }
+
+  .docs-related-guide-skeleton-meta {
+    @apply h-5 w-36;
+  }
+
   .docs-related-guide-skeleton-button {
     @apply h-8 w-28;
   }
