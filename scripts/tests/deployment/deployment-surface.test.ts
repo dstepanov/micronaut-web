@@ -641,6 +641,8 @@ test("docs and guides workflows branch-deploy to configured target repositories"
     assert.doesNotMatch(workflow, /run: npm run check/);
   }
   assert.match(docsWorkflow, /MICRONAUT_DOCS_CUSTOM_DOMAIN/);
+  assert.match(docsWorkflow, /Ensure docs Pages custom domain/);
+  assert.match(docsWorkflow, /gh api --method PUT .*pages/);
   assert.match(guidesWorkflow, /MICRONAUT_GUIDES_CUSTOM_DOMAIN/);
   assert.match(docsWorkflow, /--base "\$ASTRO_BASE"/);
   assert.doesNotMatch(docsWorkflow, /ASTRO_BASE:\s*\/micronaut-docs-v2\//);
