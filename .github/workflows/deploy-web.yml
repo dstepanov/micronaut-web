@@ -40,7 +40,7 @@ jobs:
           CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
         run: |
           repo_name="${GITHUB_REPOSITORY#*/}"
-          if [ "$repo_name" = "${GITHUB_REPOSITORY_OWNER}.github.io" ]; then
+          if [ "$repo_name" = "${GITHUB_REPOSITORY_OWNER}.github.io" ] || [ -f public/CNAME ]; then
             echo "ASTRO_BASE=/" >> "$GITHUB_ENV"
           else
             echo "ASTRO_BASE=/$repo_name/" >> "$GITHUB_ENV"
@@ -49,6 +49,10 @@ jobs:
           github_pages_origin="${CONFIGURED_GITHUB_PAGES_ORIGIN:-$default_github_pages_origin}"
           echo "DEFAULT_GITHUB_PAGES_ORIGIN=$default_github_pages_origin" >> "$GITHUB_ENV"
           echo "MICRONAUT_GITHUB_PAGES_ORIGIN=$github_pages_origin" >> "$GITHUB_ENV"
+          if [ -f public/CNAME ]; then
+            custom_domain="$(tr -d '[:space:]' < public/CNAME)"
+            echo "MICRONAUT_MAIN_SITE_URL=https://$custom_domain/" >> "$GITHUB_ENV"
+          fi
 
       - name: Build web
         env:
