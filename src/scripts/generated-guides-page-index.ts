@@ -3,8 +3,8 @@ import { enhanceSectionPageIndex } from "./section-page-index";
 const initGeneratedGuidesPageIndex = () => {
   enhanceSectionPageIndex({
     activeClassName: "active",
-    currentContainerSelector: "[data-guide-page-index]",
-    currentLinkSelector: "[data-guide-page-index-link]",
+    // No currentLinkSelector: the panel keeps the whole outline visible
+    // instead of collapsing to the active root's subsections.
     linkSelector: "[data-guide-page-index-link], [data-guide-section-link]",
     mutationSelector:
       "[data-guide-page-index], [data-guide-page-index-link], [data-guide-section-link]",

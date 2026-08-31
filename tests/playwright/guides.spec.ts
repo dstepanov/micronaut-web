@@ -382,8 +382,10 @@ test("guide overview redirects to the preferred variant and exposes variant navi
     guideHrefPattern("micronaut-http-client-maven-groovy.html"),
   );
 
+  // The panel holds the guide's whole outline — roots and subsections alike,
+  // all visible regardless of the reader's position.
   const guidePageIndex = page.locator('aside[aria-label="In this section"]');
-  await expect(guidePageIndex).toBeHidden();
+  await expect(guidePageIndex).toBeVisible();
   for (const rootLabel of [
     "Getting Started",
     "Writing the Application",
@@ -393,13 +395,9 @@ test("guide overview redirects to the preferred variant and exposes variant navi
       guidePageIndex
         .locator("[data-guide-page-index-link]")
         .getByText(rootLabel, { exact: true }),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
   }
-
-  await scrollToGeneratedHeading(page, "Writing the Application");
-  await expect(guidePageIndex).toBeVisible();
   const dependencyLink = guidePageIndex.getByRole("link", {
-    includeHidden: true,
     name: "Dependency",
   });
   await expect(dependencyLink).toHaveCount(1);
@@ -408,14 +406,12 @@ test("guide overview redirects to the preferred variant and exposes variant navi
     guidePageIndex.getByRole("link", { name: "JSON Codec Configuration" }),
   ).toBeVisible();
   const configurationParametersLink = guidePageIndex.getByRole("link", {
-    includeHidden: true,
     name: "Configuration Parameters",
   });
   await expect(configurationParametersLink).toHaveCount(1);
-  await expect(configurationParametersLink).toBeHidden();
+  await expect(configurationParametersLink).toBeVisible();
 
   const controllerLink = guidePageIndex.getByRole("link", {
-    includeHidden: true,
     name: "Controller",
   });
   await scrollToGeneratedHeading(page, "Controller");
@@ -426,7 +422,7 @@ test("guide overview redirects to the preferred variant and exposes variant navi
 
   await scrollToGeneratedHeading(page, "HTTP Client Filter");
   await expect(configurationParametersLink).toBeVisible();
-  await expect(dependencyLink).toBeHidden();
+  await expect(dependencyLink).toBeVisible();
   expect(failures).toEqual([]);
 });
 
