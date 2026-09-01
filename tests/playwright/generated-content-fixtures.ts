@@ -78,6 +78,14 @@ async function prepareDocsContent(): Promise<void> {
       },
     },
   );
+  // Offline stand-in for scripts/fetch-configuration-references.ts.
+  await fs.copyFile(
+    path.join(
+      generatedContentFixtureDirectory,
+      "configuration-references.fixture.json",
+    ),
+    path.join(outputDirectory, "configuration-references.json"),
+  );
 }
 
 async function prepareGuidesContent(): Promise<void> {

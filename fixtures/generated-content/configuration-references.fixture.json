@@ -1,0 +1,124 @@
+{
+  "projects": {
+    "core": {
+      "sourceUrl": "https://micronaut-projects.github.io/micronaut-core/latest/guide/configurationreference.html",
+      "sections": [
+        {
+          "id": "buffer-netty-config-properties",
+          "title": "Buffer Netty Config Properties",
+          "tables": [
+            {
+              "owner": "DefaultByteBufAllocatorConfiguration",
+              "ownerHref": "https://micronaut-projects.github.io/micronaut-core/latest/api/io/micronaut/buffer/netty/DefaultByteBufAllocatorConfiguration.html",
+              "rows": [
+                {
+                  "property": "netty.default.allocator.num-heap-arenas",
+                  "type": "java.lang.Integer",
+                  "description": "The number of heap arenas",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "netty.default.allocator.num-direct-arenas",
+                  "type": "java.lang.Integer",
+                  "description": "The number of direct arenas",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "netty.default.allocator.page-size",
+                  "type": "java.lang.Integer",
+                  "description": "The page size",
+                  "defaultValue": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "data": {
+      "sourceUrl": "https://micronaut-projects.github.io/micronaut-data/latest/guide/configurationreference.html",
+      "sections": [
+        {
+          "id": "micronaut-data-azure-cosmos-config-properties",
+          "title": "Micronaut Data Azure Cosmos Config Properties",
+          "tables": [
+            {
+              "owner": "CosmosDatabaseConfiguration",
+              "ownerHref": "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/cosmos/config/CosmosDatabaseConfiguration.html",
+              "rows": [
+                {
+                  "property": "azure.cosmos.database.database-name",
+                  "type": "java.lang.String",
+                  "description": "Sets the database name.",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "azure.cosmos.database.update-policy",
+                  "type": "StorageUpdatePolicy",
+                  "typeHref": "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/cosmos/config/StorageUpdatePolicy.html",
+                  "description": "Sets the update policy for the database to be used during startup.",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "azure.cosmos.database.packages",
+                  "type": "java.util.List",
+                  "description": "the list of package names to filter entities during init database and containers",
+                  "defaultValue": ""
+                }
+              ]
+            },
+            {
+              "owner": "CosmosDatabaseConfiguration$CosmosContainerSettings",
+              "ownerHref": "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/cosmos/config/CosmosDatabaseConfiguration.CosmosContainerSettings.html",
+              "rows": [
+                {
+                  "property": "azure.cosmos.database.container-settings[*].container-name",
+                  "type": "java.lang.String",
+                  "description": "Sets the container name.",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "azure.cosmos.database.container-settings[*].partition-key-path",
+                  "type": "java.lang.String",
+                  "description": "Sets the container partition key path.",
+                  "defaultValue": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "micronaut-data-jdbc-config-properties",
+          "title": "Micronaut Data Jdbc Config Properties",
+          "tables": [
+            {
+              "owner": "DataJdbcConfiguration",
+              "ownerHref": "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/jdbc/config/DataJdbcConfiguration.html",
+              "rows": [
+                {
+                  "property": "datasources.*.schema-generate",
+                  "type": "SchemaGenerate",
+                  "typeHref": "https://micronaut-projects.github.io/micronaut-data/latest/api/io/micronaut/data/runtime/config/SchemaGenerate.html",
+                  "description": "Sets the schema generation strategy.",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "datasources.*.batch-generate",
+                  "type": "boolean",
+                  "description": "Whether to generate tables in batch.",
+                  "defaultValue": ""
+                },
+                {
+                  "property": "datasources.*.packages",
+                  "type": "java.util.List",
+                  "description": "Sets the packages to include use for the purposes of schema generation.",
+                  "defaultValue": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
