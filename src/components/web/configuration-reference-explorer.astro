@@ -119,8 +119,11 @@ const countLabel = `${propertyCount} properties across ${groups.length} ${
             )}
           </h2>
           <div class="grid gap-4">
+            {/* A grid item defaults to `min-width: auto`, so without `min-w-0`
+                the widest property table stretched its cell past the track and
+                painted over the module rail. */}
             {group.tables.map((table) => (
-              <div data-docs-configuration-table>
+              <div class="min-w-0" data-docs-configuration-table>
                 {table.owner && (
                   <p class="mb-1.5 text-sm text-muted-foreground">
                     Configuration properties for{" "}
