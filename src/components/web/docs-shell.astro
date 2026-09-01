@@ -8,13 +8,34 @@ type ActiveSection = {
   label: string;
 };
 
+/** A subsection of one chapter, for the docs bar's section menu. */
+type CurrentSection = ActiveSection & {
+  indent: number;
+  parentId?: string;
+};
+
 interface Props {
   projectCatalog: DocsProjectCatalog;
   activeSlug?: string;
   activeSections?: ActiveSection[];
+  currentSections?: CurrentSection[];
+  /** The chapter the page opens in, before the reader scrolls anywhere. */
+  initialRootId?: string;
 }
 
-const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
+const {
+  projectCatalog,
+  activeSlug,
+  activeSections = [],
+  currentSections = [],
+  initialRootId,
+} = Astro.props;
+const initialSectionLabel = activeSections.find(
+  (section) => section.id === initialRootId,
+)?.label;
+const sectionMenuHidden =
+  !initialRootId ||
+  currentSections.every((section) => section.parentId !== initialRootId);
 ---
 
 <div data-docs-shell class="min-h-[calc(100svh-3.5rem)]">
@@ -105,6 +126,49 @@ const { projectCatalog, activeSlug, activeSections = [] } = Astro.props;
             />
           </div>
         </dialog>
+        {
+          /* The side rail that lists a chapter's subsections is xl-only, so on
+            a phone the only way through a chapter was to scroll it. This is
+            that rail: the chapter the reader is in, named in the bar and kept
+            current by the scroll spy, opening the jump list for it. */
+          currentSections.length > 0 && (
+            <details
+              class="relative ml-auto min-w-0"
+              data-docs-section-menu
+              hidden={sectionMenuHidden}
+            >
+              <summary class="flex h-8 max-w-[62vw] cursor-pointer list-none items-center gap-1.5 [&::-webkit-details-marker]:hidden rounded-md px-2 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
+                <span class="truncate" data-docs-current-section-label>
+                  {initialSectionLabel}
+                </span>
+                <span aria-hidden="true">▾</span>
+              </summary>
+              <nav
+                class="absolute right-0 top-full z-40 mt-1 grid max-h-[60svh] w-[min(22rem,calc(100vw-2rem))] gap-0.5 overflow-y-auto rounded-md border bg-background p-1.5 text-sm shadow-lg [scrollbar-width:thin]"
+                aria-label="In this section"
+                data-docs-scroll-container
+              >
+                {currentSections.map((section) => (
+                  <a
+                    href={`#${section.id}`}
+                    data-docs-current-section-link
+                    data-docs-scroll-link
+                    data-docs-section-root-id={section.parentId}
+                    hidden={section.parentId !== initialRootId}
+                    class:list={[
+                      "rounded-md py-1.5 pr-2 leading-5 break-words text-muted-foreground no-underline hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-foreground [&.active]:bg-accent [&.active]:font-medium [&.active]:text-foreground",
+                      section.indent <= 2 && "pl-2",
+                      section.indent === 3 && "pl-4",
+                      section.indent >= 4 && "pl-6",
+                    ]}
+                  >
+                    {section.label}
+                  </a>
+                ))}
+              </nav>
+            </details>
+          )
+        }
       </div>
       <slot />
     </main>

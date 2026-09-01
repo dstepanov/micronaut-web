@@ -505,6 +505,57 @@ test("generated docs page fits the mobile viewport", async ({ page }) => {
   expect(failures).toEqual([]);
 });
 
+test("docs bar names the chapter being read and jumps inside it", async ({
+  page,
+}) => {
+  const failures = collectBrowserFailures(page);
+  await page.setViewportSize({ width: 390, height: 860 });
+
+  await page.goto(appPath("/docs/core/"));
+
+  const sectionMenu = page.locator("[data-docs-section-menu]");
+  // Introduction has no subsections, so there is nothing to jump to yet.
+  await expect(sectionMenu).toBeHidden();
+
+  await page.evaluate(() =>
+    document.getElementById("core-quickStart")?.scrollIntoView(),
+  );
+  await expect(sectionMenu).toBeVisible();
+  await expect(sectionMenu).toContainText("2 Quick Start");
+
+  await sectionMenu.locator("summary").click();
+  const subsections = sectionMenu.getByRole("navigation", {
+    name: "In this section",
+  });
+  await expect(
+    subsections.getByRole("link", { name: "Create an Application" }),
+  ).toBeVisible();
+  // The other chapter's subsections stay out of the menu.
+  await expect(
+    subsections.getByRole("link", { name: "Ordinary Source Blocks" }),
+  ).toBeHidden();
+
+  // Reading on into the next chapter renames the bar and reloads the menu.
+  await page.evaluate(() =>
+    document.getElementById("core-snippetGallery")?.scrollIntoView(),
+  );
+  await expect(sectionMenu).toContainText("3 Snippet Gallery");
+  await expect(
+    subsections.getByRole("link", { name: "Ordinary Source Blocks" }),
+  ).toBeVisible();
+  await expect(
+    subsections.getByRole("link", { name: "Create an Application" }),
+  ).toBeHidden();
+
+  await subsections
+    .getByRole("link", { name: "Generated Snippet Macros" })
+    .click();
+  await expect(sectionMenu).not.toHaveAttribute("open", /.*/);
+  expect(new URL(page.url()).hash).toBe("#core-_generated_snippet_macros");
+
+  expect(failures).toEqual([]);
+});
+
 test("expanded docs project link toggles sections inside the mobile sidebar", async ({
   page,
 }) => {

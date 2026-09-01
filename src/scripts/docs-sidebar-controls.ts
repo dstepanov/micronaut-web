@@ -54,6 +54,36 @@ mobileNavigation?.addEventListener("click", (event) => {
   }
 });
 
+// The section menu in the docs bar is a `details`, which stays open after a
+// jump inside the same page and has no dismissal of its own.
+const sectionMenu = document.querySelector<HTMLDetailsElement>(
+  "[data-docs-section-menu]",
+);
+if (sectionMenu) {
+  const closeSectionMenu = () => {
+    sectionMenu.open = false;
+  };
+  sectionMenu.addEventListener("click", (event) => {
+    if (event.target instanceof Element && event.target.closest("a[href]")) {
+      closeSectionMenu();
+    }
+  });
+  document.addEventListener("click", (event) => {
+    if (
+      sectionMenu.open &&
+      event.target instanceof Node &&
+      !sectionMenu.contains(event.target)
+    ) {
+      closeSectionMenu();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && sectionMenu.open) {
+      closeSectionMenu();
+    }
+  });
+}
+
 // The reference row starts in the flow at the top of the page and pins under
 // the topbar as the reader scrolls. Shrinking the observer root to one pixel
 // below the row's own pin offset reports it as fully visible only while it is
