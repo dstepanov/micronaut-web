@@ -8,6 +8,7 @@
     "snippet-styles": "node scripts/validate-docs-snippet-style-sharing.ts",
     "sync:docs-projects": "node scripts/sync-docs-fixture.ts",
     "render:docs": "node scripts/render-docs.ts",
+    "fetch:configuration-references": "node scripts/fetch-configuration-references.ts",
     "render:guides": "node scripts/render-guides.ts",
     "prepare:generated-docs": "npm run render:docs",
     "prepare:generated-content": "node scripts/prepare-generated-content.ts",

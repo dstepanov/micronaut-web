@@ -1,3 +1,9 @@
+import { decodeHtml } from "../shared/html.ts";
+import {
+  configurationReferenceRows,
+  type ConfigurationReferences,
+} from "./configuration-references.ts";
+
 const MAX_GENERATED_ITEMS_PER_PROJECT = 1200;
 
 export interface SearchProject {
@@ -16,21 +22,54 @@ export interface SearchProject {
   sections?: SearchSection[];
 }
 
+export interface ReferenceLinkProject {
+  slug?: string;
+  repositoryName?: string;
+  publishedGuideUrl?: string;
+}
+
 /**
- * Every module publishes its API and configuration references next to the
- * guide the catalog records, so both links derive from `publishedGuideUrl`.
+ * The published `configurationreference.html` always lives on the module's
+ * own GitHub Pages site. Derived from the repository name rather than
+ * `publishedGuideUrl` because core's guide is served from docs.micronaut.io,
+ * which does not carry the configuration reference (it 404s there).
+ */
+export function configurationReferenceUrl(
+  project: ReferenceLinkProject,
+): string | undefined {
+  if (project.repositoryName) {
+    return `https://micronaut-projects.github.io/${project.repositoryName}/latest/guide/configurationreference.html`;
+  }
+  return project.publishedGuideUrl
+    ? new URL("configurationreference.html", project.publishedGuideUrl).href
+    : undefined;
+}
+
+/**
+ * A project's API and configuration reference links. With
+ * `localConfigurationReference`, the configuration link points at this site's
+ * own per-module reference page instead of the published upstream one.
  * Shared by the docs pages' corner links and the search index.
  */
-export function projectReferenceLinks(publishedGuideUrl: string) {
+export function projectReferenceLinks(
+  project: ReferenceLinkProject,
+  { localConfigurationReference = false } = {},
+) {
+  const configurationHref = localConfigurationReference
+    ? `/docs/${project.slug}/configuration-reference/`
+    : configurationReferenceUrl(project);
   return [
-    {
-      label: "API Reference",
-      href: new URL("../api/", publishedGuideUrl).href,
-    },
-    {
-      label: "Configuration Reference",
-      href: new URL("configurationreference.html", publishedGuideUrl).href,
-    },
+    ...(project.publishedGuideUrl
+      ? [
+          {
+            label: "API Reference",
+            href: new URL("../api/", project.publishedGuideUrl).href,
+          },
+        ]
+      : []),
+    ...(configurationHref
+      ? [{ label: "Configuration Reference", href: configurationHref }]
+      : []),
   ];
 }
 
@@ -54,6 +93,7 @@ export interface SearchItem {
 export function buildDocsSearchIndex(
   projects: SearchProject[],
   generatedHtmlBySlug: Record<string, string> = {},
+  configurationReferences: ConfigurationReferences = {},
 ): SearchItem[] {
   const items: SearchItem[] = [];
   const seen = new Set<string>();
@@ -132,28 +172,54 @@ export function buildDocsSearchIndex(
       });
     }
 
-    if (project.publishedGuideUrl) {
-      for (const reference of projectReferenceLinks(
-        project.publishedGuideUrl,
-      )) {
+    const configurationReference = configurationReferences[project.slug];
+    for (const reference of projectReferenceLinks(project, {
+      localConfigurationReference: Boolean(configurationReference),
+    })) {
+      pushItem(items, seen, {
+        kind: "Docs",
+        title: `${project.displayName}: ${reference.label}`,
+        description:
+          reference.label === "API Reference"
+            ? `Published API documentation for ${project.displayName}.`
+            : `Every documented configuration property of ${project.displayName}.`,
+        href: reference.href,
+        terms: [
+          project.displayName,
+          project.projectKey,
+          project.module,
+          reference.label,
+          "javadoc api configuration reference",
+        ]
+          .filter(Boolean)
+          .join(" "),
+        scope: "Docs",
+      });
+    }
+
+    // The collected configuration reference lists every property of the
+    // module; the guide tables only mention a few in passing, so they serve
+    // as property items only for projects with nothing collected.
+    if (configurationReference) {
+      for (const row of configurationReferenceRows(configurationReference)) {
         pushItem(items, seen, {
-          kind: "Docs",
-          title: `${project.displayName}: ${reference.label}`,
+          kind: "Property",
+          title: row.property,
           description:
-            reference.label === "API Reference"
-              ? `Published API documentation for ${project.displayName}.`
-              : `Published configuration reference for ${project.displayName}.`,
-          href: reference.href,
+            [row.type, row.description].filter(Boolean).join(" - ") ||
+            `${project.displayName} configuration property.`,
+          href: `/docs/${project.slug}/configuration-reference/`,
           terms: [
             project.displayName,
             project.projectKey,
             project.module,
-            reference.label,
-            "javadoc api configuration reference",
+            row.property,
+            row.type,
+            row.description,
           ]
             .filter(Boolean)
             .join(" "),
-          scope: "Docs",
+          scope: "Properties",
         });
       }
     }
@@ -161,7 +227,7 @@ export function buildDocsSearchIndex(
     const generatedItems = extractGeneratedDocSearchItems(
       project,
       generatedHtmlBySlug[project.slug] || "",
-    );
+    ).filter((item) => !configurationReference || item.scope !== "Properties");
     for (const item of generatedItems.slice(
       0,
       MAX_GENERATED_ITEMS_PER_PROJECT,
@@ -364,8 +430,9 @@ function attributeValue(source: string, name: string): string {
   return pattern.exec(source)?.[1] || "";
 }
 
-function cleanText(value: string): string {
-  return decodeEntities(
+/** Tag-stripped, entity-decoded, whitespace-collapsed element text. */
+export function cleanSearchText(value: string): string {
+  return decodeHtml(
     String(value || "")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " ")
@@ -373,13 +440,4 @@ function cleanText(value: string): string {
   );
 }
 
-function decodeEntities(value: string): string {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, "/");
-}
+const cleanText = cleanSearchText;

@@ -15,6 +15,7 @@ type GeneratedContentTask = readonly [
 
 const tasks: GeneratedContentTask[] = [
   ["docs", process.execPath, ["scripts/render-docs.ts"]],
+  ["docs", process.execPath, ["scripts/fetch-configuration-references.ts"]],
   ["guides", process.execPath, ["scripts/render-guides.ts"]],
 ];
 
