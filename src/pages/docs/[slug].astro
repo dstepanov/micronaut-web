@@ -243,7 +243,7 @@ const referenceLinks = projectReferenceLinks(project, {
             <>
               <div
                 class="generated-docs-content"
-                data-generated-docs
+                data-generated-docs={project.slug}
                 set:html={generatedDocHtml}
               />
               <GeneratedDocsStaticEnhancer />

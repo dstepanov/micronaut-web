@@ -38,10 +38,6 @@
       @apply text-[clamp(1.55rem,2.2vw,1.8rem)] leading-[1.22];
     }
 
-    & .anchor {
-      @apply text-inherit no-underline;
-    }
-
     &:hover .contribute-btn {
       @apply opacity-100;
     }
@@ -51,8 +47,23 @@
     @apply mt-0;
   }
 
+  /* The permalink every heading carries. Dimmed rather than hidden: a link
+     that appears only under the pointer is one no reader knows is there, and
+     no reader on a touch screen can reveal. */
+  & :where(h1, h2, h3, h4, h5, h6) > .anchor {
+    @apply ml-2 align-baseline text-[0.85em] font-normal text-muted-foreground no-underline transition-colors duration-150 ease-in-out;
+
+    &::before {
+      content: "#";
+    }
+
+    &:hover {
+      @apply text-brand;
+    }
+  }
+
   & .contribute-btn {
-    @apply absolute top-[0.2rem] right-0 grid size-7 place-items-center rounded-[0.375rem] text-muted-foreground opacity-0 no-underline transition-[background-color,color,opacity] duration-150 ease-in-out;
+    @apply absolute top-[0.2rem] right-0 grid size-7 place-items-center rounded-[0.375rem] text-muted-foreground opacity-60 no-underline transition-[background-color,color,opacity] duration-150 ease-in-out;
 
     &:focus-visible {
       @apply opacity-100;
