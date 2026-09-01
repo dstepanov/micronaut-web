@@ -47,37 +47,37 @@ describe("apiLink", () => {
     [
       "api",
       "context.BeanContext",
-      "https://docs.micronaut.io/latest/api/io/micronaut/context/BeanContext.html",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/context/BeanContext.html",
       "BeanContext",
     ],
     [
       "api",
       "io.micronaut.context.BeanContext.getBean(Class)",
-      "https://docs.micronaut.io/latest/api/io/micronaut/context/BeanContext.html#getBean-Class-",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/context/BeanContext.html#getBean-Class-",
       "BeanContext.getBean(Class)",
     ],
     [
       "api",
       "http.HttpRequest$Builder",
-      "https://docs.micronaut.io/latest/api/io/micronaut/http/HttpRequest.Builder.html",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/http/HttpRequest.Builder.html",
       "HttpRequest$Builder",
     ],
     [
       "api",
       "io.micronaut.http.HttpRequest.Builder",
-      "https://docs.micronaut.io/latest/api/io/micronaut/http/HttpRequest.Builder.html",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/http/HttpRequest.Builder.html",
       "Builder",
     ],
     [
       "ann",
       "serde.annotation.Serdeable",
-      "https://docs.micronaut.io/latest/api/io/micronaut/serde/annotation/Serdeable.html",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/serde/annotation/Serdeable.html",
       "@Serdeable",
     ],
     [
       "mnapi",
       "context.BeanContext",
-      "https://docs.micronaut.io/latest/api/io/micronaut/context/BeanContext.html",
+      "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/context/BeanContext.html",
       "BeanContext",
     ],
     [
@@ -197,7 +197,7 @@ describe("apiLink", () => {
 describe("packageLink", () => {
   test("links to the package summary under the project's javadoc", () => {
     assert.deepEqual(packageLink(context, "data.annotation", {}), {
-      href: "https://docs.micronaut.io/latest/api/io/micronaut/data/annotation/package-summary.html",
+      href: "https://micronaut-projects.github.io/micronaut-docs/latest/api/io/micronaut/data/annotation/package-summary.html",
       label: "io.micronaut.data.annotation",
     });
     assert.deepEqual(

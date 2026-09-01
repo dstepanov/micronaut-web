@@ -40,10 +40,16 @@ type DocsRenderContext = {
 export async function renderProject(
   asciidoctor: typeof import("@asciidoctor/core"),
   docsDirectory: string,
-  project: DocsProject,
+  documentedProject: DocsProject,
   platformVersion: string,
   renderOptions: { strict?: boolean } = {},
 ): Promise<string> {
+  // Javadoc is published per release, so the version this page documents
+  // travels with the project and every `api:` macro links the API the page
+  // was written against instead of whatever `latest` has become.
+  const project: DocsProject = platformVersion
+    ? { ...documentedProject, version: platformVersion }
+    : documentedProject;
   const submoduleDirectory = path.join(docsDirectory, project.submodulePath);
   const sourceDocsDirectory = path.join(
     submoduleDirectory,

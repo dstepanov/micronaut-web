@@ -19,6 +19,7 @@ export interface SearchProject {
   shortDescription?: string;
   longDescription?: string;
   publishedGuideUrl?: string;
+  version?: string;
   searchTerms?: string[];
   sections?: SearchSection[];
 }
@@ -28,6 +29,7 @@ export interface ReferenceLinkProject {
   repositoryName?: string;
   publishedGuideUrl?: string;
   docsSourceFile?: string;
+  version?: string;
 }
 
 /**
@@ -53,25 +55,31 @@ export function configurationReferenceUrl(
 }
 
 /**
- * A project's API and configuration reference links. With
- * `localConfigurationReference`, the configuration link points at this site's
- * own per-module reference page instead of the published upstream one.
+ * A project's API and configuration reference links.
+ *
+ * The configuration link appears only with `localConfigurationReference`, so
+ * it always opens this site's own per-module page. Modules nothing was
+ * collected for — Test, Test Resources, SourceGen and the other build-time
+ * ones — used to link the upstream `configurationreference.html` instead, and
+ * that page is the reason nothing was collected: it publishes no properties.
  * Shared by the docs pages' corner links and the search index.
  */
 export function projectReferenceLinks(
   project: ReferenceLinkProject,
   { localConfigurationReference = false } = {},
 ) {
-  const configurationHref = localConfigurationReference
-    ? `/docs/${project.slug}/configuration-reference/`
-    : configurationReferenceUrl(project);
   return [
     // Derived from the repository the same way the `api:` macros resolve
     // javadoc links: the published guide is not always a sibling of the API
     // documentation, and for a single-page project there is no guide at all.
     { label: "API Reference", href: `${projectApiBaseUri({ project })}/` },
-    ...(configurationHref
-      ? [{ label: "Configuration Reference", href: configurationHref }]
+    ...(localConfigurationReference
+      ? [
+          {
+            label: "Configuration Reference",
+            href: `/docs/${project.slug}/configuration-reference/`,
+          },
+        ]
       : []),
   ];
 }
