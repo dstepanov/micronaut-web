@@ -1,7 +1,5 @@
 export function enhanceGeneratedContentHtml(html: string) {
-  return labelGeneratedHeadingAnchors(
-    html.replaceAll("visually-hidden", "sr-only"),
-  );
+  return linkGeneratedHeadings(html.replaceAll("visually-hidden", "sr-only"));
 }
 
 export function generatedHtmlLabel(html: string) {
@@ -69,24 +67,29 @@ export function extractGeneratedDocSections(
   return sections;
 }
 
-function labelGeneratedHeadingAnchors(html: string) {
+/**
+ * One permalink per heading, after the title so making it visible cannot
+ * shift the words. Asciidoctor anchors only the headings it numbers, and
+ * emits those anchors empty, so a reader had no link to copy for any
+ * subsection.
+ *
+ * Hidden from assistive technology, the way GitHub marks the same affordance:
+ * a labelled descendant link is read as part of the heading it sits in, which
+ * turns every heading into its own title said twice. The section rails are the
+ * navigable, announced route to the same anchors.
+ */
+function linkGeneratedHeadings(html: string) {
   return html.replace(
-    /<h([1-6])([^>]*) id="([^"]+)"([^>]*)><a class="anchor" href="#([^"]+)"([^>]*)><\/a>([\s\S]*?)<\/h\1>/g,
-    (
-      match,
-      level,
-      beforeId,
-      id,
-      afterId,
-      href,
-      anchorAttributes,
-      labelHtml,
-    ) => {
-      if (/\saria-label=/.test(anchorAttributes)) {
+    /<h([1-6])([^>]*\bid="([^"]+)"[^>]*)>([\s\S]*?)<\/h\1>/g,
+    (match, level, attributes, id, headingHtml) => {
+      const labelHtml = headingHtml.replace(
+        /<a class="anchor"[^>]*><\/a>\s*/g,
+        "",
+      );
+      if (/<a class="anchor"/.test(labelHtml)) {
         return match;
       }
-      const label = generatedHtmlLabel(labelHtml) || id;
-      return `<h${level}${beforeId} id="${id}"${afterId}><a class="anchor" href="#${href}" aria-label="${attribute(`Link to ${label}`)}"${anchorAttributes}></a>${labelHtml}</h${level}>`;
+      return `<h${level}${attributes}>${labelHtml}<a class="anchor" href="#${attribute(id)}" aria-hidden="true" tabindex="-1"></a></h${level}>`;
     },
   );
 }
