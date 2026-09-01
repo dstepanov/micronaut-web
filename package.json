@@ -36,6 +36,7 @@
     "prune:surface": "node scripts/prune-surface.ts",
     "update:docs-versions": "node scripts/update-docs-version-manifest.ts",
     "publish:docs-surface": "node scripts/publish-docs-surface.ts",
+    "publish:docs-snapshot": "node scripts/publish-docs-snapshot.ts",
     "preview": "astro preview --host 127.0.0.1"
   },
   "dependencies": {

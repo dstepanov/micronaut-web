@@ -202,18 +202,46 @@ async function writeLatestRedirects(
   line: string,
   base: string,
 ) {
-  const lineDirectory = path.join(publishedDirectory, line);
-  const latestDirectory = path.join(publishedDirectory, "latest");
-  await fs.rm(latestDirectory, { force: true, recursive: true });
-  for (const file of await listHtmlFiles(lineDirectory)) {
-    const page = toPosixPath(path.relative(lineDirectory, file));
+  await writeRedirectMirror({
+    sourceDirectory: path.join(publishedDirectory, line),
+    targetDirectory: path.join(publishedDirectory, "latest"),
+    title: "the current Micronaut docs",
+    destination: (page, html) =>
+      redirectDestination(html) ||
+      withBase(base, `/${line}/${pageDirectory(page)}`),
+  });
+}
+
+/**
+ * Rebuilds `targetDirectory` as one redirect stub per page of
+ * `sourceDirectory`, so a docs tree can be entered under a second URL without
+ * being copied under it.
+ */
+export async function writeRedirectMirror({
+  sourceDirectory,
+  targetDirectory,
+  title,
+  destination,
+}: {
+  sourceDirectory: string;
+  targetDirectory: string;
+  title: string;
+  destination: (page: string, html: string) => string;
+}): Promise<void> {
+  await fs.rm(targetDirectory, { force: true, recursive: true });
+  for (const file of await listHtmlFiles(sourceDirectory)) {
+    const page = toPosixPath(path.relative(sourceDirectory, file));
     await writeRedirect(
-      path.join(latestDirectory, ...page.split("/")),
-      redirectDestination(await fs.readFile(file, "utf8")) ||
-        withBase(base, `/${line}/${page.replace(/(^|\/)index\.html$/, "$1")}`),
-      "the current Micronaut docs",
+      path.join(targetDirectory, ...page.split("/")),
+      destination(page, await fs.readFile(file, "utf8")),
+      title,
     );
   }
+}
+
+/** `core/index.html` is served as `core/`, and that is the URL to redirect to. */
+export function pageDirectory(page: string) {
+  return page.replace(/(^|\/)index\.html$/, "$1");
 }
 
 /**

@@ -130,6 +130,54 @@ jobs:
             gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
           done < "$VERSION_FILE"
 
+  snapshot:
+    name: Publish snapshot docs when the platform default branch moved
+    runs-on: ubuntu-latest
+    # Ordering only: Deploy Snapshot Docs shares the `docs-pages` concurrency
+    # group with Deploy Docs, and a run joining that group while a release
+    # publish is still queued would cancel the queued one.
+    needs: docs
+    if: ${{ !cancelled() }}
+    env:
+      SNAPSHOT_REPOSITORY: micronaut-projects/micronaut-docs-snapshot
+      SNAPSHOT_BRANCH: gh-pages
+      PLATFORM_REPOSITORY: micronaut-projects/micronaut-platform
+    steps:
+      - name: Compare published snapshot revision with the platform default branch
+        id: revision
+        run: |
+          set -euo pipefail
+          # Deploy Snapshot Docs records the built revision in
+          # .platform-revision, so an upstream commit that renders identically
+          # still updates the marker. A repository without that file has never
+          # published a snapshot and gets one now.
+          default_branch="$(gh api "repos/${PLATFORM_REPOSITORY}" --jq '.default_branch')"
+          upstream_sha="$(gh api "repos/${PLATFORM_REPOSITORY}/commits/${default_branch}" --jq '.sha')"
+          published_sha="$(gh api "repos/${SNAPSHOT_REPOSITORY}/contents/.platform-revision?ref=${SNAPSHOT_BRANCH}" --jq '.content' 2>/dev/null | base64 -d | tr -d '[:space:]' || true)"
+          echo "Published snapshot revision: ${published_sha:-unknown}"
+          echo "Upstream platform revision:  $upstream_sha"
+          if [ "$published_sha" = "$upstream_sha" ]; then
+            echo "Published snapshot docs are up to date with ${PLATFORM_REPOSITORY}@${default_branch}."
+            echo "needs_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_publish=true" >> "$GITHUB_OUTPUT"
+            echo "platform_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger the snapshot docs publish
+        if: steps.revision.outputs.needs_publish == 'true'
+        env:
+          PLATFORM_SHA: ${{ steps.revision.outputs.platform_sha }}
+        run: |
+          set -euo pipefail
+          # Deploy Snapshot Docs reports its own outcome, and .platform-revision
+          # stays behind until a build succeeds, so a failed publish is retried
+          # by the next poll rather than waited on here.
+          gh workflow run deploy-docs-snapshot.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$GITHUB_REF_NAME" \
+            --field "platform_ref=$PLATFORM_SHA"
+
   guides:
     name: Publish guides when master moved
     runs-on: ubuntu-latest

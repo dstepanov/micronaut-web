@@ -1,0 +1,176 @@
+name: Deploy Snapshot Docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform_ref:
+        description: Micronaut Platform branch, tag, or SHA to build the snapshot from
+        required: false
+
+permissions:
+  contents: write
+
+# Snapshot docs are their own Pages repository, but the `/snapshot` entry they
+# are reached through lives in the released docs branch, so this publish shares
+# the group that serializes every push to it.
+concurrency:
+  group: docs-pages
+  cancel-in-progress: false
+
+env:
+  TARGET_REPOSITORY: micronaut-projects/micronaut-docs-snapshot
+  TARGET_BRANCH: gh-pages
+  DOCS_REPOSITORY: micronaut-projects/micronaut-docs-v2
+  DOCS_BRANCH: gh-pages
+  PLATFORM_REPOSITORY: micronaut-projects/micronaut-platform
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+run-name: Publish snapshot docs from ${{ inputs.platform_ref || 'the platform default branch' }}
+
+jobs:
+  publish:
+    name: Build and publish snapshot docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out Micronaut web
+        uses: actions/checkout@v7
+
+      - name: Validate GitHub token
+        env:
+          HAS_GH_TOKEN: ${{ secrets.GH_TOKEN != '' }}
+        run: |
+          if [ "$HAS_GH_TOKEN" != "true" ]; then
+            echo "::error::Set GH_TOKEN with contents:write access to $TARGET_REPOSITORY and $DOCS_REPOSITORY."
+            exit 1
+          fi
+
+      - name: Resolve platform snapshot ref
+        id: platform
+        env:
+          PLATFORM_REF: ${{ inputs.platform_ref }}
+        run: |
+          set -euo pipefail
+          ref="${PLATFORM_REF:-$(gh api "repos/${PLATFORM_REPOSITORY}" --jq '.default_branch')}"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      # The docs renderer resolves module sources against the platform version
+      # catalog, so a snapshot platform pulls each module's default branch
+      # wherever the catalog names an unreleased version.
+      - name: Check out platform project
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.PLATFORM_REPOSITORY }}
+          ref: ${{ steps.platform.outputs.ref }}
+          path: external/docs/repos/micronaut-platform
+
+      - name: Resolve platform revision
+        id: revision
+        working-directory: external/docs/repos/micronaut-platform
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out docs Pages repository
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.DOCS_REPOSITORY }}
+          ref: ${{ env.DOCS_BRANCH }}
+          path: published-docs
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      # The snapshot branch is replaced wholesale by every publish, so the only
+      # state carried forward is the custom domain, which GitHub Pages reads
+      # from a file in the branch rather than from repository settings.
+      - name: Preserve snapshot custom domain
+        run: |
+          set -euo pipefail
+          mkdir -p published-snapshot
+          if ! gh api "repos/${TARGET_REPOSITORY}/contents/CNAME?ref=${TARGET_BRANCH}" \
+            --jq '.content' 2>/dev/null | base64 -d > published-snapshot/CNAME; then
+            rm -f published-snapshot/CNAME
+          fi
+
+      - name: Configure snapshot deployment
+        env:
+          CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
+          # Cross-surface links must use the production custom domains: the
+          # GitHub Pages project URLs 301 to them without CORS headers, which
+          # kills browser fetches such as the related-guides manifest load.
+          CONFIGURED_MAIN_SITE_URL: ${{ vars.MICRONAUT_MAIN_SITE_URL || 'https://micronaut.io/' }}
+          # Deliberately not MICRONAUT_DOCS_SITE_URL: for this surface the docs
+          # site is the snapshot deployment, not the released docs host.
+          CONFIGURED_DOCS_SITE_URL: ${{ vars.MICRONAUT_DOCS_SNAPSHOT_SITE_URL }}
+          CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL || 'https://guides.micronaut.io/' }}
+          CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_DOCS_SNAPSHOT_CUSTOM_DOMAIN }}
+          CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_DOCS_SNAPSHOT_BASE }}
+          PUBLISHED_DIRECTORY: published-snapshot
+        run: node scripts/configure-pages-deployment.ts --surface docs --target-repository "$TARGET_REPOSITORY" --published-dir "$PUBLISHED_DIRECTORY"
+
+      - name: Build snapshot docs surface
+        env:
+          MICRONAUT_DEPLOY_SURFACE: docs
+          MICRONAUT_DOCS_ROOT: /snapshot
+          MICRONAUT_DOCS_LATEST_ROOT: /snapshot
+          DOCS_DIR: ${{ github.workspace }}/external/docs
+          DOCS_RENDER_ALL: "true"
+          DOCS_RENDER_STRICT: "true"
+          DOCS_SYNC_SOURCES: "true"
+        run: npm run build:docs
+
+      # Force-pushed as a single orphan commit: the snapshot is rebuilt from
+      # the platform default branch, so keeping its history would grow the
+      # repository by a full docs tree every time upstream moves.
+      - name: Publish snapshot Pages branch
+        working-directory: dist
+        env:
+          PLATFORM_SHA: ${{ steps.revision.outputs.sha }}
+        run: |
+          set -euo pipefail
+          echo "$PLATFORM_SHA" > .platform-revision
+          git init --initial-branch="$TARGET_BRANCH" .
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit --quiet -m "Publish Micronaut snapshot docs from ${PLATFORM_SHA}"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPOSITORY}.git" \
+            "HEAD:refs/heads/${TARGET_BRANCH}"
+
+      - name: Ensure snapshot Pages site
+        run: |
+          set -euo pipefail
+          if gh api "repos/${TARGET_REPOSITORY}/pages" >/dev/null 2>&1; then
+            exit 0
+          fi
+          if ! gh api --method POST "repos/${TARGET_REPOSITORY}/pages" \
+            -f "source[branch]=${TARGET_BRANCH}" -f "source[path]=/" >/dev/null; then
+            echo "::warning::Could not enable GitHub Pages on ${TARGET_REPOSITORY}; enable it from the repository settings."
+          fi
+
+      # docs.micronaut.io serves one repository, so `/snapshot` is a mirror of
+      # redirect stubs onto the snapshot Pages site rather than a copy of it,
+      # the same way `/latest` mirrors the newest release line.
+      - name: Refresh the docs snapshot entry
+        run: node scripts/publish-docs-snapshot.ts --dist dist --published-dir published-docs --snapshot-url "$MICRONAUT_DOCS_SITE_URL"
+
+      - name: Commit and push docs Pages branch
+        working-directory: published-docs
+        env:
+          PLATFORM_SHA: ${{ steps.revision.outputs.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Point the docs snapshot entry at ${PLATFORM_SHA}"
+            git push origin HEAD:${{ env.DOCS_BRANCH }}
+          else
+            echo "The docs snapshot entry is already up to date."
+          fi
