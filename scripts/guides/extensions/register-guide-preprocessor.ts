@@ -7,6 +7,7 @@ import {
   definePreprocessor,
   replaceReaderLines,
 } from "../../asciidoc/extensions/define.ts";
+import { coreApiBaseUri } from "../../asciidoc/api-links.ts";
 import { parseAttributeList } from "../../asciidoc/extensions/macro-attributes.ts";
 import { splitList } from "../../shared/cli.ts";
 import {
@@ -451,7 +452,7 @@ function replacePlaceholders(
       "@minJdk@",
       String(context.guide.minimumJavaVersion || DEFAULT_MIN_JDK),
     )
-    .replaceAll("@api@", "https://docs.micronaut.io/latest/api");
+    .replaceAll("@api@", coreApiBaseUri);
 
   text = rewriteIncludeTargets(text, context);
   text = text.replace(

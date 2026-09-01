@@ -14,6 +14,8 @@ export interface DocsProject {
   branch: string;
   submodulePath: string;
   platformVersionKey: string;
+  /** The release being documented, once the platform catalog has resolved it. */
+  version?: string;
   /**
    * Repository-relative AsciiDoc file for projects that publish one document
    * instead of a guide directory with a `toc.yml`.
