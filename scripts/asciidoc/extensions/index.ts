@@ -5,6 +5,7 @@ import { registerComponentFooterProcessor } from "./register-component-footer-pr
 import { registerConfigurationBlock } from "./register-configuration-block.ts";
 import { registerDependencyBlock } from "./register-dependency-block.ts";
 import { registerDocsSourcePreprocessor } from "./register-docs-source-preprocessor.ts";
+import { registerMultiLanguageSampleProcessor } from "./register-multi-language-sample-processor.ts";
 import { registerPackageMacro } from "./register-package-macro.ts";
 import {
   type SnippetSamplesResolver,
@@ -44,6 +45,9 @@ export function registerComponentRenderingExtensions(
     return registry;
   }
   registerConfigurationBlock(registry);
+  // Grouped before the footer processor runs, so a callout list attaches to
+  // the sample that keeps rendering rather than to a detached alternate.
+  registerMultiLanguageSampleProcessor(registry);
   registerComponentFooterProcessor(registry);
   componentRenderingRegistries.add(registry);
   return registry;
