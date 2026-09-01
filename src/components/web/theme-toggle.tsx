@@ -6,6 +6,7 @@ import { Moon, Sun } from "lucide-react";
 import {
   LEGACY_THEME_STORAGE_KEY,
   THEME_MODE_STORAGE_KEY,
+  themeModeCookie,
   type ThemeMode,
 } from "@/lib/experience-theme";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,8 @@ function applyThemeMode(mode: ThemeMode, persist = true) {
     try {
       localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
       localStorage.removeItem(LEGACY_THEME_STORAGE_KEY);
+      // Shared across the micronaut.io surfaces; see themeModeCookie.
+      document.cookie = themeModeCookie(mode, window.location.hostname);
     } catch {
       // The root data attribute keeps the current page usable without storage.
     }
