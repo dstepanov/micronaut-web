@@ -1,0 +1,64 @@
+---
+import WebLayout from "@/layouts/WebLayout.astro";
+import ConfigurationReferenceExplorer, {
+  type ReferenceGroup,
+} from "@/components/web/configuration-reference-explorer.astro";
+import DocsShell from "@/components/web/docs-shell.astro";
+import { canonicalSurfaceUrl, withBasePath } from "@/lib/base-path";
+import {
+  docsCatalogProject,
+  loadDocsProjectCatalog,
+} from "@/lib/docs-project-catalog";
+import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
+import { readConfigurationReferences } from "../../../../scripts/docs/configuration-references-store.ts";
+
+export async function getStaticPaths() {
+  if (!shouldBuildDocsRoutes()) {
+    return [];
+  }
+  const catalog = await loadDocsProjectCatalog();
+  const references = await readConfigurationReferences();
+  return catalog.projects
+    .filter((project) => references[project.slug])
+    .map((project) => ({ params: { slug: project.slug } }));
+}
+
+const docsProjectCatalog = await loadDocsProjectCatalog();
+const configurationReferences = await readConfigurationReferences();
+const project = docsCatalogProject(docsProjectCatalog, Astro.params.slug!);
+const reference = project && configurationReferences[project.slug];
+if (!project || !reference) {
+  return Astro.redirect(withBasePath("/docs/configuration-reference/"));
+}
+
+const groups = reference.sections.map((section): ReferenceGroup => ({
+  id: section.id,
+  heading: section.title,
+  tables: section.tables,
+}));
+const canonicalUrl = canonicalSurfaceUrl(
+  "docs",
+  `/docs/${project.slug}/configuration-reference/`,
+);
+---
+
+<WebLayout
+  title={`${project.shortName} Configuration Reference`}
+  description={`Every documented configuration property of ${project.displayName}.`}
+  surface="docs"
+  canonicalUrl={canonicalUrl}
+>
+  <DocsShell projectCatalog={docsProjectCatalog} activeSlug={project.slug}>
+    <ConfigurationReferenceExplorer
+      pageTitle={`${project.displayName} Configuration Reference`}
+      intro={`Every documented configuration property of ${project.displayName}, with types, descriptions, and defaults.`}
+      headerLink={{
+        label: `${project.displayName} documentation`,
+        href: withBasePath(`/docs/${project.slug}/`),
+      }}
+      railLabel="Sections"
+      groupNoun="sections"
+      groups={groups}
+    />
+  </DocsShell>
+</WebLayout>

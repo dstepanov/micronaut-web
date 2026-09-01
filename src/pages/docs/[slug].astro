@@ -32,6 +32,7 @@ import {
   extractGeneratedDocSections,
 } from "@/lib/generated-docs-html";
 import { shouldBuildDocsRoutes } from "@/lib/surface-routes";
+import { readConfigurationReferences } from "../../../scripts/docs/configuration-references-store.ts";
 import { projectReferenceLinks } from "../../../scripts/docs/search-index.ts";
 import "@/styles/generated-docs-content.css";
 
@@ -108,7 +109,16 @@ const initialCurrentSectionIndexHidden =
 const relatedGuideTopicAliases = project.guideTopicAliases || [];
 const shouldRenderRelatedGuides = relatedGuideTopicAliases.length > 0;
 const guidesManifestUrl = withSurfacePath("guides", "/guides/manifest.json");
-const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
+const configurationReferences = await readConfigurationReferences();
+const referenceLinks = projectReferenceLinks(project, {
+  localConfigurationReference: Boolean(configurationReferences[project.slug]),
+}).map((reference) => ({
+  ...reference,
+  external: /^https?:/.test(reference.href),
+  href: /^https?:/.test(reference.href)
+    ? reference.href
+    : withBasePath(reference.href),
+}));
 ---
 
 <WebLayout
@@ -143,8 +153,8 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
             referenceLinks.map((reference) => (
               <a
                 href={reference.href}
-                target="_blank"
-                rel="noreferrer"
+                target={reference.external ? "_blank" : undefined}
+                rel={reference.external ? "noreferrer" : undefined}
                 class:list={buttonVariants({ size: "sm", variant: "outline" })}
               >
                 {reference.label}
@@ -282,8 +292,8 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
             referenceLinks.map((reference) => (
               <a
                 href={reference.href}
-                target="_blank"
-                rel="noreferrer"
+                target={reference.external ? "_blank" : undefined}
+                rel={reference.external ? "noreferrer" : undefined}
                 class:list={buttonVariants({ size: "sm", variant: "outline" })}
               >
                 {reference.label}
@@ -347,8 +357,8 @@ const referenceLinks = projectReferenceLinks(project.publishedGuideUrl);
         referenceLinks.map((reference) => (
           <a
             href={reference.href}
-            target="_blank"
-            rel="noreferrer"
+            target={reference.external ? "_blank" : undefined}
+            rel={reference.external ? "noreferrer" : undefined}
             class:list={[
               buttonVariants({ size: "sm", variant: "outline" }),
               "shadow-md",

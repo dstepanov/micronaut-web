@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 
 import { buildDocsSearchIndex } from "../../../scripts/docs/search-index.ts";
+import { readConfigurationReferences } from "../../../scripts/docs/configuration-references-store.ts";
 import {
   docsCatalogProject,
   loadDocsProjectCatalog,
@@ -29,13 +30,18 @@ export const getStaticPaths: GetStaticPaths = () => {
 export async function GET() {
   const docsProjectCatalog = await loadDocsProjectCatalog();
   const generatedHtmlBySlug = await readGeneratedDocsHtml();
+  const configurationReferences = await readConfigurationReferences();
   const projects = docsProjectCatalog.projects
     .map((project) => docsCatalogProject(docsProjectCatalog, project.slug))
     .filter((project): project is DocsProject => Boolean(project));
 
   return new Response(
     JSON.stringify({
-      items: buildDocsSearchIndex(projects, generatedHtmlBySlug),
+      items: buildDocsSearchIndex(
+        projects,
+        generatedHtmlBySlug,
+        configurationReferences,
+      ),
     }),
     {
       headers: {
