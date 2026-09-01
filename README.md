@@ -336,7 +336,7 @@ Older lines are not copied into new builds. They remain in `gh-pages` from previ
 
 ### Docs Snapshot
 
-Snapshot docs are the same docs surface built from the Micronaut Platform default branch instead of a release. The renderer resolves each module against the platform version catalog, so wherever the catalog names an unreleased version the module's own default branch is rendered.
+Snapshot docs are the same docs surface built from the Micronaut Platform default branch instead of a release. `DOCS_SNAPSHOT_SOURCES=true` renders every project the catalog names from its own default branch, the branch each project publishes its own snapshot documentation from, rather than from the release tag the catalog pins. Each project then reports the version that branch builds, read from its `gradle.properties`, so the pages, the project cards, and the source links all describe the unreleased sources.
 
 They are published to `micronaut-projects/micronaut-docs-snapshot` on `gh-pages`, as a single force-pushed orphan commit. The tree is rebuilt whenever upstream moves, so keeping its history would add a full docs tree to the repository several times a week; the branch therefore carries exactly one commit, plus a `.platform-revision` marker recording the built revision. `Publish Upstream Updates` compares that marker with the platform default branch and starts `Deploy Snapshot Docs` when they differ, the same way it polls guides.
 
