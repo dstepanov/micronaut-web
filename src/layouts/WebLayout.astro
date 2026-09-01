@@ -63,10 +63,11 @@ const remoteHeaderStyleUrl = new URL(
   "shell/site-header.css",
   externalSurfaceUrls.main,
 ).toString();
-const docsSearchIndexUrl = externalSurfacePath(
-  "docs",
-  "/docs/search-index.json",
-);
+// Read from the docs root this deployment actually serves. The standalone
+// docs root is `/latest`, which carries only redirect stubs for the HTML
+// pages of the current line — no `search-index.json` — so resolving it that
+// way made every docs query answer "No results found".
+const docsSearchIndexUrl = withSurfacePath("docs", "/docs/search-index.json");
 // The route only survives pruning on the main artifact, so the guides surface
 // reads it cross-origin the way docs search already reads its own index.
 const siteSearchIndexUrl = withSurfacePath("main", "/search-index.json");
