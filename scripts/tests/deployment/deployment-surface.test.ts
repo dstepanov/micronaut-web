@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { clientRedirectDocument } from "../../../src/lib/route-compatibility.ts";
 import { pruneSurface } from "../../prune-surface.ts";
 import { publishDocsSurface } from "../../publish-docs-surface.ts";
+import { publishDocsSnapshotRedirects } from "../../publish-docs-snapshot.ts";
 import { configurePagesDeployment } from "../../configure-pages-deployment.ts";
 import {
   isNewestPublishedDocsVersion,
@@ -1030,6 +1031,103 @@ test("/latest redirects to the published line instead of copying it", async (t) 
     "utf8",
   );
   assert.match(lineIndex, /href="\/micronaut-docs-v2\/5\.1\.x\/core\/"/);
+});
+
+test("/snapshot enters the snapshot Pages site instead of copying it", async (t) => {
+  const dist = await temporaryDirectory(t);
+  const published = await temporaryDirectory(t);
+
+  await writeTextFile(dist, "snapshot/index.html", "<p>Snapshot docs</p>");
+  await writeTextFile(dist, "snapshot/core/index.html", "<p>Core snapshot</p>");
+  await writeTextFile(
+    dist,
+    "snapshot/guide/index.html",
+    clientRedirectDocument(
+      "/micronaut-docs-snapshot/snapshot/core/",
+      "Micronaut Core docs",
+    ),
+  );
+  await writeTextFile(published, "snapshot/retired/index.html", "<p>Gone</p>");
+
+  await publishDocsSnapshotRedirects({
+    distDirectory: dist,
+    publishedDirectory: published,
+    snapshotSiteUrl:
+      "https://micronaut-projects.github.io/micronaut-docs-snapshot/",
+  });
+
+  // A GitHub Pages host serves one repository, so the released docs branch
+  // reaches the snapshot deployment through stubs, page for page.
+  for (const [stub, destination] of [
+    [
+      "snapshot/index.html",
+      "https://micronaut-projects.github.io/micronaut-docs-snapshot/snapshot/",
+    ],
+    [
+      "snapshot/core/index.html",
+      "https://micronaut-projects.github.io/micronaut-docs-snapshot/snapshot/core/",
+    ],
+    // A page that redirects inside the snapshot tree resolves its own
+    // destination against the snapshot deployment base, which does not exist
+    // on the released docs host, so the stub names the page itself and lets
+    // the snapshot site take the second hop.
+    [
+      "snapshot/guide/index.html",
+      "https://micronaut-projects.github.io/micronaut-docs-snapshot/snapshot/guide/",
+    ],
+  ] as const) {
+    const html = await fs.readFile(path.join(published, stub), "utf8");
+    assert.match(
+      html,
+      new RegExp(`location\\.replace\\("${escapeRegExp(destination)}"`),
+      stub,
+    );
+  }
+
+  // Nothing under /snapshot is a copy of the docs, and a page the snapshot no
+  // longer builds does not survive in the mirror.
+  assert.doesNotMatch(
+    await fs.readFile(path.join(published, "snapshot", "index.html"), "utf8"),
+    /Snapshot docs/,
+  );
+  assert.equal(
+    await exists(path.join(published, "snapshot", "retired", "index.html")),
+    false,
+  );
+});
+
+test("snapshot docs are force-pushed to their own repository and entered from the docs branch", async () => {
+  const [snapshotWorkflow, pollWorkflow] = await Promise.all(
+    ["deploy-docs-snapshot.yml", "publish-upstream-updates.yml"].map(
+      async (workflow) =>
+        fs.readFile(
+          path.join(projectDirectory, ".github", "workflows", workflow),
+          "utf8",
+        ),
+    ),
+  );
+
+  assert.match(
+    snapshotWorkflow,
+    /TARGET_REPOSITORY:\s*micronaut-projects\/micronaut-docs-snapshot/,
+  );
+  assert.match(snapshotWorkflow, /MICRONAUT_DOCS_ROOT:\s*\/snapshot/);
+  // The snapshot is rebuilt whenever the platform default branch moves, so its
+  // branch is replaced by one orphan commit instead of growing a docs tree per
+  // upstream merge.
+  assert.match(snapshotWorkflow, /git push --force/);
+  // Both this publish and Deploy Docs push the released docs branch, where the
+  // /snapshot entry lives.
+  assert.match(snapshotWorkflow, /group:\s*docs-pages/);
+  assert.match(snapshotWorkflow, /publish-docs-snapshot\.ts/);
+  assert.match(
+    snapshotWorkflow,
+    /git push origin HEAD:\$\{\{ env\.DOCS_BRANCH \}\}/,
+  );
+  // The poller publishes only when the built revision recorded by the last
+  // snapshot publish is behind the platform default branch.
+  assert.match(pollWorkflow, /\.platform-revision/);
+  assert.match(pollWorkflow, /gh workflow run deploy-docs-snapshot\.yml/);
 });
 
 test("docs version manifest is rebuilt from the published docs branch", async (t) => {

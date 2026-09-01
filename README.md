@@ -239,6 +239,7 @@ Temporary GitHub Pages hosts keep the repository names in the path:
 
 - `micronaut-web`: main site at `/micronaut-web/`
 - `micronaut-docs-v2`: docs selector at `/micronaut-docs-v2/`, release-line folders such as `/micronaut-docs-v2/5.0.x/`, and `/micronaut-docs-v2/latest/` redirecting to the newest of them
+- `micronaut-docs-snapshot`: snapshot docs at `/micronaut-docs-snapshot/snapshot/`
 - `micronaut-guides-v2`: guides at `/micronaut-guides-v2/`
 
 ### Surface Split
@@ -261,7 +262,8 @@ Standalone docs and guides builds do not publish their own header shell. In prod
 | [`Deploy Web`](.github/workflows/deploy-web.yml) | Pushes to `main` or manual dispatch | Builds only the web surface, ensures `dist/.nojekyll` is present, uploads the pruned artifact, and deploys it with GitHub Pages Actions. It does not check out Micronaut Platform or Micronaut Guides. |
 | [`Deploy Docs`](.github/workflows/deploy-docs.yml) | Manual dispatch or a `platform-released` repository-dispatch event | Builds one Docs release from Micronaut Platform and publishes it to `micronaut-projects/micronaut-docs-v2:gh-pages` under its release line, for example `5.0.3` to `/5.0.x/`. Manual runs take only `docs_version`; a platform release also supplies the exact source revision. `/latest` redirects to the newest published line. |
 | [`Deploy Guides`](.github/workflows/deploy-guides.yml) | Manual dispatch or a `guides-updated` repository-dispatch event | Runs the guides project's own Gradle build to generate the sample projects and their downloadable archives, renders the guides against them, and publishes everything to `micronaut-projects/micronaut-guides-v2:gh-pages`. Manual runs choose the source with `guides_repository` and `guides_ref`; a `guides-updated` event uses `client_payload.sha` to publish the exact upstream commit. |
-| [`Publish Upstream Updates`](.github/workflows/publish-upstream-updates.yml) | Hourly schedule or manual dispatch | Polls Micronaut Platform and Micronaut Guides, then starts `Deploy Docs` for platform releases that are not published yet and `Deploy Guides` when guides `master` has moved. |
+| [`Deploy Snapshot Docs`](.github/workflows/deploy-docs-snapshot.yml) | Manual dispatch | Builds the docs from the Micronaut Platform default branch and force-pushes them to `micronaut-projects/micronaut-docs-snapshot:gh-pages` as a single commit, then refreshes the `/snapshot` entry on the released docs branch. |
+| [`Publish Upstream Updates`](.github/workflows/publish-upstream-updates.yml) | Hourly schedule or manual dispatch | Polls Micronaut Platform and Micronaut Guides, then starts `Deploy Docs` for platform releases that are not published yet, `Deploy Snapshot Docs` when the platform default branch has moved, and `Deploy Guides` when guides `master` has moved. |
 
 The web target uses GitHub Pages Actions deployment from the uploaded `dist` artifact. The docs and guides Pages targets branch-deploy to `micronaut-projects/micronaut-docs-v2:gh-pages` and `micronaut-projects/micronaut-guides-v2:gh-pages`. Those destinations are workflow-level constants rather than inputs, so a publish cannot be pointed at another branch by accident.
 
@@ -287,6 +289,7 @@ The build reads these deployment inputs:
 - `MICRONAUT_MAIN_SITE_URL`, `MICRONAUT_DOCS_SITE_URL`, `MICRONAUT_GUIDES_SITE_URL`: optional complete surface URL overrides. In docs and guides workflows, the active surface is derived from the publication repository or its custom domain; remaining defaults use `MICRONAUT_GITHUB_PAGES_ORIGIN` plus the repository name.
 - `MICRONAUT_DOCS_BASE`, `MICRONAUT_GUIDES_BASE`: optional repository variables that override the derived docs or guides deployment base.
 - `MICRONAUT_DOCS_CUSTOM_DOMAIN`, `MICRONAUT_GUIDES_CUSTOM_DOMAIN`: optional repository variables used when creating a custom-domain deployment. For branch deployments, an existing root `CNAME` is detected automatically and preserved.
+- `MICRONAUT_DOCS_SNAPSHOT_SITE_URL`, `MICRONAUT_DOCS_SNAPSHOT_CUSTOM_DOMAIN`, `MICRONAUT_DOCS_SNAPSHOT_BASE`: optional repository variables for the snapshot docs deployment. They stand in for the docs surface variables in `Deploy Snapshot Docs`, whose docs site is the snapshot deployment rather than the released docs host.
 
 All app links should go through `src/lib/base-path.ts` or `src/lib/deployment-config.ts`. Those helpers translate `/docs`, `/guides`, and `/latest` links so the same source can run as an all-in-one preview, standalone docs, standalone guides, or the main site linking to external docs/guides.
 
@@ -311,7 +314,7 @@ The docs merge stores deployment metadata with the published artifact. If the ba
 
 The docs workflow does not check out or render Micronaut Guides.
 
-`.github/workflows/publish-upstream-updates.yml` covers the fact that GitHub Actions cannot subscribe to events in another repository. It runs hourly and can also be started manually. For docs it lists the newest stable patch of every Micronaut Platform major/minor line, then publishes a release only when it supersedes the newest published patch of its own line or opens a line newer than everything published, so major/minor lines that were never published stay unpublished. Each version is dispatched to `Deploy Docs` oldest first, waiting for the previous publish because a queued run in the `docs-pages` concurrency group is cancelled when a newer one joins it. For guides it compares `.guides-revision` on the guides Pages branch, written by `Deploy Guides` with the revision it built, against `master` in `micronaut-projects/micronaut-guides`, and dispatches `Deploy Guides` for the exact upstream commit when they differ. Once Micronaut Platform and Micronaut Guides send `platform-released` and `guides-updated` repository-dispatch events, this workflow becomes a safety net rather than the primary trigger.
+`.github/workflows/publish-upstream-updates.yml` covers the fact that GitHub Actions cannot subscribe to events in another repository. It runs hourly and can also be started manually. For docs it lists the newest stable patch of every Micronaut Platform major/minor line, then publishes a release only when it supersedes the newest published patch of its own line or opens a line newer than everything published, so major/minor lines that were never published stay unpublished. Each version is dispatched to `Deploy Docs` oldest first, waiting for the previous publish because a queued run in the `docs-pages` concurrency group is cancelled when a newer one joins it. For guides it compares `.guides-revision` on the guides Pages branch, written by `Deploy Guides` with the revision it built, against `master` in `micronaut-projects/micronaut-guides`, and dispatches `Deploy Guides` for the exact upstream commit when they differ. For snapshot docs it compares `.platform-revision` on the snapshot Pages branch against the platform default branch and dispatches `Deploy Snapshot Docs` for the exact upstream commit when they differ, after the release publishes of the same run, because both publishes push the released docs branch. Once Micronaut Platform and Micronaut Guides send `platform-released` and `guides-updated` repository-dispatch events, this workflow becomes a safety net rather than the primary trigger.
 
 `.github/workflows/republish-published-docs.yml` is a manual-only workflow for occasional full refreshes, such as a base-path or shared-asset migration. It is deliberately not scheduled, because a full republish rebuilds every retained line. It reads the releases recorded in the published `versions.json` together with any exact-version folders left from before docs moved to release lines, sorts them from oldest to newest, and rebuilds them one at a time. Each rebuild waits for the preceding docs publish workflow to succeed before starting, so shared Pages assets and the version manifest are updated deterministically. Only the final, newest version refreshes `/latest`, because `Deploy Docs` moves `/latest` solely for the newest published version.
 
@@ -321,6 +324,7 @@ The published docs branch layout is:
 - `/versions.json`: compact selector data for published versions. `scripts/update-docs-version-manifest.ts` regenerates `src/data/docs-versions.json` from the published docs branch during a docs deploy; the tracked copy is only the static fallback the selector renders before that fetch resolves, so it deliberately carries no patch version and must not be updated per release.
 - `/latest/<page>/`: redirect onto the same page of the newest published line. Every page of that line is mirrored, so historical `/latest/...` links keep working; `/latest/guide/` is the compatibility alias for Core docs and redirects straight to `/<line>/core/`.
 - `/latest.html`: redirect to the newest published line.
+- `/snapshot/<page>/`: redirect onto the same page of the snapshot Pages site, refreshed by `Deploy Snapshot Docs`.
 - `/<major>.<minor>.x/`: docs tree for a published release line, replaced by each new patch of that line.
 - `/<major>.<minor>.x.html`: compatibility redirect to `/<major>.<minor>.x/`.
 - `/<version>/` and `/<version>.html`: redirects to the line that replaced an exact version published before docs moved to release lines.
@@ -329,6 +333,26 @@ The published docs branch layout is:
 - `/assets/...` and `/docsassets/...`: preserved upstream docs assets when already present in the published branch.
 
 Older lines are not copied into new builds. They remain in `gh-pages` from previous publishes, and the selector links to those existing line folders or legacy external URLs.
+
+### Docs Snapshot
+
+Snapshot docs are the same docs surface built from the Micronaut Platform default branch instead of a release. The renderer resolves each module against the platform version catalog, so wherever the catalog names an unreleased version the module's own default branch is rendered.
+
+They are published to `micronaut-projects/micronaut-docs-snapshot` on `gh-pages`, as a single force-pushed orphan commit. The tree is rebuilt whenever upstream moves, so keeping its history would add a full docs tree to the repository several times a week; the branch therefore carries exactly one commit, plus a `.platform-revision` marker recording the built revision. `Publish Upstream Updates` compares that marker with the platform default branch and starts `Deploy Snapshot Docs` when they differ, the same way it polls guides.
+
+A GitHub Pages host serves exactly one repository, so `https://docs.micronaut.io/snapshot/` cannot be the snapshot repository's tree. `Deploy Snapshot Docs` mirrors the pages it built into `/snapshot/` on the released docs branch as redirect stubs onto the snapshot Pages site, page for page, the way `/latest` mirrors the newest release line. `scripts/publish-docs-snapshot.ts` writes that mirror; the stubs preserve the query and fragment, so a deep link such as `/snapshot/guide/#nettyClientPipeline` lands on the same anchor of the snapshot site. A stub never reuses the destination of a page that is itself a redirect, because a destination inside the snapshot tree is resolved against the snapshot deployment base, which does not exist on the released docs host.
+
+Both this workflow and `Deploy Docs` push the released docs branch, so `Deploy Snapshot Docs` shares the `docs-pages` concurrency group, and the poller dispatches it only after the release publishes of the same run have finished.
+
+Snapshot deployment values default to the publication repository: `https://micronaut-projects.github.io/micronaut-docs-snapshot/` with base `/micronaut-docs-snapshot/`. `MICRONAUT_DOCS_SNAPSHOT_SITE_URL`, `MICRONAUT_DOCS_SNAPSHOT_CUSTOM_DOMAIN`, and `MICRONAUT_DOCS_SNAPSHOT_BASE` override them; an existing `CNAME` on the snapshot branch is read back before the force push and preserved.
+
+The published snapshot branch layout is:
+
+- `/index.html`: docs selector/index.
+- `/snapshot/<project>/`: snapshot docs tree.
+- `/snapshot.html`: compatibility redirect to `/snapshot/`.
+- `/.platform-revision`: the platform revision this snapshot was built from.
+- `/_astro/` and `/assets/<hash>/...`: Astro-generated and shared generated content assets.
 
 ### Guides Latest
 
