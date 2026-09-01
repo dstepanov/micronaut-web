@@ -1112,6 +1112,10 @@ test("snapshot docs are force-pushed to their own repository and entered from th
     /TARGET_REPOSITORY:\s*micronaut-projects\/micronaut-docs-snapshot/,
   );
   assert.match(snapshotWorkflow, /MICRONAUT_DOCS_ROOT:\s*\/snapshot/);
+  // Every project is rendered from its own default branch, so the snapshot
+  // documents the unreleased modules rather than the releases the platform
+  // catalog pins.
+  assert.match(snapshotWorkflow, /DOCS_SNAPSHOT_SOURCES:\s*"true"/);
   // The snapshot is rebuilt whenever the platform default branch moves, so its
   // branch is replaced by one orphan commit instead of growing a docs tree per
   // upstream merge.

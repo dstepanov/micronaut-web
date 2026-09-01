@@ -9,9 +9,11 @@ import { copyProjectImageAssets } from "./docs/assets.ts";
 import { buildDocsProjectCatalog } from "./docs/project-catalog.ts";
 import {
   type DocsProject,
+  type Properties,
   projectCatalogMetadataProperties,
   readIndexed,
   readPlatformCatalogProjects,
+  readProperties,
   readSingleDocumentProjects,
   readTomlStringVersions,
   selectProjects,
@@ -58,6 +60,12 @@ const renderAll = Boolean(
 );
 const syncSources = Boolean(
   options.syncSources || process.env.DOCS_SYNC_SOURCES === "true",
+);
+// Snapshot docs describe the release that has not happened yet, so every
+// project comes from its own default branch instead of the release tag the
+// platform catalog names, and reports the version that branch builds.
+const snapshotSources = Boolean(
+  options.snapshotSources || process.env.DOCS_SNAPSHOT_SOURCES === "true",
 );
 const explicitSlugs = splitList(
   options.slugs || process.env.DOCS_PROJECT_SLUGS || "",
@@ -119,11 +127,16 @@ await cleanGeneratedDocsOutput(
   outputDirectory,
   explicitSlugs.length ? selectedSlugs : [],
 );
-if (await isRegularFile(platformVersionCatalogFile)) {
-  await writeGeneratedProjectCatalog(allProjects, platformVersions);
-}
 if (syncSources) {
   await syncProjectSources(projects, platformVersions);
+}
+// Resolved after the sources are on disk: a project's unreleased version is
+// written down nowhere but the project itself.
+const projectVersions = snapshotSources
+  ? { ...platformVersions, ...(await snapshotProjectVersions(projects)) }
+  : platformVersions;
+if (await isRegularFile(platformVersionCatalogFile)) {
+  await writeGeneratedProjectCatalog(allProjects, projectVersions);
 }
 
 let rendered = 0;
@@ -144,7 +157,7 @@ for (const project of projects) {
       asciidoctor,
       docsDirectory,
       project,
-      platformVersions[project.platformVersionKey] || "",
+      projectVersions[project.platformVersionKey] || "",
       { strict },
     );
     await fs.writeFile(
@@ -261,18 +274,22 @@ async function syncProjectSources(
     }
 
     const version = platformVersions[project.platformVersionKey];
-    const releaseTag = version
-      ? `v${version}`
-      : await latestReleaseTag(project.repositoryUrl);
+    const releaseTag = snapshotSources
+      ? ""
+      : version
+        ? `v${version}`
+        : await latestReleaseTag(project.repositoryUrl);
     await fs.mkdir(path.dirname(destination), { recursive: true });
     console.log(
-      `Cloning ${project.repositoryName} into ${path.relative(projectDirectory, destination)}${releaseTag ? ` at ${releaseTag}` : ""}`,
+      `Cloning ${project.repositoryName} into ${path.relative(projectDirectory, destination)}${releaseTag ? ` at ${releaseTag}` : snapshotSources ? " at its default branch" : ""}`,
     );
     try {
       await cloneProject(
         project.repositoryUrl,
         destination,
-        releaseTag || project.branch,
+        // The default branch, which a clone without a ref checks out, is the
+        // branch every project publishes its own snapshot documentation from.
+        snapshotSources ? "" : releaseTag || project.branch,
       );
     } catch (error: unknown) {
       if (!releaseTag || releaseTag === project.branch) {
@@ -283,6 +300,44 @@ async function syncProjectSources(
       );
       await cloneProject(project.repositoryUrl, destination, project.branch);
     }
+  }
+}
+
+/**
+ * The versions the checked-out sources build, keyed the way the platform
+ * catalog keys the released ones it names. The branch each project was
+ * rendered from replaces the release branch its catalog version implies, so
+ * the source and edit links lead to the sources on the page.
+ */
+async function snapshotProjectVersions(
+  projects: DocsProject[],
+): Promise<Properties> {
+  const versions: Properties = {};
+  for (const project of projects) {
+    const directory = path.join(docsDirectory, project.submodulePath);
+    const { projectVersion } = await readProperties(
+      path.join(directory, "gradle.properties"),
+      false,
+    );
+    if (projectVersion) {
+      versions[project.platformVersionKey] = projectVersion;
+    }
+    project.branch = (await checkedOutBranch(directory)) || project.branch;
+  }
+  return versions;
+}
+
+async function checkedOutBranch(directory: string): Promise<string> {
+  try {
+    const { stdout } = await execFile(
+      "git",
+      ["rev-parse", "--abbrev-ref", "HEAD"],
+      { cwd: directory },
+    );
+    const branch = stdout.trim();
+    return branch === "HEAD" ? "" : branch;
+  } catch {
+    return "";
   }
 }
 

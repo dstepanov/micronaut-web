@@ -90,6 +90,47 @@ describe("render-docs", () => {
     assert.equal(versions.get("data"), "4.14.3");
   });
 
+  test("snapshot sources report the version their branch builds", async (t) => {
+    const { docsDirectory, outputDirectory } = await docsDirectories(
+      t,
+      "micronaut-web-docs-snapshot-",
+    );
+    await writePlatformVersionCatalog(docsDirectory, { core: "4.10.22" });
+    await writeDocsGuide(
+      docsDirectory,
+      "micronaut-core",
+      "Core Docs",
+      "Documents Micronaut {version}.",
+    );
+    await writeTextFile(
+      path.join(docsDirectory, "repos", "micronaut-core", "gradle.properties"),
+      "projectVersion=4.11.0-SNAPSHOT\n",
+    );
+
+    await runRenderDocs(docsDirectory, outputDirectory, [
+      "--slugs",
+      "core",
+      "--snapshot-sources",
+    ]);
+
+    const catalog = JSON.parse(
+      await fs.readFile(
+        path.join(outputDirectory, "project-catalog.json"),
+        "utf8",
+      ),
+    );
+    assert.equal(
+      catalog.projects.find(
+        (project: { slug: string }) => project.slug === "core",
+      ).version,
+      "4.11.0-SNAPSHOT",
+    );
+    assert.match(
+      await fs.readFile(path.join(outputDirectory, "core.html"), "utf8"),
+      /Documents Micronaut 4\.11\.0-SNAPSHOT\./,
+    );
+  });
+
   test("writes the generated fragment and copies the assets it references", async (t) => {
     const { docsDirectory, outputDirectory } = await docsDirectories(
       t,

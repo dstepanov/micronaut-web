@@ -54,9 +54,10 @@ jobs:
           ref="${PLATFORM_REF:-$(gh api "repos/${PLATFORM_REPOSITORY}" --jq '.default_branch')}"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
-      # The docs renderer resolves module sources against the platform version
-      # catalog, so a snapshot platform pulls each module's default branch
-      # wherever the catalog names an unreleased version.
+      # Only the platform is pinned to the dispatched ref. Every module the
+      # catalog names is rendered from its own default branch, so the snapshot
+      # site documents the unreleased sources rather than the releases the
+      # catalog pins.
       - name: Check out platform project
         uses: actions/checkout@v7
         with:
@@ -123,6 +124,7 @@ jobs:
           DOCS_RENDER_ALL: "true"
           DOCS_RENDER_STRICT: "true"
           DOCS_SYNC_SOURCES: "true"
+          DOCS_SNAPSHOT_SOURCES: "true"
         run: npm run build:docs
 
       # Force-pushed as a single orphan commit: the snapshot is rebuilt from
