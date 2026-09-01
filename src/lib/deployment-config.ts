@@ -1,4 +1,5 @@
 import {
+  DOCS_SNAPSHOT_ROOT,
   resolveDeploymentSettings,
   type DeploySurface,
 } from "./deployment-defaults.ts";
@@ -53,6 +54,9 @@ const deploymentSettings = resolveDeploymentSettings({
 
 export const deploySurface = deploymentSettings.deploySurface;
 export const docsRoot = normalizedRoot(deploymentSettings.docsRoot);
+// Snapshot docs document the release that has not happened yet, so they belong
+// to no version line and the released lines are not theirs to offer.
+export const isDocsSnapshot = docsRoot === DOCS_SNAPSHOT_ROOT;
 export const docsLatestRoot = normalizedRoot(deploymentSettings.docsLatestRoot);
 export const guidesRoot = normalizedRoot(deploymentSettings.guidesRoot);
 export const guidesLatestRoot = normalizedRoot(

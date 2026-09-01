@@ -4,7 +4,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { parseArgs, stringArg } from "./shared/cli.ts";
 import { pageDirectory, writeRedirectMirror } from "./publish-docs-surface.ts";
-import { normalizedExternalBase } from "../src/lib/deployment-defaults.ts";
+import {
+  DOCS_SNAPSHOT_ROOT,
+  normalizedExternalBase,
+} from "../src/lib/deployment-defaults.ts";
 
 /**
  * Snapshot docs are rebuilt from the Platform default branch, so they are
@@ -14,7 +17,7 @@ import { normalizedExternalBase } from "../src/lib/deployment-defaults.ts";
  * tree; it is a mirror of redirect stubs onto the snapshot Pages site, page for
  * page, the way `/latest` mirrors the newest release line.
  */
-export const docsSnapshotRoot = "snapshot";
+export const docsSnapshotRoot = DOCS_SNAPSHOT_ROOT.slice(1);
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),

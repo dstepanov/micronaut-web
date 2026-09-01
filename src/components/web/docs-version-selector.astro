@@ -23,6 +23,9 @@ const {
   className = "",
 } = Astro.props;
 const current = options.find((option) => option.current) || options[0];
+// A deployment that hosts one tree, such as the snapshot, has nothing to
+// switch to: it names the version it serves instead of offering a dead control.
+const switchable = options.length >= 2;
 
 function routedDocsHref(href: string) {
   return withSurfacePath("docs", href);
@@ -30,7 +33,7 @@ function routedDocsHref(href: string) {
 ---
 
 {
-  current && options.length >= 2 && (
+  current && (
     <div
       class:list={[className]}
       data-docs-version-selector
@@ -43,38 +46,48 @@ function routedDocsHref(href: string) {
         </span>
         <span class="grid min-w-0 flex-1 gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
           <span class="truncate font-medium">{label}</span>
-          <select
-            class="h-5 min-w-0 border-0 bg-transparent p-0 text-xs text-sidebar-foreground/70 outline-none transition focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-            aria-label={label}
-            data-docs-version-select
-          >
-            {options.map((option) => (
-              <option
-                value={option.href}
-                data-route-href={routedDocsHref(option.href)}
-                selected={option.href === current.href}
-              >
-                {option.label}
-              </option>
-            ))}
-          </select>
+          {switchable ? (
+            <select
+              class="h-5 min-w-0 border-0 bg-transparent p-0 text-xs text-sidebar-foreground/70 outline-none transition focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              aria-label={label}
+              data-docs-version-select
+            >
+              {options.map((option) => (
+                <option
+                  value={option.href}
+                  data-route-href={routedDocsHref(option.href)}
+                  selected={option.href === current.href}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span class="h-5 truncate text-xs text-sidebar-foreground/70">
+              {current.label}
+            </span>
+          )}
         </span>
       </label>
-      <noscript>
-        <ul class="mt-2 grid gap-1 text-xs group-data-[collapsible=icon]:hidden">
-          {options.map((option) => (
-            <li>
-              <a
-                href={routedDocsHref(option.href)}
-                class="block rounded-md px-2 py-1 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                aria-current={option.href === current.href ? "page" : undefined}
-              >
-                {option.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </noscript>
+      {switchable && (
+        <noscript>
+          <ul class="mt-2 grid gap-1 text-xs group-data-[collapsible=icon]:hidden">
+            {options.map((option) => (
+              <li>
+                <a
+                  href={routedDocsHref(option.href)}
+                  class="block rounded-md px-2 py-1 text-sidebar-foreground/80 no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  aria-current={
+                    option.href === current.href ? "page" : undefined
+                  }
+                >
+                  {option.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </noscript>
+      )}
     </div>
   )
 }

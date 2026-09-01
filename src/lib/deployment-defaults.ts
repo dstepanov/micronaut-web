@@ -1,6 +1,13 @@
 export const DEFAULT_GITHUB_PAGES_ORIGIN =
   "https://micronaut-projects.github.io";
 
+/**
+ * The docs root the snapshot surface is built and published under. Snapshot
+ * docs are rebuilt from the platform default branch rather than released, so
+ * they are the one docs deployment that is not a version line.
+ */
+export const DOCS_SNAPSHOT_ROOT = "/snapshot";
+
 export type DeploySurface = "all" | "main" | "docs" | "guides";
 
 export type DeploymentSettings = {

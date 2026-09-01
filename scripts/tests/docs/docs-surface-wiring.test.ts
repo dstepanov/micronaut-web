@@ -510,10 +510,13 @@ test("docs routes render generated fragments and serve generated assets", async 
   assert.match(docsPageSource, /loadDocsProjectCatalog/);
   assert.match(searchIndexRouteSource, /loadDocsProjectCatalog/);
   assert.match(docsSidebarContentSource, /category\.slug !== "most-popular"/);
+  // The released deployment reads its published manifest; the snapshot hosts
+  // no release line, so it names itself and asks for no manifest at all.
   assert.match(
     docsSidebarContentSource,
-    /versionManifestHref="\/versions\.json"/,
+    /versionManifestHref=\{isDocsSnapshot \? "" : "\/versions\.json"\}/,
   );
+  assert.match(docsSidebarContentSource, /label: "Snapshot"/);
   assert.match(
     docsSidebarContentSource,
     /isActiveProject[\s\S]*\? `#\$\{project\.slug\}-docs`[\s\S]*: withBasePath\(project\.href\)/,

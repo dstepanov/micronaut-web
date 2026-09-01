@@ -7,6 +7,7 @@ import type {
   DocsProjectCatalog,
 } from "@/lib/content-catalog";
 import { withBasePath } from "@/lib/base-path";
+import { docsRoot, isDocsSnapshot } from "@/lib/deployment-config";
 import { cn } from "@/lib/utils";
 
 type ActiveSection = {
@@ -44,6 +45,11 @@ const activeCategorySlug = activeSlug
 const sidebarCategories = projectCatalog.categories.filter(
   (category) => category.slug !== "most-popular",
 );
+// The snapshot deployment serves one tree that is no release line, so it names
+// itself instead of offering the released lines it does not host.
+const versionOptions = isDocsSnapshot
+  ? [{ label: "Snapshot", href: `${docsRoot}/`, current: true }]
+  : docsVersions.versions;
 
 function docsCatalogProjectsByCategory(
   catalog: DocsProjectCatalog,
@@ -66,8 +72,8 @@ function docsCatalogProjectsByCategory(
 >
   <DocsVersionSelector
     label="Docs"
-    options={docsVersions.versions}
-    versionManifestHref="/versions.json"
+    options={versionOptions}
+    versionManifestHref={isDocsSnapshot ? "" : "/versions.json"}
     className="w-full"
   />
 </div>
