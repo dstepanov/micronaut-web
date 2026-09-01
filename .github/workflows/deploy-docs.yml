@@ -130,9 +130,12 @@ jobs:
       - name: Configure docs deployment
         env:
           CONFIGURED_GITHUB_PAGES_ORIGIN: ${{ vars.MICRONAUT_GITHUB_PAGES_ORIGIN || vars.DEFAULT_GITHUB_PAGES_ORIGIN }}
-          CONFIGURED_MAIN_SITE_URL: ${{ vars.MICRONAUT_MAIN_SITE_URL }}
+          # Cross-surface links must use the production custom domains: the
+          # GitHub Pages project URLs 301 to them without CORS headers, which
+          # kills browser fetches such as the related-guides manifest load.
+          CONFIGURED_MAIN_SITE_URL: ${{ vars.MICRONAUT_MAIN_SITE_URL || 'https://micronaut.io/' }}
           CONFIGURED_DOCS_SITE_URL: ${{ vars.MICRONAUT_DOCS_SITE_URL }}
-          CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL }}
+          CONFIGURED_GUIDES_SITE_URL: ${{ vars.MICRONAUT_GUIDES_SITE_URL || 'https://guides.micronaut.io/' }}
           CONFIGURED_CUSTOM_DOMAIN: ${{ vars.MICRONAUT_DOCS_CUSTOM_DOMAIN }}
           CONFIGURED_SURFACE_BASE: ${{ vars.MICRONAUT_DOCS_BASE }}
           PUBLISHED_DIRECTORY: published-docs
