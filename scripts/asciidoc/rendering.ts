@@ -10,6 +10,7 @@ import { extractTaggedSource } from "../shared/tagged-source.ts";
 
 import { registerComponentRenderingExtensions } from "./extensions/index.ts";
 import { componentFooterHtml } from "./extensions/register-component-footer-processor.ts";
+import { multiLanguageSampleAlternates } from "./extensions/register-multi-language-sample-processor.ts";
 import {
   precomputeGeneratedInlineText,
   renderGeneratedSnippet,
@@ -39,6 +40,8 @@ type AsciidoctorNode = {
   attributes?: Record<string, unknown>;
   hasTitle?: () => boolean;
   getAttribute?: (name: string) => unknown;
+  getSubstitutions?: () => string[];
+  subAttributes?: (text: string) => string;
   getDocument?: () => { getAttribute?: (name: string) => unknown } | undefined;
   getSource?: () => string;
 };
@@ -65,10 +68,12 @@ class MicronautComponentHtmlConverter extends Html5Converter {
       descriptionHtml: "",
       footerHtml,
       id: node.id || listingSnippetId(node, generatedIndex),
-      language: listingBlockLanguage(node),
-      // Asciidoctor leaves tag directives in place unless the include selected
-      // a tag, so strip them here the same way snippet sources are stripped.
-      source: extractTaggedSource(node.getSource?.() || "", undefined),
+      samples: [node, ...multiLanguageSampleAlternates(node)].map(
+        (sample: AsciidoctorNode) => ({
+          language: listingBlockLanguage(sample),
+          source: listingSource(sample),
+        }),
+      ),
       titleHtml: node.hasTitle?.() ? String(node.title || "") : "",
     });
   }
@@ -160,6 +165,18 @@ function listingSnippetId(node: AsciidoctorNode, index: number): string {
     : `generated-listing-snippet-${index}`;
 }
 
+function listingSource(node: AsciidoctorNode): string {
+  // Asciidoctor leaves tag directives in place unless the include selected
+  // a tag, so strip them here the same way snippet sources are stripped.
+  const source = extractTaggedSource(node.getSource?.() || "", undefined);
+  // The raw source is what `getSource()` hands back, so a block that asks for
+  // attribute substitution (`subs="verbatim,attributes"`) keeps its `{version}`
+  // references until they are substituted here.
+  return node.getSubstitutions?.().includes("attributes") && node.subAttributes
+    ? node.subAttributes(source)
+    : source;
+}
+
 function listingBlockLanguage(node: AsciidoctorNode): string {
   return String(
     node.getAttribute?.("language") ||
@@ -175,15 +192,13 @@ async function renderListingSnippetCard({
   descriptionHtml = "",
   footerHtml,
   id,
-  language,
-  source,
+  samples,
   titleHtml = "",
 }: {
   descriptionHtml?: string;
   footerHtml: string;
   id: string;
-  language: string;
-  source: string;
+  samples: Array<{ language: string; source: string }>;
   titleHtml?: string;
 }): Promise<string> {
   return renderGeneratedSnippet({
@@ -194,15 +209,17 @@ async function renderListingSnippetCard({
     kind: "code",
     optionsLabel: "Code language",
     titleHtml,
-    variants: [
-      await renderSnippetVariant({
-        active: true,
-        language,
-        panelId: `${id}-panel-0`,
-        sample: { language, source },
-        tabId: `${id}-tab-0`,
-      }),
-    ],
+    variants: await Promise.all(
+      samples.map((sample, index) =>
+        renderSnippetVariant({
+          active: index === 0,
+          language: sample.language,
+          panelId: `${id}-panel-${index}`,
+          sample,
+          tabId: `${id}-tab-${index}`,
+        }),
+      ),
+    ),
   });
 }
 
