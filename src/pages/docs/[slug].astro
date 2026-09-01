@@ -142,12 +142,16 @@ const referenceLinks = projectReferenceLinks(project, {
     >
       <div class:list={["min-w-0", !generatedDocHtml && "xl:px-14"]}>
         {
-          /* The corner links float only where they don't cover content, so on
-             small screens the same pair opens the page instead. */
+          /* The references sit where the reader starts, at the top of the
+             page, and from sm up they ride the scroll pinned under the
+             topbar, so every chapter is one click from the API and
+             configuration references. Phones keep the row in flow: pinned,
+             the pair wraps and would cover the prose it sits over. */
         }
         <nav
           aria-label="Reference documentation"
-          class="mb-6 flex flex-wrap gap-2 sm:hidden"
+          data-docs-reference-links
+          class="group/references z-30 mb-6 flex flex-wrap gap-2 sm:sticky sm:top-[calc(var(--topbar-height)+16px)] sm:mb-4 sm:justify-end"
         >
           {
             referenceLinks.map((reference) => (
@@ -155,7 +159,10 @@ const referenceLinks = projectReferenceLinks(project, {
                 href={reference.href}
                 target={reference.external ? "_blank" : undefined}
                 rel={reference.external ? "noreferrer" : undefined}
-                class:list={buttonVariants({ size: "sm", variant: "outline" })}
+                class:list={[
+                  buttonVariants({ size: "sm", variant: "outline" }),
+                  "transition-shadow duration-300 ease-out group-data-[stuck=true]/references:shadow-md",
+                ]}
               >
                 {reference.label}
               </a>
@@ -281,7 +288,7 @@ const referenceLinks = projectReferenceLinks(project, {
           )
         }
         {
-          /* The floating pair is sm-and-up only, so after a long chapter a
+          /* The pinned row is sm-and-up only, so after a long chapter a
              phone reader gets the references again without scrolling back. */
         }
         <nav
@@ -345,30 +352,6 @@ const referenceLinks = projectReferenceLinks(project, {
         }
       </div>
     </article>
-    {
-      /* The old docs floated both references in the lower-right corner of
-         every module guide. */
-    }
-    <nav
-      aria-label="Reference documentation"
-      class="fixed right-4 bottom-4 z-40 hidden gap-2 sm:flex print:hidden"
-    >
-      {
-        referenceLinks.map((reference) => (
-          <a
-            href={reference.href}
-            target={reference.external ? "_blank" : undefined}
-            rel={reference.external ? "noreferrer" : undefined}
-            class:list={[
-              buttonVariants({ size: "sm", variant: "outline" }),
-              "shadow-md",
-            ]}
-          >
-            {reference.label}
-          </a>
-        ))
-      }
-    </nav>
   </DocsShell>
 </WebLayout>
 
