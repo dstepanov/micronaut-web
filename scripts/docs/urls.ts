@@ -146,7 +146,10 @@ export function rewriteUrls(input: string, project: DocsProject): string {
             "assets",
             project.slug,
             "docs",
-            "guide",
+            // Guide sources live in `docs/guide`, so a link such as `../api/...`
+            // reaches the docs root. A single published document is that root
+            // already, and writes the same link as `api/...`.
+            project.docsSourceFile ? "" : "guide",
             pathname.replaceAll("\\", "/"),
           ),
         ) + suffix;

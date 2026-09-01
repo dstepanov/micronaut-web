@@ -93,6 +93,7 @@ interface CatalogProject {
   slug: string;
   repositoryName?: string;
   publishedGuideUrl?: string;
+  docsSourceFile?: string;
 }
 
 async function loadCatalogProjects(): Promise<CatalogProject[]> {

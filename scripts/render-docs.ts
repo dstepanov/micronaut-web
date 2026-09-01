@@ -12,6 +12,7 @@ import {
   projectCatalogMetadataProperties,
   readIndexed,
   readPlatformCatalogProjects,
+  readSingleDocumentProjects,
   readTomlStringVersions,
   selectProjects,
 } from "./docs/project-manifest.ts";
@@ -94,10 +95,13 @@ const metadataProperties = projectCatalogMetadataProperties(
 );
 let allProjects: DocsProject[];
 if (await isRegularFile(platformVersionCatalogFile)) {
-  allProjects = await readPlatformCatalogProjects(
-    platformVersionCatalogFile,
-    metadataProperties,
-  );
+  allProjects = [
+    ...(await readPlatformCatalogProjects(
+      platformVersionCatalogFile,
+      metadataProperties,
+    )),
+    ...readSingleDocumentProjects(metadataProperties),
+  ];
 } else {
   allProjects = readIndexed(
     metadataProperties,
@@ -126,19 +130,11 @@ let rendered = 0;
 let skipped = 0;
 const skippedProjects: string[] = [];
 for (const project of projects) {
-  const guideSourceDirectory = path.join(
-    docsDirectory,
-    project.submodulePath,
-    "src",
-    "main",
-    "docs",
-    "guide",
-  );
   try {
-    if (!(await isDirectory(guideSourceDirectory))) {
+    if (!(await hasDocsSource(project))) {
       skipped += 1;
       skippedProjects.push(
-        `${project.slug}: missing guide source at ${guideSourceDirectory}`,
+        `${project.slug}: missing docs source at ${docsSourceLocation(project)}`,
       );
       console.warn(`Skipping ${skippedProjects.at(-1)}`);
       continue;
@@ -252,28 +248,22 @@ async function syncProjectSources(
   platformVersions: Record<string, string>,
 ): Promise<void> {
   for (const project of projects) {
-    const guideSourceDirectory = path.join(
-      docsDirectory,
-      project.submodulePath,
-      "src",
-      "main",
-      "docs",
-      "guide",
-    );
-    if (await isDirectory(guideSourceDirectory)) {
+    if (await hasDocsSource(project)) {
       continue;
     }
 
     const destination = path.join(docsDirectory, project.submodulePath);
     if (await isDirectory(destination)) {
       console.warn(
-        `Project source exists without docs guide, leaving it unchanged: ${path.relative(projectDirectory, destination)}`,
+        `Project source exists without docs sources, leaving it unchanged: ${path.relative(projectDirectory, destination)}`,
       );
       continue;
     }
 
     const version = platformVersions[project.platformVersionKey];
-    const releaseTag = version ? `v${version}` : "";
+    const releaseTag = version
+      ? `v${version}`
+      : await latestReleaseTag(project.repositoryUrl);
     await fs.mkdir(path.dirname(destination), { recursive: true });
     console.log(
       `Cloning ${project.repositoryName} into ${path.relative(projectDirectory, destination)}${releaseTag ? ` at ${releaseTag}` : ""}`,
@@ -296,6 +286,26 @@ async function syncProjectSources(
   }
 }
 
+/**
+ * The newest release tag in a repository the platform BOM does not version.
+ * Their default branch documents unreleased changes down to the plugin version
+ * every build snippet tells the reader to apply, so the docs follow the
+ * releases the way every BOM-versioned project already does.
+ */
+async function latestReleaseTag(repositoryUrl: string): Promise<string> {
+  const { stdout } = await execFile(
+    "git",
+    ["ls-remote", "--tags", "--refs", "--sort=-v:refname", repositoryUrl, "v*"],
+    { cwd: projectDirectory },
+  );
+  return (
+    stdout
+      .split("\n")
+      .map((line) => line.split("refs/tags/")[1]?.trim() || "")
+      .find((tag) => /^v\d+\.\d+\.\d+$/.test(tag)) || ""
+  );
+}
+
 async function cloneProject(
   repositoryUrl: string,
   destination: string,
@@ -315,6 +325,27 @@ async function cloneProject(
     await fs.rm(cloneDirectory, { force: true, recursive: true });
     throw error;
   }
+}
+
+/**
+ * Where a project's AsciiDoc sources live: a guide directory driven by a
+ * `toc.yml`, or the single document a project such as the build plugins
+ * publishes instead.
+ */
+function docsSourceLocation(project: DocsProject): string {
+  return path.join(
+    docsDirectory,
+    project.submodulePath,
+    ...(project.docsSourceFile
+      ? [project.docsSourceFile]
+      : ["src", "main", "docs", "guide"]),
+  );
+}
+
+function hasDocsSource(project: DocsProject): Promise<boolean> {
+  return project.docsSourceFile
+    ? isRegularFile(docsSourceLocation(project))
+    : isDirectory(docsSourceLocation(project));
 }
 
 function errorMessage(error: unknown): string {

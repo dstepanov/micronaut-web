@@ -39,6 +39,7 @@ export type DocsCatalogProject = {
   branch: string;
   submodulePath: string;
   platformVersionKey: string;
+  docsSourceFile?: string;
   version: string;
   icon: string;
   iconThemeTreatment?: "auto" | "inverted" | "monochrome" | "preserve";

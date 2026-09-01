@@ -82,6 +82,9 @@ export function buildDocsProjectCatalog({
 
       return {
         slug: project.slug,
+        ...(existingProject.documentationOnly
+          ? { documentationOnly: existingProject.documentationOnly }
+          : {}),
         displayName: project.displayName,
         shortName:
           existingProject.shortName ||
@@ -97,6 +100,9 @@ export function buildDocsProjectCatalog({
         branch: project.branch,
         submodulePath: project.submodulePath,
         platformVersionKey: project.platformVersionKey,
+        ...(project.docsSourceFile
+          ? { docsSourceFile: project.docsSourceFile }
+          : {}),
         version:
           platformVersions[project.platformVersionKey] ||
           existingProject.version ||
