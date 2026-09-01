@@ -165,23 +165,21 @@ export function searchItems({
         "configuration reference properties settings options unified all modules",
     },
     ...projects.flatMap((project) =>
-      projectReferenceLinks(project.publishedGuideUrl).map(
-        (reference): SearchItem => ({
-          kind: "Reference",
-          title: `${project.displayName}: ${reference.label}`,
-          description:
-            reference.label === "API Reference"
-              ? `Published API documentation for ${project.displayName}.`
-              : `Published configuration reference for ${project.displayName}.`,
-          href: reference.href,
-          terms: [
-            project.displayName,
-            project.projectKey,
-            reference.label,
-            "javadoc api configuration reference",
-          ].join(" "),
-        }),
-      ),
+      projectReferenceLinks(project).map((reference): SearchItem => ({
+        kind: "Reference",
+        title: `${project.displayName}: ${reference.label}`,
+        description:
+          reference.label === "API Reference"
+            ? `Published API documentation for ${project.displayName}.`
+            : `Published configuration reference for ${project.displayName}.`,
+        href: reference.href,
+        terms: [
+          project.displayName,
+          project.projectKey,
+          reference.label,
+          "javadoc api configuration reference",
+        ].join(" "),
+      })),
     ),
   ];
   return [...projectItems, ...sectionItems, ...postItems, ...referenceItems];

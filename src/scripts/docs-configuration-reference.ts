@@ -28,13 +28,20 @@ input?.addEventListener("input", () => {
   let visibleModules = 0;
   for (const module of modules) {
     let moduleMatches = 0;
-    for (const row of module.querySelectorAll<HTMLElement>("tbody tr")) {
-      const haystack = row.dataset.terms || "";
-      const matches = terms.every((term) => haystack.includes(term));
-      row.hidden = !matches;
-      if (matches) {
-        moduleMatches += 1;
+    for (const table of module.querySelectorAll<HTMLElement>(
+      "[data-docs-configuration-table]",
+    )) {
+      let tableMatches = 0;
+      for (const row of table.querySelectorAll<HTMLElement>("tbody tr")) {
+        const haystack = row.dataset.terms || "";
+        const matches = terms.every((term) => haystack.includes(term));
+        row.hidden = !matches;
+        if (matches) {
+          tableMatches += 1;
+        }
       }
+      table.hidden = tableMatches === 0;
+      moduleMatches += tableMatches;
     }
     module.hidden = moduleMatches === 0;
     const link = moduleLinks.get(module.id);
@@ -48,10 +55,13 @@ input?.addEventListener("input", () => {
   }
   if (count) {
     const total = count.dataset.docsConfigurationTotal;
-    const modulesLabel = `${visibleModules} ${visibleModules === 1 ? "module" : "modules"}`;
+    const noun = count.dataset.docsConfigurationNoun || "modules";
+    const groupsLabel = `${visibleModules} ${
+      visibleModules === 1 ? noun.replace(/s$/, "") : noun
+    }`;
     count.textContent = terms.length
-      ? `${visibleProperties} of ${total} properties across ${modulesLabel}`
-      : `${total} properties across ${modulesLabel}`;
+      ? `${visibleProperties} of ${total} properties across ${groupsLabel}`
+      : `${total} properties across ${groupsLabel}`;
   }
   if (empty) {
     empty.hidden = visibleProperties > 0;
