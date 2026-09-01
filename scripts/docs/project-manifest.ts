@@ -14,6 +14,11 @@ export interface DocsProject {
   branch: string;
   submodulePath: string;
   platformVersionKey: string;
+  /**
+   * Repository-relative AsciiDoc file for projects that publish one document
+   * instead of a guide directory with a `toc.yml`.
+   */
+  docsSourceFile?: string;
 }
 
 interface PlatformCatalogProject {
@@ -142,7 +147,7 @@ export async function readTomlStringVersions(
     }
     if (!inVersions) continue;
 
-    const match = line.match(/^([A-Za-z0-9_.-]+)\s*=\s*"([^"]+)"\s*$/);
+    const match = line.match(/^([A-Za-z0-9_.-]+)\s*=\s*"([^"]+)"\s*(?:#.*)?$/);
     if (match) {
       versions[match[1]] = match[2];
     }
@@ -202,6 +207,23 @@ export async function readPlatformCatalogProjects(
   }
 
   return projects;
+}
+
+/**
+ * Projects the platform BOM does not version, such as the build plugins, that
+ * still ship AsciiDoc sources this site renders. They are described entirely by
+ * the checked-in catalog metadata.
+ */
+export function readSingleDocumentProjects(
+  metadataProperties: Properties,
+): DocsProject[] {
+  return readIndexed(
+    metadataProperties,
+    "project",
+    Number(metadataProperties["project.count"] || 0),
+  )
+    .filter((entry) => entry.docsSourceFile)
+    .map((entry) => entry as unknown as DocsProject);
 }
 
 export function selectProjects(

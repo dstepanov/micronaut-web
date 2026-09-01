@@ -182,6 +182,70 @@ describe("renderProject", () => {
       /href="https:\/\/github\.com\/micronaut-projects\/micronaut-fixture\/edit\/master\/src\/main\/docs\/guide\/introduction\.adoc"/,
     );
   });
+
+  test("numbers a single document's own sections and folds a language sample run into one card", async (t) => {
+    const docsDirectory = await temporaryDirectory(
+      t,
+      "micronaut-web-docs-single-",
+    );
+    const docsSourceFile = "src/docs/asciidoc/index.adoc";
+    await writeTextFile(
+      path.join(
+        docsDirectory,
+        "repos",
+        fixtureDocsProject.repositoryName,
+        docsSourceFile,
+      ),
+      [
+        "= Micronaut Fixture plugin",
+        ":fixture-version: 1.2.3",
+        "",
+        "Version {fixture-version}",
+        "",
+        "== Getting started",
+        "",
+        '[source,groovy,subs="verbatim,attributes",role="multi-language-sample"]',
+        "----",
+        'id "io.micronaut.fixture" version "{fixture-version}"',
+        "----",
+        '[source,kotlin,subs="verbatim,attributes",role="multi-language-sample"]',
+        "----",
+        'id("io.micronaut.fixture") version "{fixture-version}"',
+        "----",
+        "",
+        "[[reference]]",
+        "== Reference",
+        "",
+        "Back to <<reference>>.",
+      ],
+    );
+
+    const html = await renderProject(
+      asciidoctor,
+      docsDirectory,
+      { ...docsProject(fixtureDocsProject), docsSourceFile },
+      "4.9.0",
+      { strict: true },
+    );
+    const cards = snippetCards(html);
+
+    assert.match(html, /Version 1\.2\.3/);
+    assert.match(
+      html,
+      /<h1 id="fixture-_getting_started">.*1 Getting started<\/h1>/,
+    );
+    assert.match(html, /<h1 id="fixture-reference">.*2 Reference<\/h1>/);
+    assert.match(html, /href="#fixture-reference"/);
+    assert.deepEqual(
+      cards.map((card) => card.tabs),
+      [["Groovy", "Kotlin"]],
+    );
+    assert.match(cards[0].activeCode, /version "1\.2\.3"/);
+    assert.match(
+      html,
+      /href="https:\/\/github\.com\/micronaut-projects\/micronaut-fixture\/edit\/master\/src\/docs\/asciidoc\/index\.adoc"/,
+    );
+  });
 });
 
 describe("anchors across sections", () => {

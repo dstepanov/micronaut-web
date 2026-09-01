@@ -5,7 +5,11 @@ import { micronautExtensionRegistry } from "../asciidoc/extensions/index.ts";
 import { renderAsciiDoc } from "../asciidoc/rendering.ts";
 import { optimizeImages } from "../shared/generated-html.ts";
 import { attribute, html } from "../shared/html.ts";
-import { renderAttributes, sourceDocsEditUrl } from "./project-meta.ts";
+import {
+  renderAttributes,
+  singleDocumentAttributes,
+  sourceDocsEditUrl,
+} from "./project-meta.ts";
 import {
   type DocsProject,
   type Properties,
@@ -48,18 +52,25 @@ export async function renderProject(
     "docs",
   );
   const guideSourceDirectory = path.join(sourceDocsDirectory, "guide");
-  const toc = await readGuideToc(guideSourceDirectory);
+  const toc = project.docsSourceFile
+    ? undefined
+    : await readGuideToc(guideSourceDirectory);
   const projectProperties = await readProperties(
     path.join(submoduleDirectory, "gradle.properties"),
     false,
   );
-  const attributes = renderAttributes(
-    project,
-    platformVersion,
-    submoduleDirectory,
-    sourceDocsDirectory,
-    projectProperties,
-  );
+  const attributes = {
+    ...renderAttributes(
+      project,
+      platformVersion,
+      submoduleDirectory,
+      sourceDocsDirectory,
+      projectProperties,
+    ),
+    ...(project.docsSourceFile
+      ? await singleDocumentAttributes(submoduleDirectory, projectProperties)
+      : {}),
+  };
   const context = {
     project,
     platformVersion,
@@ -72,13 +83,17 @@ export async function renderProject(
     // Section headings anchor the page navigation, so every section id is
     // spoken for before any content heading gets the chance to take one, even
     // for sections that appear later in the page.
-    reservedSectionIds: tocNodeIds(toc.children, project.slug),
+    reservedSectionIds: tocNodeIds(toc?.children || [], project.slug),
   };
 
   let content = `<span class="project-document-anchor" id="${attribute(project.slug)}-docs" aria-hidden="true"></span>\n`;
   content += `<div class="project">\n    <h1>${html(project.displayName.replace(/^Micronaut\s+/i, ""))}</h1>\n</div>\n`;
-  for (const node of toc.children) {
-    content += await renderNode(asciidoctor, context, node);
+  if (toc) {
+    for (const node of toc.children) {
+      content += await renderNode(asciidoctor, context, node);
+    }
+  } else {
+    content += await renderSingleDocument(asciidoctor, context);
   }
 
   content = prefixIds(content, project.slug);
@@ -93,12 +108,100 @@ async function renderNode(
   node: TocNode,
 ): Promise<string> {
   const sourceFile = path.join(context.guideSourceDirectory, node.file);
-  const source = await fs.readFile(sourceFile, "utf8");
+  const converted = await convertSource(
+    asciidoctor,
+    context,
+    await fs.readFile(sourceFile, "utf8"),
+    node.file,
+  );
 
-  const converted = await renderAsciiDoc({
+  // Claimed in document order: the first section to use an id keeps it, and a
+  // table of contents that repeats a key gets the repeat suffixed.
+  const sectionId = claimId(node.id, context.project.slug, context.claimedIds);
+  let htmlContent = `${sectionHeading({
+    editUrl: `${sourceDocsEditUrl(context.project)}/guide/${node.file}`,
+    headingLevel: node.level === 0 ? 1 : 2,
+    number: node.number,
+    sectionId,
+    titleHtml: html(node.title),
+  })}\n${uniquifyIds(converted, context.project.slug, context.claimedIds, context.reservedSectionIds)}\n`;
+  for (const child of node.children) {
+    htmlContent += await renderNode(asciidoctor, context, child);
+  }
+  return htmlContent;
+}
+
+/**
+ * Projects that publish a single AsciiDoc file have no table of contents to
+ * render section by section, so the document's own top-level sections stand in
+ * for one: each becomes a numbered page section like a TOC entry, and the
+ * content that precedes them stays as the project's introduction.
+ */
+async function renderSingleDocument(
+  asciidoctor: typeof import("@asciidoctor/core"),
+  context: DocsRenderContext,
+): Promise<string> {
+  const docsSourceFile = context.project.docsSourceFile!;
+  const converted = await convertSource(
+    asciidoctor,
+    context,
+    await fs.readFile(
+      path.join(context.submoduleDirectory, docsSourceFile),
+      "utf8",
+    ),
+    docsSourceFile,
+  );
+
+  const parts = converted.split(/(?=<div class="sect1">)/);
+  const editUrl = sourceDocsEditUrl(context.project, docsSourceFile);
+  const reservedSectionIds = new Set(
+    parts
+      .map((part) => documentSectionHeading(part))
+      .filter((heading) => heading !== undefined)
+      .map((heading) => prefixedId(heading.id, context.project.slug)),
+  );
+  let content = "";
+  let number = 0;
+  for (const part of parts) {
+    const heading = documentSectionHeading(part);
+    if (!heading) {
+      content += `${uniquifyIds(part, context.project.slug, context.claimedIds, reservedSectionIds)}\n`;
+      continue;
+    }
+    number += 1;
+    content += `${sectionHeading({
+      editUrl,
+      headingLevel: 1,
+      number: String(number),
+      sectionId: claimId(heading.id, context.project.slug, context.claimedIds),
+      titleHtml: heading.titleHtml,
+    })}\n${uniquifyIds(part.replace(heading.markup, ""), context.project.slug, context.claimedIds, reservedSectionIds)}\n`;
+  }
+  return content;
+}
+
+// The heading Asciidoctor renders for a top-level section, which the page
+// heading with its number and contribute link replaces.
+function documentSectionHeading(
+  part: string,
+): { id: string; markup: string; titleHtml: string } | undefined {
+  const match =
+    /^<div class="sect1">\s*(<h2 id="([^"]+)">([\s\S]*?)<\/h2>)/.exec(part);
+  return match
+    ? { id: match[2], markup: match[1], titleHtml: match[3] }
+    : undefined;
+}
+
+function convertSource(
+  asciidoctor: typeof import("@asciidoctor/core"),
+  context: DocsRenderContext,
+  source: string,
+  sourceFile: string,
+): Promise<string> {
+  return renderAsciiDoc({
     asciidoctor,
     source,
-    diagnosticsLabel: `${context.project.slug}/${node.file}`,
+    diagnosticsLabel: `${context.project.slug}/${sourceFile}`,
     strict: context.renderOptions.strict,
     convertOptions: {
       attributes: context.attributes,
@@ -110,15 +213,6 @@ async function renderNode(
     fatalDiagnostic: isFatalDocsDiagnostic,
     ignoredDiagnostic: isIgnoredDocsDiagnostic,
   });
-
-  // Claimed in document order: the first section to use an id keeps it, and a
-  // table of contents that repeats a key gets the repeat suffixed.
-  const sectionId = claimId(node.id, context.project.slug, context.claimedIds);
-  let htmlContent = `${sectionHeading(context.project, node, sectionId)}\n${uniquifyIds(converted, context.project.slug, context.claimedIds, context.reservedSectionIds)}\n`;
-  for (const child of node.children) {
-    htmlContent += await renderNode(asciidoctor, context, child);
-  }
-  return htmlContent;
 }
 
 export function isFatalDocsDiagnostic(diagnostic: string): boolean {
@@ -152,16 +246,22 @@ function tocNodeIds(nodes: TocNode[], slug: string): Set<string> {
   return ids;
 }
 
-function sectionHeading(
-  project: DocsProject,
-  node: TocNode,
-  sectionId: string,
-): string {
-  const headingLevel = node.level === 0 ? 1 : 2;
+function sectionHeading({
+  editUrl,
+  headingLevel,
+  number,
+  sectionId,
+  titleHtml,
+}: {
+  editUrl: string;
+  headingLevel: number;
+  number: string;
+  sectionId: string;
+  titleHtml: string;
+}): string {
   const id = attribute(sectionId);
-  const editUrl = `${sourceDocsEditUrl(project)}/guide/${node.file}`;
   return `<div class="guide-section-heading">
-    <h${headingLevel} id="${id}"><a class="anchor" href="#${id}"></a>${html(node.number)} ${html(node.title)}</h${headingLevel}>
+    <h${headingLevel} id="${id}"><a class="anchor" href="#${id}"></a>${html(number)} ${titleHtml}</h${headingLevel}>
     <a class="contribute-btn" href="${attribute(editUrl)}" title="Improve this doc" aria-label="Improve this doc">
         <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M12 20h9"></path>

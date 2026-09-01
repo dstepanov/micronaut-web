@@ -1,3 +1,4 @@
+import { projectApiBaseUri } from "../asciidoc/api-links.ts";
 import { decodeHtml } from "../shared/html.ts";
 import {
   configurationReferenceRows,
@@ -26,6 +27,7 @@ export interface ReferenceLinkProject {
   slug?: string;
   repositoryName?: string;
   publishedGuideUrl?: string;
+  docsSourceFile?: string;
 }
 
 /**
@@ -37,6 +39,11 @@ export interface ReferenceLinkProject {
 export function configurationReferenceUrl(
   project: ReferenceLinkProject,
 ): string | undefined {
+  // A project documented as a single page publishes no guide, so there is no
+  // configuration reference sitting next to one either.
+  if (project.docsSourceFile) {
+    return undefined;
+  }
   if (project.repositoryName) {
     return `https://micronaut-projects.github.io/${project.repositoryName}/latest/guide/configurationreference.html`;
   }
@@ -59,14 +66,10 @@ export function projectReferenceLinks(
     ? `/docs/${project.slug}/configuration-reference/`
     : configurationReferenceUrl(project);
   return [
-    ...(project.publishedGuideUrl
-      ? [
-          {
-            label: "API Reference",
-            href: new URL("../api/", project.publishedGuideUrl).href,
-          },
-        ]
-      : []),
+    // Derived from the repository the same way the `api:` macros resolve
+    // javadoc links: the published guide is not always a sibling of the API
+    // documentation, and for a single-page project there is no guide at all.
+    { label: "API Reference", href: `${projectApiBaseUri({ project })}/` },
     ...(configurationHref
       ? [{ label: "Configuration Reference", href: configurationHref }]
       : []),

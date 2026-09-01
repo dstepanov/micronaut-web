@@ -2,7 +2,12 @@ import path from "node:path";
 
 import { projectApiBaseUri } from "../asciidoc/api-links.ts";
 
-import type { DocsProject, Properties } from "./project-manifest.ts";
+import {
+  type DocsProject,
+  type Properties,
+  readProperties,
+  readTomlStringVersions,
+} from "./project-manifest.ts";
 
 export function renderAttributes(
   project: DocsProject,
@@ -50,7 +55,7 @@ export function renderAttributes(
       "micronaut",
       "docs",
     ),
-    sourceRepo: sourceDocsEditUrl(project),
+    sourceRepo: sourceDocsEditUrl(project, docsSourcePath(project)),
     docdir: submoduleDirectory,
   };
   if (!attributes.api) {
@@ -69,7 +74,58 @@ export function renderAttributes(
   return attributes;
 }
 
-export function sourceDocsEditUrl(project: DocsProject): string {
+export function sourceDocsEditUrl(
+  project: DocsProject,
+  sourcePath: string = docsSourcePath(project),
+): string {
   const branch = project.branch || "HEAD";
-  return `${project.repositoryUrl.replace(/\.git$/, "")}/edit/${branch}/src/main/docs`;
+  return `${project.repositoryUrl.replace(/\.git$/, "")}/edit/${branch}/${sourcePath}`;
+}
+
+export function docsSourcePath(project: DocsProject): string {
+  return project.docsSourceFile
+    ? path.posix.dirname(project.docsSourceFile)
+    : "src/main/docs";
+}
+
+/**
+ * The attributes a single-document project's own Gradle build hands
+ * Asciidoctor. Rendering the sources outside Gradle has to resolve them from
+ * the same files the build reads: the Micronaut Gradle plugin declares them in
+ * its `asciidoctorj` block from its version catalog and wrapper.
+ */
+export async function singleDocumentAttributes(
+  submoduleDirectory: string,
+  projectProperties: Properties,
+): Promise<Properties> {
+  const versions = await readTomlStringVersions(
+    path.join(submoduleDirectory, "gradle", "libs.versions.toml"),
+    false,
+  );
+  const wrapper = await readProperties(
+    path.join(
+      submoduleDirectory,
+      "gradle",
+      "wrapper",
+      "gradle-wrapper.properties",
+    ),
+    false,
+  );
+  const attributes: Record<string, string | undefined> = {
+    "gradle-project-version": projectProperties.projectVersion,
+    "gradle-version": /gradle-([^-]+)-(?:bin|all)\.zip/.exec(
+      wrapper.distributionUrl || "",
+    )?.[1],
+    "kotlin-version": versions.kotlin,
+    "micronaut-version": versions["micronaut-platform"],
+    "native-build-tools-version": versions.graalvmPlugin,
+    "shadow-version": versions.shadow,
+  };
+  // An attribute defined as empty renders as nothing at all; leaving it
+  // undefined keeps the unresolved reference visible in the output instead.
+  return Object.fromEntries(
+    Object.entries(attributes).filter((entry): entry is [string, string] =>
+      Boolean(entry[1]),
+    ),
+  );
 }
