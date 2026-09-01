@@ -143,6 +143,10 @@ jobs:
           git push --force "https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPOSITORY}.git" \
             "HEAD:refs/heads/${TARGET_BRANCH}"
 
+      # Enabled here rather than before the build, because the API refuses a
+      # source branch that does not exist yet. The `/snapshot` entry on the
+      # released docs host points at this site, so a run that cannot serve it
+      # fails instead of publishing dead links to docs.micronaut.io.
       - name: Ensure snapshot Pages site
         run: |
           set -euo pipefail
@@ -151,7 +155,8 @@ jobs:
           fi
           if ! gh api --method POST "repos/${TARGET_REPOSITORY}/pages" \
             -f "source[branch]=${TARGET_BRANCH}" -f "source[path]=/" >/dev/null; then
-            echo "::warning::Could not enable GitHub Pages on ${TARGET_REPOSITORY}; enable it from the repository settings."
+            echo "::error::Could not enable GitHub Pages on ${TARGET_REPOSITORY}. GitHub Pages serves a private repository only on GitHub Enterprise Cloud, so make the repository public, and give GH_TOKEN administration access to it."
+            exit 1
           fi
 
       # docs.micronaut.io serves one repository, so `/snapshot` is a mirror of
