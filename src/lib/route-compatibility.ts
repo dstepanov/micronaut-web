@@ -197,7 +197,7 @@ export function clientRedirectDocument(
     `<meta http-equiv="refresh" content="0;url=${htmlAttribute(destination)}" />`,
     `<title>Redirecting to ${htmlText(title)}</title>`,
     "<script>",
-    'try{const storedThemeMode=localStorage.getItem("micronaut-web-theme-mode");if(storedThemeMode==="light"||storedThemeMode==="dark"){document.documentElement.style.colorScheme=storedThemeMode;}}catch{}',
+    'try{const cookieThemeMode=(document.cookie.match(/(?:^|;\\s*)micronaut-theme-mode=(light|dark)/)||[])[1];const storedThemeMode=cookieThemeMode||localStorage.getItem("micronaut-web-theme-mode");if(storedThemeMode==="light"||storedThemeMode==="dark"){document.documentElement.style.colorScheme=storedThemeMode;}}catch{}',
     `location.replace(${serializedDestination} + location.search + location.hash);`,
     "</script>",
     "</head>",

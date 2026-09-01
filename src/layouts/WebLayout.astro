@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import { SiteHeader } from "@/components/web/site-header";
 import {
   LEGACY_THEME_STORAGE_KEY,
+  THEME_MODE_COOKIE_NAME,
   THEME_MODE_QUERY_PARAMETER,
   THEME_MODE_STORAGE_KEY,
 } from "@/lib/experience-theme";
@@ -143,6 +144,7 @@ const structuredData = {
       is:inline
       define:vars={{
         legacyThemeStorageKey: LEGACY_THEME_STORAGE_KEY,
+        themeModeCookieName: THEME_MODE_COOKIE_NAME,
         themeModeQueryParameter: THEME_MODE_QUERY_PARAMETER,
         themeModeStorageKey: THEME_MODE_STORAGE_KEY,
       }}
@@ -161,24 +163,40 @@ const structuredData = {
           root.classList.toggle("dark", dark);
           root.style.colorScheme = dark ? "dark" : "light";
         };
+        // The parent-domain cookie carries the choice across micronaut.io,
+        // docs.micronaut.io, and guides.micronaut.io; localStorage is per
+        // origin and stays as the fallback where the cookie cannot be set.
+        const persistThemeMode = (mode) => {
+          localStorage.setItem(themeModeStorageKey, mode);
+          localStorage.removeItem(legacyThemeStorageKey);
+          const labels = window.location.hostname.split(".");
+          const domain =
+            labels.length > 1 && !/^\d+$/.test(labels[labels.length - 1])
+              ? `; domain=.${labels.slice(-2).join(".")}`
+              : "";
+          document.cookie = `${themeModeCookieName}=${mode}; path=/; max-age=31536000; SameSite=Lax${domain}`;
+        };
         let themeMode = preferredThemeMode;
         try {
           const presetMode = new URLSearchParams(window.location.search).get(
             themeModeQueryParameter,
           );
+          const cookieMode = (document.cookie.match(
+            new RegExp(`(?:^|;\\s*)${themeModeCookieName}=(light|dark)`),
+          ) || [])[1];
+          const storedMode = localStorage.getItem(themeModeStorageKey);
+          const legacyMode = localStorage.getItem(legacyThemeStorageKey);
           if (isThemeMode(presetMode)) {
             themeMode = presetMode;
-            localStorage.setItem(themeModeStorageKey, presetMode);
-            localStorage.removeItem(legacyThemeStorageKey);
-          } else {
-            const storedMode = localStorage.getItem(themeModeStorageKey);
-            const legacyMode = localStorage.getItem(legacyThemeStorageKey);
-            if (isThemeMode(storedMode)) {
-              themeMode = storedMode;
-            } else if (legacyMode === "light" || legacyMode === "dark") {
-              themeMode = legacyMode;
-              localStorage.setItem(themeModeStorageKey, legacyMode);
-            }
+            persistThemeMode(presetMode);
+          } else if (isThemeMode(cookieMode)) {
+            themeMode = cookieMode;
+          } else if (isThemeMode(storedMode)) {
+            themeMode = storedMode;
+            persistThemeMode(storedMode);
+          } else if (legacyMode === "light" || legacyMode === "dark") {
+            themeMode = legacyMode;
+            persistThemeMode(legacyMode);
           }
         } catch {
           themeMode = preferredThemeMode;
