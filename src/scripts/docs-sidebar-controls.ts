@@ -53,3 +53,24 @@ mobileNavigation?.addEventListener("click", (event) => {
     mobileNavigation.close();
   }
 });
+
+// The reference row starts in the flow at the top of the page and pins under
+// the topbar as the reader scrolls. Shrinking the observer root to one pixel
+// below the row's own pin offset reports it as fully visible only while it is
+// still in the flow, so the buttons can lift off the prose they scroll over.
+// Where the row is not pinned at all — a phone, where it stays in the flow —
+// there is no offset to read and nothing to observe.
+const referenceLinks = document.querySelector<HTMLElement>(
+  "[data-docs-reference-links]",
+);
+const referencePinOffset = referenceLinks
+  ? Number.parseFloat(getComputedStyle(referenceLinks).top)
+  : Number.NaN;
+if (referenceLinks && Number.isFinite(referencePinOffset)) {
+  new IntersectionObserver(
+    ([entry]) => {
+      referenceLinks.dataset.stuck = String(entry.intersectionRatio < 1);
+    },
+    { threshold: [1], rootMargin: `-${referencePinOffset + 1}px 0px 0px 0px` },
+  ).observe(referenceLinks);
+}
