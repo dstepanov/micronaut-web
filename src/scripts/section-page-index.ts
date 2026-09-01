@@ -12,6 +12,7 @@ type SectionPageIndexOptions = {
   activeClassName?: string;
   activeDatasetKey?: string;
   currentContainerSelector?: string;
+  currentLabelSelector?: string;
   currentLinkSelector?: string;
   linkSelector: string;
   mutationSelector?: string;
@@ -166,12 +167,50 @@ const syncCurrentSectionLinks = (
     }
   }
   if (options.currentContainerSelector) {
-    const container = document.querySelector<HTMLElement>(
+    // Every container, not the first one: the same index is rendered as the
+    // side rail and as the section menu in the docs bar on a phone.
+    for (const container of document.querySelectorAll<HTMLElement>(
       options.currentContainerSelector,
-    );
-    if (container) {
+    )) {
       container.hidden = visibleLinks === 0;
     }
+  }
+};
+
+/**
+ * What the section is called in the navigation that links it. The sidebar
+ * splits its label across a number and a title, so its `aria-label` carries
+ * the whole thing where `textContent` would run the two together.
+ */
+const sectionLabelFor = (
+  activeRootId: string,
+  options: SectionPageIndexOptions,
+) => {
+  const rootLink = sectionLinks(options).find(
+    (link) => targetIdForLink(link, options) === activeRootId,
+  );
+  return (
+    rootLink?.getAttribute("aria-label")?.trim() ||
+    rootLink?.textContent?.trim() ||
+    undefined
+  );
+};
+
+const syncCurrentLabels = (
+  activeRootId: string,
+  options: SectionPageIndexOptions,
+) => {
+  if (!options.currentLabelSelector) {
+    return;
+  }
+  const label = sectionLabelFor(activeRootId, options);
+  if (!label) {
+    return;
+  }
+  for (const element of document.querySelectorAll<HTMLElement>(
+    options.currentLabelSelector,
+  )) {
+    element.textContent = label;
   }
 };
 
@@ -188,10 +227,7 @@ const syncTopLink = (
   if (!topLink) {
     return;
   }
-  const rootLink = sectionLinks(options).find(
-    (link) => targetIdForLink(link, options) === activeRootId,
-  );
-  const rootLabel = rootLink?.textContent?.trim() || "section";
+  const rootLabel = sectionLabelFor(activeRootId, options) || "section";
   topLink.href = `#${activeRootId}`;
   topLink.setAttribute("aria-label", `Back to ${rootLabel}`);
   topLink.setAttribute("title", `Back to ${rootLabel}`);
@@ -219,6 +255,7 @@ const setActiveId = (activeId: string, options: SectionPageIndexOptions) => {
   }
 
   syncCurrentSectionLinks(activeRootId, options);
+  syncCurrentLabels(activeRootId, options);
   syncTopLink(activeRootId, options);
 
   for (const link of activeLinks) {
