@@ -1,0 +1,11 @@
+The Micronaut framework ships an HTTP client that can be used declaratively, with an interface annotated with `@Client`, or imperatively.
+
+[#nettyHttpClient]
+== Netty HTTP Client
+
+The default client implementation is built on Netty and shares its event loop with the server described in <<routing,HTTP Routing>>.
+
+[#jdkHttpClient]
+== Java HTTP Client
+
+The client can also run on the HTTP client that ships with the JDK.

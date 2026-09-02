@@ -60,7 +60,7 @@ export async function renderProject(
   const guideSourceDirectory = path.join(sourceDocsDirectory, "guide");
   const toc = project.docsSourceFile
     ? undefined
-    : await readGuideToc(guideSourceDirectory);
+    : await readGuideToc(guideSourceDirectory, project.guideSections);
   const projectProperties = await readProperties(
     path.join(submoduleDirectory, "gradle.properties"),
     false,

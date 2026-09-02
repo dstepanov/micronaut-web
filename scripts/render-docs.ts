@@ -19,10 +19,16 @@ import {
   selectProjects,
 } from "./docs/project-manifest.ts";
 import { renderProject } from "./docs/renderer.ts";
+import { MissingGuideSectionsError } from "./docs/toc.ts";
+import {
+  crossLinkSplitPages,
+  splitDocsProjects,
+  splitProjectSlugs,
+} from "./docs/project-splits.ts";
 import { parseArgs, splitList, stringArg } from "./shared/cli.ts";
 import { isDirectory, isRegularFile } from "./shared/files.ts";
 
-const DEFAULT_DOC_PROJECT_SLUGS = ["core", "data", "serde"];
+const DEFAULT_DOC_PROJECT_SLUGS = ["core", "http", "data", "serde"];
 const execFile = promisify(execFileCallback);
 
 const projectDirectory = path.resolve(
@@ -117,6 +123,9 @@ if (await isRegularFile(platformVersionCatalogFile)) {
     Number(metadataProperties["project.count"] || 0),
   ) as unknown as DocsProject[];
 }
+// The prototype renders one upstream guide as more than one project; see
+// scripts/docs/project-splits.ts.
+allProjects = splitDocsProjects(allProjects);
 const projects = selectProjects(allProjects, selectedSlugs);
 const platformVersions = await readTomlStringVersions(
   platformVersionCatalogFile,
@@ -141,6 +150,7 @@ if (await isRegularFile(platformVersionCatalogFile)) {
 
 let rendered = 0;
 let skipped = 0;
+const renderedPages = new Map<string, string>();
 const skippedProjects: string[] = [];
 for (const project of projects) {
   try {
@@ -160,6 +170,7 @@ for (const project of projects) {
       projectVersions[project.platformVersionKey] || "",
       { strict },
     );
+    renderedPages.set(project.slug, html);
     await fs.writeFile(
       path.join(outputDirectory, `${project.slug}.html`),
       `${html}\n`,
@@ -170,10 +181,19 @@ for (const project of projects) {
     console.log(`Rendered ${project.slug}`);
   } catch (error: unknown) {
     skipped += 1;
+    // A project rendered out of another project's guide has nothing to render
+    // once that guide stops carrying its sections, which is the upstream
+    // change this special case is waiting for rather than a render failure.
+    if (project.derivedFrom && error instanceof MissingGuideSectionsError) {
+      console.warn(`Skipping ${project.slug}: ${errorMessage(error)}`);
+      continue;
+    }
     skippedProjects.push(`${project.slug}: ${errorMessage(error)}`);
     console.warn(`Skipping ${skippedProjects.at(-1)}`);
   }
 }
+
+await linkSplitProjectPages();
 
 console.log(
   `Rendered ${rendered} docs fragments to ${path.relative(projectDirectory, outputDirectory)}${skipped ? ` (${skipped} skipped)` : ""}.`,
@@ -182,6 +202,34 @@ if (strict && skippedProjects.length) {
   throw new Error(
     `Strict docs render failed with skipped projects: ${skippedProjects.join("; ")}`,
   );
+}
+
+/**
+ * A guide split across projects is written as one document, so its sections
+ * cross-reference each other with fragment links. Once both pages exist, the
+ * links that now point into the sibling page are rewritten to reach it.
+ */
+async function linkSplitProjectPages(): Promise<void> {
+  for (const slugs of splitProjectSlugs()) {
+    const group = slugs.filter((slug) => renderedPages.has(slug));
+    if (group.length < 2) {
+      continue;
+    }
+    const linked = crossLinkSplitPages(
+      Object.fromEntries(group.map((slug) => [slug, renderedPages.get(slug)!])),
+    );
+    for (const slug of group) {
+      if (linked[slug] === renderedPages.get(slug)) {
+        continue;
+      }
+      await fs.writeFile(
+        path.join(outputDirectory, `${slug}.html`),
+        `${linked[slug]}\n`,
+        "utf8",
+      );
+    }
+    console.log(`Linked the split docs pages ${group.join(" and ")}`);
+  }
 }
 
 async function cleanGeneratedDocsOutput(

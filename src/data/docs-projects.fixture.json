@@ -1,7 +1,7 @@
 {
   "source": "micronaut-projects/micronaut-platform gradle/libs.versions.toml plus checked-in docs metadata",
   "publishedSource": "https://github.com/micronaut-projects/micronaut-platform/blob/master/gradle/libs.versions.toml",
-  "projectCount": 73,
+  "projectCount": 75,
   "categories": [
     {
       "slug": "most-popular",
@@ -10,6 +10,7 @@
       "description": "Frequently used framework, data, security, API, messaging, and integration modules.",
       "projectSlugs": [
         "core",
+        "http",
         "data",
         "security",
         "openapi"
@@ -19,9 +20,10 @@
       "slug": "core",
       "name": "Core",
       "icon": "atom",
-      "description": "Core framework runtime, HTTP, dependency injection, configuration, native-image, and security support.",
+      "description": "Core framework runtime, dependency injection, configuration, native-image, and security support.",
       "projectSlugs": [
         "core",
+        "http",
         "security"
       ]
     },
@@ -267,7 +269,37 @@
         "getting-started"
       ],
       "shortDescription": "Core framework runtime",
-      "longDescription": "Micronaut Core supplies runtime APIs and compile-time infrastructure for injection, configuration, AOP, validation, HTTP, serialization, and native images so platform modules build fast, modular applications consistently across diverse deployment environments."
+      "longDescription": "Micronaut Core supplies runtime APIs and compile-time infrastructure for injection, configuration, AOP, validation, and native images so platform modules build fast, modular applications consistently across diverse deployment environments."
+    },
+    {
+      "slug": "http",
+      "displayName": "Micronaut HTTP",
+      "shortName": "HTTP",
+      "projectKey": "http",
+      "module": "io.micronaut:micronaut-core-bom",
+      "repositoryName": "micronaut-core",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-core.git",
+      "publishedGuideUrl": "https://docs.micronaut.io/latest/guide/",
+      "branch": "5.0.x",
+      "submodulePath": "repos/micronaut-core",
+      "platformVersionKey": "managed-micronaut-core",
+      "derivedFrom": "core",
+      "version": "5.0.0",
+      "icon": "lucide:globe",
+      "primaryCategory": "core",
+      "categorySlugs": [
+        "core"
+      ],
+      "guideTopicAliases": [
+        "http",
+        "http-server",
+        "http-client",
+        "micronaut-http-client",
+        "websocket",
+        "server-sent-events"
+      ],
+      "shortDescription": "HTTP server and client",
+      "longDescription": "Micronaut HTTP documents the Netty-based server and the declarative client: routing, request binding, content negotiation, filters, error handling, file uploads, WebSocket and server-sent events, HTTP/2 and HTTP/3, and the configuration behind them."
     },
     {
       "slug": "test",

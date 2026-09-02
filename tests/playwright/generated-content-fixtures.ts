@@ -15,7 +15,7 @@ const generatedContentFixtureDirectory = path.join(
   "fixtures",
   "generated-content",
 );
-const docsProjectSlugs = ["core", "data", "serde"];
+const docsProjectSlugs = ["core", "http", "data", "serde"];
 const guideSlugs = [
   "adding-commit-info",
   "creating-your-first-micronaut-app",

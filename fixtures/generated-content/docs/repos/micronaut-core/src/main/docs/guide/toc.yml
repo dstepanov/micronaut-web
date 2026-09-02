@@ -1,4 +1,6 @@
 title: Micronaut Core
 introduction: Introduction
 quickStart: Quick Start
+httpServer: The HTTP Server
+httpClient: The HTTP Client
 snippetGallery: Snippet Gallery
