@@ -8,6 +8,15 @@ export const DEFAULT_GITHUB_PAGES_ORIGIN =
  */
 export const DOCS_SNAPSHOT_ROOT = "/snapshot";
 
+/**
+ * The Google Analytics property the Micronaut site reports to. Only builds of
+ * the canonical GitHub Pages origin carry the tag: fork previews and local
+ * builds resolve their own origin, so their traffic stays out of the property.
+ * `MICRONAUT_GOOGLE_ANALYTICS_ID` overrides the rule in either direction, and
+ * setting it empty disables analytics outright.
+ */
+export const GOOGLE_ANALYTICS_ID = "G-FF5E26PXNY";
+
 export type DeploySurface = "all" | "main" | "docs" | "guides";
 
 export type DeploymentSettings = {
@@ -20,6 +29,7 @@ export type DeploymentSettings = {
   mainSiteUrl: string;
   docsSiteUrl: string;
   guidesSiteUrl: string;
+  googleAnalyticsId: string;
   site: string;
 };
 
@@ -52,6 +62,11 @@ export function resolveDeploymentSettings(
     env.MICRONAUT_GUIDES_SITE_URL ||
       githubPagesProjectUrl(githubPagesOrigin, "micronaut-guides-v2"),
   );
+  const googleAnalyticsId =
+    env.MICRONAUT_GOOGLE_ANALYTICS_ID ??
+    (githubPagesOrigin === normalizedExternalOrigin(DEFAULT_GITHUB_PAGES_ORIGIN)
+      ? GOOGLE_ANALYTICS_ID
+      : "");
   const activeSiteUrl =
     deploySurface === "docs"
       ? docsSiteUrl
@@ -69,6 +84,7 @@ export function resolveDeploymentSettings(
     mainSiteUrl,
     docsSiteUrl,
     guidesSiteUrl,
+    googleAnalyticsId,
     site: new URL(activeSiteUrl).origin,
   };
 }
