@@ -7,6 +7,15 @@
     <link rel="icon" href="{{assetBasePath}}/micronaut-assets/icons/micronaut-sally.svg" />
     {{headAssetsHtml}}
     {{themeScriptHtml}}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FF5E26PXNY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-FF5E26PXNY');
+    </script>
     <title>{{pageTitle}}</title>
   </head>
   <body>
