@@ -23,17 +23,23 @@ async function submodule(
 }
 
 describe("docsSnippetSamples", () => {
-  test("reads every language from the test-suite directories, test sources before main", async (t) => {
+  test("reads every language from the test-suite directories, test sources before main, Python without the io package", async (t) => {
     const context = await submodule(t, {
-      "test-suite/src/test/java/example/Fixture.java": ["class Fixture {}"],
-      "test-suite-kotlin/src/test/kotlin/example/Fixture.kt": ["class Fixture"],
-      "test-suite-groovy/src/main/groovy/example/Fixture.groovy": [
+      "test-suite/src/test/java/io/example/Fixture.java": ["class Fixture {}"],
+      "test-suite-python/src/test/python/example/Fixture.py": [
+        "class Fixture: pass",
+      ],
+      "test-suite-kotlin/src/test/kotlin/io/example/Fixture.kt": [
+        "class Fixture",
+      ],
+      "test-suite-groovy/src/main/groovy/io/example/Fixture.groovy": [
         "class Fixture {}",
       ],
     });
 
-    assert.deepEqual(docsSnippetSamples("example.Fixture", {}, context), [
+    assert.deepEqual(docsSnippetSamples("io.example.Fixture", {}, context), [
       { language: "java", source: "class Fixture {}" },
+      { language: "python", source: "class Fixture: pass" },
       { language: "kotlin", source: "class Fixture" },
       { language: "groovy", source: "class Fixture {}" },
     ]);
