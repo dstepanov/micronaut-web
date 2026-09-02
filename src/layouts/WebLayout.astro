@@ -14,7 +14,9 @@ import {
   deploySurface,
   externalSurfacePath,
   externalSurfaceUrls,
+  googleAnalyticsId,
 } from "@/lib/deployment-config";
+import { googleAnalyticsTagHtml } from "@/lib/google-analytics";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-identity";
 
 interface Props {
@@ -40,8 +42,12 @@ const {
   publishedTime,
   noindex = false,
 } = Astro.props;
-const googleAnalyticsScriptUrl =
-  "https://www.googletagmanager.com/gtag/js?id=G-FF5E26PXNY";
+// Development shares the canonical deployment configuration, so the tag is
+// withheld there too rather than reporting every local page view.
+const googleAnalyticsHtml =
+  import.meta.env.DEV || !googleAnalyticsId
+    ? ""
+    : googleAnalyticsTagHtml(googleAnalyticsId);
 const canonicalSurface = surface;
 const basePath = import.meta.env.BASE_URL || "/";
 const routePath =
@@ -138,17 +144,7 @@ const structuredData = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImageUrl} />
     <meta name="twitter:image:alt" content={SITE_NAME} />
-    <!-- Google tag (gtag.js) -->
-    <script async src={googleAnalyticsScriptUrl}></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-FF5E26PXNY");
-    </script>
+    {googleAnalyticsHtml && <Fragment set:html={googleAnalyticsHtml} />}
     <script
       type="application/ld+json"
       is:inline

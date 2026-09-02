@@ -24,6 +24,7 @@ declare const __MICRONAUT_DEPLOYMENT__:
       readonly mainSiteUrl?: string;
       readonly docsSiteUrl?: string;
       readonly guidesSiteUrl?: string;
+      readonly googleAnalyticsId?: string;
     }
   | undefined;
 

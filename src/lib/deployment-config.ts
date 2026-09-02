@@ -53,6 +53,7 @@ const deploymentSettings = resolveDeploymentSettings({
 });
 
 export const deploySurface = deploymentSettings.deploySurface;
+export const googleAnalyticsId = deploymentSettings.googleAnalyticsId;
 export const docsRoot = normalizedRoot(deploymentSettings.docsRoot);
 // Snapshot docs document the release that has not happened yet, so they belong
 // to no version line and the released lines are not theirs to offer.

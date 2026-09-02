@@ -5,6 +5,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import type { OnResolveArgs, PluginBuild } from "esbuild";
 import { build } from "esbuild";
 
+import { resolveDeploymentSettings } from "../src/lib/deployment-defaults.ts";
+import { withGoogleAnalyticsTag } from "../src/lib/google-analytics.ts";
+
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -78,6 +81,7 @@ const copiedTemplatePlaceholders: TemplatePlaceholders = {
   ],
 };
 
+const { googleAnalyticsId } = resolveDeploymentSettings(process.env);
 const generatedSnippetTemplates = await renderGeneratedSnippetTemplates();
 const requiredTemplates: TemplatePlaceholders = {
   ...copiedTemplatePlaceholders,
@@ -100,7 +104,10 @@ for (const [relativeTemplate, placeholders] of Object.entries(
   const source = path.join(sourceTemplatesDirectory, relativeTemplate);
   const destination = path.join(outputTemplatesDirectory, relativeTemplate);
   const generated = generatedSnippetTemplates[relativeTemplate];
-  const content = generated?.html ?? (await fs.readFile(source, "utf8"));
+  const content = withGoogleAnalyticsTag(
+    generated?.html ?? (await fs.readFile(source, "utf8")),
+    googleAnalyticsId,
+  );
   for (const placeholder of placeholders) {
     if (!content.includes(`{{${placeholder}}}`)) {
       throw new Error(
