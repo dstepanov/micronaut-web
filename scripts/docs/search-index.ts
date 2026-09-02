@@ -29,6 +29,7 @@ export interface ReferenceLinkProject {
   repositoryName?: string;
   publishedGuideUrl?: string;
   docsSourceFile?: string;
+  derivedFrom?: string;
   version?: string;
 }
 
@@ -44,6 +45,12 @@ export function configurationReferenceUrl(
   // A project documented as a single page publishes no guide, so there is no
   // configuration reference sitting next to one either.
   if (project.docsSourceFile) {
+    return undefined;
+  }
+  // A project split out of another one shares that project's published
+  // reference, which stays with the project that owns the repository rather
+  // than being collected twice.
+  if (project.derivedFrom) {
     return undefined;
   }
   if (project.repositoryName) {

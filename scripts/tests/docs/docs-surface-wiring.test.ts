@@ -318,7 +318,7 @@ test("docs project catalog uses unique project and category icons", async (): Pr
   assert.deepEqual(duplicateIcons, []);
 });
 
-test("docs project catalog retains a four-entry most popular landing-page section", async (): Promise<void> => {
+test("docs project catalog leads the landing page with the most popular projects", async (): Promise<void> => {
   const catalog = JSON.parse(
     await fs.readFile(
       path.join(projectDirectory, "src", "data", "docs-projects.fixture.json"),
@@ -329,13 +329,13 @@ test("docs project catalog retains a four-entry most popular landing-page sectio
     catalog.categories.find(
       (category: any): boolean => category.slug === "most-popular",
     )?.projectSlugs,
-    ["core", "data", "security", "openapi"],
+    ["core", "http", "data", "security", "openapi"],
   );
   assert.deepEqual(
     catalog.categories.find(
       (category: any): boolean => category.slug === "core",
     )?.projectSlugs,
-    ["core", "security"],
+    ["core", "http", "security"],
   );
   assert.deepEqual(
     catalog.categories

@@ -1,7 +1,7 @@
 {
   "source": "playwright copied docs",
   "publishedSource": "",
-  "projectCount": 3,
+  "projectCount": 4,
   "categories": [
     {
       "slug": "playwright",
@@ -10,6 +10,7 @@
       "description": "Copied generated-docs source folders used by browser tests.",
       "projectSlugs": [
         "core",
+        "http",
         "data",
         "serde"
       ]
@@ -40,6 +41,33 @@
       ],
       "shortDescription": "Micronaut Core",
       "longDescription": "Micronaut Core copied browser layout fixture."
+    },
+    {
+      "slug": "http",
+      "displayName": "Micronaut HTTP",
+      "shortName": "HTTP",
+      "projectKey": "http",
+      "module": "io.micronaut:micronaut-core-bom",
+      "repositoryName": "micronaut-core",
+      "repositoryUrl": "https://github.com/micronaut-projects/micronaut-core.git",
+      "publishedGuideUrl": "https://micronaut-projects.github.io/micronaut-core/latest/guide/",
+      "branch": "master",
+      "submodulePath": "repos/micronaut-core",
+      "platformVersionKey": "managed-micronaut-core",
+      "derivedFrom": "core",
+      "version": "5.0.0",
+      "icon": "lucide:book-open",
+      "primaryCategory": "playwright",
+      "categorySlugs": [
+        "playwright"
+      ],
+      "guideTopicAliases": [
+        "http",
+        "http-server",
+        "http-client"
+      ],
+      "shortDescription": "Micronaut HTTP",
+      "longDescription": "Micronaut HTTP copied browser layout fixture."
     },
     {
       "slug": "data",

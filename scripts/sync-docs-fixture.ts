@@ -8,6 +8,7 @@ import {
   readTomlStringVersions,
 } from "./docs/project-manifest.ts";
 import { buildDocsProjectCatalog } from "./docs/project-catalog.ts";
+import { splitDocsProjects } from "./docs/project-splits.ts";
 
 const projectDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -38,9 +39,11 @@ const [platformVersions, existingFixture] = await Promise.all([
 ]);
 const projectProperties = projectCatalogMetadataProperties(existingFixture);
 
-const projects = await readPlatformCatalogProjects(
-  platformVersionCatalogFile,
-  projectProperties,
+const projects = splitDocsProjects(
+  await readPlatformCatalogProjects(
+    platformVersionCatalogFile,
+    projectProperties,
+  ),
 );
 const fixture = buildDocsProjectCatalog({
   projects,

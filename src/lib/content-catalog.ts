@@ -40,6 +40,8 @@ export type DocsCatalogProject = {
   submodulePath: string;
   platformVersionKey: string;
   docsSourceFile?: string;
+  /** Set when this project is rendered out of another project's guide. */
+  derivedFrom?: string;
   version: string;
   icon: string;
   iconThemeTreatment?: "auto" | "inverted" | "monochrome" | "preserve";

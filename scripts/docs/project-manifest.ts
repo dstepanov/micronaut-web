@@ -1,6 +1,8 @@
 import { promises as fs } from "node:fs";
 import { parse as parseToml } from "smol-toml";
 
+import type { GuideSectionSelection } from "./project-splits.ts";
+
 export type Properties = Record<string, string>;
 
 export interface DocsProject {
@@ -21,6 +23,13 @@ export interface DocsProject {
    * instead of a guide directory with a `toc.yml`.
    */
   docsSourceFile?: string;
+  /**
+   * The project this one's guide sources belong to, for a project the site
+   * renders out of another project's guide. See `project-splits.ts`.
+   */
+  derivedFrom?: string;
+  /** The share of the guide's top-level sections this project renders. */
+  guideSections?: GuideSectionSelection;
 }
 
 interface PlatformCatalogProject {
@@ -257,6 +266,12 @@ function indexedProjectMetadata(properties: Properties): MetadataIndexes {
   const byModule = new Map<string, Properties>();
   const byRepositoryName = new Map<string, Properties>();
   for (const entry of entries) {
+    // A derived project describes the same repository and module as the
+    // project it is split out of, so indexing it would let its metadata answer
+    // for the source project and rename it.
+    if (entry.derivedFrom) {
+      continue;
+    }
     if (entry.projectKey) {
       byProjectKey.set(entry.projectKey, entry);
     }

@@ -43,6 +43,7 @@ Use the current repository structure as the source of truth. Do not apply Gradle
 
 - Syntax highlighting, Asciidoctor rendering, properties/YAML/TOML/config conversion, and generated-content transformations must run at build time.
 - Do not ship `shiki`, `@shikijs/*`, `asciidoctor`, `@asciidoctor/*`, or config conversion/parsing libraries to the browser runtime.
+- `scripts/docs/project-splits.ts` holds the docs projects rendered out of another project's guide: Micronaut Core's guide is published as both `core` and `http` until the framework moves that documentation into a module of its own. Change the section list there, not in the renderer or the catalog.
 
 ## Code Style
 

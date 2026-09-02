@@ -60,7 +60,8 @@ export function projectApiBaseUri(context: ApiMacroContext): string {
   const projectSlug =
     context.project?.slug || String(context.attributes?.projectSlug || "core");
   const repositoryName =
-    projectSlug === "core"
+    projectSlug === "core" ||
+    context.project?.repositoryName === "micronaut-core"
       ? CORE_API_REPOSITORY
       : context.project?.repositoryName || `micronaut-${projectSlug}`;
   const version = context.project?.version || "latest";

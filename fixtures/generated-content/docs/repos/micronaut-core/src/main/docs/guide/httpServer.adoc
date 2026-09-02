@@ -1,0 +1,13 @@
+The Micronaut framework includes a non-blocking HTTP server built on Netty, which routes requests to controller methods without reflection.
+
+Start from the <<quickStart,Quick Start>> to create a server application, then add controllers to it.
+
+[#routing]
+== HTTP Routing
+
+A controller method is bound to a URI by an annotation such as `@Get` or `@Post`, and the route is computed at compilation time.
+
+[#serverConfiguration]
+== Configuring the HTTP Server
+
+Server settings live under `micronaut.server` in the application configuration.

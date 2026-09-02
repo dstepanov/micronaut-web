@@ -103,6 +103,10 @@ export function buildDocsProjectCatalog({
         ...(project.docsSourceFile
           ? { docsSourceFile: project.docsSourceFile }
           : {}),
+        // Kept in the catalog so the pages, and the next run reading this
+        // catalog back, can tell a project split out of another one apart from
+        // a project with a repository of its own.
+        ...(project.derivedFrom ? { derivedFrom: project.derivedFrom } : {}),
         version:
           platformVersions[project.platformVersionKey] ||
           existingProject.version ||

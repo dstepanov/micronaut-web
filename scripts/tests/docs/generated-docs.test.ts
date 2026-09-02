@@ -57,7 +57,7 @@ describe("render-docs", () => {
         .split(/\r?\n/)
         .filter((line) => line.startsWith("Skipping "))
         .map((line) => line.replace(/^Skipping ([^:]+):.*$/, "$1")),
-      ["core", "data", "serde"],
+      ["core", "http", "data", "serde"],
     );
     assert.deepEqual(await fs.readdir(outputDirectory), []);
   });
@@ -252,7 +252,14 @@ describe("render-docs", () => {
         "utf8",
       ),
     );
-    assert.equal(catalog.projectCount, 2);
+    // The catalog also carries the project split out of core's guide, whose
+    // page this fixture guide has no sections to render.
+    assert.equal(catalog.projectCount, 3);
+    const http = catalog.projects.find(
+      (candidate: { slug: string }) => candidate.slug === "http",
+    );
+    assert.equal(http?.derivedFrom, "core");
+    assert.equal(http?.repositoryName, "micronaut-core");
     for (const project of projects) {
       const html = await fs.readFile(
         path.join(outputDirectory, `${project.slug}.html`),
@@ -270,6 +277,58 @@ describe("render-docs", () => {
       assert.equal(entry?.version, project.version);
       assert.equal(entry?.repositoryName, project.repositoryName);
     }
+  });
+
+  test("renders the HTTP guide sections as their own project and links the two pages", async (t) => {
+    const { docsDirectory, outputDirectory } = await docsDirectories(
+      t,
+      "micronaut-web-docs-split-",
+    );
+    await writePlatformVersionCatalog(docsDirectory, { core: "5.0.0" });
+    await writeDocsGuide(docsDirectory, "micronaut-core", "Micronaut Core", [
+      {
+        id: "introduction",
+        title: "Introduction",
+        body: "Core body, and an HTTP client written as <<nettyHttpClient,Netty>>.\n",
+      },
+      {
+        id: "httpServer",
+        title: "The HTTP Server",
+        body: "Server body, starting from <<introduction,the introduction>>.\n",
+      },
+      {
+        id: "httpClient",
+        title: "The HTTP Client",
+        body: "[#nettyHttpClient]\n== Netty HTTP Client\n\nClient body.\n",
+      },
+    ]);
+
+    await runRenderDocs(docsDirectory, outputDirectory, [
+      "--slugs",
+      "core,http",
+    ]);
+
+    const core = await fs.readFile(
+      path.join(outputDirectory, "core.html"),
+      "utf8",
+    );
+    const http = await fs.readFile(
+      path.join(outputDirectory, "http.html"),
+      "utf8",
+    );
+    // Each page carries only its own sections, numbered from one.
+    assert.match(core, /id="core-introduction"/);
+    assert.doesNotMatch(core, /id="core-httpServer"/);
+    assert.match(http, /id="http-httpServer"/);
+    assert.match(http, /1 The HTTP Server/);
+    // The guide's own cross-references reach across the two pages.
+    assert.match(core, /href="\.\.\/http\/#http-nettyHttpClient"/);
+    assert.match(http, /href="\.\.\/core\/#core-introduction"/);
+    // The pages are edited in the repository the guide belongs to.
+    assert.match(
+      http,
+      /micronaut-projects\/micronaut-core\/edit\/[^"]*\/guide\/httpServer\.adoc/,
+    );
   });
 
   test("fails in strict mode when Asciidoctor reports a fatal diagnostic", async (t) => {

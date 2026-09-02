@@ -30,6 +30,16 @@ const docsProjects = [
   },
 ];
 
+// The catalog also lists the project rendered out of core's own guide, which
+// carries no snippets of its own for the snippet tests below.
+const docsCatalogProjects = [
+  ...docsProjects.map((project) => ({
+    name: project.name,
+    slug: project.slug,
+  })),
+  { name: "HTTP", slug: "http" },
+];
+
 test("docs catalog lays out generated project cards", async ({ page }) => {
   const failures = collectBrowserFailures(page);
 
@@ -49,8 +59,8 @@ test("docs catalog lays out generated project cards", async ({ page }) => {
   ).toHaveCount(0);
 
   const cards = page.locator('main [data-slot="card"]');
-  await expect(cards).toHaveCount(docsProjects.length);
-  for (const project of docsProjects) {
+  await expect(cards).toHaveCount(docsCatalogProjects.length);
+  for (const project of docsCatalogProjects) {
     const card = cards.filter({ hasText: project.name });
     await expect(card).toBeVisible();
     // The whole card is the link now, so the redundant "Docs" button is gone.
