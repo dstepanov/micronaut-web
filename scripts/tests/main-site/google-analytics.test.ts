@@ -7,7 +7,7 @@ import { projectDirectory } from "../support/paths.ts";
 
 const googleAnalyticsTag: RegExp[] = [
   /<!-- Google tag \(gtag\.js\) -->/,
-  /<script(?=[^>]*\basync\b)(?=[^>]*src=["']https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-FF5E26PXNY["'])[^>]*>/,
+  /<script(?=[^>]*\basync\b)(?=(?:[^>]*src=["']https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-FF5E26PXNY["']|[^>]*src=\{googleAnalyticsScriptUrl\}))[^>]*>/,
   /window\.dataLayer = window\.dataLayer \|\| \[\];/,
   /function gtag\(\)\s*\{\s*dataLayer\.push\(arguments\);\s*\}/,
   /gtag\(["']js["'], new Date\(\)\);/,

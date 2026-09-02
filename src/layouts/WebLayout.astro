@@ -40,6 +40,8 @@ const {
   publishedTime,
   noindex = false,
 } = Astro.props;
+const googleAnalyticsScriptUrl =
+  "https://www.googletagmanager.com/gtag/js?id=G-FF5E26PXNY";
 const canonicalSurface = surface;
 const basePath = import.meta.env.BASE_URL || "/";
 const routePath =
@@ -137,8 +139,7 @@ const structuredData = {
     <meta name="twitter:image" content={shareImageUrl} />
     <meta name="twitter:image:alt" content={SITE_NAME} />
     <!-- Google tag (gtag.js) -->
-    <!-- prettier-ignore -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FF5E26PXNY"></script>
+    <script async src={googleAnalyticsScriptUrl}></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag() {
