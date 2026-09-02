@@ -132,11 +132,16 @@ function explicitSnippetLanguage(target: string): SnippetLanguage | undefined {
   return undefined;
 }
 
+// Python sources drop the leading `io` package: `io.micronaut.docs.X` lives
+// at `micronaut/docs/X.py`, matching the upstream SnippetSourceResolver.
 function snippetPathTarget(target: string, extension: string): string {
   const suffix = `.${extension}`;
-  const normalized = target.endsWith(suffix)
+  let normalized = target.endsWith(suffix)
     ? target.slice(0, -suffix.length)
     : target;
+  if (extension === "py" && normalized.startsWith("io.")) {
+    normalized = normalized.slice("io.".length);
+  }
   return normalized.replaceAll(".", path.sep);
 }
 
