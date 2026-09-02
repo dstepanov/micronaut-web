@@ -148,29 +148,46 @@ const referenceLinks = projectReferenceLinks(project, {
              page, and from sm up they ride the scroll pinned under the
              topbar, so every chapter is one click from the API and
              configuration references. Phones keep the row in flow: pinned,
-             the pair wraps and would cover the prose it sits over. */
+             the pair wraps and would cover the prose it sits over. The
+             version rides along at the row's other end: which release of the
+             module a page documents was written down nowhere on it, and a
+             reader deep in a chapter needs it as much as one at the top. */
         }
-        <nav
-          aria-label="Reference documentation"
+        <div
           data-docs-reference-links
-          class="group/references z-30 mb-6 flex flex-wrap gap-2 sm:sticky sm:top-[calc(var(--topbar-height)+16px)] sm:mb-4 sm:justify-end"
+          class="group/references z-30 mb-6 flex flex-wrap items-center gap-2 sm:sticky sm:top-[calc(var(--topbar-height)+16px)] sm:mb-4"
         >
           {
-            referenceLinks.map((reference) => (
-              <a
-                href={reference.href}
-                target={reference.external ? "_blank" : undefined}
-                rel={reference.external ? "noreferrer" : undefined}
-                class:list={[
-                  buttonVariants({ size: "sm", variant: "outline" }),
-                  "transition-shadow duration-300 ease-out group-data-[stuck=true]/references:shadow-md",
-                ]}
+            project.version && (
+              <span
+                data-docs-project-version
+                class="mr-auto rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-shadow duration-300 ease-out group-data-[stuck=true]/references:shadow-md"
               >
-                {reference.label}
-              </a>
-            ))
+                {project.shortName} {project.version}
+              </span>
+            )
           }
-        </nav>
+          <nav
+            aria-label="Reference documentation"
+            class="flex flex-wrap gap-2 sm:justify-end"
+          >
+            {
+              referenceLinks.map((reference) => (
+                <a
+                  href={reference.href}
+                  target={reference.external ? "_blank" : undefined}
+                  rel={reference.external ? "noreferrer" : undefined}
+                  class:list={[
+                    buttonVariants({ size: "sm", variant: "outline" }),
+                    "transition-shadow duration-300 ease-out group-data-[stuck=true]/references:shadow-md",
+                  ]}
+                >
+                  {reference.label}
+                </a>
+              ))
+            }
+          </nav>
+        </div>
         {
           !generatedDocHtml && (
             <header id={`${project.slug}-docs`} class="mb-7 scroll-mt-24">

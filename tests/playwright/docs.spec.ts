@@ -97,6 +97,10 @@ test("generated docs page renders desktop content and sidebars without overlap",
   ).toBeVisible();
   await expect(page.locator(".docs-properties-template").first()).toBeVisible();
 
+  // Which release of the module the page documents, named on the page itself.
+  const projectVersion = page.locator("[data-docs-project-version]");
+  await expect(projectVersion).toHaveText("Core 5.0.0");
+
   const docsSidebar = page.locator("[data-docs-sidebar]");
   await expect(docsSidebar).toBeVisible();
   const activeProjectLink = docsSidebar.getByRole("link", {
@@ -191,6 +195,9 @@ test("generated docs page renders desktop content and sidebars without overlap",
     "location",
   );
   await expectTopHeaderPinned(page);
+  // Pinned with the reference row, so the version stays readable deep in a
+  // chapter, not only where the reader landed.
+  await expect(projectVersion).toBeInViewport();
 
   await expectNoHorizontalOverflow(page);
   await expectElementInsideViewport(page, ".docs-code-snippet-template");
