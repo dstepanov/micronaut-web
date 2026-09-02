@@ -672,10 +672,15 @@ test("published docs republish workflow refreshes latest after older versions", 
     /repository:\s*micronaut-projects\/micronaut-docs-v2/,
   );
   assert.match(republishWorkflow, /path:\s*published-docs/);
+  // versions.json lists one release per published line folder, and the site's
+  // version selector is rendered from it. Exact-version directories on the
+  // branch are imported javadoc, so a directory scan would republish versions
+  // the site never links to.
   assert.match(
     republishWorkflow,
-    /grep -E '.*\[0-9\].*\\\.\[0-9\].*\\\.\[0-9\]/,
+    /jq -r '\.versions\[\]\.release \/\/ empty' published-docs\/versions\.json/,
   );
+  assert.doesNotMatch(republishWorkflow, /find published-docs/);
   assert.match(republishWorkflow, /sort -V/);
   assert.match(republishWorkflow, /gh workflow run deploy-docs\.yml/);
   assert.match(republishWorkflow, /--field "docs_version=\$version"/);

@@ -34,14 +34,13 @@ jobs:
         run: |
           set -euo pipefail
           # A line folder is named /5.0.x, so the release it was built from only
-          # survives in versions.json. Legacy exact-version folders predate that
-          # and are still worth republishing onto their line.
+          # survives in versions.json, which is also what the site's version
+          # selector is rendered from. Exact-version folders on the branch hold
+          # imported javadoc under /api and were never docs builds, so scanning
+          # directories would republish versions the site does not link to.
           mapfile -t versions < <(
-            {
-              jq -r '.versions[].release // empty' published-docs/versions.json 2>/dev/null || true
-              find published-docs -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
-                | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true
-            } | sort -V -u
+            jq -r '.versions[].release // empty' published-docs/versions.json 2>/dev/null \
+              | sort -V -u || true
           )
 
           if [ "${#versions[@]}" -eq 0 ]; then
