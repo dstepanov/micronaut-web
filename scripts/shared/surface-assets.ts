@@ -3,8 +3,11 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import { FILE_CONCURRENCY, mapWithConcurrency } from "./files.ts";
+
 const LEGACY_HASH_DIRECTORY_PATTERN = /^[a-f0-9]{16}$/;
 const HASHED_FILE_PATTERN = /^.+\.[a-f0-9]{16}\.[^./]+$/;
+const COPY_CONCURRENCY = 8;
 
 export type HoistSurfaceAssetResult = {
   files: number;
@@ -97,38 +100,33 @@ export async function pruneUnusedHashedSurfaceAssets(
   }
 
   const referenced = await referencedHashedAssets(directory);
-  await Promise.all(
-    entries.map(async (entry) => {
-      const entryPath = path.join(assetsDirectory, entry.name);
-      const relativePath = path.posix.join("assets", entry.name);
-      if (
-        entry.isDirectory() &&
-        LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name) &&
-        !referenced.legacyDirectories.has(entry.name)
-      ) {
-        return fs.rm(entryPath, {
-          force: true,
-          recursive: true,
-        });
-      }
-      if (
-        entry.isDirectory() &&
-        !LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name)
-      ) {
-        await pruneUnusedHashedFiles(entryPath, relativePath, referenced.files);
-        await removeEmptyDirectory(entryPath);
-        return;
-      }
-      if (
-        entry.isFile() &&
-        isHashedAssetFile(relativePath) &&
-        !referenced.files.has(relativePath)
-      ) {
-        return fs.rm(entryPath, { force: true });
-      }
-      return undefined;
-    }),
-  );
+  for (const entry of entries) {
+    const entryPath = path.join(assetsDirectory, entry.name);
+    const relativePath = path.posix.join("assets", entry.name);
+    if (
+      entry.isDirectory() &&
+      LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name) &&
+      !referenced.legacyDirectories.has(entry.name)
+    ) {
+      await fs.rm(entryPath, { force: true, recursive: true });
+      continue;
+    }
+    if (
+      entry.isDirectory() &&
+      !LEGACY_HASH_DIRECTORY_PATTERN.test(entry.name)
+    ) {
+      await pruneUnusedHashedFiles(entryPath, relativePath, referenced.files);
+      await removeEmptyDirectory(entryPath);
+      continue;
+    }
+    if (
+      entry.isFile() &&
+      isHashedAssetFile(relativePath) &&
+      !referenced.files.has(relativePath)
+    ) {
+      await fs.rm(entryPath, { force: true });
+    }
+  }
 }
 
 async function pruneUnusedHashedFiles(
@@ -136,34 +134,101 @@ async function pruneUnusedHashedFiles(
   relativeDirectory: string,
   referenced: Set<string>,
 ): Promise<void> {
-  let entries: Array<import("node:fs").Dirent>;
+  const unusedFiles: string[] = [];
+  const visited = await walkDirectories(
+    directory,
+    relativeDirectory,
+    ({ absolutePath, relativePath, entries }) => {
+      for (const entry of entries) {
+        if (!entry.isFile()) {
+          continue;
+        }
+        const entryRelativePath = path.posix.join(relativePath, entry.name);
+        if (
+          isHashedAssetFile(entryRelativePath) &&
+          !referenced.has(entryRelativePath)
+        ) {
+          unusedFiles.push(path.join(absolutePath, entry.name));
+        }
+      }
+    },
+  );
+
+  await mapWithConcurrency(unusedFiles, FILE_CONCURRENCY, (file) =>
+    fs.rm(file, { force: true }),
+  );
+
+  // Deepest directories first, so a directory left empty by pruning its
+  // children is itself removed.
+  for (const entry of visited.reverse()) {
+    await removeEmptyDirectory(entry.absolutePath);
+  }
+}
+
+type VisitedDirectory = {
+  absolutePath: string;
+  relativePath: string;
+};
+
+/**
+ * Breadth-first directory walk that keeps at most `FILE_CONCURRENCY` `readdir`
+ * calls in flight. Recursing with `Promise.all` instead fans out by depth and
+ * exhausts the file descriptor limit on large published surfaces.
+ *
+ * Returns the visited directories in breadth-first (shallowest-first) order.
+ */
+async function walkDirectories(
+  root: string,
+  relativeRoot: string,
+  visit: (
+    directory: VisitedDirectory & { entries: Array<import("node:fs").Dirent> },
+  ) => void,
+): Promise<VisitedDirectory[]> {
+  const visited: VisitedDirectory[] = [];
+  const queue: VisitedDirectory[] = [
+    { absolutePath: root, relativePath: relativeRoot },
+  ];
+  while (queue.length) {
+    const batch = queue.splice(0, FILE_CONCURRENCY);
+    const children: VisitedDirectory[] = [];
+    await Promise.all(
+      batch.map(async (directory) => {
+        const entries = await readDirectoryEntries(directory.absolutePath);
+        if (!entries) {
+          return;
+        }
+        visited.push(directory);
+        visit({ ...directory, entries });
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            children.push({
+              absolutePath: path.join(directory.absolutePath, entry.name),
+              relativePath: directory.relativePath
+                ? `${directory.relativePath}/${entry.name}`
+                : entry.name,
+            });
+          }
+        }
+      }),
+    );
+    for (const child of children) {
+      queue.push(child);
+    }
+  }
+  return visited;
+}
+
+async function readDirectoryEntries(
+  directory: string,
+): Promise<Array<import("node:fs").Dirent> | undefined> {
   try {
-    entries = await fs.readdir(directory, { withFileTypes: true });
+    return await fs.readdir(directory, { withFileTypes: true });
   } catch (error) {
     if (isNotFound(error)) {
-      return;
+      return undefined;
     }
     throw error;
   }
-
-  await Promise.all(
-    entries.map(async (entry) => {
-      const absolutePath = path.join(directory, entry.name);
-      const relativePath = path.posix.join(relativeDirectory, entry.name);
-      if (entry.isDirectory()) {
-        await pruneUnusedHashedFiles(absolutePath, relativePath, referenced);
-        await removeEmptyDirectory(absolutePath);
-        return;
-      }
-      if (
-        entry.isFile() &&
-        isHashedAssetFile(relativePath) &&
-        !referenced.has(relativePath)
-      ) {
-        await fs.rm(absolutePath, { force: true });
-      }
-    }),
-  );
 }
 
 async function removeEmptyDirectory(directory: string): Promise<void> {
@@ -197,23 +262,21 @@ async function referencedHashedAssets(directory: string): Promise<{
 }> {
   const legacyDirectories = new Set<string>();
   const files = new Set<string>();
-  const htmlFiles = await listRegularFiles(directory);
-  await Promise.all(
-    htmlFiles
-      .filter((file) => file.endsWith(".html"))
-      .map(async (file) => {
-        const html = await fs.readFile(filesystemPath(directory, file), "utf8");
-        for (const match of html.matchAll(/\b(?:href|src)="([^"]*)"/g)) {
-          const asset = hashedAssetReference(file, match[1]);
-          if (asset?.legacyDirectory) {
-            legacyDirectories.add(asset.legacyDirectory);
-          }
-          if (asset?.file) {
-            files.add(asset.file);
-          }
-        }
-      }),
+  const htmlFiles = (await listRegularFiles(directory)).filter((file) =>
+    file.endsWith(".html"),
   );
+  await mapWithConcurrency(htmlFiles, FILE_CONCURRENCY, async (file) => {
+    const html = await fs.readFile(filesystemPath(directory, file), "utf8");
+    for (const match of html.matchAll(/\b(?:href|src)="([^"]*)"/g)) {
+      const asset = hashedAssetReference(file, match[1]);
+      if (asset?.legacyDirectory) {
+        legacyDirectories.add(asset.legacyDirectory);
+      }
+      if (asset?.file) {
+        files.add(asset.file);
+      }
+    }
+  });
   return { legacyDirectories, files };
 }
 
@@ -227,24 +290,18 @@ async function rewriteHtmlAssetReferences({
   assetMappings: Map<string, string>;
 }): Promise<void> {
   const htmlRootDirectory = filesystemPath(directory, versionRoot);
-  const htmlFiles = await listRegularFiles(htmlRootDirectory);
-  await Promise.all(
-    htmlFiles
-      .filter((file) => file.endsWith(".html"))
-      .map(async (file) => {
-        const htmlFilePath = path.posix.join(versionRoot, file);
-        const absoluteFile = filesystemPath(directory, htmlFilePath);
-        const html = await fs.readFile(absoluteFile, "utf8");
-        const rewritten = rewriteAssetReferences(
-          html,
-          htmlFilePath,
-          assetMappings,
-        );
-        if (rewritten !== html) {
-          await fs.writeFile(absoluteFile, rewritten, "utf8");
-        }
-      }),
+  const htmlFiles = (await listRegularFiles(htmlRootDirectory)).filter((file) =>
+    file.endsWith(".html"),
   );
+  await mapWithConcurrency(htmlFiles, FILE_CONCURRENCY, async (file) => {
+    const htmlFilePath = path.posix.join(versionRoot, file);
+    const absoluteFile = filesystemPath(directory, htmlFilePath);
+    const html = await fs.readFile(absoluteFile, "utf8");
+    const rewritten = rewriteAssetReferences(html, htmlFilePath, assetMappings);
+    if (rewritten !== html) {
+      await fs.writeFile(absoluteFile, rewritten, "utf8");
+    }
+  });
 }
 
 function rewriteAssetReferences(
@@ -360,12 +417,12 @@ async function copyChildren(source: string, target: string): Promise<void> {
   }
 
   await fs.mkdir(target, { recursive: true });
-  await Promise.all(
-    entries.map((entry) =>
-      fs.cp(path.join(source, entry.name), path.join(target, entry.name), {
-        recursive: true,
-      }),
-    ),
+  // `fs.cp` fans out on its own, so copy a handful of trees at a time rather
+  // than every child at once.
+  await mapWithConcurrency(entries, COPY_CONCURRENCY, (entry) =>
+    fs.cp(path.join(source, entry.name), path.join(target, entry.name), {
+      recursive: true,
+    }),
   );
 }
 
@@ -373,30 +430,15 @@ async function listRegularFiles(
   directory: string,
   prefix = "",
 ): Promise<string[]> {
-  let entries: Array<import("node:fs").Dirent>;
-  try {
-    entries = await fs.readdir(directory, { withFileTypes: true });
-  } catch (error) {
-    if (isNotFound(error)) {
-      return [];
-    }
-    throw error;
-  }
-
-  const files = await Promise.all(
-    entries.map(async (entry) => {
-      const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
-      const fullPath = path.join(directory, entry.name);
-      if (entry.isDirectory()) {
-        return listRegularFiles(fullPath, relativePath);
-      }
+  const files: string[] = [];
+  await walkDirectories(directory, prefix, ({ relativePath, entries }) => {
+    for (const entry of entries) {
       if (entry.isFile()) {
-        return [relativePath];
+        files.push(relativePath ? `${relativePath}/${entry.name}` : entry.name);
       }
-      return [];
-    }),
-  );
-  return files.flat();
+    }
+  });
+  return files;
 }
 
 function relativeReference(fromDirectory: string, target: string) {
