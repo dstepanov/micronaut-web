@@ -257,6 +257,10 @@ test("docs section and subsection navigation follows scroll movement", async ({
 
   await scrollToGeneratedHeading(page, "Create an Application");
   await expect(sectionNav).toBeVisible();
+  // The rail rides the scroll. Its sticky container can only travel inside the
+  // <aside> around it, so an auto-height aside left the rail parked at the top
+  // of the page and out of sight for every chapter after the first.
+  await expectSectionRailPinned(sectionNav);
   await expectDocsLinkActive(quickStartSection, true);
   await expectDocsLinkActive(createApplication, true);
   await expectDocsLinkActive(introductionSection, false);
@@ -265,6 +269,7 @@ test("docs section and subsection navigation follows scroll movement", async ({
 
   await scrollToGeneratedHeading(page, "Generated Snippet Macros");
   await expect(generatedSnippetMacros).toBeVisible();
+  await expectSectionRailPinned(sectionNav);
   await expectDocsLinkActive(snippetGallerySection, true);
   await expectDocsLinkActive(generatedSnippetMacros, true);
   await expectDocsLinkActive(quickStartSection, false);
@@ -881,6 +886,21 @@ async function expectTopHeaderPinned(page: Page): Promise<void> {
   await expect
     .poll(async () => Math.round((await banner.boundingBox())?.y ?? -1))
     .toBe(0);
+}
+
+/**
+ * The section rail is pinned under the topbar rather than scrolled away with
+ * the chapter it indexes, so its list is reachable from anywhere in the page.
+ */
+async function expectSectionRailPinned(sectionNav: Locator): Promise<void> {
+  const rail = sectionNav.locator("[data-docs-scroll-container]");
+  const box = await rail.boundingBox();
+  assertBox(box, "[data-docs-scroll-container]");
+  const viewportHeight =
+    sectionNav.page().viewportSize()?.height ??
+    (await sectionNav.page().evaluate(() => window.innerHeight));
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y).toBeLessThan(viewportHeight / 2);
 }
 
 async function expectDocsLinkActive(

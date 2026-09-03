@@ -60,9 +60,6 @@ export function extractGeneratedDocSections(
         parentId: depth === 1 ? undefined : activeTopLevelId,
       });
     }
-    if (sections.length >= 600) {
-      break;
-    }
   }
   return sections;
 }

@@ -331,13 +331,16 @@ const referenceLinks = projectReferenceLinks(project, {
       {
         /* One grid child, so both rails stay in the side column: a second
           top-level child would auto-place into the content column's next row
-          and overlap the prose. */
+          and overlap the prose. The wrapper is the stretched grid item, so the
+          rail inside it has to claim that height too: sticky can only travel
+          inside its own containing block, and an auto-height <aside> gives it
+          nowhere to go. */
       }
       <div class="min-w-0">
         {
           currentSectionLinks.length > 0 && (
             <aside
-              class="hidden xl:block"
+              class="hidden h-full xl:block"
               aria-label="In this section"
               data-docs-current-section-index
               hidden={initialCurrentSectionIndexHidden}

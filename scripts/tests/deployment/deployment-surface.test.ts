@@ -1170,6 +1170,35 @@ test("docs version manifest is rebuilt from the published docs branch", async (t
   assert.match(await fs.readFile(manifest, "utf8"), /"Latest \(4\.10\.14\)"/);
 });
 
+test("docs version manifest skips version directories without published docs", async (t) => {
+  const published = await temporaryDirectory(t);
+  const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");
+  // The docs branch also carries imported javadoc under `<version>/api`. Those
+  // directories are not docs builds, and their roots are 404s, so offering them
+  // in the version selector sent readers nowhere.
+  await writeFiles(published, [
+    "4.9.x/index.html",
+    "4.8.x/api/index.html",
+    "3.10.10/api/index.html",
+  ]);
+
+  const versions = await updateDocsVersionManifest({
+    manifestFile: manifest,
+    publishedDirectory: published,
+    version: "4.10.14",
+  });
+
+  assert.deepEqual(versions, [
+    {
+      label: "Latest (4.10.14)",
+      href: "/latest/",
+      release: "4.10.14",
+      current: true,
+    },
+    { label: "4.9.x", href: "/4.9.x/" },
+  ]);
+});
+
 test("docs version manifest preserves the latest release for non-latest publishes", async (t) => {
   const published = await temporaryDirectory(t);
   const manifest = path.join(await temporaryDirectory(t), "docs-versions.json");

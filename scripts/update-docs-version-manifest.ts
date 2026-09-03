@@ -189,7 +189,14 @@ async function readPublishedVersions(
   const versions = new Map<string, string>();
   for (const entry of entries) {
     if (entry.isDirectory() && isVersion(entry.name)) {
-      versions.set(entry.name, `/${entry.name}/`);
+      // A version-named directory is not proof of published docs: the branch
+      // also carries imported javadoc under `<version>/api`, whose root is a
+      // 404. Only a directory with a docs root belongs in the selector.
+      if (
+        await exists(path.join(publishedDirectory, entry.name, "index.html"))
+      ) {
+        versions.set(entry.name, `/${entry.name}/`);
+      }
     } else if (entry.isFile() && entry.name.endsWith(".html")) {
       const version = entry.name.slice(0, -".html".length);
       if (isVersion(version) && !versions.has(version)) {
@@ -315,6 +322,15 @@ function versionParts(version: string) {
 function versionQualifierRank(version: string) {
   const core = /^\d+\.\d+(?:\.\d+)?/.exec(version)?.[0] || "";
   return /^[-.][A-Za-z0-9]/.test(version.slice(core.length)) ? 0 : 1;
+}
+
+async function exists(file: string) {
+  try {
+    await fs.access(file);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function isVersion(value: string) {
