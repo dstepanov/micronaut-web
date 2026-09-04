@@ -21,56 +21,36 @@ const LANGUAGES = [
   { value: "kotlin", label: "Kotlin" },
   { value: "groovy", label: "Groovy" },
 ];
-const PYTHON_LANGUAGE = { value: "python", label: "Python" };
 const BUILD_TOOLS = [
   { value: "gradle", label: "Gradle" },
   { value: "maven", label: "Maven" },
 ];
-const PYTHON_BUILD_TOOLS = [{ value: "pyronaut", label: "Pyronaut" }];
-
-/**
- * Guides generate Python only for Pyronaut and Pyronaut only for Python, so
- * the build group offers what the picked language actually builds with rather
- * than a pairing no guide has a variant for.
- */
-function buildToolsFor(language: string) {
-  return language === "python" ? PYTHON_BUILD_TOOLS : BUILD_TOOLS;
-}
 
 /**
  * Site-wide language/build preference for guide links. Persisted, so "Read"
  * on every card opens the preferred variant instead of the Java/Gradle
  * default; guides without an exact match fall back per `matchGuideVariant`.
  *
- * `python` offers the language only where guides render a Pyronaut variant,
- * the same condition the catalog's Python filter uses: on a guides repository
- * without them the preference is one nothing can satisfy, and because it is
- * persisted the reader keeps a selection no card ever reflects.
+ * Guides support Java, Kotlin, and Groovy variants. A global Python preference
+ * remains valid for the navbar and Docs, but falls back to Java/Gradle here.
  */
 export function GuideVariantPreferencePicker({
-  python = false,
   initialLanguage = DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
 }: {
-  python?: boolean;
   initialLanguage?: string;
 }) {
-  const languages = python ? [...LANGUAGES, PYTHON_LANGUAGE] : LANGUAGES;
   const [preference, setPreference] = useState<GuideVariantPreference>({
     ...DEFAULT_GUIDE_VARIANT_PREFERENCE,
-    language: initialLanguage,
+    language: isGuideLanguage(initialLanguage)
+      ? initialLanguage
+      : DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
   });
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const stored = readGuideVariantPreference();
     if (stored) {
-      // A preference stored while Python was on offer would otherwise leave
-      // every language unpressed once it is not.
-      setPreference(
-        stored.language === PYTHON_LANGUAGE.value && !python
-          ? DEFAULT_GUIDE_VARIANT_PREFERENCE
-          : stored,
-      );
+      setPreference(normalizeGuidePreference(stored));
     }
     setHydrated(true);
 
@@ -92,20 +72,20 @@ export function GuideVariantPreferencePicker({
       if (!language || !isProgrammingLanguage(language)) {
         return;
       }
+      const guideLanguage = isGuideLanguage(language) ? language : "java";
       setPreference((current) => {
         // Guard: if the guide picker itself fired this event (selectLanguage
         // also calls saveProgrammingLanguagePreference), the preference is
         // already correct — skip the redundant write.
-        if (current.language === language) {
+        if (current.language === guideLanguage) {
           return current;
         }
-        const buildTools = buildToolsFor(language);
-        const buildTool = buildTools.some(
+        const buildTool = BUILD_TOOLS.some(
           (bt) => bt.value === current.buildTool,
         )
           ? current.buildTool
-          : buildTools[0].value;
-        const next = { language, buildTool };
+          : BUILD_TOOLS[0].value;
+        const next = { language: guideLanguage, buildTool };
         // Persist outside the updater to avoid double-call in Strict Mode.
         // schedule as a microtask so the state update completes first.
         Promise.resolve().then(() => saveGuideVariantPreference(next));
@@ -132,14 +112,13 @@ export function GuideVariantPreferencePicker({
   }
 
   function selectLanguage(language: string) {
-    const buildTools = buildToolsFor(language);
     update({
       language,
-      buildTool: buildTools.some(
+      buildTool: BUILD_TOOLS.some(
         (buildTool) => buildTool.value === preference.buildTool,
       )
         ? preference.buildTool
-        : buildTools[0].value,
+        : BUILD_TOOLS[0].value,
     });
     // Keep the global language cookie in sync so the navbar selector and the
     // docs snippet enhancer both reflect this choice.
@@ -156,7 +135,7 @@ export function GuideVariantPreferencePicker({
       )}
     >
       <ButtonGroup aria-label="Preferred guide language">
-        {languages.map((language) => (
+        {LANGUAGES.map((language) => (
           <Button
             key={language.value}
             size="sm"
@@ -171,7 +150,7 @@ export function GuideVariantPreferencePicker({
         ))}
       </ButtonGroup>
       <ButtonGroup aria-label="Preferred guide build tool">
-        {buildToolsFor(preference.language).map((buildTool) => (
+        {BUILD_TOOLS.map((buildTool) => (
           <Button
             key={buildTool.value}
             size="sm"
@@ -187,4 +166,25 @@ export function GuideVariantPreferencePicker({
       </ButtonGroup>
     </div>
   );
+}
+
+function isGuideLanguage(
+  language: string,
+): language is "java" | "kotlin" | "groovy" {
+  return language === "java" || language === "kotlin" || language === "groovy";
+}
+
+function normalizeGuidePreference(
+  preference: GuideVariantPreference,
+): GuideVariantPreference {
+  return {
+    language: isGuideLanguage(preference.language)
+      ? preference.language
+      : DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
+    buildTool: BUILD_TOOLS.some(
+      (buildTool) => buildTool.value === preference.buildTool,
+    )
+      ? preference.buildTool
+      : DEFAULT_GUIDE_VARIANT_PREFERENCE.buildTool,
+  };
 }
