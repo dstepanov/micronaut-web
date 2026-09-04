@@ -2,8 +2,8 @@
 slug: 2026/09/01/micronaut-new-home-at-commonhaus
 title: Micronaut’s New Home at the Commonhaus Foundation
 description: Micronaut is now a project of the Commonhaus Foundation, providing a neutral and durable home for the framework and its community.
-date: '2026-09-03T09:00:00'
-modified: '2026-09-03T09:00:00'
+date: '2026-09-01T09:00:00'
+modified: '2026-09-01T09:00:00'
 category: uncategorized
 categories:
   - uncategorized
