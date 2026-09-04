@@ -1,3 +1,5 @@
+import { readProgrammingLanguageCookiePreference } from "@/lib/programming-language-preference";
+
 export type GuideVariantPreference = {
   language: string;
   buildTool: string;
@@ -27,16 +29,30 @@ export function isGuideVariantPreference(
 
 export function readGuideVariantPreference():
   GuideVariantPreference | undefined {
+  let stored: GuideVariantPreference | undefined;
   try {
-    const stored = localStorage.getItem(GUIDE_VARIANT_PREFERENCE_STORAGE_KEY);
-    if (!stored) {
-      return undefined;
+    const serialized = localStorage.getItem(
+      GUIDE_VARIANT_PREFERENCE_STORAGE_KEY,
+    );
+    if (serialized) {
+      const parsed: unknown = JSON.parse(serialized);
+      if (isGuideVariantPreference(parsed)) {
+        stored = parsed;
+      }
     }
-    const parsed: unknown = JSON.parse(stored);
-    return isGuideVariantPreference(parsed) ? parsed : undefined;
   } catch {
-    return undefined;
+    stored = undefined;
   }
+
+  const globalLanguage = readProgrammingLanguageCookiePreference();
+  if (globalLanguage) {
+    return {
+      language: globalLanguage,
+      buildTool:
+        stored?.buildTool ?? DEFAULT_GUIDE_VARIANT_PREFERENCE.buildTool,
+    };
+  }
+  return stored;
 }
 
 export function saveGuideVariantPreference(preference: GuideVariantPreference) {

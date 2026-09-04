@@ -9,6 +9,12 @@ import {
   saveGuideVariantPreference,
   type GuideVariantPreference,
 } from "@/lib/guide-variant-preference";
+import {
+  isProgrammingLanguage,
+  PROGRAMMING_LANGUAGE_EVENT,
+  saveProgrammingLanguagePreference,
+} from "@/lib/programming-language-preference";
+import { cn } from "@/lib/utils";
 
 const LANGUAGES = [
   { value: "java", label: "Java" },
@@ -43,13 +49,17 @@ function buildToolsFor(language: string) {
  */
 export function GuideVariantPreferencePicker({
   python = false,
+  initialLanguage = DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
 }: {
   python?: boolean;
+  initialLanguage?: string;
 }) {
   const languages = python ? [...LANGUAGES, PYTHON_LANGUAGE] : LANGUAGES;
-  const [preference, setPreference] = useState<GuideVariantPreference>(
-    DEFAULT_GUIDE_VARIANT_PREFERENCE,
-  );
+  const [preference, setPreference] = useState<GuideVariantPreference>({
+    ...DEFAULT_GUIDE_VARIANT_PREFERENCE,
+    language: initialLanguage,
+  });
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const stored = readGuideVariantPreference();
@@ -62,6 +72,7 @@ export function GuideVariantPreferencePicker({
           : stored,
       );
     }
+    setHydrated(true);
 
     function onPreferenceChange(event: Event) {
       const detail = (event as CustomEvent<GuideVariantPreference>).detail;
@@ -70,11 +81,48 @@ export function GuideVariantPreferencePicker({
       }
     }
 
+    // When the navbar language selector changes, update the guide picker to
+    // match. We listen here (inside the component) rather than relying on the
+    // guide-variant-persistence.ts bridge script because that script is only
+    // bundled into the guide reader page ([slug].astro), NOT the catalog page
+    // (index.astro) where this picker is rendered.
+    function onGlobalLanguageChange(event: Event) {
+      const detail = (event as CustomEvent<{ language?: string }>).detail;
+      const language = detail?.language;
+      if (!language || !isProgrammingLanguage(language)) {
+        return;
+      }
+      setPreference((current) => {
+        // Guard: if the guide picker itself fired this event (selectLanguage
+        // also calls saveProgrammingLanguagePreference), the preference is
+        // already correct — skip the redundant write.
+        if (current.language === language) {
+          return current;
+        }
+        const buildTools = buildToolsFor(language);
+        const buildTool = buildTools.some(
+          (bt) => bt.value === current.buildTool,
+        )
+          ? current.buildTool
+          : buildTools[0].value;
+        const next = { language, buildTool };
+        // Persist outside the updater to avoid double-call in Strict Mode.
+        // schedule as a microtask so the state update completes first.
+        Promise.resolve().then(() => saveGuideVariantPreference(next));
+        return next;
+      });
+    }
+
     window.addEventListener(GUIDE_VARIANT_PREFERENCE_EVENT, onPreferenceChange);
+    window.addEventListener(PROGRAMMING_LANGUAGE_EVENT, onGlobalLanguageChange);
     return () => {
       window.removeEventListener(
         GUIDE_VARIANT_PREFERENCE_EVENT,
         onPreferenceChange,
+      );
+      window.removeEventListener(
+        PROGRAMMING_LANGUAGE_EVENT,
+        onGlobalLanguageChange,
       );
     };
   }, []);
@@ -93,10 +141,20 @@ export function GuideVariantPreferencePicker({
         ? preference.buildTool
         : buildTools[0].value,
     });
+    // Keep the global language cookie in sync so the navbar selector and the
+    // docs snippet enhancer both reflect this choice.
+    if (isProgrammingLanguage(language)) {
+      saveProgrammingLanguagePreference(language);
+    }
   }
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
+    <div
+      className={cn(
+        "flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap",
+        !hydrated && "invisible",
+      )}
+    >
       <ButtonGroup aria-label="Preferred guide language">
         {languages.map((language) => (
           <Button
