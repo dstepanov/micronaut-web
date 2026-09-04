@@ -214,6 +214,22 @@ const structuredData = {
         applyThemeMode(themeMode);
       })();
     </script>
+    <script is:inline>
+      (() => {
+        const cookie = document.cookie
+          .split(";")
+          .map((value) => value.trim())
+          .find((value) => value.startsWith("micronaut-code-language="));
+        const language = cookie?.slice("micronaut-code-language=".length);
+        if (
+          language === "kotlin" ||
+          language === "groovy" ||
+          language === "python"
+        ) {
+          document.documentElement.dataset.codeLanguagePending = "true";
+        }
+      })();
+    </script>
     <link
       rel="icon"
       href={withBasePath("/micronaut-assets/icons/micronaut-sally.svg")}
