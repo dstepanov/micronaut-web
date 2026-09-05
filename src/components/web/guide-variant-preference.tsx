@@ -5,6 +5,8 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DEFAULT_GUIDE_VARIANT_PREFERENCE,
   GUIDE_VARIANT_PREFERENCE_EVENT,
+  isGuideLanguage,
+  normalizeGuidePreference,
   readGuideVariantPreference,
   saveGuideVariantPreference,
   type GuideVariantPreference,
@@ -168,23 +170,3 @@ export function GuideVariantPreferencePicker({
   );
 }
 
-function isGuideLanguage(
-  language: string,
-): language is "java" | "kotlin" | "groovy" {
-  return language === "java" || language === "kotlin" || language === "groovy";
-}
-
-function normalizeGuidePreference(
-  preference: GuideVariantPreference,
-): GuideVariantPreference {
-  return {
-    language: isGuideLanguage(preference.language)
-      ? preference.language
-      : DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
-    buildTool: BUILD_TOOLS.some(
-      (buildTool) => buildTool.value === preference.buildTool,
-    )
-      ? preference.buildTool
-      : DEFAULT_GUIDE_VARIANT_PREFERENCE.buildTool,
-  };
-}

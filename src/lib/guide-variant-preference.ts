@@ -27,6 +27,31 @@ export function isGuideVariantPreference(
   );
 }
 
+export function isGuideLanguage(
+  language: string,
+): language is "java" | "kotlin" | "groovy" {
+  return language === "java" || language === "kotlin" || language === "groovy";
+}
+
+export function isGuideBuildTool(
+  buildTool: string,
+): buildTool is "gradle" | "maven" {
+  return buildTool === "gradle" || buildTool === "maven";
+}
+
+export function normalizeGuidePreference(
+  preference: GuideVariantPreference,
+): GuideVariantPreference {
+  return {
+    language: isGuideLanguage(preference.language)
+      ? preference.language
+      : DEFAULT_GUIDE_VARIANT_PREFERENCE.language,
+    buildTool: isGuideBuildTool(preference.buildTool)
+      ? preference.buildTool
+      : DEFAULT_GUIDE_VARIANT_PREFERENCE.buildTool,
+  };
+}
+
 export function readGuideVariantPreference():
   GuideVariantPreference | undefined {
   let stored: GuideVariantPreference | undefined;
@@ -46,13 +71,13 @@ export function readGuideVariantPreference():
 
   const globalLanguage = readProgrammingLanguageCookiePreference();
   if (globalLanguage) {
-    return {
+    return normalizeGuidePreference({
       language: globalLanguage,
       buildTool:
         stored?.buildTool ?? DEFAULT_GUIDE_VARIANT_PREFERENCE.buildTool,
-    };
+    });
   }
-  return stored;
+  return stored ? normalizeGuidePreference(stored) : undefined;
 }
 
 export function saveGuideVariantPreference(preference: GuideVariantPreference) {

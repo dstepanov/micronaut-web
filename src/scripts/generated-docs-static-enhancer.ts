@@ -1,5 +1,7 @@
 import {
   isProgrammingLanguage,
+  PROGRAMMING_LANGUAGE_EVENT,
+  readProgrammingLanguageCookiePreference,
   saveProgrammingLanguagePreference,
 } from "@/lib/programming-language-preference";
 
@@ -166,21 +168,6 @@ import {
     });
   };
 
-  const LANGUAGE_COOKIE_NAME = "micronaut-code-language";
-  const LANGUAGE_EVENT = "micronaut-web-language-change";
-  const VALID_LANGUAGES = ["java", "kotlin", "groovy", "python"];
-
-  const readLanguageCookie = (): string | undefined => {
-    for (const cookie of document.cookie.split(";")) {
-      const trimmed = cookie.trim();
-      if (trimmed.startsWith(`${LANGUAGE_COOKIE_NAME}=`)) {
-        const value = trimmed.slice(LANGUAGE_COOKIE_NAME.length + 1);
-        return VALID_LANGUAGES.includes(value) ? value : undefined;
-      }
-    }
-    return undefined;
-  };
-
   /**
    * Given a snippet template, activate the tab that matches
    * `language`, if one exists. Does nothing if no matching tab is found,
@@ -214,10 +201,10 @@ import {
   };
 
   // Listen for language changes from the navbar selector.
-  window.addEventListener(LANGUAGE_EVENT, (event) => {
+  window.addEventListener(PROGRAMMING_LANGUAGE_EVENT, (event) => {
     const detail = (event as CustomEvent<{ language?: string }>).detail;
     const language = detail?.language;
-    if (language && VALID_LANGUAGES.includes(language)) {
+    if (language && isProgrammingLanguage(language)) {
       applyGlobalLanguagePreference(language);
     }
   });
@@ -234,7 +221,7 @@ import {
         enhanceTemplateSnippetControls(root);
       });
     // Apply global language preference to all snippets.
-    const preferredLanguage = readLanguageCookie();
+    const preferredLanguage = readProgrammingLanguageCookiePreference();
     if (preferredLanguage) {
       applyGlobalLanguagePreference(preferredLanguage);
     }

@@ -1,4 +1,5 @@
 import {
+  normalizeGuidePreference,
   readGuideVariantPreference,
   saveGuideVariantPreference,
 } from "@/lib/guide-variant-preference";
@@ -42,8 +43,8 @@ window.addEventListener(PROGRAMMING_LANGUAGE_EVENT, (event) => {
   const existing = readGuideVariantPreference();
   const language = detail.language;
   const currentBuildTool = existing?.buildTool ?? "gradle";
-  saveGuideVariantPreference({
+  saveGuideVariantPreference(normalizeGuidePreference({
     language,
     buildTool: currentBuildTool,
-  });
+  }));
 });
