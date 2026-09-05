@@ -21,11 +21,13 @@ import {
 import { MicronautLogo } from "@/components/web/micronaut-logo";
 import { SearchDialog } from "@/components/web/search-dialog";
 import { ThemeModeSwitch } from "@/components/web/theme-toggle";
+import { ProgrammingLanguageSelector } from "@/components/web/programming-language-selector";
 import {
   withConfiguredBasePath,
   withConfiguredSurfacePath,
   type SiteSurfaceUrls,
 } from "@/lib/base-path";
+import type { ProgrammingLanguage } from "@/lib/programming-language-preference";
 import { mainSiteFooterGroups } from "@/lib/main-site-footer";
 import { cn } from "@/lib/utils";
 
@@ -90,6 +92,21 @@ function MobileColorModeSwitch() {
   );
 }
 
+function MobileLanguageSwitch({
+  initialLanguage,
+}: {
+  initialLanguage?: ProgrammingLanguage;
+}) {
+  return (
+    <div className="flex items-center justify-between px-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Code language
+      </p>
+      <ProgrammingLanguageSelector initialLanguage={initialLanguage} />
+    </div>
+  );
+}
+
 function isActivePrimaryLink(
   link: { href: string; surface?: SurfaceId },
   surface: SurfaceId,
@@ -115,6 +132,7 @@ export function SiteHeader({
   hideBrand = false,
   mainSitePages = [],
   navigationUrls,
+  initialLanguage,
 }: {
   docsSearchIndexUrl?: string;
   guidesManifestUrl?: string;
@@ -125,6 +143,7 @@ export function SiteHeader({
   hideBrand?: boolean;
   mainSitePages?: MainSiteSearchPage[];
   navigationUrls?: SiteSurfaceUrls;
+  initialLanguage?: ProgrammingLanguage;
 }) {
   const surfaceHref = (targetSurface: SurfaceId, href: string) =>
     withConfiguredSurfacePath(targetSurface, href, navigationUrls);
@@ -199,6 +218,10 @@ export function SiteHeader({
             <a href="https://launch.micronaut.io">Launch</a>
           </Button>
           <ThemeModeSwitch className="hidden lg:inline-flex" />
+          <ProgrammingLanguageSelector
+            className="hidden lg:inline-flex"
+            initialLanguage={initialLanguage}
+          />
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -273,6 +296,7 @@ export function SiteHeader({
                     </div>
                   );
                 })}
+                <MobileLanguageSwitch initialLanguage={initialLanguage} />
                 <MobileColorModeSwitch />
               </nav>
             </SheetContent>
